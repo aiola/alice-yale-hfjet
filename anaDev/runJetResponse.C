@@ -3,24 +3,22 @@
 class AliAnalysisGrid;
 
 //______________________________________________________________________________
-void runJetResponse(
-	 const char   *datatype     = "AOD",                         // set the analysis type, AOD, ESD or sESD
-         const char   *runtype      = "local",                       // local or grid
-         const char   *gridmode     = "test",                        // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
-	 const char   *localfiles   = "",                            // set the local list file
-	 UInt_t        numfiles     = 50,                            // number of files analyzed locally
-	 UInt_t        numevents    = 1234567890,                    // number of events to be analyzed
-	 const char   *runperiod    = "LHC12a15e_fix",               // set the run period
-         const char   *taskname     = "JetResponse"                  // sets name of grid generated macros
+void runJetResponse( 
+	 const char   *datatype     = "AOD",                                       // set the analysis type, AOD, ESD or sESD
+         const char   *runtype      = "local",                                     // local or grid
+         const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
+	 const char   *localfiles   = "fileLists/files_LHC10f7a_fix_AOD136a.txt",  // set the local list file
+	 UInt_t        numfiles     = 50,                                          // number of files analyzed locally
+	 UInt_t        numevents    = 1234567890,                                  // number of events to be analyzed
+	 const char   *runperiod    = "LHC10f7a",                                  // set the run period
+         const char   *taskname     = "JetResponse",                               // sets name of grid generated macros
+         Bool_t        doEmcal      = kFALSE
          )
 {
   //gSystem->SetFPEMask(TSystem::kInvalid | TSystem::kDivByZero | TSystem::kOverflow | TSystem::kUnderflow);
-  gSystem->Setenv("ETRAIN_ROOT", "../../emcaltrain");
-
-  //Int_t run = 170040;
-  Int_t run = 169838;
-  Int_t nrunnumbers = 10;
-  Int_t runnumbers[] = {1,2,3,4,5,6,7,8,9,10};
+  
+  Int_t nrunnumbers = 1;
+  Int_t runnumbers[] = {117112};
 
   enum eDataType { kAod, kEsd };
   enum eRunType  { kLocal, kGrid };
@@ -52,13 +50,8 @@ void runJetResponse(
   TString localFiles(localfiles);
   if (rType == kLocal) {
     if (!strcmp(localfiles, "")) {
-      switch (dType) {
-      case (kAod):
-	localFiles = "files_LHC12a15e_fix_AOD149.txt";
-	break;
-      default:
-	localFiles = "files_LHC12a15e_fix_ESD.txt";
-      }
+      Printf("You need to specify the local list files.");
+      return;
     }
     cout << "setting local analysis for " << numfiles << " files from list " << localFiles << endl;
   }
@@ -94,44 +87,27 @@ void runJetResponse(
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *centTask = AddTaskCentrality(kTRUE);
 
-      UInt_t prePhysSel = AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-      //UInt_t prePhysSel = AliVEvent::kEMCEGA;
-      //UInt_t prePhysSel = AliVEvent::kEMCEJE;
+      UInt_t prePhysSel = AliVEvent::kMB;
 
       // Physics selection task
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
       AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kFALSE,
                                                                           prePhysSel,
                                                                           5, 5, 10, kTRUE, -1, -1, -1, -1);
     }
   }
 
-  // Track efficiency
-  if (0) {
-    Int_t kTriggerSelection = AliVEvent::kMB;
-    Bool_t kSelectHijing = kTRUE;
-    Bool_t kPythiaInfo = kFALSE;
-    const char* kBeamType = "PbPb";
-    const char* kDataset = "LHC12a17d";
-    const char* kYear = "2011";
-
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskHybridTrackEfficiency.C");
-    AddTaskHybridTrackEfficiency(kYear, kDataset, kBeamType, kTriggerSelection, kSelectHijing, kPythiaInfo);
-  }
-
   // Setup task
-  if (1) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
+  if (doEmcal) {
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
     AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
   }
 
   // Analysis tasks
   if (1) {
-    gROOT->LoadMacro("$ETRAIN_ROOT/saiola/AddTaskJetResp.C");
-    AddTaskJetResp(kFALSE, datatype, "local");
+    gROOT->LoadMacro("addTask/AddTaskJetResp.C");
+    AddTaskJetResp(datatype, "local");
   }
-
-  mgr->SetUseProgressBar(1, 25);
 	
   if (!mgr->InitAnalysis()) 
     return;
@@ -162,17 +138,19 @@ void runJetResponse(
 
     TChain* chain = 0;
     if (dType == kAod) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateAODChain.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
       chain = CreateAODChain(localFiles.Data(), numfiles, 0, kFALSE);
     }
     else {  // ESD or skimmed ESD
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateESDChain.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
       chain = CreateESDChain(localFiles.Data(), numfiles, 0, kFALSE);
     }
 
     // start analysis
     cout << "Starting Analysis...";
-    mgr->SetDebugLevel(0);
+    mgr->SetUseProgressBar(1, 25);
+    //mgr->SetDebugLevel(2);
+    
     //mgr->AddClassDebug("AliJetContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);
     //mgr->AddClassDebug("AliEmcalJetTask",AliLog::kDebug+1);
@@ -192,71 +170,20 @@ void runJetResponse(
 //______________________________________________________________________________
 void LoadLibs()
 {
-  // load ROOT libraries
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-
-  gSystem->Load("libMinuit");
-  gSystem->Load("libGui");
-  gSystem->Load("libXMLParser");
-  gSystem->Load("libMinuit2");
-  gSystem->Load("libProof");
-
-  // load AliRoot libraries
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libOADB");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libCORRFW");
-
-  // Tender
-  
-  gSystem->Load("libEMCALUtils");
-  gSystem->Load("libPHOSUtils");
-  gSystem->Load("libEMCALraw");
-  gSystem->Load("libEMCALbase");
-  gSystem->Load("libEMCALrec");
-  gSystem->Load("libTRDbase");
-  gSystem->Load("libVZERObase");
-  gSystem->Load("libVZEROrec");
-  gSystem->Load("libTENDER");   
-  gSystem->Load("libTENDERSupplies"); 
-  
-  // PWG
-  gSystem->Load("libPWGLFforward2.so");
-  gSystem->Load("libPWGTools");
-  gSystem->Load("libPWGEMCAL");
-
-  // load fastjet libraries 3.x
-  
   gSystem->Load("libCGAL");
   gSystem->Load("$FASTJET/lib/libfastjet");
   gSystem->Load("$FASTJET/lib/libsiscone");
   gSystem->Load("$FASTJET/lib/libsiscone_spherical");
   gSystem->Load("$FASTJET/lib/libfastjetplugins");
-  gSystem->Load("$FASTJET/lib/libfastjettools");
   gSystem->Load("$FASTJET/lib/libfastjetcontribfragile");
-
-  // load fastjet libraries 2.x
-  //gSystem->Load("$FASTJET/lib/libfastjet");
-  //gSystem->Load("$FASTJET/lib/libsiscone");
-  //gSystem->Load("$FASTJET/lib/libSISConePlugin");
-  //gSystem->Load("$FASTJET/lib/libCDFConesPlugin");
-
+  
   // Aliroot jet libs
   gSystem->Load("libPWGJE");
   gSystem->Load("libPWGJEEMCALJetTasks");
    
   // include path
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGJE/EMCALJetTasks/");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGJE/EMCALJetTasks/");
   gSystem->AddIncludePath("-I$FASTJET/include -I$FASTJET/include/fastjet");
   gSystem->AddIncludePath("-I$PWD/.");
 }

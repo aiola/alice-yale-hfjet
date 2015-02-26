@@ -1,0 +1,5 @@
+/Users/saiola/Documents/Work/ALICE/Data/LHC10b/000117112/ESDs/pass2/AOD137/0001/root_archive.zip#AliAOD.root
+/Users/saiola/Documents/Work/ALICE/Data/LHC10b/000117112/ESDs/pass2/AOD137/0002/root_archive.zip#AliAOD.root
+/Users/saiola/Documents/Work/ALICE/Data/LHC10b/000117112/ESDs/pass2/AOD137/0003/root_archive.zip#AliAOD.root
+/Users/saiola/Documents/Work/ALICE/Data/LHC10b/000117112/ESDs/pass2/AOD137/0004/root_archive.zip#AliAOD.root
+/Users/saiola/Documents/Work/ALICE/Data/LHC10b/000117112/ESDs/pass2/AOD137/0005/root_archive.zip#AliAOD.root

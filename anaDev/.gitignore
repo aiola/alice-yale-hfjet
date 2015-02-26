@@ -1,2 +1,7 @@
 *.so
 *.d
+
+501-*
+AnalysisResults.root
+EventStat_temp.root
+train.root
