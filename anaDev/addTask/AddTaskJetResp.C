@@ -1,8 +1,8 @@
-// $Id$
+// AddTaskJetResp.C
 
-void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", const char *runtype = "local",
-		    Bool_t dotpconly = kFALSE, Bool_t doemcal = kTRUE, Bool_t doemb = kFALSE,
-		    Bool_t dohadcorr = kTRUE)
+void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
+		    Bool_t dotpconly = kTRUE, Bool_t doemcal = kFALSE,
+		    Bool_t dohadcorr = kFALSE, Bool_t doTrackingQA = kFALSE)
 {
   enum eDataType { kAod, kEsd };
   enum eRunType  { kLocal, kGrid };
@@ -29,17 +29,9 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
     return;
   }
 
-  if (pdsftrain) {
-    TString period(gSystem->Getenv("ETRAIN_PERIOD"));
-    if (!period.Contains("lhc12a15a")) {
-      cout << "AddTaskJetResp.C ignored because dataset is not lhc12a15a" << endl;
-      return;
-    }
-  }
-
-  const char *tracksName    = "PicoTracks";
   const char *clusName      = "EmcCaloClusters";
   const char *mcTracksName  = "mcparticles";
+  const char *tracksName    = "HybridTracks";
   Double_t jetRadius = 0.2;
 
   char cellsName[100];
@@ -56,7 +48,7 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
   Float_t     clusPtCut           = 0.30;
   Float_t     partLevPtCut        = 0.;
   Float_t     jetBias             = 0;
-  Int_t       biasType            = 1;   //  0 = charged, 1 = neutral, 2 = both
+  Int_t       biasType            = 0;   //  0 = charged, 1 = neutral, 2 = both
   Float_t     jetPtCut            = 1;
   Float_t     jetAreaCut          = 0.;
   Float_t     hadCorr             = 2;
@@ -67,9 +59,7 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
   Float_t     trackingEff         = 1.;
   Bool_t      forcePP             = kTRUE;
 
-  TF1* trackingEff_function = new TF1("f","[0] * (1 - [1] / (0.5+x))",0.5,15);
-  trackingEff_function->SetParameter(0,9.86064e-01);
-  trackingEff_function->SetParameter(1,2.46923e-02);
+  TF1* trackingEff_function = 0;
 
   Double_t kRhoMinEta = -0.5;
   Double_t kRhoMaxEta = 0.5;
@@ -79,23 +69,19 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
   UInt_t   matching = 1; //1=geometrical, 2=MClabel
   Double_t matchingLevel = 0.99;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromAOD.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskClusterizerFast.C"); 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskTrackingQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskTrackingQA.C");
 
   if (dType == kEsd && strcmp(mcTracksName,"")!=0) {
     // MC particle selector
@@ -105,41 +91,28 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
   }
 
   if (dType == kEsd || dType == kAod) {
-    const char *inputTracks = "HybridTracks";
-
     if (dType == kEsd) {
       // Hybrid tracks maker for ESD
-      AliEmcalEsdTrackFilterTask *hybTask = AddTaskEmcalEsdTrackFilter(inputTracks, "Hybrid_LHC12a15e");
+      AliEmcalEsdTrackFilterTask *hybTask = AddTaskEmcalEsdTrackFilter(tracksName, "Hybrid_LHC10f7a");
       //hybTask->SetTrackEfficiency(trackingEff);
       hybTask->SetTrackEfficiency(trackingEff_function);
-      hybTask->SetDoPropagation(kTRUE);
+      hybTask->SetDoPropagation(dohadcorr);
       hybTask->SetDist(propDist);
       hybTask->SetMC(kTRUE);
     }
     else if (dType == kAod) {
       // Hybrid tracks maker for AOD
-      AliEmcalAodTrackFilterTask *hybTask = AddTaskEmcalAodTrackFilter(inputTracks, "tracks", "LHC12a15e");
+      AliEmcalAodTrackFilterTask *hybTask = AddTaskEmcalAodTrackFilter(tracksName, "tracks", "LHC10f7a");
       //hybTask->SetTrackEfficiency(trackingEff);
       hybTask->SetTrackEfficiency(trackingEff_function);
+      hybTask->SetAttemptProp(dohadcorr);
+      hybTask->SetDist(propDist);
       hybTask->SetMC(kTRUE);
     }
-
-    // PicoTracks maker
-    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(tracksName, inputTracks);
-    if (strcmp(mcTracksName,"")!=0) pTrackTask->SetCopyMCFlag(kTRUE, mcTracksName);
   }
 
-  if (1) {
+  if (doTrackingQA) {
     AliEmcalTrackingQATask* trackingQAtask = AddTaskTrackingQA(tracksName, mcTracksName, selectHijingPart);
-  }
-
-  if (doemb) {
-    // Embedding
-    AliJetEmbeddingFromAODTask *embFromAOD = AddTaskJetEmbeddingFromAOD(tracksName, "", cellsName, "", "files_LHC11h_2_AOD145.txt",
-									"aodTree", "tracks", "", "emcalCells", "", "lhc11h", kFALSE, 
-									0, 10, AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
-                                                                        kFALSE, kTRUE, 1234567890);
-    embFromAOD->SetEmbedCentrality(kTRUE);
   }
 
   if (doemcal) {
@@ -173,7 +146,8 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
       AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus,
 						     fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
 						     cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut, pass);
-      if (0&&dType != kAod) {
+      /*
+      if (dType != kAod) {
 	AliTender *alitender = dynamic_cast<AliTender*>(tender);
 	if (!alitender) {
 	  ::Error("Incorrect tender type!");
@@ -184,6 +158,7 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
 	else if (rType == kPdsf || rType == kCarver) 
 	  alitender->SetDefaultCDBStorage("local://$ALICE_OCDB"); 
       }
+      */
     }
 
     AliAnalysisTaskEMCALClusterizeFast *taskClust = AddTaskClusterizerFast("ClusterizerFast", "", "", AliEMCALRecParam::kClusterizerv2, 0.05, 0.1, -50e-6, 50e-6, 25e-6, 
@@ -203,8 +178,6 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
       
       // Hadronic correction task
       AliHadCorrTask *hCorrTask = AddTaskHadCorr(emcalTracksName, emcalClusName, corrClusName, hadCorr, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE, "AnalysisResults.root");
-      if (pdsftrain)
-	RequestMemory(hCorrTask,200*1024);
     }
     else {
       strcpy(corrClusName, clusName);
@@ -212,7 +185,7 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
   }
  
   // QA tasks
-  if (1 && strcmp(mcTracksName,"")!=0) {
+  if (strcmp(mcTracksName,"")!=0) {
     AliAnalysisTaskSAQA *mcqatask = AddTaskSAQA(mcTracksName, "", "", "", "", 0.2, jetPtCut, 0, partLevPtCut, partLevPtCut, "TPC");
     mcqatask->SetHistoBins(300,0,150);
     mcqatask->SetMC(kTRUE);
@@ -220,8 +193,6 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
     AliParticleContainer *partCont = mcqatask->GetParticleContainer(0);
     partCont->SelectPhysicalPrimaries(kTRUE);
     partCont->SelectHIJING(selectHijingPart);
-    if (pdsftrain)
-      RequestMemory(mcqatask,400*1024);
   }
 
   if (doemcal) {
@@ -229,16 +200,14 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
     qatask1 = AddTaskSAQA("", clusName, "", "", "", 0.2, jetPtCut, 0, trackPtCut, clusPtCut, "TPC");
     qatask1->SetMC(kTRUE);
     qatask1->SetHistoBins(300,0,150);
-    if (pdsftrain)
-      RequestMemory(qatask,100*1024);
 
-    AliAnalysisTaskSAQA *qatask = AddTaskSAQA(tracksName, corrClusName, "", "", "", 0.2, jetPtCut, 0, trackPtCut, clusPtCut, "TPC");
-    qatask->SetMC(kTRUE);
-    qatask->SetHistoBins(300,0,150);
-    AliParticleContainer *partCont = qatask->GetParticleContainer(0);
-    partCont->SelectHIJING(selectHijingPart);
-    if (pdsftrain)
-      RequestMemory(qatask,200*1024);
+    if (dohadcorr) {
+      AliAnalysisTaskSAQA *qatask = AddTaskSAQA(tracksName, corrClusName, "", "", "", 0.2, jetPtCut, 0, trackPtCut, clusPtCut, "TPC");
+      qatask->SetMC(kTRUE);
+      qatask->SetHistoBins(300,0,150);
+      AliParticleContainer *partCont = qatask->GetParticleContainer(0);
+      partCont->SelectHIJING(selectHijingPart);
+    }
   }
   else {
     AliAnalysisTaskSAQA *qatask = AddTaskSAQA(tracksName, "", "", "", "", 0.2, jetPtCut, 0, trackPtCut, clusPtCut, "TPC");
@@ -246,24 +215,6 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
     qatask->SetHistoBins(300,0,150);
     AliParticleContainer *partCont = qatask->GetParticleContainer(0);
     partCont->SelectHIJING(selectHijingPart);
-    if (pdsftrain)
-      RequestMemory(qatask,200*1024);
-  }
-
-  if (selectHijingPart && 0) {
-    AliAnalysisTaskSAQA *qatask = AddTaskSAQA(tracksName, "", "", "", "", 0.2, jetPtCut, 0, trackPtCut, clusPtCut, "TPC", "AliAnalysisTaskSAQA_WithEmb");
-    qatask->SetMC(kTRUE);
-    qatask->SetHistoBins(300,0,150);
-    if (pdsftrain)
-      RequestMemory(qatask,200*1024);
-  }
-
-  AliEmcalJetTask *chKtJetTask = 0;
-  char *chKtJetsName = 0;
-
-  if (doemb) {
-    chKtJetTask = AddTaskEmcalJet(tracksName, "", 0, 0.2, 1, trackPtCut, clusPtCut);
-    chKtJetsName = chKtJetTask->GetName();
   }
  
   if (dotpconly) {
@@ -272,67 +223,26 @@ void AddTaskJetResp(Bool_t pdsftrain = kTRUE, const char *datatype = "AOD", cons
     const char *chJetsName = chJetTaskch->GetName();
     AliEmcalJetTask *chMcJetTaskch = AddTaskEmcalJet(mcTracksName, "", 1, jetRadius, 1, partLevPtCut, partLevPtCut, 0.005, 1, "Jet", 1, kTRUE, kFALSE);
     const char *chMcJetsName = chMcJetTaskch->GetName();
-
-    TString chRhoName("");
-
-    if (doemb) {
-      chRhoName = "ChargedRho";
-      // Rho task charged jet
-      AliAnalysisTaskRho *chargedRhoTask = AddTaskRho(chKtJetsName, tracksName, "", chRhoName, 
-						      0.2, "TPC", 0.01, 0, 0, 2, kTRUE);
-      if (pdsftrain)
-	RequestMemory(chargedRhoTask,150*1024);
-    }
     
     // Analysis task
-    AliJetResponseMaker *taskCharged = AddTaskJetResponseMaker(tracksName, "", chJetsName, chRhoName, jetRadius, mcTracksName, "", chMcJetsName, "", jetRadius,
+    AliJetResponseMaker *taskCharged = AddTaskJetResponseMaker(tracksName, "", chJetsName, "", jetRadius, mcTracksName, "", chMcJetsName, "", jetRadius,
 							      jetPtCut, jetAreaCut, jetBias, biasType, matching, matchingLevel, matchingLevel, "TPC");
     taskCharged->SetHistoType(histoType);
     taskCharged->GetParticleContainer(1)->SelectPhysicalPrimaries(kTRUE);
-    if (pdsftrain) 
-      RequestMemory(taskCharged,150*1024);
   }
   
   if (doemcal) {
-    
     AliEmcalJetTask *jetTask = AddTaskEmcalJet(tracksName, corrClusName, 1, jetRadius, 0, trackPtCut, clusPtCut, 0.005, 1, "Jet", 1, kFALSE, kFALSE);
     const char *jetsName = jetTask->GetName();
     AliEmcalJetTask *mcJetTask = AddTaskEmcalJet(mcTracksName, "", 1, jetRadius, 0, partLevPtCut, partLevPtCut, 0.005, 1, "Jet", 1, kTRUE, kFALSE);
     const char *mcJetsName = mcJetTask->GetName();
 
-    TString chRhoSmallName("");
-    TString rhoNameMeth2("");
-
-    if (doemb) {
-      // 300 MeV
-      TF1* sfunc = new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
-      sfunc->SetParameter(2,1.80183);
-      sfunc->SetParameter(1,-0.0134124);
-      sfunc->SetParameter(0,0.000146031);
-
-      chRhoSmallName = "ChargedRhoSmall";
-      rhoNameMeth2 = chRhoSmallName;
-      rhoNameMeth2 += "_Scaled";
-
-      AliAnalysisTaskRho *rhoTaskSmall = AddTaskRho(chKtJetsName, tracksName, "", chRhoSmallName, 
-						    0.2, "USER", 0.01, 0, 0, 0, kTRUE, chRhoSmallName);
-      rhoTaskSmall->SetJetEtaLimits(kRhoMinEta,kRhoMaxEta);
-      rhoTaskSmall->SetJetPhiLimits(kRhoMinPhi,kRhoMaxPhi);
-      rhoTaskSmall->SetScaleFunction(sfunc);
-      rhoTaskSmall->SetClusName(corrClusName);
-
-      if (pdsftrain)
-	RequestMemory(rhoTaskSmall,150*1024);
-    }
-
     // Analysis task
-    AliJetResponseMaker *taskFull = AddTaskJetResponseMaker(tracksName, corrClusName, jetsName, rhoNameMeth2, jetRadius, mcTracksName, "", mcJetsName, "", jetRadius,
-							      jetPtCut, jetAreaCut, jetBias, biasType, matching, matchingLevel, matchingLevel, "EMCAL");
+    AliJetResponseMaker *taskFull = AddTaskJetResponseMaker(tracksName, corrClusName, jetsName, "", jetRadius, mcTracksName, "", mcJetsName, "", jetRadius,
+                                                            jetPtCut, jetAreaCut, jetBias, biasType, matching, matchingLevel, matchingLevel, "EMCAL");
     taskFull->SetHistoType(histoType);
     taskFull->SetCaloCellsName(cellsName);
     taskFull->GetParticleContainer(1)->SelectPhysicalPrimaries(kTRUE);
-    if (pdsftrain) 
-      RequestMemory(taskFull,150*1024);
   }
 
   UInt_t physSel = 0;
