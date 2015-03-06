@@ -2,6 +2,7 @@
 *.d
 
 501-*
-AnalysisResults.root
+AnalysisResults*.root
 EventStat_temp.root
 train.root
+tempChecksum_*

@@ -23,11 +23,12 @@ void runJetAna(
          const char   *cRunType      = "local",                               // local or grid
          const char   *cGridMode     = "test",                                // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
 	 const char   *cLocalFiles   = "fileLists/files_LHC10b_AOD137.txt",   // set the local list file
-	 UInt_t        iNumFiles     = 3,                                     // number of files analyzed locally
-	 UInt_t        iNumEvents    = 5000,                                  // number of events to be analyzed
+	 UInt_t        iNumFiles     = 100,                                   // number of files analyzed locally
+	 UInt_t        iNumEvents    = 20000,                                 // number of events to be analyzed
 	 const char   *cRunPeriod    = "LHC110b",                             // set the run period
          const char   *cTaskName     = "JetAna",                              // sets name of grid generated macros
-         Bool_t       *bDoEmcal      = kFALSE
+         Bool_t       *bDoEmcal      = kFALSE,
+         Bool_t       *bDoHF         = kTRUE
          )
 {
   //gSystem->SetFPEMask(TSystem::kInvalid | TSystem::kDivByZero | TSystem::kOverflow | TSystem::kUnderflow);
@@ -113,10 +114,19 @@ void runJetAna(
     AliCentralitySelectionTask *pCentralityTask = AddTaskCentrality(kTRUE);
     pCentralityTask->SelectCollisionCandidates(kPhysSel);
   }
-
+    
+  // PID response
+  if (bDoHF) {
+    AliAnalysisTaskPIDResponse* pPIDtask = (AliAnalysisTaskPIDResponse*)AddTaskPIDResponse(kFALSE);
+    pPIDtask->SelectCollisionCandidates(kPhysSel);
+  }
+  
   // Setup task
-  if (bDoEmcal) AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
+  if (bDoEmcal) {
+    AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
+  }
 
+  // User task
   AddTaskJetAna(cDataType, cRunType, kPhysSel);
 	
   if (!pMgr->InitAnalysis()) return;
@@ -151,7 +161,12 @@ void runJetAna(
     TChain* pChain = 0;
     if (iDataType == kAod) {
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
-      pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+      if (bDoHF) {
+        pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE, "AliAOD.VertexingHF.root");
+      }
+      else {
+        pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE, "");
+      }
     }
     else { 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
@@ -161,10 +176,10 @@ void runJetAna(
     // start analysis
     Printf("Starting Analysis...");
     pMgr->SetUseProgressBar(1, 25);
-    pMgr->SetDebugLevel(0);
+    //pMgr->SetDebugLevel(2);
 
     // To have more debug info
-    //pMgr->AddClassDebug("AliEmcalJetTask",AliLog::kDebug+100);
+    //pMgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();
@@ -317,6 +332,7 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODHandler.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddESDHandler.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODOutputHandler.C");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");

@@ -1,7 +1,7 @@
 // AddTaskJetResp.C
 
 void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
-		    Bool_t dotpconly = kTRUE, Bool_t doemcal = kFALSE,
+		    Bool_t dohf = kTRUE, Bool_t dotpconly = kFALSE, Bool_t doemcal = kFALSE,
 		    Bool_t dohadcorr = kFALSE, Bool_t doTrackingQA = kFALSE)
 {
   enum eDataType { kAod, kEsd };
@@ -82,6 +82,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskTrackingQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C");
 
   if (dType == kEsd && strcmp(mcTracksName,"")!=0) {
     // MC particle selector
@@ -243,6 +244,34 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     taskFull->SetHistoType(histoType);
     taskFull->SetCaloCellsName(cellsName);
     taskFull->GetParticleContainer(1)->SelectPhysicalPrimaries(kTRUE);
+  }
+
+    // HF-jet analysis
+  if (dohf) {
+
+    AliAnalysisTaskSEDmesonsFilterCJ* pDStarMesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
+                                                                                       "DStartoKpipiCuts.root",
+                                                                                       kTRUE,  //   Bool_t theMCon
+                                                                                       kTRUE,   //   Bool_t reco
+                                                                                       "");
+    
+    AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
+                                                                                   "DStartoKpipiCuts.root",
+                                                                                   kTRUE,  //   Bool_t theMCon
+                                                                                   kTRUE,   //   Bool_t reco
+                                                                                   "");
+
+    AliAnalysisTaskSEDmesonsFilterCJ* pDStarMesonFilterTruthTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
+                                                                                            "DStartoKpipiCuts.root",
+                                                                                            kTRUE,  //   Bool_t theMCon
+                                                                                            kFALSE,   //   Bool_t reco
+                                                                                            "");
+
+    AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTruthTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
+                                                                                         "DStartoKpipiCuts.root",
+                                                                                         kTRUE,  //   Bool_t theMCon
+                                                                                         kFALSE,   //   Bool_t reco
+                                                                                         "");
   }
 
   UInt_t physSel = 0;
