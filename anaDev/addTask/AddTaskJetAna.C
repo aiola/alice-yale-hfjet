@@ -4,7 +4,7 @@ void LoadMacros();
 
 void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local",
                    const UInt_t kPhysSel = AliEmcalPhysicsSelection::kEmcalOk,
-                   Bool_t bDoChargedJets = kTRUE, Bool_t bDoFullJets = kFALSE, 
+                   Bool_t bDoHF = kTRUE, Bool_t bDoChargedJets = kTRUE, Bool_t bDoFullJets = kFALSE,
                    Bool_t bDoTender = kFALSE, Bool_t bDoReclusterize = kFALSE, Bool_t bDoHadCorr = kFALSE, Bool_t bDoTrackingQA = kFALSE)
 {
   enum eDataType { kAod, kEsd };
@@ -53,7 +53,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   const Double_t kEmcalMaxEta         = 0.7;
   const Double_t kEmcalMinPhi         = 80*TMath::DegToRad();
   const Double_t kEmcalMaxPhi         = 180*TMath::DegToRad();
-  const Bool_t   bForcePP             = kFALSE;
+  const Bool_t   bForcePP             = kTRUE;
   const Double_t kEMCtimeMin          = -50e-6;
   const Double_t kEMCtimeMax          = 100e-6;
   const Double_t kEMCtimeCut          =  75e-6;
@@ -83,20 +83,21 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   if (!pMgr) {
     ::Error("AddTaskJetAna", "No analysis manager to connect to.");
     return;
-  }  
+  }
 
   if (iDataType == kEsd) {
     // Hybrid tracks maker for ESD
-    AliEmcalEsdTrackFilterTask *pHybTask = AddTaskEmcalEsdTrackFilter(sTracksName, "Hybrid_LHC11h");
-    pHybTask->SetDoPropagation(kTRUE);
+    AliEmcalEsdTrackFilterTask *pHybTask = AddTaskEmcalEsdTrackFilter(sTracksName, "Hybrid_LHC10b");
+    pHybTask->SetDoPropagation(bDoHadCorr);
     pHybTask->SetDist(kPropDist);
     pHybTask->SelectCollisionCandidates(kPhysSel);
   }
   else if (iDataType == kAod) {
     // Hybrid tracks maker for AOD
-    AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter(sTracksName, "tracks", "lhc11h");
+    AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter(sTracksName, "tracks", "LHC10b");
     pHybTask->SelectCollisionCandidates(kPhysSel);
-    pHybTask->SetAttemptProp(kTRUE);
+    pHybTask->SetAttemptProp(bDoHadCorr);
+    pHybTask->SetIncludeNoITS(kTRUE);
   }
 
   if (bDoTrackingQA) {
@@ -152,8 +153,10 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     pClusterizerTask->SelectCollisionCandidates(kPhysSel);
   }
 
-  AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(AliEMCALRecoUtils::kBeamTestCorrected, kFALSE, 0, sClusName, 0.15, kFALSE);
-  pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
+  if (bDoFullJets) {
+    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(AliEMCALRecoUtils::kBeamTestCorrected, kFALSE, 0, sClusName, 0.15, kFALSE);
+    pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
+  }
     
   if (1) {
     if (bDoTender || bDoReclusterize) {
@@ -194,8 +197,15 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   
   if (1) {
     // QA task
-    AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "",
-                                               0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
+    AliAnalysisTaskSAQA *pQATask = 0;
+
+    if (bDoFullJets) {
+      pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
+    }
+    else {
+      pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
+    }
+    
     pQATask->SelectCollisionCandidates(kPhysSel);
     pQATask->SetHistoBins(200, 0, 30);
   }
@@ -206,8 +216,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     pChJetTask->SelectCollisionCandidates(kPhysSel);
     sChJetsName = pChJetTask->GetName();
 
-    AliAnalysisTaskSAJF *pSpectraChTask = AddTaskSAJF(sTracksName, "", sChJetsName, "", 
-                                                      kJetRadius, kJetPtCut, kJetAreaCut, "TPC");
+    AliAnalysisTaskSAJF *pSpectraChTask = AddTaskSAJF(sTracksName, "", sChJetsName, "",  kJetRadius, kJetPtCut, kJetAreaCut, "TPC");
     pSpectraChTask->SetNLeadingJets(1);
     pSpectraChTask->SelectCollisionCandidates(kPhysSel);
     pSpectraChTask->SetHistoType(kHistoType);
@@ -219,12 +228,27 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     pFuJetTask->SelectCollisionCandidates(kPhysSel);   
     sFuJetsName = pFuJetTask->GetName();
 
-    AliAnalysisTaskSAJF *pSpectraFuTask = AddTaskSAJF(sTracksName, sCorrClusName, sFuJetsName, "", 
-                                                      kJetRadius, kJetPtCut, kJetAreaCut, 
-                                                      "EMCAL"); 
+    AliAnalysisTaskSAJF *pSpectraFuTask = AddTaskSAJF(sTracksName, sCorrClusName, sFuJetsName, "", kJetRadius, kJetPtCut, kJetAreaCut, "EMCAL"); 
     pSpectraFuTask->SetNLeadingJets(1);
     pSpectraFuTask->SelectCollisionCandidates(kPhysSel);
     pSpectraFuTask->SetHistoType(kHistoType);
+  }
+
+  // HF-jet analysis
+  if (bDoHF) {
+    AliAnalysisTaskSEDmesonsFilterCJ* pDStarMesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
+                                                                                       "DStartoKpipiCuts.root",
+                                                                                       kFALSE,  //   Bool_t theMCon
+                                                                                       kTRUE,   //   Bool_t reco
+                                                                                       "");
+    pDStarMesonFilterTask->SelectCollisionCandidates(kPhysSel);
+
+    AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
+                                                                                   "DStartoKpipiCuts.root",
+                                                                                   kFALSE,  //   Bool_t theMCon
+                                                                                   kTRUE,   //   Bool_t reco
+                                                                                   "");
+    pD0mesonFilterTask->SelectCollisionCandidates(kPhysSel);
   }
   
   if (1) {
@@ -245,6 +269,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
 
 void LoadMacros()
 {
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskTrackingQA.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");
@@ -256,5 +281,5 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskTrackingQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C");
 }

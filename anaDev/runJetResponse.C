@@ -9,7 +9,7 @@ void runJetResponse(
          const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
 	 const char   *localfiles   = "fileLists/files_LHC10f7a_fix_AOD136a.txt",  // set the local list file
 	 UInt_t        numfiles     = 50,                                          // number of files analyzed locally
-	 UInt_t        numevents    = 1234567890,                                  // number of events to be analyzed
+	 UInt_t        numevents    = 5000,                                        // number of events to be analyzed
 	 const char   *runperiod    = "LHC10f7a",                                  // set the run period
          const char   *taskname     = "JetResponse",                               // sets name of grid generated macros
          Bool_t        doEmcal      = kFALSE
@@ -103,6 +103,10 @@ void runJetResponse(
     AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
   }
 
+  // PID response
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskPIDResponse* pPIDtask = (AliAnalysisTaskPIDResponse*)AddTaskPIDResponse(kTRUE);
+
   // Analysis tasks
   if (1) {
     gROOT->LoadMacro("addTask/AddTaskJetResp.C");
@@ -139,7 +143,7 @@ void runJetResponse(
     TChain* chain = 0;
     if (dType == kAod) {
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
-      chain = CreateAODChain(localFiles.Data(), numfiles, 0, kFALSE);
+      chain = CreateAODChain(localFiles.Data(), numfiles, 0, kFALSE, "AliAOD.VertexingHF.root");
     }
     else {  // ESD or skimmed ESD
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
@@ -156,6 +160,7 @@ void runJetResponse(
     //mgr->AddClassDebug("AliEmcalJetTask",AliLog::kDebug+1);
     //mgr->AddClassDebug("AliJetResponseMaker",100);
     //mgr->AddClassDebug("AliEmcalContainer",100);
+    //mgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();
