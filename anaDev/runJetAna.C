@@ -24,7 +24,7 @@ void runJetAna(
          const char   *cGridMode     = "test",                                // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
 	 const char   *cLocalFiles   = "fileLists/files_LHC10b_AOD137.txt",   // set the local list file
 	 UInt_t        iNumFiles     = 100,                                   // number of files analyzed locally
-	 UInt_t        iNumEvents    = 20000,                                 // number of events to be analyzed
+	 UInt_t        iNumEvents    = 50000,                                 // number of events to be analyzed
 	 const char   *cRunPeriod    = "LHC110b",                             // set the run period
          const char   *cTaskName     = "JetAna",                              // sets name of grid generated macros
          Bool_t       *bDoEmcal      = kFALSE,
@@ -180,6 +180,7 @@ void runJetAna(
 
     // To have more debug info
     //pMgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
+    //pMgr->AddClassDebug("AliAnalysisTaskDmesonJetCorrelations", AliLog::kDebug+100);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();
@@ -194,6 +195,7 @@ void runJetAna(
 //______________________________________________________________________________
 void LoadLibs()
 {
+  
   // load fastjet libraries 3.x
   gSystem->Load("libCGAL");
   gSystem->Load("$FASTJET/lib/libfastjet");
@@ -201,17 +203,6 @@ void LoadLibs()
   gSystem->Load("$FASTJET/lib/libsiscone_spherical");
   gSystem->Load("$FASTJET/lib/libfastjetplugins");
   gSystem->Load("$FASTJET/lib/libfastjetcontribfragile");
-
-
-  // Aliroot jet libs
-  gSystem->Load("libPWGJE");
-  gSystem->Load("libPWGJEEMCALJetTasks");
-   
-  // include path
-  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
-  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGJE/EMCALJetTasks/");
-  gSystem->AddIncludePath("-I$FASTJET/include -I$FASTJET/include/fastjet");
-  gSystem->AddIncludePath("-I$PWD/.");
 }
 
 //______________________________________________________________________________

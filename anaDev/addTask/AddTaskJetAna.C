@@ -38,7 +38,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
 
   const Double_t kPropDist            = 440.;
   const Double_t kMinJetPt            = 0.;
-  const Double_t kJetRadius           = 0.2;
+  const Double_t kJetRadius           = 0.4;
   const Double_t kClusPtCut           = 0.30;
   const Double_t kTrackPtCut          = 0.15;
   const Double_t kPartLevPtCut        = 0.;
@@ -58,7 +58,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   const Double_t kEMCtimeMax          = 100e-6;
   const Double_t kEMCtimeCut          =  75e-6;
 
-  TString sTracksName("HybridTracks");
+  TString sTracksName("AODFilterTracks");
   TString sClusName("EmcCaloClusters");
 
   TString sCellName;
@@ -97,7 +97,6 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter(sTracksName, "tracks", "LHC10b");
     pHybTask->SelectCollisionCandidates(kPhysSel);
     pHybTask->SetAttemptProp(bDoHadCorr);
-    pHybTask->SetIncludeNoITS(kTRUE);
   }
 
   if (bDoTrackingQA) {
@@ -236,19 +235,40 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
 
   // HF-jet analysis
   if (bDoHF) {
+    
     AliAnalysisTaskSEDmesonsFilterCJ* pDStarMesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
                                                                                        "DStartoKpipiCuts.root",
                                                                                        kFALSE,  //   Bool_t theMCon
                                                                                        kTRUE,   //   Bool_t reco
                                                                                        "");
     pDStarMesonFilterTask->SelectCollisionCandidates(kPhysSel);
-
+    
     AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
                                                                                    "DStartoKpipiCuts.root",
                                                                                    kFALSE,  //   Bool_t theMCon
                                                                                    kTRUE,   //   Bool_t reco
                                                                                    "");
     pD0mesonFilterTask->SelectCollisionCandidates(kPhysSel);
+
+    
+    AliAnalysisTaskDmesonJetCorrelations* pDStarMesonJetCorr = AddTaskDmesonJetCorr(AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi, "", 
+                                                                                    sTracksName, "", sChJetsName, "",
+                                                                                    kJetRadius, kJetPtCut, kJetAreaCut, "TPC", 0,
+                                                                                    "AliAnalysisTaskDmesonJetCorrelations", "");
+    pDStarMesonJetCorr->SetMaxR(kJetRadius);
+    pDStarMesonJetCorr->SetShowDeltaEta(kTRUE);
+    pDStarMesonJetCorr->SetShowDeltaPhi(kTRUE);
+    pDStarMesonJetCorr->SetShow2ProngInvMass(kTRUE);
+    pDStarMesonJetCorr->SelectCollisionCandidates(kPhysSel);
+    
+    AliAnalysisTaskDmesonJetCorrelations* pD0MesonJetCorr = AddTaskDmesonJetCorr(AliAnalysisTaskDmesonJetCorrelations::kD0toKpi, "", 
+                                                                                 sTracksName, "", sChJetsName, "",
+                                                                                 kJetRadius, kJetPtCut, kJetAreaCut, "TPC", 0,
+                                                                                 "AliAnalysisTaskDmesonJetCorrelations", "");
+    pD0MesonJetCorr->SetMaxR(kJetRadius);
+    pD0MesonJetCorr->SetShowDeltaEta(kTRUE);
+    pD0MesonJetCorr->SetShowDeltaPhi(kTRUE);
+    pD0MesonJetCorr->SelectCollisionCandidates(kPhysSel);
   }
   
   if (1) {
@@ -282,4 +302,5 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDmesonJetCorr.C");
 }
