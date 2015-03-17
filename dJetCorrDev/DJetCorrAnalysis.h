@@ -7,6 +7,10 @@ class TFile;
 class TList;
 class TMap;
 class THnSparse;
+class TCanvas;
+class TLegend;
+class TVirtualPad;
+class TPaveText;
 
 class DJetCorrAnalysis {
   
@@ -21,7 +25,8 @@ class DJetCorrAnalysis {
   void   SetOutputFileName(const char* fname)  { fOutputFileName   = fname  ; }
   void   SetOutputPath(const char* path)       { fOutputPath       = path   ; }
   void   SetOverwrite(Bool_t ow = kTRUE)       { fOverwrite        = ow     ; }
-  void   SetUseTest(Bool_t t = kTRUE)          { fUseTestResults   = t      ; }
+  void   SetPlotFormat(const char* f)          { fPlotFormat       = f      ; }
+  void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
 
   void   SetAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
   
@@ -29,6 +34,10 @@ class DJetCorrAnalysis {
   Bool_t GenerateDJetCorrHistograms(const char* dmeson, const char* jetType, const char* jetRadius);
   Bool_t GenerateQAHistograms();
   Bool_t SaveOutputFile();
+  Bool_t PlotTrackHistograms();
+  Bool_t PlotDJetCorrHistograms(const char* dmeson, const char* jetType, const char* jetRadius);
+  Bool_t PlotInvMassHistogramsVsDPt(Double_t minJetPt, Double_t maxJetPt);
+  Bool_t PlotInvMassHistograms(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass);
   
  protected:
 
@@ -37,19 +46,32 @@ class DJetCorrAnalysis {
 
   Bool_t          ProjectQA();
   Bool_t          ProjectCorrD();
-  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t /*doCorrPlots*/, 
+  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, 
                                   Double_t minJetPt, Double_t maxJetPt,
                                   Double_t minDPt, Double_t maxDPt, Double_t minDEta, Double_t maxDEta);
+  Bool_t          GenerateRatios(const char* nname, const char* dname);
 
   void            GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
   Bool_t          LoadInputList();
   Bool_t          LoadQAList();
   Bool_t          LoadTHnSparse();
+  Bool_t          LoadOutputHistograms();
+  TVirtualPad*    SetUpPad(TVirtualPad* pad,
+                           const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
+                           const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY);
+  TCanvas*        SetUpCanvas(const char* name,
+                              const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
+                              const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
+                              Double_t w = 700, Double_t h = 500, Int_t rows=1, Int_t cols=1);
+  
+  TLegend*        SetUpLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize);
+  TPaveText*      SetUpPaveText(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize, const char* text = 0);
+  
+  void            SavePlot(TCanvas* canvas);
 
   void            CloseInputFile();
 
-  Bool_t          fUseTestResults            ;//  whether to use test results
   TString         fTrainName                 ;//  train name
   TString         fInputPath                 ;//  train path
   TString         fInputFileName             ;//  input file name
@@ -82,10 +104,13 @@ class DJetCorrAnalysis {
   TString         fJetAreaAxisTitle          ;//  jet area axis title
   TString         fJetConstAxisTitle         ;//  jet constituents axis title
 
+  TString         fPlotFormat                ;//  plot format (pdf, eps, png...)
+  Bool_t          fSavePlots                 ;//  true if save plots
+
   Int_t           fNDPtBins                  ;//  number of D pt bins
-  Double_t       *fDPtBins                   ;//[fNDPtBins] D pt bins
+  Double_t       *fDPtBins                   ;//[fNDPtBins+1] D pt bins
   Int_t           fNJetPtBins                ;//  number of jet pt bins
-  Double_t       *fJetPtBins                 ;//[fNJetPtBins] jet pt bins
+  Double_t       *fJetPtBins                 ;//[fNJetPtBins+1] jet pt bins
   
   TMap            fTHnAxisMap                ;//! mapping of axis titles with indexes
   Bool_t          fTHnSparseMapGenerated     ;//! whether or not the axis map has been generated for the THnSparse

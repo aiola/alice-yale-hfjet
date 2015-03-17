@@ -259,6 +259,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     pDStarMesonJetCorr->SetShowDeltaEta(kTRUE);
     pDStarMesonJetCorr->SetShowDeltaPhi(kTRUE);
     pDStarMesonJetCorr->SetShow2ProngInvMass(kTRUE);
+    pDStarMesonJetCorr->SetShowInvMass(kTRUE);
     pDStarMesonJetCorr->SelectCollisionCandidates(kPhysSel);
     
     AliAnalysisTaskDmesonJetCorrelations* pD0MesonJetCorr = AddTaskDmesonJetCorr(AliAnalysisTaskDmesonJetCorrelations::kD0toKpi, "", 
