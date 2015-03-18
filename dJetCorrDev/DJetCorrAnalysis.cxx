@@ -31,20 +31,19 @@
 
 const Double_t DJetCorrAnalysis::fgkEpsilon = 1E-6;
 
+ClassImp(DJetCorrAnalysis);
+
 //____________________________________________________________________________________
 DJetCorrAnalysis::DJetCorrAnalysis() :
+  TObject(),
   fTrainName(),
   fInputPath(),
   fInputFileName(),
+  fQAListName(),
   fInputDirFileName(),
-  fInputListName(),
   fOutputPath(),
   fOutputFileName(),
   fOverwrite(kFALSE),
-  fJetType(),
-  fJetRadius(),
-  fDmesonName(),
-  fQAListName(),
   fDPtAxisTitle(),
   fDEtaAxisTitle(),
   fDPhiAxisTitle(),
@@ -64,10 +63,7 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fJetConstAxisTitle(),
   fPlotFormat(),
   fSavePlots(kFALSE),
-  fNDPtBins(0),
-  fDPtBins(0),
-  fNJetPtBins(0),
-  fJetPtBins(0),
+  fAnalysisParams(0),
   fTHnAxisMap(),
   fTHnSparseMapGenerated(kFALSE),
   fInputFile(0),
@@ -84,18 +80,15 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
 
 //____________________________________________________________________________________
 DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
+  TObject(),
   fTrainName(train),
   fInputPath(path),
   fInputFileName("AnalysisResults.root"),
+  fQAListName("AliAnalysisTaskSAQA_AODFilterTracks_TPC_histos"),
   fInputDirFileName("SA_DmesonJetCorr"),
-  fInputListName("AliAnalysisTaskDmesonJetCorrelations_<dmeson>_Jet_AKT<jettype><jetradius>_AODFilterTracks_pT0150_pt_scheme_TPC_histos"),
   fOutputPath("../data/"),
   fOutputFileName("<train>/DJetCorr.root"),
   fOverwrite(kFALSE),
-  fJetType("Charged"),
-  fJetRadius("R040"),
-  fDmesonName("D0"),
-  fQAListName("AliAnalysisTaskSAQA_AODFilterTracks_TPC_histos"),
   fDPtAxisTitle("#it{p}_{T,D} (GeV/#it{c})"),
   fDEtaAxisTitle("#eta_{D}"),
   fDPhiAxisTitle("#phi_{D} (rad)"),
@@ -115,10 +108,7 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fJetConstAxisTitle("No. of constituents"),
   fPlotFormat("pdf"),
   fSavePlots(kFALSE),
-  fNDPtBins(8),
-  fDPtBins(0),
-  fNJetPtBins(10),
-  fJetPtBins(0),
+  fAnalysisParams(new TList()),
   fTHnAxisMap(),
   fTHnSparseMapGenerated(kFALSE),
   fInputFile(0),
@@ -131,45 +121,26 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   // Standard ctr.
 
   fTHnAxisMap.SetOwnerKeyValue();
-
-  fDPtBins = new Double_t[fNDPtBins+1];
-  fDPtBins[ 0] =  4.0;
-  fDPtBins[ 1] =  5.0;
-  fDPtBins[ 2] =  6.0;
-  fDPtBins[ 3] =  7.0;
-  fDPtBins[ 4] =  8.0;
-  fDPtBins[ 5] = 10.0;
-  fDPtBins[ 6] = 15.0;
-  fDPtBins[ 7] = 20.0;
-  fDPtBins[ 8] = 30.0;
-  fDPtBins[ 9] = 50.0;
-
-  fJetPtBins = new Double_t[fNJetPtBins+1];
-  fJetPtBins[ 0] =   1.0;
-  fJetPtBins[ 1] =   3.0;
-  fJetPtBins[ 2] =   5.0;
-  fJetPtBins[ 3] =  10.0;
-  fJetPtBins[ 4] =  15.0;
-  fJetPtBins[ 5] =  20.0;
-  fJetPtBins[ 6] =  25.0;
-  fJetPtBins[ 7] =  30.0;
-  fJetPtBins[ 8] =  40.0;
-  fJetPtBins[ 9] =  60.0;
-  fJetPtBins[10] =  80.0;
-  fJetPtBins[11] = 100.0;
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysis::SetAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius)
+void DJetCorrAnalysis::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius)
 {
-  // Set input list name using the D meson type, jet type and jet radius provided.
+  // Add the analysis params for the D meson type, jet type and jet radius provided.
 
-  fJetType = jetType;
-  fJetRadius = jetRadius;
-  fDmesonName = dmeson;
-  
-  TString lname(Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_AODFilterTracks_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data()));
-  SetInputListName(lname);
+  if (!fAnalysisParams) fAnalysisParams = new TList();
+
+  fAnalysisParams->Add(new AnalysisParams(dmeson, jetType, jetRadius));
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysis::AddAnalysisParams(AnalysisParams* params)
+{
+  // Add the analysis params.
+
+  if (!fAnalysisParams) fAnalysisParams = new TList();
+
+  fAnalysisParams->Add(new AnalysisParams(*params));
 }
 
 //____________________________________________________________________________________
@@ -245,11 +216,46 @@ Bool_t DJetCorrAnalysis::GenerateQAHistograms()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(const char* dmeson, const char* jetType, const char* jetRadius)
+Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms()
 {
   // Generate D-jet correlation histograms.
 
-  SetAnalysisParams(dmeson, jetType, jetRadius);
+  AnalysisParams* params = 0;
+  TIter next(fAnalysisParams);
+
+  while ((params = static_cast<AnalysisParams*>(next()))) GenerateDJetCorrHistograms(params);
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(Int_t i)
+{
+  // Generate D-jet correlation histograms.
+
+  AnalysisParams* params = static_cast<AnalysisParams*>(fAnalysisParams->At(i));
+
+  if (params) return GenerateDJetCorrHistograms(params);
+
+  return kFALSE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(const char* paramName)
+{
+  // Generate D-jet correlation histograms.
+
+  AnalysisParams* params = static_cast<AnalysisParams*>(fAnalysisParams->FindObject(paramName));
+
+  if (params) return GenerateDJetCorrHistograms(params);
+
+  return kFALSE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(AnalysisParams* params)
+{
+  // Generate D-jet correlation histograms.
   
   Bool_t addDirStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -261,14 +267,75 @@ Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(const char* dmeson, const ch
     if (!result) return kFALSE;
   }
   
-  result = LoadInputList();
+  result = LoadInputList(params->GetInputListName());
   if (!result) return kFALSE;
 
-  result = ProjectCorrD();
+  result = ProjectCorrD(params);
   if (!result) return kFALSE;
 
   TH1::AddDirectory(addDirStatus);
 
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms()
+{
+  AnalysisParams* params = 0;
+  TIter next(fAnalysisParams);
+
+  while ((params = static_cast<AnalysisParams*>(next()))) PlotDJetCorrHistograms(params);
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(Int_t i)
+{
+  AnalysisParams* params = static_cast<AnalysisParams*>(fAnalysisParams->At(i));
+
+  if (params) return PlotDJetCorrHistograms(params);
+
+  return kFALSE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(const char* paramName)
+{
+  AnalysisParams* params = static_cast<AnalysisParams*>(fAnalysisParams->FindObject(paramName));
+
+  if (params) return PlotDJetCorrHistograms(params);
+
+  return kFALSE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(AnalysisParams* params)
+{
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+  
+  Bool_t addDirStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  Bool_t result = kFALSE;
+
+  if (!fOutputList) {
+    result = Init();
+    if (!result) return kFALSE;
+
+    result = LoadOutputHistograms();
+    if (!result) return kFALSE;
+  }
+  
+  // Invariant mass
+  Printf("Info-DJetCorrAnalysis::PlotDJetCorrHistograms : Plotting invariant mass for uncorrelated D mesons.");
+  PlotInvMassHistogramsVsDPt(params, 0, 1);
+  Printf("Info-DJetCorrAnalysis::PlotDJetCorrHistograms : Plotting invariant mass for correlated D mesons.");
+  PlotInvMassHistogramsVsDPt(params, params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()));
+
+  TH1::AddDirectory(addDirStatus);
+  
   return kTRUE;
 }
 
@@ -356,6 +423,8 @@ TCanvas* DJetCorrAnalysis::SetUpCanvas(const char* name,
                                        const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
                                        Double_t w, Double_t h, Int_t rows, Int_t cols)
 {
+  Printf("Info-DJetCorrAnalysis::SetUpCanvas : Setting up canvas '%s'", name);
+  
   TCanvas* canvas = new TCanvas(name, name, w, h);
   
   if (rows == 1 && cols == 1) {
@@ -494,25 +563,15 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(const char* dmeson, const char* jetType, const char* jetRadius)
+Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(AnalysisParams* params, Double_t minJetPt, Double_t maxJetPt)
 {
-  SetAnalysisParams(dmeson, jetType, jetRadius);
+  if (!fOutputList) return kFALSE;
   
-  // Invariant mass
-  PlotInvMassHistogramsVsDPt(0, 1);
-  PlotInvMassHistogramsVsDPt(fJetPtBins[0], fJetPtBins[fNJetPtBins+1]);
-
-  return kTRUE;
-}
-
-//____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(Double_t minJetPt, Double_t maxJetPt)
-{
   Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
   Double_t Dstarmass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(413))->Mass();
 
   TString jetCuts;
-  TString cname(Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data()));
+  TString cname(params->GetName());
   
   if (maxJetPt > 1) {
     jetCuts = Form("%.1f < #it{p}_{T,jet} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
@@ -527,47 +586,56 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(Double_t minJetPt, Double_t 
   TString xTitle;
   Double_t minMass = 0;
   Double_t maxMass = 0;
-  if (fDmesonName == "D0") {
+  if (params->IsD0()) {
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
     minMass = D0mass - 0.04;
     maxMass = D0mass + 0.04;
   }
-  else if (fDmesonName == "DStar") {
+  else if (params->IsDStar()) {
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "DeltaInvMass";
     minMass = Dstarmass - D0mass - 0.04;
     maxMass = Dstarmass - D0mass + 0.04;
   }
   else {
-    Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Meson type '%s' not recognized!", fDmesonName.Data());
+    Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Meson type '%s' not recognized!", params->GetDmesonName());
     return kFALSE;
   }
   
-  TString prefix(Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data()));
+  TString prefix(params->GetName());
   
-  TH1** histos = new TH1*[fNDPtBins];
-  for (Int_t i = 0; i < fNDPtBins; i++) {
-    TString cuts(Form("JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f", minJetPt, maxJetPt, fDPtBins[i], fDPtBins[i+1]));
+  TH1** histos = new TH1*[params->GetNDPtBins()];
+  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
+    TString cuts(Form("JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f", minJetPt, maxJetPt, params->GetDPtBin(i), params->GetDPtBin(i+1)));
     cuts.ReplaceAll(".", "");
     TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
+    //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Retrieving histogram '%s'", objname.Data());
     TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
     if (!hist) {
-      Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Histogram '%s' not found!", objname.Data());
+      Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Histogram '%s' not found!", objname.Data());
       i--;
       continue;
     }
-    histos[i] = static_cast<TH1*>(hist->Clone(Form("%s_copy",objname.Data())));
-    TString htitle(Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c}\n%s", fDPtBins[i], fDPtBins[i+1], jetCuts.Data()));
+    TString newName(objname);
+    newName += "_copy";
+    //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Cloning histogram '%s'", objname.Data());
+    histos[i] = static_cast<TH1*>(hist->Clone(newName));
+    //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Setting title of histogram '%s'", histos[i]->GetName());
+    TString htitle(Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c}\n%s", params->GetDPtBin(i), params->GetDPtBin(i+1), jetCuts.Data()));
     histos[i]->SetTitle(htitle);
   }
   
-  return PlotInvMassHistograms(fNDPtBins, histos, cname, xTitle, minMass, maxMass);
+  return PlotInvMassHistogramArray(params->GetNDPtBins(), histos, cname, xTitle, minMass, maxMass);
 }                                
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotInvMassHistograms(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass)
+Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass)
 {
+  // Plot invariant mass histograms contained in histos.
+  
+  Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Plotting invariant mass histograms '%s'", name);
+  
   Int_t cols = TMath::FloorNint(TMath::Sqrt(n));
   Int_t rows = TMath::CeilNint(1. * n / cols);
 
@@ -575,7 +643,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistograms(Int_t n, TH1** histos, const char
 
   Double_t w = cols*250;
   Double_t h = rows*250;
-
+  
   TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, "counts", 0, 1, kFALSE, h, w, cols, rows);
   for (Int_t i = 0; i < n; i++) {
     TVirtualPad* pad = canvas->cd(i+1);
@@ -587,6 +655,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistograms(Int_t n, TH1** histos, const char
     blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.4);
 
     histos[i]->Sumw2();
+    Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());
     histos[i]->DrawCopy("same p");
 
     TPaveText* pave = SetUpPaveText(0.15, 0.68, 0.90, 0.86, 13, histos[i]->GetTitle());
@@ -606,7 +675,7 @@ Int_t DJetCorrAnalysis::GetAxisIndex(TString title)
 
   TParameter<Int_t>* par = static_cast<TParameter<Int_t>*>(fTHnAxisMap.GetValue(title));
   if (!par) {
-    Printf("Warning-DJetCorrAnalysis::GetAxisIndex : Could not find axis with title '%s'", title.Data());
+    //Printf("Warning-DJetCorrAnalysis::GetAxisIndex : Could not find axis with title '%s'", title.Data());
     return -1;
   }
   
@@ -643,53 +712,53 @@ Bool_t DJetCorrAnalysis::ProjectQA()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::ProjectCorrD()
+Bool_t DJetCorrAnalysis::ProjectCorrD(AnalysisParams* params)
 {
   // Project histograms related to the D meson correlated to a jet.
 
-  TString prefix(Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data()));
+  TString prefix(params->GetName());
   TString suffix("");
 
-  ProjectDJetCorr(prefix, suffix, kFALSE, 
-                  0, fJetPtBins[fNJetPtBins+1],
-                  fDPtBins[0], fDPtBins[fNDPtBins+1], -0.5, 0.5);
+  ProjectDJetCorr(prefix, suffix, kFALSE, kTRUE,
+                  0, params->GetJetPtBin(params->GetNJetPtBins()),
+                  params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), -0.5, 0.5);
 
-  ProjectDJetCorr(prefix, suffix, kFALSE, 
+  ProjectDJetCorr(prefix, suffix, kFALSE, kTRUE, 
                   0, 1,
-                  fDPtBins[0], fDPtBins[fNDPtBins+1], -0.5, 0.5);
+                  params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), -0.5, 0.5);
 
-  ProjectDJetCorr(prefix, suffix, kTRUE, 
-                  fJetPtBins[0], fJetPtBins[fNJetPtBins+1],
-                  fDPtBins[0], fDPtBins[fNDPtBins+1], -0.5, 0.5);
+  ProjectDJetCorr(prefix, suffix, kTRUE, kTRUE, 
+                  params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()),
+                  params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), -0.5, 0.5);
 
-  for (Int_t i = 0; i < fNDPtBins; i++) {
-    ProjectDJetCorr(prefix, suffix, kFALSE, 
-                    0, fJetPtBins[fNJetPtBins+1],
-                    fDPtBins[i], fDPtBins[i+1], -0.5, 0.5);
+  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
+    ProjectDJetCorr(prefix, suffix, kFALSE, kFALSE, 
+                    0, params->GetJetPtBin(params->GetNJetPtBins()),
+                    params->GetDPtBin(i), params->GetDPtBin(i+1), -0.5, 0.5);
   }
 
-  for (Int_t i = 0; i < fNDPtBins; i++) {
-    ProjectDJetCorr(prefix, suffix, kFALSE, 
+  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
+    ProjectDJetCorr(prefix, suffix, kFALSE, kFALSE, 
                     0, 1,
-                    fDPtBins[i], fDPtBins[i+1], -0.5, 0.5);
+                    params->GetDPtBin(i), params->GetDPtBin(i+1), -0.5, 0.5);
   }
   
-  for (Int_t i = 0; i < fNDPtBins; i++) {
-    ProjectDJetCorr(prefix, suffix, kTRUE, 
-                    fJetPtBins[0], fJetPtBins[fNJetPtBins+1],
-                    fDPtBins[i], fDPtBins[i+1], -0.5, 0.5);
+  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
+    ProjectDJetCorr(prefix, suffix, kTRUE, kFALSE, 
+                    params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()),
+                    params->GetDPtBin(i), params->GetDPtBin(i+1), -0.5, 0.5);
   }
 
-  for (Int_t i = 0; i < fNJetPtBins; i++) {
-    ProjectDJetCorr(prefix, suffix, kTRUE, 
-                    fJetPtBins[i], fJetPtBins[i+1],
-                    fDPtBins[0], fDPtBins[fNDPtBins+1], -0.5, 0.5);
+  for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
+    ProjectDJetCorr(prefix, suffix, kTRUE, kTRUE, 
+                    params->GetJetPtBin(i), params->GetJetPtBin(i+1),
+                    params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), -0.5, 0.5);
   }
 
-  TString cutsN(Form("JetPt_%03.0f_%03.0f", fJetPtBins[0], fJetPtBins[fNJetPtBins+1]));
+  TString cutsN(Form("JetPt_%03.0f_%03.0f", params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins())));
   cutsN.ReplaceAll(".", "");
 
-  TString cutsD(Form("JetPt_%03.0f_%03.0f", 0., fJetPtBins[fNJetPtBins+1]));
+  TString cutsD(Form("JetPt_%03.0f_%03.0f", 0., params->GetJetPtBin(params->GetNJetPtBins())));
   cutsD.ReplaceAll(".", "");
 
   GenerateRatios(cutsN, cutsD);
@@ -730,7 +799,7 @@ Bool_t DJetCorrAnalysis::GenerateRatios(const char* nname, const char* dname)
     if (hist2D) {
       TH2* num2D = dynamic_cast<TH2*>(num);
       if (!num2D) continue;
-      TH2* ratio2D = static_cast<TH2*>(hist2D->Clone(rname));
+      TH2* ratio2D = static_cast<TH2*>(num2D->Clone(rname));
       ratio2D->Divide(hist2D);
       fOutputList->Add(ratio2D);
     }
@@ -745,7 +814,7 @@ Bool_t DJetCorrAnalysis::GenerateRatios(const char* nname, const char* dname)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, 
+Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, Bool_t doPtPlots, 
                                         Double_t minJetPt, Double_t maxJetPt,
                                         Double_t minDPt, Double_t maxDPt, Double_t minDEta, Double_t maxDEta)
 {
@@ -799,12 +868,18 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
 
   TString hname;
   
-  if ((maxDPt - minDPt) - (fDPtBins[fNDPtBins+1] - fDPtBins[0]) < fgkEpsilon) {
+  if (doPtPlots) {
     hname = Form("h%s_MesonPt_%s%s", prefix.Data(), jetCuts.Data(), suffix.Data());
     if (!fOutputList->Contains(hname)) {
       TH1* hDpt = fDmesons->Projection(dPtAxis);
       hDpt->SetName(hname);
       fOutputList->Add(hDpt);
+
+      if (dSoftPionPtAxis >= 0) {
+        TH2* hdsoftpionptVsDpt = fDmesons->Projection(dSoftPionPtAxis, dPtAxis);
+        hdsoftpionptVsDpt->SetName(Form("h%s_SoftPionVsDPt_%s%s", prefix.Data(), jetCuts.Data(), suffix.Data()));
+        fOutputList->Add(hdsoftpionptVsDpt);
+      }
     }
   }
   
@@ -816,6 +891,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
     TH1* hdinvmass = fDmesons->Projection(dInvMassAxis);
     hdinvmass->Rebin(4);
     hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
     fOutputList->Add(hdinvmass);
   }
 
@@ -830,7 +906,14 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
     TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis);
     hddeltainvmass->Rebin(4);
     hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
     fOutputList->Add(hddeltainvmass);
+
+    if (dSoftPionPtAxis >= 0) {
+      TH2* hdsoftpionptVsDeltaInvMass = fDmesons->Projection(dSoftPionPtAxis, dDeltaInvMassAxis);
+      hdsoftpionptVsDeltaInvMass->SetName(Form("h%s_SoftPionVsDeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hdsoftpionptVsDeltaInvMass);
+    }
   }
 
   if (dSoftPionPtAxis >= 0) {
@@ -869,8 +952,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
       hDeltaPhi->SetName(Form("h%s_DeltaPhi_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hDeltaPhi);
     }
-
-
   }
   
   return kTRUE;
@@ -925,22 +1006,22 @@ Bool_t DJetCorrAnalysis::OpenInputFile()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::LoadInputList()
+Bool_t DJetCorrAnalysis::LoadInputList(const char* inputListName)
 {
   // Load the input list.
 
   if (!OpenInputFile()) return kFALSE;
   
-  if (!fInputList || fInputListName != fInputList->GetName()) {
+  if (!fInputList || strcmp(inputListName, fInputList->GetName()) != 0) {
     ClearInputData();
     
     delete fInputList;
-    Printf("Info-DJetCorrAnalysis::OpenInputFile : Getting list '%s' from directory '%s' of file '%s'", fInputListName.Data(), fInputDirectoryFile->GetName(), fInputFile->GetName()); 
-    fInputList = dynamic_cast<TList*>(fInputDirectoryFile->Get(fInputListName));
+    Printf("Info-DJetCorrAnalysis::OpenInputFile : Getting list '%s' from directory '%s' of file '%s'", inputListName, fInputDirectoryFile->GetName(), fInputFile->GetName()); 
+    fInputList = dynamic_cast<TList*>(fInputDirectoryFile->Get(inputListName));
   }
   
   if (!fInputList) {
-    Printf("Error-DJetCorrAnalysis::OpenInputFile : Could not get list '%s' from directory '%s' of file '%s'", fInputListName.Data(), fInputDirectoryFile->GetName(), fInputFile->GetName());
+    Printf("Error-DJetCorrAnalysis::OpenInputFile : Could not get list '%s' from directory '%s' of file '%s'", inputListName, fInputDirectoryFile->GetName(), fInputFile->GetName());
     return kFALSE;
   }
 
@@ -1052,4 +1133,106 @@ Bool_t DJetCorrAnalysis::SaveOutputFile()
   outputFile = 0;
   
   return kTRUE;
+}
+
+ClassImp(AnalysisParams);
+
+//____________________________________________________________________________________
+AnalysisParams::AnalysisParams() :
+  TObject(),
+  fName(),
+  fNDPtBins(0),
+  fDPtBins(0),
+  fNJetPtBins(0),
+  fJetPtBins(0),
+  fJetType(),
+  fJetRadius(),
+  fDmesonName(),
+  fInputListName()
+{
+}
+
+//____________________________________________________________________________________
+AnalysisParams::AnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius) :
+  TObject(),
+  fName(),
+  fNDPtBins(0),
+  fDPtBins(0),
+  fNJetPtBins(0),
+  fJetPtBins(0),
+  fJetType(jetType),
+  fJetRadius(jetRadius),
+  fDmesonName(dmeson),
+  fInputListName()
+{
+  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_AODFilterTracks_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
+  fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
+
+  if (fDmesonName == "DStar") {
+    fNDPtBins = 9;
+    fDPtBins = new Double_t[fNDPtBins+1];
+    fDPtBins[ 0] =  4.0;
+    fDPtBins[ 1] =  5.0;
+    fDPtBins[ 2] =  6.0;
+    fDPtBins[ 3] =  7.0;
+    fDPtBins[ 4] =  8.0;
+    fDPtBins[ 5] = 10.0;
+    fDPtBins[ 6] = 15.0;
+    fDPtBins[ 7] = 20.0;
+    fDPtBins[ 8] = 30.0;
+    fDPtBins[ 9] = 50.0;
+  }
+  else {
+    fNDPtBins = 13;
+    fDPtBins = new Double_t[fNDPtBins+1];
+    fDPtBins[ 0] =  0.5;
+    fDPtBins[ 1] =  1.0;
+    fDPtBins[ 2] =  2.0;
+    fDPtBins[ 3] =  3.0;
+    fDPtBins[ 4] =  4.0;
+    fDPtBins[ 5] =  5.0;
+    fDPtBins[ 6] =  6.0;
+    fDPtBins[ 7] =  7.0;
+    fDPtBins[ 8] =  8.0;
+    fDPtBins[ 9] = 10.0;
+    fDPtBins[10] = 15.0;
+    fDPtBins[11] = 20.0;
+    fDPtBins[12] = 30.0;
+    fDPtBins[13] = 50.0;
+  }
+
+  fNJetPtBins = 11;
+  fJetPtBins = new Double_t[fNJetPtBins+1];
+  fJetPtBins[ 0] =   1.0;
+  fJetPtBins[ 1] =   3.0;
+  fJetPtBins[ 2] =   5.0;
+  fJetPtBins[ 3] =  10.0;
+  fJetPtBins[ 4] =  15.0;
+  fJetPtBins[ 5] =  20.0;
+  fJetPtBins[ 6] =  25.0;
+  fJetPtBins[ 7] =  30.0;
+  fJetPtBins[ 8] =  40.0;
+  fJetPtBins[ 9] =  60.0;
+  fJetPtBins[10] =  80.0;
+  fJetPtBins[11] = 100.0;
+}
+
+//____________________________________________________________________________________
+AnalysisParams::AnalysisParams(const AnalysisParams& p) :
+  TObject(p),
+  fName(p.fName),
+  fNDPtBins(p.fNDPtBins),
+  fDPtBins(0),
+  fNJetPtBins(p.fNJetPtBins),
+  fJetPtBins(0),
+  fJetType(p.fJetType),
+  fJetRadius(p.fJetRadius),
+  fDmesonName(p.fDmesonName),
+  fInputListName(p.fInputListName)
+{
+  fDPtBins = new Double_t[fNDPtBins+1];
+  for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
+  
+  fJetPtBins = new Double_t[fNJetPtBins+1];
+  for (Int_t i = 0; i<= fNJetPtBins; i++) fJetPtBins[i] = p.fJetPtBins[i];
 }

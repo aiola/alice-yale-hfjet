@@ -2,10 +2,7 @@
 
 class DJetCorrAnalysis;
 
-void Run(DJetCorrAnalysis* projDjet);
-void Plot(DJetCorrAnalysis* projDjet);
-
-void runDJetCorrAnalysis(const char* options = "run", const char* train = "Jets_EMC_pp_225_226", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_225_226_228", const char* inputPath = "$JETRESULTS")
 {
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
 
@@ -15,33 +12,26 @@ void runDJetCorrAnalysis(const char* options = "run", const char* train = "Jets_
   projDjet->SetInputPath(inputPath);
   projDjet->SetOutputFileName("<train>/DJetCorr.root");
 
+  projDjet->SetPlotFormat("pdf");
+  projDjet->SetSavePlots(kFALSE);
+
+  projDjet->AddAnalysisParams("D0", "Charged", "R040");
+  projDjet->AddAnalysisParams("DStar", "Charged", "R040");
+
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");
-
+  
   if (optList->Contains("run")) {
-    Run(projDjet);
+    projDjet->GenerateQAHistograms();
+    projDjet->GenerateDJetCorrHistograms();
+    
+    projDjet->SaveOutputFile();
   }
 
   if (optList->Contains("plot")) {
-    Plot(projDjet);
+    projDjet->PlotTrackHistograms();
+    projDjet->PlotDJetCorrHistograms();
   }
 }
 
-void Run(DJetCorrAnalysis* projDjet)
-{
-  projDjet->GenerateQAHistograms();
-  projDjet->GenerateDJetCorrHistograms("D0", "Charged", "R040");
-  projDjet->GenerateDJetCorrHistograms("DStar", "Charged", "R040");
 
-  projDjet->SaveOutputFile();
-}
-
-void Plot(DJetCorrAnalysis* projDjet)
-{
-  projDjet->SetPlotFormat("pdf");
-  projDjet->SetSavePlots(kFALSE);
-  
-  //projDjet->PlotTrackHistograms();
-  projDjet->PlotDJetCorrHistograms("D0", "Charged", "R040");
-  projDjet->PlotDJetCorrHistograms("DStar", "Charged", "R040");
-}
