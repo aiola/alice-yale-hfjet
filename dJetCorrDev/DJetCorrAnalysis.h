@@ -11,8 +11,11 @@ class TCanvas;
 class TLegend;
 class TVirtualPad;
 class TPaveText;
+class AnalysisParams;
+class TObject;
+class TList;
 
-class DJetCorrAnalysis {
+class DJetCorrAnalysis : public TObject {
   
  public:
   DJetCorrAnalysis();
@@ -21,23 +24,30 @@ class DJetCorrAnalysis {
   void   SetInputTrain(const char* train)      { fTrainName        = train  ; CloseInputFile(); }
   void   SetInputPath(const char* path)        { fInputPath        = path   ; CloseInputFile(); }
   void   SetInputFileName(const char* fname)   { fInputFileName    = fname  ; CloseInputFile(); }
-  void   SetInputListName(const char* lname)   { fInputListName    = lname  ; }
   void   SetOutputFileName(const char* fname)  { fOutputFileName   = fname  ; }
   void   SetOutputPath(const char* path)       { fOutputPath       = path   ; }
   void   SetOverwrite(Bool_t ow = kTRUE)       { fOverwrite        = ow     ; }
   void   SetPlotFormat(const char* f)          { fPlotFormat       = f      ; }
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
 
-  void   SetAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
+  void   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
+  void   AddAnalysisParams(AnalysisParams* params);
   
   Bool_t Init();
-  Bool_t GenerateDJetCorrHistograms(const char* dmeson, const char* jetType, const char* jetRadius);
+
   Bool_t GenerateQAHistograms();
+  Bool_t GenerateDJetCorrHistograms(AnalysisParams* params);
+  Bool_t GenerateDJetCorrHistograms(const char* paramName);
+  Bool_t GenerateDJetCorrHistograms(Int_t i);
+  Bool_t GenerateDJetCorrHistograms();
+  
   Bool_t SaveOutputFile();
+  
   Bool_t PlotTrackHistograms();
-  Bool_t PlotDJetCorrHistograms(const char* dmeson, const char* jetType, const char* jetRadius);
-  Bool_t PlotInvMassHistogramsVsDPt(Double_t minJetPt, Double_t maxJetPt);
-  Bool_t PlotInvMassHistograms(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass);
+  Bool_t PlotDJetCorrHistograms(AnalysisParams* params);
+  Bool_t PlotDJetCorrHistograms(const char* paramName);
+  Bool_t PlotDJetCorrHistograms(Int_t i);
+  Bool_t PlotDJetCorrHistograms();
   
  protected:
 
@@ -45,15 +55,17 @@ class DJetCorrAnalysis {
   Int_t           GetAxisIndex(TString title);
 
   Bool_t          ProjectQA();
-  Bool_t          ProjectCorrD();
-  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, 
+  Bool_t          ProjectCorrD(AnalysisParams* params);
+  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, Bool_t doPtPlots, 
                                   Double_t minJetPt, Double_t maxJetPt,
                                   Double_t minDPt, Double_t maxDPt, Double_t minDEta, Double_t maxDEta);
   Bool_t          GenerateRatios(const char* nname, const char* dname);
-
+  Bool_t          PlotInvMassHistogramsVsDPt(AnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
+  Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass);
+  
   void            GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
-  Bool_t          LoadInputList();
+  Bool_t          LoadInputList(const char* lname);
   Bool_t          LoadQAList();
   Bool_t          LoadTHnSparse();
   Bool_t          LoadOutputHistograms();
@@ -75,15 +87,11 @@ class DJetCorrAnalysis {
   TString         fTrainName                 ;//  train name
   TString         fInputPath                 ;//  train path
   TString         fInputFileName             ;//  input file name
+  TString         fQAListName                ;//  QA list name
   TString         fInputDirFileName          ;//  input dir file name
-  TString         fInputListName             ;//  input list name
   TString         fOutputPath                ;//  output path
   TString         fOutputFileName            ;//  output file name
   Bool_t          fOverwrite                 ;//  whether the output file should be overwritten
-  TString         fJetType                   ;//  jet type "Charged" or "Full"
-  TString         fJetRadius                 ;//  jet radius R020, R030, etc.
-  TString         fDmesonName                ;//  "D0" or "DStar" etc.
-  TString         fQAListName                ;//  QA list name
 
   // Axis titles
   TString         fDPtAxisTitle              ;//  d meson pt axis title
@@ -107,10 +115,7 @@ class DJetCorrAnalysis {
   TString         fPlotFormat                ;//  plot format (pdf, eps, png...)
   Bool_t          fSavePlots                 ;//  true if save plots
 
-  Int_t           fNDPtBins                  ;//  number of D pt bins
-  Double_t       *fDPtBins                   ;//[fNDPtBins+1] D pt bins
-  Int_t           fNJetPtBins                ;//  number of jet pt bins
-  Double_t       *fJetPtBins                 ;//[fNJetPtBins+1] jet pt bins
+  TList          *fAnalysisParams            ;//  list of analysis params
   
   TMap            fTHnAxisMap                ;//! mapping of axis titles with indexes
   Bool_t          fTHnSparseMapGenerated     ;//! whether or not the axis map has been generated for the THnSparse
@@ -122,4 +127,50 @@ class DJetCorrAnalysis {
   TList          *fOutputList                ;//! list contains the output histograms
   
   static const Double_t fgkEpsilon;
+
+ private:
+   
+  DJetCorrAnalysis(const DJetCorrAnalysis &source);
+  DJetCorrAnalysis& operator=(const DJetCorrAnalysis& source); 
+
+  ClassDef(DJetCorrAnalysis, 1);
+};
+
+class AnalysisParams : public TObject
+{
+ public:
+  AnalysisParams();
+  AnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
+  AnalysisParams(const AnalysisParams& p);
+
+  const char* GetName()              const { return fName.Data()                                    ; }
+  const char* GetTitle()             const { return GetName()                                       ; }
+  const char* GetJetType()           const { return fJetType.Data()                                 ; }
+  const char* GetJetRadius()         const { return fJetRadius.Data()                               ; }
+  const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
+  const char* GetInputListName()     const { return fInputListName.Data()                           ; }
+  Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
+  Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; } 
+  Int_t       GetNJetPtBins()        const { return fNJetPtBins                                     ; }
+  Double_t    GetJetPtBin(Int_t i)   const { return i >= 0 && i <= fNJetPtBins ? fJetPtBins[i] : -1 ; }
+  Bool_t      IsD0()                 const { return (fDmesonName == "D0")                           ; }
+  Bool_t      IsDStar()              const { return (fDmesonName == "DStar")                        ; }
+  
+ protected:
+  TString         fName                      ;//  object name
+  Int_t           fNDPtBins                  ;//  number of D pt bins
+  Double_t       *fDPtBins                   ;//[fNDPtBins+1] D pt bins
+  Int_t           fNJetPtBins                ;//  number of jet pt bins
+  Double_t       *fJetPtBins                 ;//[fNJetPtBins+1] jet pt bins
+  
+  TString         fJetType                   ;//  jet type "Charged" or "Full"
+  TString         fJetRadius                 ;//  jet radius R020, R030, etc.
+  TString         fDmesonName                ;//  "D0" or "DStar" etc.
+  TString         fInputListName             ;//  input list name
+
+ private:
+ 
+  AnalysisParams& operator=(const AnalysisParams& source); 
+
+  ClassDef(AnalysisParams, 1);
 };
