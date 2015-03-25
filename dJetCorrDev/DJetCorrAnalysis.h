@@ -11,7 +11,7 @@ class TCanvas;
 class TLegend;
 class TVirtualPad;
 class TPaveText;
-class AnalysisParams;
+class DJetCorrAnalysisParams;
 class TObject;
 class TList;
 
@@ -31,12 +31,12 @@ class DJetCorrAnalysis : public TObject {
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
 
   void   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
-  void   AddAnalysisParams(AnalysisParams* params);
+  void   AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   Bool_t Init();
 
   Bool_t GenerateQAHistograms();
-  Bool_t GenerateDJetCorrHistograms(AnalysisParams* params);
+  Bool_t GenerateDJetCorrHistograms(DJetCorrAnalysisParams* params);
   Bool_t GenerateDJetCorrHistograms(const char* paramName);
   Bool_t GenerateDJetCorrHistograms(Int_t i);
   Bool_t GenerateDJetCorrHistograms();
@@ -44,7 +44,7 @@ class DJetCorrAnalysis : public TObject {
   Bool_t SaveOutputFile();
   
   Bool_t PlotTrackHistograms();
-  Bool_t PlotDJetCorrHistograms(AnalysisParams* params);
+  Bool_t PlotDJetCorrHistograms(DJetCorrAnalysisParams* params);
   Bool_t PlotDJetCorrHistograms(const char* paramName);
   Bool_t PlotDJetCorrHistograms(Int_t i);
   Bool_t PlotDJetCorrHistograms();
@@ -55,13 +55,16 @@ class DJetCorrAnalysis : public TObject {
   Int_t           GetAxisIndex(TString title);
 
   Bool_t          ProjectQA();
-  Bool_t          ProjectCorrD(AnalysisParams* params);
-  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, Bool_t doPtPlots, 
+  Bool_t          ProjectCorrD(DJetCorrAnalysisParams* params);
+  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, Bool_t doPtPlots, Bool_t dozPlots, 
                                   Double_t minJetPt, Double_t maxJetPt,
-                                  Double_t minDPt, Double_t maxDPt, Double_t minDEta, Double_t maxDEta);
+                                  Double_t minDPt, Double_t maxDPt, Double_t minz, Double_t maxz, Double_t minDEta, Double_t maxDEta,
+                                  Double_t minInvMass, Double_t maxInvMass, Double_t min2ProngMass, Double_t max2ProngMass, Double_t minDeltaInvMass, Double_t maxDeltaInvMass);
   Bool_t          GenerateRatios(const char* nname, const char* dname);
-  Bool_t          PlotInvMassHistogramsVsDPt(AnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
-  Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass);
+  Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
+  Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params);
+  Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass=-1);
+  Bool_t          PlotDeltaRVsDPt(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
   
   void            GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
@@ -134,43 +137,4 @@ class DJetCorrAnalysis : public TObject {
   DJetCorrAnalysis& operator=(const DJetCorrAnalysis& source); 
 
   ClassDef(DJetCorrAnalysis, 1);
-};
-
-class AnalysisParams : public TObject
-{
- public:
-  AnalysisParams();
-  AnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
-  AnalysisParams(const AnalysisParams& p);
-
-  const char* GetName()              const { return fName.Data()                                    ; }
-  const char* GetTitle()             const { return GetName()                                       ; }
-  const char* GetJetType()           const { return fJetType.Data()                                 ; }
-  const char* GetJetRadius()         const { return fJetRadius.Data()                               ; }
-  const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
-  const char* GetInputListName()     const { return fInputListName.Data()                           ; }
-  Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
-  Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; } 
-  Int_t       GetNJetPtBins()        const { return fNJetPtBins                                     ; }
-  Double_t    GetJetPtBin(Int_t i)   const { return i >= 0 && i <= fNJetPtBins ? fJetPtBins[i] : -1 ; }
-  Bool_t      IsD0()                 const { return (fDmesonName == "D0")                           ; }
-  Bool_t      IsDStar()              const { return (fDmesonName == "DStar")                        ; }
-  
- protected:
-  TString         fName                      ;//  object name
-  Int_t           fNDPtBins                  ;//  number of D pt bins
-  Double_t       *fDPtBins                   ;//[fNDPtBins+1] D pt bins
-  Int_t           fNJetPtBins                ;//  number of jet pt bins
-  Double_t       *fJetPtBins                 ;//[fNJetPtBins+1] jet pt bins
-  
-  TString         fJetType                   ;//  jet type "Charged" or "Full"
-  TString         fJetRadius                 ;//  jet radius R020, R030, etc.
-  TString         fDmesonName                ;//  "D0" or "DStar" etc.
-  TString         fInputListName             ;//  input list name
-
- private:
- 
-  AnalysisParams& operator=(const AnalysisParams& source); 
-
-  ClassDef(AnalysisParams, 1);
 };
