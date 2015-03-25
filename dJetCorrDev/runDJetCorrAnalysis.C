@@ -2,21 +2,24 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_225_226_228", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_235_236_237_238", const char* inputPath = "$JETRESULTS")
 {
+  gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
 
   DJetCorrAnalysis* projDjet = new DJetCorrAnalysis(train);
   
   projDjet->SetOverwrite(kTRUE);
   projDjet->SetInputPath(inputPath);
-  projDjet->SetOutputFileName("<train>/DJetCorr.root");
+  projDjet->SetOutputFileName("DJetCorr.root");
 
   projDjet->SetPlotFormat("pdf");
-  projDjet->SetSavePlots(kFALSE);
+  projDjet->SetSavePlots(kTRUE);
 
   projDjet->AddAnalysisParams("D0", "Charged", "R040");
   projDjet->AddAnalysisParams("DStar", "Charged", "R040");
+  projDjet->AddAnalysisParams("D0", "Charged", "R060");
+  projDjet->AddAnalysisParams("DStar", "Charged", "R060");
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");
