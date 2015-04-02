@@ -64,8 +64,12 @@ class DJetCorrAnalysis : public TObject {
   Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
   Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params);
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass=-1);
-  Bool_t          PlotDeltaRVsDPt(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
   
+  Bool_t          PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
+                                 Double_t minJetPt, Double_t maxJetPt, Double_t minDPt, Double_t maxDPt, Double_t minZ, Double_t maxZ,
+                                 Int_t step, Int_t rebin, Int_t norm);
+    
+  Bool_t          Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax);
   void            GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
   Bool_t          LoadInputList(const char* lname);

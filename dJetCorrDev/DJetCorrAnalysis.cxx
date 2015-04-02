@@ -150,12 +150,10 @@ void DJetCorrAnalysis::AddAnalysisParams(DJetCorrAnalysisParams* params)
 //____________________________________________________________________________________
 void DJetCorrAnalysis::GenerateAxisMap(THnSparse* hn)
 {
+  if (!hn) return;
+  
   fTHnAxisMap.Delete();
 
-  if (!LoadTHnSparse()) {
-    return;
-  }
-  
   for (Int_t i = 0; i < hn->GetNdimensions(); i++) {
     TObjString* key = new TObjString(hn->GetAxis(i)->GetTitle());
     TParameter<Int_t>* value = new TParameter<Int_t>(hn->GetAxis(i)->GetTitle(), i);
@@ -343,7 +341,32 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
   PlotInvMassHistogramsVsDz(params);
 
   // Delta R
-  PlotDeltaRVsDPt(params, params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()));
+  PlotObservable(params, "DeltaR", 0, 0,
+                 params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()),
+                 -1, -1,
+                 params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                 2, 4, 1);
+
+  // Delta R
+  PlotObservable(params, "DeltaR", 0, 0,
+                 -1, -1,
+                 params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), 
+                 params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                 1, 1, 1);
+
+  // Delta Phi
+  PlotObservable(params, "DeltaPhi", -0.7, 0.7,
+                 -1, -1,
+                 params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), 
+                 params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                 1, 1, 1);
+
+  // Delta Eta
+  PlotObservable(params, "DeltaEta", -0.7, 0.7,
+                 -1, -1,
+                 params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), 
+                 params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                 1, 1, 1);
   
   TH1::AddDirectory(addDirStatus);
   
@@ -583,64 +606,147 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDeltaRVsDPt(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt)
+Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
+                                        Double_t minJetPt, Double_t maxJetPt, Double_t minDPt, Double_t maxDPt, Double_t minZ, Double_t maxZ,
+                                        Int_t step, Int_t rebin, Int_t norm)
 {
   if (!fOutputList) return kFALSE;
 
+  TString cname(Form("fig_%s_%s",obsName.Data(), params->GetName()));
+  
   TString jetCuts;
-  
-  TString cname("fig_DeltaRVsDPt_");
-  cname += params->GetName();
-  
-  if (maxJetPt > 1 && minJetPt > 0) {
-    jetCuts = Form("%.1f < #it{p}_{T,jet} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
-    cname += Form("_JetPt_%03.0f_%03.0f", minJetPt, maxJetPt);
-  }
-  else {
-    return kFALSE;
+  TString dCuts;
+  TString zCuts;
+
+  Int_t nj = params->GetNJetPtBins()-1;
+  Int_t nd = params->GetNDPtBins()-1;
+  Int_t nz = params->GetNzBins()-1;
+
+  if (maxJetPt > 0) {
+    jetCuts = Form("JetPt_%03.0f_%03.0f", minJetPt, maxJetPt);
+    jetCuts.ReplaceAll(".", "");
+    nj = 1;
   }
 
-  TString hname("DeltaR");
-  TString xTitle("#DeltaR = #sqrt{#Delta#eta^{2} + #Delta#phi^{2}}");
-  TString yTitle("Probability density");
-  TCanvas *canvas = SetUpCanvas(cname, xTitle, 0, 0.5, kFALSE, yTitle, 0, 1, kFALSE);
+  if (maxDPt > 0) {
+    dCuts = Form("DPt_%02.0f_%02.0f", minDPt, maxDPt);
+    dCuts.ReplaceAll(".", "");
+    nd = 1;
+  }
+
+  if (maxZ > 0) {
+    zCuts = Form("z_%.1f_%.1f", minZ, maxZ);
+    zCuts.ReplaceAll(".", "");
+    nz = 1;
+  }
+  
+  if (!jetCuts.IsNull()) {
+    cname += "_";
+    cname += jetCuts;
+  }
+
+  if (!dCuts.IsNull()) {
+    cname += "_";
+    cname += dCuts;
+  }
+
+  if (!zCuts.IsNull()) {
+    cname += "_";
+    cname += zCuts;
+  }
+
+  TString hname(obsName);
+  TString prefix(params->GetName());
+
+  TH1** histos = new TH1*[nj*nd*nz];
+  Int_t ih = 0;
+  TString jetTitle;
+  TString dTitle;
+  TString zTitle;
+  
+  for (Int_t ij = 0; ij < nj; ij+=step) {
+    if (maxJetPt < 0) {
+      jetCuts = Form("JetPt_%03.0f_%03.0f", params->GetJetPtBin(ij), params->GetJetPtBin(ij+1));
+      jetCuts.ReplaceAll(".", "");
+      jetTitle = Form("%.1f < #it{p}_{T,jet} < %.1f GeV/#it{c}", params->GetJetPtBin(ij), params->GetJetPtBin(ij+1));
+    }
+    for (Int_t id = 0; id < nd; id+=step) {
+      if (maxDPt < 0) {
+        dCuts = Form("DPt_%02.0f_%02.0f", params->GetDPtBin(id), params->GetDPtBin(id+1));
+        dCuts.ReplaceAll(".", "");
+        dTitle = Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c}", params->GetDPtBin(id), params->GetDPtBin(id+1));
+      }
+      for (Int_t iz = 0; iz < nz; iz+=step) {
+        if (maxZ < 0) {
+          zCuts = Form("z_%.1f_%.1f", params->GetzBin(iz), params->GetzBin(iz+1));
+          zCuts.ReplaceAll(".", "");
+          zTitle = Form("%.1f < z < %.1f", params->GetzBin(iz), params->GetzBin(iz+1));
+        }
+            
+        TString cuts(Form("%s_%s_%s", jetCuts.Data(), dCuts.Data(), zCuts.Data()));
+        TString htitle;
+
+        htitle = jetTitle;
+        if (!dTitle.IsNull()) {
+          if (!htitle.IsNull()) htitle += ", ";
+          htitle += dTitle;
+        }
+        if (!zTitle.IsNull()) {
+          if (!htitle.IsNull()) htitle += ", ";
+          htitle += zTitle;
+        }
+    
+        TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
+        //Printf("Info-DJetCorrAnalysis::PlotDeltaRVsDPt : Retrieving histogram '%s'", objname.Data());
+        TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
+        if (!hist) {
+          Printf("Error-DJetCorrAnalysis::PlotDeltaRVsDPt : Histogram '%s' not found!", objname.Data());
+          continue;
+        }
+        TString newName(objname);
+        newName += "_copy";
+        //Printf("Info-DJetCorrAnalysis::PlotDeltaRVsDPt : Cloning histogram '%s'", objname.Data());
+        histos[ih] = static_cast<TH1*>(hist->Clone(newName));
+        if (rebin > 1) histos[ih]->Rebin(4);
+        if (norm > 0) histos[ih]->Scale(1. / histos[ih]->Integral(), "width");
+        histos[ih]->SetTitle(htitle);
+        ih++;
+      }
+    }
+  }
+  
+  return Plot1DHistos(cname, ih, histos, xmin, xmax);
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax)
+{
+  TString xTitle(histos[0]->GetXaxis()->GetTitle());
+  TString yTitle(histos[0]->GetYaxis()->GetTitle());
+  if (xmax - xmin < fgkEpsilon) {
+    xmin = histos[0]->GetXaxis()->GetXmin();
+    xmax = histos[0]->GetXaxis()->GetXmax();
+  }
+  TCanvas *canvas = SetUpCanvas(cname, xTitle, xmin, xmax, kFALSE, yTitle, 0, 1, kFALSE);
   TH1* hblank = dynamic_cast<TH1*>(canvas->GetListOfPrimitives()->At(0));
   Color_t colors[12] = {kRed+1, kBlue+1, kMagenta, kGreen+2, kOrange+1, kCyan+2, kPink+1, kTeal+1, kViolet, kAzure+1, kYellow+2, kSpring+3};
 
-  TString prefix(params->GetName());
-  TLegend* leg = SetUpLegend(0.32, 0.49, 0.85, 0.81, 13);
+  TLegend* leg = SetUpLegend(0.38, 0.69, 0.88, 0.88, 13);
   leg->SetNColumns(2);
   Double_t maxY = 0;
-  for (Int_t i = 0; i < params->GetNDPtBins()-1; i+=2) {
-    TString cuts(Form("JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f_z_%.1f_%.1f", minJetPt, maxJetPt, params->GetDPtBin(i), params->GetDPtBin(i+1), params->GetzBin(0), params->GetzBin(params->GetNzBins())));
-    cuts.ReplaceAll(".", "");
-    TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
-    //Printf("Info-DJetCorrAnalysis::PlotDeltaRVsDPt : Retrieving histogram '%s'", objname.Data());
-    TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
-    if (!hist) {
-      Printf("Error-DJetCorrAnalysis::PlotDeltaRVsDPt : Histogram '%s' not found!", objname.Data());
-      continue;
-    }
-    TString newName(objname);
-    newName += "_copy";
-    //Printf("Info-DJetCorrAnalysis::PlotDeltaRVsDPt : Cloning histogram '%s'", objname.Data());
-    TH1* hcopy = static_cast<TH1*>(hist->Clone(newName));
-    hcopy->Rebin(4);
-    hcopy->Scale(1. / hcopy->Integral(), "width");
-    if (maxY < hcopy->GetMaximum()) maxY = hcopy->GetMaximum();
-    hcopy->SetLineColor(colors[i/2]);
-    hcopy->SetMarkerColor(colors[i/2]);
-    hcopy->SetMarkerStyle(kFullCircle);
-    hcopy->SetMarkerSize(0.5);
-    hcopy->Draw("same");
-    //Printf("Info-DJetCorrAnalysis::PlotDeltaRVsDPt : Setting title of histogram '%s'", histos[i]->GetName());
-    TString htitle(Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c}", params->GetDPtBin(i), params->GetDPtBin(i+1)));
-    TLegendEntry* legEntry = leg->AddEntry(hcopy, htitle, "pe");
-    legEntry->SetLineColor(colors[i/2]);
+  for (Int_t i = 0; i < n; i++) {
+    if (maxY < histos[i]->GetMaximum()) maxY = histos[i]->GetMaximum();
+    histos[i]->SetLineColor(colors[i]);
+    histos[i]->SetMarkerColor(colors[i]);
+    histos[i]->SetMarkerStyle(kFullCircle);
+    histos[i]->SetMarkerSize(0.5);
+    histos[i]->Draw("same");
+    TLegendEntry* legEntry = leg->AddEntry(histos[i], histos[i]->GetTitle(), "pe");
+    legEntry->SetLineColor(colors[i]);
   }
 
   if (hblank && maxY > 0) {
-    hblank->GetYaxis()->SetRangeUser(0, maxY*1.4);
+    hblank->GetYaxis()->SetRangeUser(0, maxY*1.6);
   }
 
   leg->Draw();
@@ -685,8 +791,8 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   if (params->IsD0()) {
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
-    minMass = D0mass - 0.1;
-    maxMass = D0mass + 0.1;
+    minMass = D0mass - 0.15;
+    maxMass = D0mass + 0.15;
     pdgMass = D0mass;
   }
   else if (params->IsDStar()) {
@@ -757,8 +863,8 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
     pdgMass = D0mass;
-    minMass = D0mass - 0.04;
-    maxMass = D0mass + 0.04;
+    minMass = D0mass - 0.15;
+    maxMass = D0mass + 0.15;
   }
   else if (params->IsDStar()) {
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
