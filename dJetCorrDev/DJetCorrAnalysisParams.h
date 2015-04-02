@@ -36,16 +36,16 @@ class DJetCorrAnalysisParams : public TObject
   Bool_t      IsDStar()              const { return (fDmesonName == "DStar")                        ; }
   
   Bool_t      IsInInvMassRange(Double_t mass)    const { return (mass < fInvMaxMass && mass > fInvMinMass); }
-  Double_t    GetInvMinMass()          const { return fInvMinMass                                  ; }
-  Double_t    GetInvMaxMass()          const { return fInvMaxMass                                  ; }
+  Double_t    GetInvMinMass()          const { return fInvMinMass                                   ; }
+  Double_t    GetInvMaxMass()          const { return fInvMaxMass                                   ; }
 
   Bool_t      IsIn2ProngMassRange(Double_t mass)    const { return (mass < f2ProngMaxMass && mass > f2ProngMinMass); }
-  Double_t    Get2ProngMinMass()       const { return f2ProngMinMass                                  ; }
-  Double_t    Get2ProngMaxMass()       const { return f2ProngMaxMass                                  ; }
+  Double_t    Get2ProngMinMass()       const { return f2ProngMinMass                                ; }
+  Double_t    Get2ProngMaxMass()       const { return f2ProngMaxMass                                ; }
       
   Bool_t      IsInDeltaInvMassRange(Double_t dmass)    const { return (dmass < fDeltaInvMaxMass && dmass > fDeltaInvMinMass); }
-  Double_t    GetDeltaInvMinMass()     const { return fDeltaInvMinMass                                  ; }
-  Double_t    GetDeltaInvMaxMass()     const { return fDeltaInvMaxMass                                  ; }
+  Double_t    GetDeltaInvMinMass()     const { return fDeltaInvMinMass                              ; }
+  Double_t    GetDeltaInvMaxMass()     const { return fDeltaInvMaxMass                              ; }
   
  protected:
   TString         fName                      ;//  object name

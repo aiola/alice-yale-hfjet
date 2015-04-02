@@ -73,12 +73,12 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fDPtBins[10] = 30.0;
     fDPtBins[11] = 50.0;
 
-    SetDeltaInvMassRange(413, 421, 0.04);
-    SetInvMassRange(413, 1);
-    Set2ProngMassRange(421, 1);
+    SetDeltaInvMassRange(413, 421, 0.08);
+    SetInvMassRange(413, 0.15);
+    Set2ProngMassRange(421, 0.30);
   }
   else {
-    fNDPtBins = 13;
+    fNDPtBins = 9;
     fDPtBins = new Double_t[fNDPtBins+1];
     fDPtBins[ 0] =  0.5;
     fDPtBins[ 1] =  1.0;
@@ -87,31 +87,26 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fDPtBins[ 4] =  4.0;
     fDPtBins[ 5] =  5.0;
     fDPtBins[ 6] =  6.0;
-    fDPtBins[ 7] =  7.0;
-    fDPtBins[ 8] =  8.0;
-    fDPtBins[ 9] = 10.0;
-    fDPtBins[10] = 15.0;
-    fDPtBins[11] = 20.0;
-    fDPtBins[12] = 30.0;
-    fDPtBins[13] = 50.0;
+    fDPtBins[ 7] = 10.0;
+    fDPtBins[ 8] = 20.0;
+    fDPtBins[ 9] = 40.0;
 
-    SetInvMassRange(421, 0.04);
+    SetInvMassRange(421, 0.30);
   }
 
-  fNJetPtBins = 11;
+  fNJetPtBins = 9;
   fJetPtBins = new Double_t[fNJetPtBins+1];
   fJetPtBins[ 0] =   1.0;
-  fJetPtBins[ 1] =   3.0;
-  fJetPtBins[ 2] =   5.0;
-  fJetPtBins[ 3] =  10.0;
-  fJetPtBins[ 4] =  15.0;
-  fJetPtBins[ 5] =  20.0;
-  fJetPtBins[ 6] =  25.0;
-  fJetPtBins[ 7] =  30.0;
-  fJetPtBins[ 8] =  40.0;
-  fJetPtBins[ 9] =  60.0;
-  fJetPtBins[10] =  80.0;
-  fJetPtBins[11] = 100.0;
+  fJetPtBins[ 1] =   5.0;
+  fJetPtBins[ 2] =  10.0;
+  fJetPtBins[ 3] =  15.0;
+  fJetPtBins[ 4] =  20.0;
+  fJetPtBins[ 5] =  25.0;
+  fJetPtBins[ 6] =  30.0;
+  fJetPtBins[ 7] =  40.0;
+  fJetPtBins[ 8] =  60.0;
+  fJetPtBins[ 9] =  80.0;
+  fJetPtBins[10] = 100.0;
 
   fNzBins = 6;
   fzBins = new Double_t[fNzBins+1];
@@ -156,27 +151,27 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisParams::SetInvMassRange(Int_t pdg, Double_t nsigma)
+void DJetCorrAnalysisParams::SetInvMassRange(Int_t pdg, Double_t range)
 {
   TParticlePDG* part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg));
-  fInvMinMass = part->Mass() - nsigma;
-  fInvMaxMass = part->Mass() + nsigma;
+  fInvMinMass = part->Mass() - range/2;
+  fInvMaxMass = part->Mass() + range/2;
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisParams::Set2ProngMassRange(Int_t pdg, Double_t nsigma)
+void DJetCorrAnalysisParams::Set2ProngMassRange(Int_t pdg, Double_t range)
 {
   TParticlePDG* part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg));
-  f2ProngMinMass = part->Mass() - nsigma;
-  f2ProngMaxMass = part->Mass() + nsigma;
+  f2ProngMinMass = part->Mass() - range/2;
+  f2ProngMaxMass = part->Mass() + range/2;
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisParams::SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double_t nsigma)
+void DJetCorrAnalysisParams::SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double_t range)
 {
   TParticlePDG* part1 = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg1));
   TParticlePDG* part2 = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg2));
   
-  fDeltaInvMinMass = part1->Mass() - part2->Mass() - nsigma;
-  fDeltaInvMaxMass = part1->Mass() - part2->Mass() + nsigma;
+  fDeltaInvMinMass = part1->Mass() - part2->Mass() - range/2;
+  fDeltaInvMaxMass = part1->Mass() - part2->Mass() + range/2;
 }

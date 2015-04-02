@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_235_236_237_238", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_235_236_237_238", const char* inputPath = "$JETRESULTS")
 {
   gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
