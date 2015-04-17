@@ -195,7 +195,6 @@ void runJetAna(
 //______________________________________________________________________________
 void LoadLibs()
 {
-  
   // load fastjet libraries 3.x
   gSystem->Load("libCGAL");
   gSystem->Load("$FASTJET/lib/libfastjet");
