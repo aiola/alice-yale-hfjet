@@ -2,8 +2,10 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_235_236_237_238", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_243_244_245_246", const char* inputPath = "$JETRESULTS")
 {
+  const char* tracksName = "tracks";
+  
   gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
 
@@ -13,13 +15,17 @@ void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets
   projDjet->SetInputPath(inputPath);
   projDjet->SetOutputFileName("DJetCorr.root");
 
+  TString qaListName(Form("AliAnalysisTaskSAQA_%s_TPC_histos", tracksName));
+  
+  projDjet->SetQAListName(qaListName);
+
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  projDjet->AddAnalysisParams("D0", "Charged", "R040");
-  projDjet->AddAnalysisParams("DStar", "Charged", "R040");
-  projDjet->AddAnalysisParams("D0", "Charged", "R060");
-  projDjet->AddAnalysisParams("DStar", "Charged", "R060");
+  projDjet->AddAnalysisParams("D0", "Charged", "R040", tracksName);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksName);
+  projDjet->AddAnalysisParams("D0", "Charged", "R060", tracksName);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksName);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");

@@ -23,6 +23,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fJetType(),
   fJetRadius(),
   fDmesonName(),
+  fTracksName(),
   fInputListName(),
   fInvMinMass(0),
   fInvMaxMass(0),
@@ -34,7 +35,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius) :
+DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName) :
   TObject(),
   fName(),
   fNDPtBins(0),
@@ -46,6 +47,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fJetType(jetType),
   fJetRadius(jetRadius),
   fDmesonName(dmeson),
+  fTracksName(tracksName),
   fInputListName(),
   fInvMinMass(0),
   fInvMaxMass(0),
@@ -54,7 +56,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fDeltaInvMinMass(0),
   fDeltaInvMaxMass(0)
 {
-  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_AODFilterTracks_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
+  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {

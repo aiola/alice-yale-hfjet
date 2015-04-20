@@ -10,7 +10,7 @@ class DJetCorrAnalysisParams : public TObject
 {
  public:
   DJetCorrAnalysisParams();
-  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
+  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
   DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
 
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass = min        ; fInvMaxMass = max        ; }
@@ -59,6 +59,7 @@ class DJetCorrAnalysisParams : public TObject
   TString         fJetType                   ;//  jet type "Charged" or "Full"
   TString         fJetRadius                 ;//  jet radius R020, R030, etc.
   TString         fDmesonName                ;//  "D0" or "DStar" etc.
+  TString         fTracksName                ;//  usually "tracks" or "AODFilterTracks"
   TString         fInputListName             ;//  input list name
 
   Double_t        fInvMinMass                ;//  inv min mass
