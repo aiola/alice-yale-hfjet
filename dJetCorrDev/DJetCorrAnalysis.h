@@ -25,12 +25,13 @@ class DJetCorrAnalysis : public TObject {
   void   SetInputPath(const char* path)        { fInputPath        = path   ; CloseInputFile(); }
   void   SetInputFileName(const char* fname)   { fInputFileName    = fname  ; CloseInputFile(); }
   void   SetOutputFileName(const char* fname)  { fOutputFileName   = fname  ; }
+  void   SetQAListName(const char* lname)      { fQAListName       = lname  ; }
   void   SetOutputPath(const char* path)       { fOutputPath       = path   ; }
   void   SetOverwrite(Bool_t ow = kTRUE)       { fOverwrite        = ow     ; }
   void   SetPlotFormat(const char* f)          { fPlotFormat       = f      ; }
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
 
-  void   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
+  void   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
   void   AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   Bool_t Init();
