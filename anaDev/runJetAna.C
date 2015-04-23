@@ -24,7 +24,7 @@ void runJetAna(
          const char   *cGridMode     = "test",                                // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
 	 const char   *cLocalFiles   = "fileLists/files_LHC10b_AOD137.txt",   // set the local list file
 	 UInt_t        iNumFiles     = 100,                                   // number of files analyzed locally
-	 UInt_t        iNumEvents    = 10000,                                 // number of events to be analyzed
+	 UInt_t        iNumEvents    = 100000,                                 // number of events to be analyzed
 	 const char   *cRunPeriod    = "LHC110b",                             // set the run period
          const char   *cTaskName     = "JetAna",                              // sets name of grid generated macros
          Bool_t       *bDoEmcal      = kFALSE,
@@ -175,10 +175,11 @@ void runJetAna(
     
     // start analysis
     Printf("Starting Analysis...");
-    pMgr->SetUseProgressBar(1, 25);
+    pMgr->SetUseProgressBar(1, 250);
     //pMgr->SetDebugLevel(2);
 
     // To have more debug info
+    //pMgr->AddClassDebug("AliAnalysisTaskSE", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliAnalysisTaskDmesonJetCorrelations", AliLog::kDebug+100);
 

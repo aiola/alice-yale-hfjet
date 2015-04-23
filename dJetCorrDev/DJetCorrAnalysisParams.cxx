@@ -56,7 +56,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fDeltaInvMinMass(0),
   fDeltaInvMaxMass(0)
 {
-  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {
@@ -96,27 +96,22 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     SetInvMassRange(421, 0.30);
   }
 
-  fNJetPtBins = 9;
+  fNJetPtBins = 5;
   fJetPtBins = new Double_t[fNJetPtBins+1];
-  fJetPtBins[ 0] =   1.0;
+  fJetPtBins[ 0] =   2.5;
   fJetPtBins[ 1] =   5.0;
   fJetPtBins[ 2] =  10.0;
-  fJetPtBins[ 3] =  15.0;
-  fJetPtBins[ 4] =  20.0;
-  fJetPtBins[ 5] =  25.0;
-  fJetPtBins[ 6] =  30.0;
-  fJetPtBins[ 7] =  40.0;
-  fJetPtBins[ 8] =  60.0;
-  fJetPtBins[ 9] =  80.0;
-  fJetPtBins[10] = 100.0;
+  fJetPtBins[ 3] =  20.0;
+  fJetPtBins[ 4] =  40.0;
+  fJetPtBins[ 5] = 100.0;
 
   fNzBins = 6;
   fzBins = new Double_t[fNzBins+1];
-  fzBins[ 0] =   0.0;
+  fzBins[ 0] =   0.1;
   fzBins[ 1] =   0.4;
   fzBins[ 2] =   0.6;
   fzBins[ 3] =   0.8;
-  fzBins[ 4] =   1.0;
+  fzBins[ 4] =   1.01;
   fzBins[ 5] =   1.2;
   fzBins[ 6] =   2.0;
 }
