@@ -340,7 +340,10 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
   Printf("Info-DJetCorrAnalysis::PlotDJetCorrHistograms : Plotting invariant mass vs D pt for correlated D mesons.");
   PlotInvMassHistogramsVsDPt(params, params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()));
   Printf("Info-DJetCorrAnalysis::PlotDJetCorrHistograms : Plotting invariant mass vs z for correlated D mesons.");
-  PlotInvMassHistogramsVsDz(params);
+  PlotInvMassHistogramsVsDz(params, params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()));
+  for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
+    PlotInvMassHistogramsVsDz(params, params->GetJetPtBin(j), params->GetJetPtBin(j+1));
+  }
 
   // Delta R
   PlotObservable(params, "DeltaR", 0, 0,
@@ -567,8 +570,8 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
     if (!hTrPt) continue;
     
     if (!cTrackPt) cTrackPt = SetUpCanvas("fig_TrackPt", "#it{p}_{T} (GeV/#it{c})", 0, 50, kFALSE, "counts", 1e-1, hTrPt->GetMaximum()*3, kTRUE);
-    if (!cTrackEta) cTrackEta = SetUpCanvas("fig_TrackEta", "#eta", -1, 1, kFALSE, "counts", 1e-1, hTrEta->GetMaximum()*1.2, kFALSE);
-    if (!cTrackPhi) cTrackPhi = SetUpCanvas("fig_TrackPhi", "#phi", 0, TMath::TwoPi(), kFALSE, "counts", 1e-1, hTrPhi->GetMaximum()*1.5, kFALSE);  
+    if (!cTrackEta) cTrackEta = SetUpCanvas("fig_TrackEta", "#eta", -1, 1, kFALSE, "counts", 0, hTrEta->GetMaximum()*1.2, kFALSE);
+    if (!cTrackPhi) cTrackPhi = SetUpCanvas("fig_TrackPhi", "#phi", 0, TMath::TwoPi(), kFALSE, "counts", 0, hTrPhi->GetMaximum()*1.5, kFALSE);  
 
     cTrackPt->cd();
     TH1* hTrPt_copy = hTrPt->DrawCopy("same hist");
@@ -857,7 +860,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt)
 {
   if (!fOutputList) return kFALSE;
   
@@ -869,8 +872,8 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   TString cname("fig_InvMassVsDz");
   cname += params->GetName();
   
-  jetCuts = Form("%.1f < #it{p}_{T,jet} < %.1f GeV/#it{c}", params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()));
-  cname += Form("_JetPt_%03.0f_%03.0f", params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()));
+  jetCuts = Form("%.1f < #it{p}_{T,jet} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
+  cname += Form("_JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f", minJetPt, maxJetPt, params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()));
   
   TString hname;
   TString xTitle;
@@ -901,7 +904,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   TH1** histos = new TH1*[params->GetNzBins()];
   Int_t n = 0;
   for (Int_t i = 0; i < params->GetNzBins(); i++) {
-    TString cuts(Form("JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f_z_%.1f_%.1f", 10.0, params->GetJetPtBin(params->GetNJetPtBins()), 7.0, params->GetDPtBin(params->GetNDPtBins()), params->GetzBin(i), params->GetzBin(i+1)));
+    TString cuts(Form("JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f_z_%.1f_%.1f", minJetPt, maxJetPt, params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), params->GetzBin(i), params->GetzBin(i+1)));
     cuts.ReplaceAll(".", "");
     TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
     //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Retrieving histogram '%s'", objname.Data());
@@ -954,7 +957,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const 
     }
     blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.4);
 
-    histos[i]->Sumw2();
+    if (histos[i]->GetSumw2N() == 0) histos[i]->Sumw2();
     Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());
     histos[i]->DrawCopy("same p");
 
@@ -1001,8 +1004,12 @@ Bool_t DJetCorrAnalysis::ProjectQA()
   fOutputList->Add(evCount);
 
   TString labels[4] = {"Global", "Constr", "ConstrNoITS", "Hybrid"};
+
+  TH1* hTrEtaSum = 0;
+  TH1* hTrPhiSum = 0;
+  TH1* hTrPtSum = 0;
   
-  for (Int_t i = 0; i <= 3; i++) {
+  for (Int_t i = 0; i < 3; i++) {
     TH3* hTrPhiEtaPt = dynamic_cast<TH3*>(fInputQAList->FindObject(Form("fHistTrPhiEtaPt_0_%d",i)));
     if (!hTrPhiEtaPt) {
       Printf("Error-DJetCorrAnalysis::ProjectQA : Could not find track histogram for track type %d!", i);
@@ -1011,6 +1018,21 @@ Bool_t DJetCorrAnalysis::ProjectQA()
     TH1* hTrEta = hTrPhiEtaPt->ProjectionX(Form("hTracks_%s_Eta", labels[i].Data()));
     TH1* hTrPhi = hTrPhiEtaPt->ProjectionY(Form("hTracks_%s_Phi", labels[i].Data()));
     TH1* hTrPt = hTrPhiEtaPt->ProjectionZ(Form("hTracks_%s_Pt", labels[i].Data()));
+
+    if (i == 0) {
+      hTrEtaSum = static_cast<TH1*>(hTrEta->Clone(Form("hTracks_%s_Eta", labels[3].Data())));
+      hTrPhiSum = static_cast<TH1*>(hTrPhi->Clone(Form("hTracks_%s_Phi", labels[3].Data())));
+      hTrPtSum = static_cast<TH1*>(hTrPt->Clone(Form("hTracks_%s_Pt", labels[3].Data())));
+
+      fOutputList->Add(hTrEtaSum);
+      fOutputList->Add(hTrPhiSum);
+      fOutputList->Add(hTrPtSum);
+    }
+    else {
+      hTrEtaSum->Add(hTrEta);
+      hTrPhiSum->Add(hTrPhi);
+      hTrPtSum->Add(hTrPt);
+    }
     
     fOutputList->Add(hTrEta);
     fOutputList->Add(hTrPhi);
@@ -1076,9 +1098,15 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
 
   for (Int_t i = 0; i < params->GetNzBins(); i++) {
     ProjectDJetCorr(prefix, suffix, kTRUE, kTRUE, kFALSE, 
-                    10.0, params->GetJetPtBin(params->GetNJetPtBins()),
-                    7.0, params->GetDPtBin(params->GetNDPtBins()), params->GetzBin(i), params->GetzBin(i+1), -0.9, 0.9,
+                    params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()),
+                    params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), params->GetzBin(i), params->GetzBin(i+1), -0.9, 0.9,
                     params->GetInvMinMass(), params->GetInvMaxMass(), params->Get2ProngMinMass(), params->Get2ProngMaxMass(), params->GetDeltaInvMinMass(), params->GetDeltaInvMaxMass());
+    for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
+      ProjectDJetCorr(prefix, suffix, kTRUE, kTRUE, kFALSE, 
+                      params->GetJetPtBin(j), params->GetJetPtBin(j+1),
+                      params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), params->GetzBin(i), params->GetzBin(i+1), -0.9, 0.9,
+                      params->GetInvMinMass(), params->GetInvMaxMass(), params->Get2ProngMinMass(), params->Get2ProngMaxMass(), params->GetDeltaInvMinMass(), params->GetDeltaInvMaxMass());
+    }
   }
 
   TString cutsN(Form("JetPt_%03.0f_%03.0f", params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins())));
@@ -1118,8 +1146,8 @@ Bool_t DJetCorrAnalysis::GenerateRatios(const char* nname, const char* dname)
 
     Printf("Info-DJetCorrAnalysis::GenerateRatios : Now calcutaling ratio '%s' over '%s'", hnname.Data(), hdname.Data());
 
-    hist1D->Sumw2();
-    num->Sumw2();
+    if (hist1D->GetSumw2N() == 0) hist1D->Sumw2();
+    if (num->GetSumw2N() == 0) num->Sumw2();
 
     TH2* hist2D = dynamic_cast<TH2*>(hist1D);
     if (hist2D) {
@@ -1192,24 +1220,24 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
   Int_t deltaPhiAxis = GetAxisIndex(fDeltaPhiAxisTitle);
   Int_t dzAxis = GetAxisIndex(fDzAxisTitle);
 
-  fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt * (1+fgkEpsilon), maxJetPt * (1-fgkEpsilon));
-  fDmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt * (1+fgkEpsilon), maxDPt * (1-fgkEpsilon));
-  fDmesons->GetAxis(dEtaAxis)->SetRangeUser(minDEta * (1+fgkEpsilon), maxDEta * (1-fgkEpsilon));
+  fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
+  fDmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt, maxDPt);
+  fDmesons->GetAxis(dEtaAxis)->SetRangeUser(minDEta, maxDEta);
 
   if (0 && dInvMassAxis >= 0) {
-    fDmesons->GetAxis(dInvMassAxis)->SetRangeUser(minInvMass * (1+fgkEpsilon), maxInvMass * (1-fgkEpsilon));    
+    fDmesons->GetAxis(dInvMassAxis)->SetRangeUser(minInvMass, maxInvMass);    
   }
 
   if (0 && d2ProngInvMassAxis >= 0) {
-    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(min2ProngMass * (1+fgkEpsilon), max2ProngMass * (1-fgkEpsilon));    
+    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(min2ProngMass, max2ProngMass);    
   }
 
   if (dDeltaInvMassAxis >= 0) {
-    fDmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(minDeltaInvMass * (1+fgkEpsilon), maxDeltaInvMass * (1-fgkEpsilon));    
+    fDmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(minDeltaInvMass, maxDeltaInvMass);    
   }
   
   if (dzAxis >= 0) {
-    fDmesons->GetAxis(dzAxis)->SetRangeUser(minz * (1+fgkEpsilon), maxz * (1-fgkEpsilon));    
+    fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);    
   }
 
   TString hname;
@@ -1235,7 +1263,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
 
   if (dInvMassAxis >= 0) {
     TH1* hdinvmass = fDmesons->Projection(dInvMassAxis, "EO");
-    hdinvmass->Rebin(3);
+    //hdinvmass->Rebin(3);
     hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
     fOutputList->Add(hdinvmass);
@@ -1243,7 +1271,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
 
   if (d2ProngInvMassAxis >= 0) {
     TH1* hd2pronginvmass = fDmesons->Projection(d2ProngInvMassAxis, "EO");
-    hd2pronginvmass->Rebin(3);
+    //hd2pronginvmass->Rebin(3);
     hd2pronginvmass->SetName(Form("h%s_D0InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
     fOutputList->Add(hd2pronginvmass);
@@ -1251,7 +1279,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
 
   if (dDeltaInvMassAxis >= 0) {
     TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis, "EO");
-    hddeltainvmass->Rebin(3);
+    //hddeltainvmass->Rebin(3);
     hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
     fOutputList->Add(hddeltainvmass);
