@@ -9,6 +9,7 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH3D.h>
+#include <TF1.h>
 #include <TMap.h>
 #include <Riostream.h>
 #include <TParameter.h>
@@ -65,6 +66,7 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fJetLeadPtAxisTitle(),
   fJetAreaAxisTitle(),
   fJetConstAxisTitle(),
+  fDeltaRDaughterAxisTitle(),
   fPlotFormat(),
   fSavePlots(kFALSE),
   fAnalysisParams(0),
@@ -110,6 +112,7 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fJetLeadPtAxisTitle("#it{p}_{T,particle}^{leading} (GeV/#it{c})"),
   fJetAreaAxisTitle("#it{A}_{jet}"),
   fJetConstAxisTitle("No. of constituents"),
+  fDeltaRDaughterAxisTitle("#Delta R_{d%d-jet}"),
   fPlotFormat("pdf"),
   fSavePlots(kFALSE),
   fAnalysisParams(new TList()),
@@ -372,6 +375,29 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
                  params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), 
                  params->GetzBin(0), params->GetzBin(params->GetNzBins()),
                  1, 1, 1);
+
+  // Daughter 1
+  PlotObservable(params, "DeltaRDaughter0", 0, 2,
+                 params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()), 
+                 -1, -1,
+                 params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                 2, 1, 1, 1);
+
+  // Daughter 2
+  PlotObservable(params, "DeltaRDaughter1", 0, 2,
+                 params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()), 
+                 -1, -1,
+                 params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                 2, 1, 1, 1);
+
+  if (params->IsDStar()) {
+    // Daughter 3
+    PlotObservable(params, "DeltaRDaughter2", 0, 2,
+                   params->GetJetPtBin(0), params->GetJetPtBin(params->GetNJetPtBins()), 
+                   -1, -1,
+                   params->GetzBin(0), params->GetzBin(params->GetNzBins()),
+                   2, 1, 1, 1);
+  }
   
   TH1::AddDirectory(addDirStatus);
   
@@ -625,7 +651,7 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
                                         Double_t minJetPt, Double_t maxJetPt, Double_t minDPt, Double_t maxDPt, Double_t minZ, Double_t maxZ,
-                                        Int_t step, Int_t rebin, Int_t norm)
+                                        Int_t step, Int_t rebin, Int_t norm, Int_t plotStats)
 {
   if (!fOutputList) return kFALSE;
 
@@ -724,8 +750,21 @@ Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString 
         newName += "_copy";
         //Printf("Info-DJetCorrAnalysis::PlotObservable : Cloning histogram '%s'", objname.Data());
         histos[ih] = static_cast<TH1*>(hist->Clone(newName));
+        if (norm == 1) {
+          histos[ih]->Scale(1. / histos[ih]->Integral(), "width");
+          histos[ih]->GetYaxis()->SetTitle("Probability density");
+        }
+        else if (norm == 2) {
+          histos[ih]->Scale(1. / histos[ih]->Integral(), "");
+          TF1 f1("f1", "TMath::TwoPi() * x", 0, histos[ih]->GetXaxis()->GetXmax()*1.5);
+          for (Int_t ibin = 1; ibin <= histos[ih]->GetNbinsX(); ibin++) {
+            Double_t integ = f1.Integral(histos[ih]->GetBinLowEdge(ibin), histos[ih]->GetBinLowEdge(ibin+1));
+            histos[ih]->SetBinContent(ibin, histos[ih]->GetBinContent(ibin) / integ);
+            histos[ih]->SetBinError(ibin, histos[ih]->GetBinError(ibin) / integ);
+          }
+          histos[ih]->GetYaxis()->SetTitle("Prob. density / 2#pi#Delta R");
+        }
         if (rebin > 1) histos[ih]->Rebin(4);
-        if (norm > 0) histos[ih]->Scale(1. / histos[ih]->Integral(), "width");
         histos[ih]->SetTitle(htitle);
         ih++;
       }
@@ -734,11 +773,11 @@ Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString 
 
   if (ih == 0) return kFALSE;
   
-  return Plot1DHistos(cname, ih, histos, xmin, xmax);
+  return Plot1DHistos(cname, ih, histos, xmin, xmax, plotStats);
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax)
+Bool_t DJetCorrAnalysis::Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax, Int_t plotStats)
 {
   if (!histos[0]) return kFALSE;
   
@@ -752,7 +791,11 @@ Bool_t DJetCorrAnalysis::Plot1DHistos(TString cname, Int_t n, TH1** histos, Doub
   TH1* hblank = dynamic_cast<TH1*>(canvas->GetListOfPrimitives()->At(0));
   Color_t colors[12] = {kRed+1, kBlue+1, kMagenta, kGreen+2, kOrange+1, kCyan+2, kPink+1, kTeal+1, kViolet, kAzure+1, kYellow+2, kSpring+3};
 
-  TLegend* leg = SetUpLegend(0.38, 0.69, 0.88, 0.88, 13);
+  TLegend* leg = 0;
+  Int_t neff = n;
+  if (plotStats) neff *= 2;
+  if (neff > 8) leg = SetUpLegend(0.38, 0.45, 0.88, 0.88, 15);
+  else leg = SetUpLegend(0.38, 0.69, 0.88, 0.88, 15);
   leg->SetNColumns(2);
   Double_t maxY = 0;
   for (Int_t i = 0; i < n; i++) {
@@ -764,6 +807,10 @@ Bool_t DJetCorrAnalysis::Plot1DHistos(TString cname, Int_t n, TH1** histos, Doub
     histos[i]->Draw("same");
     TLegendEntry* legEntry = leg->AddEntry(histos[i], histos[i]->GetTitle(), "pe");
     legEntry->SetLineColor(colors[i]);
+    if (plotStats) {
+      TString statsStr(Form("#mu = %.3f, #sigma = %.3f", histos[i]->GetMean(), histos[i]->GetRMS()));
+      leg->AddEntry((TObject*)0, statsStr, "");
+    }
   }
 
   if (hblank && maxY > 0) {
@@ -867,47 +914,69 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
   Double_t Dstarmass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(413))->Mass();
 
-  TString jetCuts;
+  TString fixedCuts(Form("_JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f", minJetPt, maxJetPt, params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins())));
   
-  TString cname("fig_InvMassVsDz");
-  cname += params->GetName();
-  
-  jetCuts = Form("%.1f < #it{p}_{T,jet} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
-  cname += Form("_JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f", minJetPt, maxJetPt, params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()));
-  
+  TString cname;
   TString hname;
   TString xTitle;
   Double_t minMass = 0;
   Double_t maxMass = 0;
   Double_t pdgMass = -1;
+  TH1** histos = 0;
+    
+  TString cname2;
+  TString hname2;
+  TString xTitle2;
+  Double_t minMass2 = 0;
+  Double_t maxMass2 = 0;
+  Double_t pdgMass2 = -1;
+  TH1** histos2 = 0;
+  
   if (params->IsD0()) {
+    cname = "fig_InvMassVsDz";
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
     pdgMass = D0mass;
     minMass = D0mass - 0.15;
     maxMass = D0mass + 0.15;
+    histos = new TH1*[params->GetNzBins()];
   }
   else if (params->IsDStar()) {
+    cname = "fig_DeltaInvMassVsDz";
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "DeltaInvMass";
     pdgMass = Dstarmass - D0mass;
     minMass = pdgMass - 0.04;
     maxMass = pdgMass + 0.04;
+    histos = new TH1*[params->GetNzBins()];
+
+    cname2 = "fig_D0InvMassVsDz";
+    xTitle2 = "#it{m}(K#pi) (GeV/#it{c}^{2})";
+    hname2 = "D0InvMass";
+    pdgMass2 = D0mass;
+    minMass2 = pdgMass2 - 0.20;
+    maxMass2 = pdgMass2 + 0.20;
+    histos2 = new TH1*[params->GetNzBins()];
+
+    cname2 += params->GetName();
+    cname2 += fixedCuts;
   }
   else {
     Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Meson type '%s' not recognized!", params->GetDmesonName());
     return kFALSE;
   }
-  
+
+  cname += params->GetName();
+  cname += fixedCuts;
+
   TString prefix(params->GetName());
   
-  TH1** histos = new TH1*[params->GetNzBins()];
   Int_t n = 0;
   for (Int_t i = 0; i < params->GetNzBins(); i++) {
     TString cuts(Form("JetPt_%03.0f_%03.0f_DPt_%02.0f_%02.0f_z_%.1f_%.1f", minJetPt, maxJetPt, params->GetDPtBin(0), params->GetDPtBin(params->GetNDPtBins()), params->GetzBin(i), params->GetzBin(i+1)));
     cuts.ReplaceAll(".", "");
+    
     TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
-    //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Retrieving histogram '%s'", objname.Data());
     TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
     if (!hist) {
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Histogram '%s' not found!", objname.Data());
@@ -915,23 +984,42 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     }
     TString newName(objname);
     newName += "_copy";
-    //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Cloning histogram '%s'", objname.Data());
     histos[n] = static_cast<TH1*>(hist->Clone(newName));
-    //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Setting title of histogram '%s'", histos[i]->GetName());
-    TString htitle(Form("%.1f < #it{z}_{D} < %.1f \n%s", params->GetzBin(i), params->GetzBin(i+1), jetCuts.Data()));
+    TString htitle(Form("%.1f < #it{z}_{D} < %.1f", params->GetzBin(i), params->GetzBin(i+1)));
     histos[n]->SetTitle(htitle);
+
+    if (histos2) {
+      TString objname2(Form("h%s_%s_%s", prefix.Data(), hname2.Data(), cuts.Data()));
+      TH1* hist2 = static_cast<TH1*>(fOutputList->FindObject(objname2));
+      if (!hist2) {
+        Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Histogram '%s' not found!", objname2.Data());
+        continue;
+      }
+      TString newName2(objname2);
+      newName2 += "_copy";
+      histos2[n] = static_cast<TH1*>(hist2->Clone(newName));
+      TString htitle2(Form("%.1f < #it{z}_{D} < %.1f", params->GetzBin(i), params->GetzBin(i+1)));
+      histos2[n]->SetTitle(htitle2);
+    }
+    
     n++;
   }
   
-  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass);
+  Bool_t result = kTRUE;
 
+  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass);
   delete[] histos;
+
+  if (histos2) {
+    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15) && result;
+    delete[] histos2;
+  }
 
   return result;
 }    
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass)
+Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits)
 {
   // Plot invariant mass histograms contained in histos.
 
@@ -965,10 +1053,23 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const 
     pave->Draw();
 
     if (pdgMass > 0) {
-      TLine *line = new TLine(pdgMass, 0, pdgMass, histos[i]->GetMaximum());
+      TLine *line = new TLine(pdgMass, 0, pdgMass, histos[i]->GetMaximum()*0.6);
       line->SetLineColor(kRed);
       line->SetLineWidth(1);
       line->Draw();
+    }
+    if (massLimits > 0) {
+      TLine *line1 = new TLine(pdgMass - massLimits, 0, pdgMass - massLimits, histos[i]->GetMaximum());
+      line1->SetLineColor(kGreen+2);
+      line1->SetLineWidth(1);
+      line1->SetLineStyle(2);
+      line1->Draw();
+
+      TLine *line2 = new TLine(pdgMass + massLimits, 0, pdgMass + massLimits, histos[i]->GetMaximum());
+      line2->SetLineColor(kGreen+2);
+      line2->SetLineWidth(1);
+      line2->SetLineStyle(2);
+      line2->Draw();
     }
   }
 
@@ -1171,7 +1272,9 @@ Bool_t DJetCorrAnalysis::GenerateRatios(const char* nname, const char* dname)
 Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, Bool_t doPtPlots, Bool_t dozPlots,
                                          Double_t minJetPt, Double_t maxJetPt,
                                          Double_t minDPt, Double_t maxDPt, Double_t minz, Double_t maxz, Double_t minDEta, Double_t maxDEta,
-                                         Double_t minInvMass, Double_t maxInvMass, Double_t min2ProngMass, Double_t max2ProngMass, Double_t minDeltaInvMass, Double_t maxDeltaInvMass)
+                                         Double_t minInvMass, Double_t maxInvMass,
+                                         Double_t min2ProngMass, Double_t max2ProngMass,
+                                         Double_t minDeltaInvMass, Double_t maxDeltaInvMass)
 {
   // Project histograms related to the D meson with specified cuts.
   
@@ -1220,24 +1323,64 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
   Int_t deltaPhiAxis = GetAxisIndex(fDeltaPhiAxisTitle);
   Int_t dzAxis = GetAxisIndex(fDzAxisTitle);
 
+  Int_t dDeltaRDaghters[3] = {-1};
+  
+  for (Int_t i = 0; i < 3; i++) {
+    dDeltaRDaghters[i] = GetAxisIndex(Form(fDeltaRDaughterAxisTitle.Data(), i));
+  }
+
   fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
   fDmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt, maxDPt);
   fDmesons->GetAxis(dEtaAxis)->SetRangeUser(minDEta, maxDEta);
 
-  if (0 && dInvMassAxis >= 0) {
-    fDmesons->GetAxis(dInvMassAxis)->SetRangeUser(minInvMass, maxInvMass);    
+  if (dzAxis >= 0) {
+    if (TMath::Abs(maxz - 1.0) < fgkEpsilon) {
+      Int_t z1bin = fDmesons->GetAxis(dzAxis)->FindBin(1.0);
+      maxz = fDmesons->GetAxis(dzAxis)->GetBinLowEdge(z1bin) - fgkEpsilon;
+    }
+
+    if (TMath::Abs(minz - 1.0) < fgkEpsilon) {
+      Int_t z1bin = fDmesons->GetAxis(dzAxis)->FindBin(1.0);
+      minz = fDmesons->GetAxis(dzAxis)->GetBinLowEdge(z1bin+1) + fgkEpsilon;
+    }
+    
+    fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);    
   }
 
-  if (0 && d2ProngInvMassAxis >= 0) {
+  if (dInvMassAxis >= 0) {
+    TH1* hdinvmass = fDmesons->Projection(dInvMassAxis, "EA");
+    //hdinvmass->Rebin(3);
+    hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
+    fOutputList->Add(hdinvmass);
+    
+    fDmesons->GetAxis(dInvMassAxis)->SetRangeUser(minInvMass, maxInvMass);
+  }
+
+  if (d2ProngInvMassAxis >= 0) {
+    TH1* hd2pronginvmass = fDmesons->Projection(d2ProngInvMassAxis, "EA");
+    //hd2pronginvmass->Rebin(3);
+    hd2pronginvmass->SetName(Form("h%s_D0InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
+    fOutputList->Add(hd2pronginvmass);
+    
     fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(min2ProngMass, max2ProngMass);    
   }
 
   if (dDeltaInvMassAxis >= 0) {
+    TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis, "EA");
+    //hddeltainvmass->Rebin(3);
+    hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
+    fOutputList->Add(hddeltainvmass);
+
+    if (dSoftPionPtAxis >= 0) {
+      TH2* hdsoftpionptVsDeltaInvMass = fDmesons->Projection(dSoftPionPtAxis, dDeltaInvMassAxis, "EO");
+      hdsoftpionptVsDeltaInvMass->SetName(Form("h%s_SoftPionVsDeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hdsoftpionptVsDeltaInvMass);
+    }
+    
     fDmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(minDeltaInvMass, maxDeltaInvMass);    
-  }
-  
-  if (dzAxis >= 0) {
-    fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);    
   }
 
   TString hname;
@@ -1260,36 +1403,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
   TH2* hDpos = fDmesons->Projection(dPhiAxis, dEtaAxis, "EO");
   hDpos->SetName(Form("h%s_MesonPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
   fOutputList->Add(hDpos);
-
-  if (dInvMassAxis >= 0) {
-    TH1* hdinvmass = fDmesons->Projection(dInvMassAxis, "EO");
-    //hdinvmass->Rebin(3);
-    hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
-    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
-    fOutputList->Add(hdinvmass);
-  }
-
-  if (d2ProngInvMassAxis >= 0) {
-    TH1* hd2pronginvmass = fDmesons->Projection(d2ProngInvMassAxis, "EO");
-    //hd2pronginvmass->Rebin(3);
-    hd2pronginvmass->SetName(Form("h%s_D0InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
-    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
-    fOutputList->Add(hd2pronginvmass);
-  }
-
-  if (dDeltaInvMassAxis >= 0) {
-    TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis, "EO");
-    //hddeltainvmass->Rebin(3);
-    hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
-    Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
-    fOutputList->Add(hddeltainvmass);
-
-    if (dSoftPionPtAxis >= 0) {
-      TH2* hdsoftpionptVsDeltaInvMass = fDmesons->Projection(dSoftPionPtAxis, dDeltaInvMassAxis, "EO");
-      hdsoftpionptVsDeltaInvMass->SetName(Form("h%s_SoftPionVsDeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
-      fOutputList->Add(hdsoftpionptVsDeltaInvMass);
-    }
-  }
 
   if (dSoftPionPtAxis >= 0) {
     TH1* hdsoftpionpt = fDmesons->Projection(dSoftPionPtAxis, "EO");
@@ -1356,6 +1469,14 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix, Bool_t 
       TH2* hJetpos = fDmesons->Projection(jetPhiAxis, jetEtaAxis, "EO");
       hJetpos->SetName(Form("h%s_JetPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hJetpos);
+    }
+
+    for (Int_t i = 0; i < 3; i++) {
+      if (dDeltaRDaghters[i] >= 0) {
+        TH1* hDeltaRDaughter = fDmesons->Projection(dDeltaRDaghters[i], "EO");
+        hDeltaRDaughter->SetName(Form("h%s_DeltaRDaughter%d_%s%s", prefix.Data(), i, cuts.Data(), suffix.Data()));
+        fOutputList->Add(hDeltaRDaughter);
+      }
     }
   }
   

@@ -17,7 +17,10 @@ TTree* CreateChain(const char* fname);
 void PlotHist(TH1* hist, Style_t marker, Double_t markerSize, Color_t color, TLegend* leg = 0);
 
 void PlotSimulation()
-{  
+{
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  
   TTree* tree = CreateChain("simulation.root");
   if (!tree) {
     Printf("Unable to load tree.");
@@ -150,6 +153,8 @@ void PlotSimulation()
   leg2->AddEntry((TObject*)0, "Full symbols: K^{#pm}", "");
   leg2->AddEntry((TObject*)0, "Open symbols: #pi^{#pm}", "");
   leg2->Draw();
+
+  canvas->SaveAs("simulation.pdf");
 }
 
 void PlotHist(TH1* hist, Style_t marker, Double_t markerSize, Color_t color, TLegend* leg)
