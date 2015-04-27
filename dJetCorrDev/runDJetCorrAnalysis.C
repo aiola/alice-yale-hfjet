@@ -2,11 +2,13 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_255_256_257_258", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_251_252_253_254", const char* inputPath = "$JETRESULTS")
 {
   TString tracksName = "tracks";
-  TString tracksD0Name = "DcandidatesAndTracksD0rec";
-  TString tracksDStarName = "DcandidatesAndTracksDStarrec";
+  TString tracksD0Name = tracksName;
+  TString tracksDStarName = tracksName;
+  //TString tracksD0Name = "DcandidatesAndTracksD0rec";
+  //TString tracksDStarName = "DcandidatesAndTracksDStarrec";
   
   gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
