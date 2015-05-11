@@ -182,6 +182,7 @@ void runJetAna(
     //pMgr->AddClassDebug("AliAnalysisTaskSE", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliAnalysisTaskDmesonJetCorrelations", AliLog::kDebug+100);
+    //pMgr->AddClassDebug("AliEmcalJetTask", AliLog::kDebug+100);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();

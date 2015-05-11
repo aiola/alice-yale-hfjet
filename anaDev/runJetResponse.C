@@ -161,6 +161,7 @@ void runJetResponse(
     //mgr->AddClassDebug("AliJetResponseMaker",100);
     //mgr->AddClassDebug("AliEmcalContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
+    //mgr->AddClassDebug("AliEmcalMCTrackSelector", AliLog::kDebug+5);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();
