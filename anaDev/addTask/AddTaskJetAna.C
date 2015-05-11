@@ -253,7 +253,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
 
     TString sTracksDStarName = "DcandidatesAndTracksDStarrec";
     
-    AliEmcalJetTask *pChJetDStarTask = AddTaskEmcalJet(sTracksDStarName, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, 1, kFALSE);
+    AliEmcalJetTask *pChJetDStarTask = AddTaskEmcalJet(sTracksDStarName, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 1);
     pChJetDStarTask->SelectCollisionCandidates(kPhysSel);
     TString sChJetsDStarName = pChJetDStarTask->GetName();
 
@@ -267,13 +267,14 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
                                                                                     kJetRadius, kJetPtCut, kJetAreaCut, "TPC", 0,
                                                                                     "AliAnalysisTaskDmesonJetCorrelations", "rec");
     pDStarMesonJetCorr->SetMaxR(kJetRadius);
-    pDStarMesonJetCorr->SetMatchingType(AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching);
+    pDStarMesonJetCorr->SetMatchingType(AliAnalysisTaskDmesonJetCorrelations::kJetLoop);
     pDStarMesonJetCorr->SetPlotOnlyAcceptedJets(kTRUE);
     pDStarMesonJetCorr->SetShowDeltaEta(kTRUE);
     pDStarMesonJetCorr->SetShowDeltaPhi(kTRUE);
     pDStarMesonJetCorr->SetShow2ProngInvMass(kTRUE);
     pDStarMesonJetCorr->SetShowInvMass(kTRUE);
     //pDStarMesonJetCorr->SetShowDaughterDistance(3);
+    pDStarMesonJetCorr->SetShowJetConstituents(kTRUE);
     pDStarMesonJetCorr->SelectCollisionCandidates(kPhysSel);
     
     AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
@@ -290,7 +291,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     
     TString sTracksD0Name = "DcandidatesAndTracksD0rec";
     
-    AliEmcalJetTask *pChJetD0Task = AddTaskEmcalJet(sTracksD0Name, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, 1, kFALSE);
+    AliEmcalJetTask *pChJetD0Task = AddTaskEmcalJet(sTracksD0Name, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 1);
     pChJetD0Task->SelectCollisionCandidates(kPhysSel);
     TString sChJetsD0Name = pChJetD0Task->GetName();
 
@@ -304,29 +305,29 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
                                                                                  kJetRadius, kJetPtCut, kJetAreaCut, "TPC", 0,
                                                                                  "AliAnalysisTaskDmesonJetCorrelations", "rec");
     pD0MesonJetCorr->SetMaxR(kJetRadius);
-    pD0MesonJetCorr->SetMatchingType(AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching);
+    pD0MesonJetCorr->SetMatchingType(AliAnalysisTaskDmesonJetCorrelations::kJetLoop);
     pD0MesonJetCorr->SetPlotOnlyAcceptedJets(kTRUE);
     pD0MesonJetCorr->SetShowDeltaEta(kTRUE);
     pD0MesonJetCorr->SetShowDeltaPhi(kTRUE);
     //pD0MesonJetCorr->SetShowDaughterDistance(2);
+    pD0MesonJetCorr->SetShowJetConstituents(kTRUE);
     pD0MesonJetCorr->SelectCollisionCandidates(kPhysSel);
 
     if (1) {
       // QA task
       AliAnalysisTaskSAQA *pQADStarTask = AddTaskSAQA(sTracksDStarName, "", "", "", "", 0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
-      //pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
-      //pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
-      pQATask->SetAODfilterBits(256, 512);
-      pQATask->SelectCollisionCandidates(kPhysSel);
-      pQATask->SetHistoBins(200, 0, 30);
+      //pQADStarTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
+      //pQADStarTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+      pQADStarTask->SetAODfilterBits(256, 512);
+      pQADStarTask->SelectCollisionCandidates(kPhysSel);
+      pQADStarTask->SetHistoBins(200, 0, 30);
 
       AliAnalysisTaskSAQA *pQAD0Task = AddTaskSAQA(sTracksD0Name, "", "", "", "", 0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
-      //pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
-      //pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
-      pQATask->SetAODfilterBits(256, 512);
-      pQATask->SelectCollisionCandidates(kPhysSel);
-      pQATask->SetHistoBins(200, 0, 30);
-      
+      //pQAD0Task->GetParticleContainer(0)->SetClassName("AliAODTrack");
+      //pQAD0Task->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+      pQAD0Task->SetAODfilterBits(256, 512);
+      pQAD0Task->SelectCollisionCandidates(kPhysSel);
+      pQAD0Task->SetHistoBins(200, 0, 30);
     }
   }
 
