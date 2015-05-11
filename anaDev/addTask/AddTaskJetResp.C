@@ -292,7 +292,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     // MC particle selector
     TString mcTracksDStarname = "mcparticlesDStar";
     
-    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(mcTracksDStarname, kFALSE, kTRUE, 1.);
+    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(mcTracksDStarname, kFALSE, kTRUE, 0.);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
     mcPartTask->SetSpecialPDG(413);
 
