@@ -66,6 +66,7 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fJetAreaAxisTitle(),
   fJetConstAxisTitle(),
   fDeltaRDaughterAxisTitle(),
+  fMatchingStatusAxisTitle(),
   fPlotFormat(),
   fSavePlots(kFALSE),
   fAnalysisParams(0),
@@ -112,6 +113,7 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fJetAreaAxisTitle("#it{A}_{jet}"),
   fJetConstAxisTitle("No. of constituents"),
   fDeltaRDaughterAxisTitle("#Delta R_{d%d-jet}"),
+  fMatchingStatusAxisTitle("Matching status"),
   fPlotFormat("pdf"),
   fSavePlots(kFALSE),
   fAnalysisParams(new TList()),
@@ -649,7 +651,7 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
 
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
-                                        Double_t minJetPt, Double_t maxJetPt, Double_t minDPt, Double_t maxDPt, Double_t minZ, Double_t maxZ,
+                                        Double_t minDPt, Double_t maxDPt, Double_t minJetPt, Double_t maxJetPt, Double_t minZ, Double_t maxZ,
                                         Int_t step, Int_t rebin, Int_t norm, Int_t plotStats)
 {
   if (!fOutputList) return kFALSE;
@@ -660,9 +662,9 @@ Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString 
   TString dCuts;
   TString zCuts;
 
-  Int_t nj = params->GetNJetPtBins()-1;
-  Int_t nd = params->GetNDPtBins()-1;
-  Int_t nz = params->GetNzBins()-1;
+  Int_t nj = params->GetNJetPtBins();
+  Int_t nd = params->GetNDPtBins();
+  Int_t nz = params->GetNzBins();
 
   if (maxJetPt > 0) {
     jetCuts = Form("JetPt_%03.0f_%03.0f", minJetPt, maxJetPt);
@@ -725,7 +727,7 @@ Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString 
           zTitle = Form("%.1f < z < %.1f", params->GetzBin(iz), params->GetzBin(iz+1));
         }
             
-        TString cuts(Form("%s_%s_%s", jetCuts.Data(), dCuts.Data(), zCuts.Data()));
+        TString cuts(Form("%s_%s_%s", dCuts.Data(), jetCuts.Data(), zCuts.Data()));
         TString htitle;
 
         htitle = jetTitle;
@@ -738,7 +740,7 @@ Bool_t DJetCorrAnalysis::PlotObservable(DJetCorrAnalysisParams* params, TString 
           htitle += zTitle;
         }
     
-        TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
+        TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
         //Printf("Info-DJetCorrAnalysis::PlotObservable : Retrieving histogram '%s'", objname.Data());
         TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
         if (!hist) {
@@ -1164,21 +1166,6 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
   ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched);
   ProjectDJetCorr(prefix, "Matched", params, kMatched);
 
-  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
-    ProjectDJetCorr(prefix, "Matched", params, kMatched, i); 
-  }
-
-  for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
-    ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, i);
-  }
-
-  for (Int_t i = 0; i < params->GetNzBins(); i++) {
-    ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, -1, i);
-    for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
-      ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, i, i);
-    }
-  }
-
   TString dCuts(Form("DPt_%02.0f_%02.0f", params->GetMinDPt(), params->GetMaxDPt()));
   dCuts.ReplaceAll(".", "");
 
@@ -1192,6 +1179,33 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
   TString cutsD(Form("%s_AnyMatchingStatus", dCuts.Data()));
 
   GenerateRatios(cutsN, cutsD);
+
+  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
+    ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, i);
+    ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, i);
+    ProjectDJetCorr(prefix, "Matched", params, kMatched, i);
+
+    dCuts = Form("DPt_%02.0f_%02.0f", params->GetDPtBin(i), params->GetDPtBin(i+1));
+    dCuts.ReplaceAll(".", "");
+
+    cutsN = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
+    cutsD = Form("%s_AnyMatchingStatus", dCuts.Data());
+    
+    GenerateRatios(cutsN, cutsD);
+  }
+
+  for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
+    ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, i);
+  }
+
+  for (Int_t i = 0; i < params->GetNzBins(); i++) {
+    ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, -1, i);
+    for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
+      ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, j, i);
+    }
+  }
+
+
 
   return kTRUE;
 }
@@ -1306,6 +1320,21 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
   Int_t deltaEtaAxis = GetAxisIndex(fDeltaEtaAxisTitle);
   Int_t deltaPhiAxis = GetAxisIndex(fDeltaPhiAxisTitle);
   Int_t dzAxis = GetAxisIndex(fDzAxisTitle);
+  Int_t jetConstAxis = GetAxisIndex(fJetConstAxisTitle);
+  
+  Int_t matchingStatusAxis = GetAxisIndex(fMatchingStatusAxisTitle);
+
+  if (matchingStatusAxis >= 0) {
+    if (st == kMatched) {
+      fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,2);
+    }
+    else if (st == kNotMatched) {
+      fDmesons->GetAxis(matchingStatusAxis)->SetRange(3,4);
+    }
+    else {
+      fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,4);
+    }
+  }
 
   Int_t dDeltaRDaghters[3] = {-1};
   
@@ -1332,6 +1361,10 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     
       fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);    
     }
+  }
+  else {
+    fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
+    fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
   }
 
   if (dInvMassAxis >= 0) {
@@ -1404,9 +1437,27 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
       fOutputList->Add(hDeltaR);
 
       if (dPtAxis >=0 && dptBin == -1) {
-        TH1* hDeltaRVsDpt = fDmesons->Projection(deltaRAxis, dPtAxis, "EO");
+        TH2* hDeltaRVsDpt = fDmesons->Projection(deltaRAxis, dPtAxis, "EO");
         hDeltaRVsDpt->SetName(Form("h%s_DeltaRvsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hDeltaRVsDpt);
+      }
+    }
+
+    if (jetConstAxis >= 0) {
+      TH1* hJetConst = fDmesons->Projection(jetConstAxis, "EO");
+      hJetConst->SetName(Form("h%s_JetConstituents_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hJetConst);
+
+      if (dzAxis >= 0 && dzBin == -1) {
+        TH2* hJetConstVsDz = fDmesons->Projection(jetConstAxis, dzAxis, "EO");
+        hJetConstVsDz->SetName(Form("h%s_JetConstituentsVsDz_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hJetConstVsDz);
+      }
+
+      if (jetPtAxis >= 0 && jetptBin == -1) {
+        TH2* hJetConstVsJetPt = fDmesons->Projection(jetConstAxis, jetPtAxis, "EO");
+        hJetConstVsJetPt->SetName(Form("h%s_JetConstituentsVsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hJetConstVsJetPt);
       }
     }
 

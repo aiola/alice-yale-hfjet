@@ -69,7 +69,7 @@ class DJetCorrAnalysis : public TObject {
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass=-1, Double_t massLimits=0);
   
   Bool_t          PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
-                                 Double_t minJetPt, Double_t maxJetPt, Double_t minDPt, Double_t maxDPt, Double_t minZ, Double_t maxZ,
+                                 Double_t minDPt, Double_t maxDPt, Double_t minJetPt, Double_t maxJetPt, Double_t minZ, Double_t maxZ,
                                  Int_t step, Int_t rebin, Int_t norm, Int_t plotStats=0);
     
   Bool_t          Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax, Int_t plotStats=0);
@@ -122,6 +122,7 @@ class DJetCorrAnalysis : public TObject {
   TString         fJetAreaAxisTitle          ;//  jet area axis title
   TString         fJetConstAxisTitle         ;//  jet constituents axis title
   TString         fDeltaRDaughterAxisTitle   ;//  distance of a D meson daughter from the jet axis title
+  TString         fMatchingStatusAxisTitle   ;//  distance of a D meson daughter from the jet axis title
 
   TString         fPlotFormat                ;//  plot format (pdf, eps, png...)
   Bool_t          fSavePlots                 ;//  true if save plots
