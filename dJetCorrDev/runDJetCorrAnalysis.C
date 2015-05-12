@@ -2,13 +2,13 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_251_252_253_254", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_291_292_293_294", const char* inputPath = "$JETRESULTS")
 {
   TString tracksName = "tracks";
-  TString tracksD0Name = tracksName;
-  TString tracksDStarName = tracksName;
-  //TString tracksD0Name = "DcandidatesAndTracksD0rec";
-  //TString tracksDStarName = "DcandidatesAndTracksDStarrec";
+  //TString tracksD0Name = tracksName;
+  //TString tracksDStarName = tracksName;
+  TString tracksD0Name = "DcandidatesAndTracksD0rec";
+  TString tracksDStarName = "DcandidatesAndTracksDStarrec";
   
   gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
@@ -26,9 +26,10 @@ void runDJetCorrAnalysis(const char* options = "run plot", const char* train = "
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  projDjet->AddAnalysisParams("D0", "Charged", "R040", tracksD0Name);
+  //projDjet->AddAnalysisParams("D0", "Charged", "R040", tracksD0Name);
+  //projDjet->AddAnalysisParams("D0", "Charged", "R060", tracksD0Name);
+
   projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName);
-  projDjet->AddAnalysisParams("D0", "Charged", "R060", tracksD0Name);
   projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
 
   TString opt(options);

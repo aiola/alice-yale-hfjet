@@ -30,7 +30,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   f2ProngMinMass(0),
   f2ProngMaxMass(0), 
   fDeltaInvMinMass(0),
-  fDeltaInvMaxMass(0)
+  fDeltaInvMaxMass(0),
+  fMinDEta(-0.9),
+  fMaxDEta(0.9)
 {
 }
 
@@ -54,9 +56,11 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   f2ProngMinMass(0),
   f2ProngMaxMass(0), 
   fDeltaInvMinMass(0),
-  fDeltaInvMaxMass(0)
+  fDeltaInvMaxMass(0),
+  fMinDEta(-0.9),
+  fMaxDEta(0.9)
 {
-  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {
@@ -96,14 +100,12 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     SetInvMassRange(421, 0.30);
   }
 
-  fNJetPtBins = 5;
+  fNJetPtBins = 3;
   fJetPtBins = new Double_t[fNJetPtBins+1];
   fJetPtBins[ 0] =   2.5;
   fJetPtBins[ 1] =   5.0;
   fJetPtBins[ 2] =  10.0;
-  fJetPtBins[ 3] =  20.0;
-  fJetPtBins[ 4] =  40.0;
-  fJetPtBins[ 5] = 100.0;
+  fJetPtBins[ 3] =  50.0;
 
   fNzBins = 6;
   fzBins = new Double_t[fNzBins+1];
@@ -135,7 +137,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   f2ProngMinMass(p.f2ProngMinMass),
   f2ProngMaxMass(p.f2ProngMaxMass),
   fDeltaInvMinMass(p.fDeltaInvMinMass),
-  fDeltaInvMaxMass(p.fDeltaInvMaxMass)
+  fDeltaInvMaxMass(p.fDeltaInvMaxMass),
+  fMinDEta(p.fMinDEta),
+  fMaxDEta(p.fMaxDEta)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
@@ -171,4 +175,47 @@ void DJetCorrAnalysisParams::SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double
   
   fDeltaInvMinMass = part1->Mass() - part2->Mass() - range/2;
   fDeltaInvMaxMass = part1->Mass() - part2->Mass() + range/2;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetCutString(Int_t st, Int_t dptBin, Int_t jetptBin, Int_t dzBin)
+{
+  Double_t minDPt = GetMinDPt();
+  Double_t maxDPt = GetMaxDPt();
+  if (dptBin >= 0) {
+    minDPt = GetDPtBin(dptBin);
+    maxDPt = GetDPtBin(dptBin+1);
+  }
+
+  Double_t minJetPt = GetMinJetPt();
+  Double_t maxJetPt = GetMaxJetPt();
+  if (jetptBin >= 0) {
+    minJetPt = GetJetPtBin(jetptBin);
+    maxJetPt = GetJetPtBin(jetptBin+1);
+  }
+
+  Double_t minz = GetMinZ();
+  Double_t maxz = GetMaxZ();
+  if (dzBin >= 0) {
+    minz = GetzBin(dzBin);
+    maxz = GetzBin(dzBin+1);
+  }
+
+  TString dCuts(Form("DPt_%02.0f_%02.0f", minDPt, maxDPt));
+  dCuts.ReplaceAll(".", "");
+
+  TString jetCuts(Form("JetPt_%03.0f_%03.0f", minJetPt, maxJetPt));
+  jetCuts.ReplaceAll(".", "");
+  
+  TString zCuts(Form("z_%.1f_%.1f", minz, maxz));
+  zCuts.ReplaceAll(".", "");
+    
+  TString cuts(Form("%s_%s_%s", dCuts.Data(), jetCuts.Data(), zCuts.Data()));
+
+  if (st != kMatched) {
+    // Ignore cuts on z and jet pt
+    cuts = dCuts;
+  }
+
+  return cuts;
 }
