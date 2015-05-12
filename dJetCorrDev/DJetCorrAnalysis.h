@@ -5,7 +5,6 @@
 class TString;
 class TFile;
 class TList;
-class TMap;
 class THnSparse;
 class TCanvas;
 class TLegend;
@@ -14,12 +13,18 @@ class TPaveText;
 class DJetCorrAnalysisParams;
 class TObject;
 class TList;
+class TDirectoryFile;
+class TH1;
+
+#include <TMap.h>
 
 class DJetCorrAnalysis : public TObject {
   
  public:
   DJetCorrAnalysis();
   DJetCorrAnalysis(const char* train, const char* path = "$JETRESULTS");
+
+  enum EMatchingStatus {kAnyMatchingStatus, kNotMatched, kMatched};
 
   void   SetInputTrain(const char* train)      { fTrainName        = train  ; CloseInputFile(); }
   void   SetInputPath(const char* path)        { fInputPath        = path   ; CloseInputFile(); }
@@ -57,13 +62,10 @@ class DJetCorrAnalysis : public TObject {
 
   Bool_t          ProjectQA();
   Bool_t          ProjectCorrD(DJetCorrAnalysisParams* params);
-  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, Bool_t doCorrPlots, Bool_t doPtPlots, Bool_t dozPlots, 
-                                  Double_t minJetPt, Double_t maxJetPt,
-                                  Double_t minDPt, Double_t maxDPt, Double_t minz, Double_t maxz, Double_t minDEta, Double_t maxDEta,
-                                  Double_t minInvMass, Double_t maxInvMass, Double_t min2ProngMass, Double_t max2ProngMass, Double_t minDeltaInvMass, Double_t maxDeltaInvMass);
+  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
   Bool_t          GenerateRatios(const char* nname, const char* dname);
-  Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
-  Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
+  Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin=-1, Int_t dzBin=-1);
+  Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Int_t dptBin=-1, Int_t jetptBin=-1);
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass=-1, Double_t massLimits=0);
   
   Bool_t          PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,

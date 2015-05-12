@@ -13,6 +13,8 @@ class DJetCorrAnalysisParams : public TObject
   DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
   DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
 
+  enum {kAnyMatchingStatus, kNotMatched, kMatched};
+  
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass = min        ; fInvMaxMass = max        ; }
   void        SetInvMassRange(Int_t pdg, Double_t nsigma);
   void        Set2ProngMassRange(Double_t min, Double_t max)       { f2ProngMinMass = min     ; f2ProngMaxMass = max     ; }
@@ -27,11 +29,17 @@ class DJetCorrAnalysisParams : public TObject
   const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
   const char* GetInputListName()     const { return fInputListName.Data()                           ; }
   Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
-  Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; } 
+  Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; }
+  Double_t    GetMinDPt()            const { return fDPtBins[0]                                     ; }
+  Double_t    GetMaxDPt()            const { return fDPtBins[fNDPtBins]                             ; }
   Int_t       GetNJetPtBins()        const { return fNJetPtBins                                     ; }
   Double_t    GetJetPtBin(Int_t i)   const { return i >= 0 && i <= fNJetPtBins ? fJetPtBins[i] : -1 ; }
+  Double_t    GetMinJetPt()          const { return fJetPtBins[0]                                   ; }
+  Double_t    GetMaxJetPt()          const { return fJetPtBins[fNJetPtBins]                         ; }
   Int_t       GetNzBins()            const { return fNzBins                                         ; }
   Double_t    GetzBin(Int_t i)       const { return i >= 0 && i <= fNzBins ? fzBins[i] : -1         ; }
+  Double_t    GetMinZ()              const { return fzBins[0]                                       ; }
+  Double_t    GetMaxZ()              const { return fzBins[fNzBins]                                 ; }
   Bool_t      IsD0()                 const { return (fDmesonName == "D0")                           ; }
   Bool_t      IsDStar()              const { return (fDmesonName == "DStar")                        ; }
   
@@ -46,6 +54,11 @@ class DJetCorrAnalysisParams : public TObject
   Bool_t      IsInDeltaInvMassRange(Double_t dmass)    const { return (dmass < fDeltaInvMaxMass && dmass > fDeltaInvMinMass); }
   Double_t    GetDeltaInvMinMass()     const { return fDeltaInvMinMass                              ; }
   Double_t    GetDeltaInvMaxMass()     const { return fDeltaInvMaxMass                              ; }
+
+  Double_t    GetMinDEta()             const { return fMinDEta                                      ; }
+  Double_t    GetMaxDEta()             const { return fMaxDEta                                      ; }
+
+  TString     GetCutString(Int_t st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
   
  protected:
   TString         fName                      ;//  object name
@@ -68,6 +81,9 @@ class DJetCorrAnalysisParams : public TObject
   Double_t        f2ProngMaxMass             ;//  2-prong max mass (D* -> D0pi)  
   Double_t        fDeltaInvMinMass           ;//  delta inv min mass (D* -> D0pi)
   Double_t        fDeltaInvMaxMass           ;//  delta inv max mass (D* -> D0pi)
+
+  Double_t        fMinDEta                   ;//  min eta of D meson
+  Double_t        fMaxDEta                   ;//  max eta of D meson
   
  private:
  
