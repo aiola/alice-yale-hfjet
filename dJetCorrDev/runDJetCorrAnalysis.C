@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_255_256_257_258", const char* inputPath = "$JETRESULTS")
+void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_300_301_302_303", const char* inputPath = "$JETRESULTS")
 {
   TString tracksName = "tracks";
   //TString tracksD0Name = tracksName;
@@ -26,8 +26,8 @@ void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  //projDjet->AddAnalysisParams("D0", "Charged", "R040", tracksD0Name);
-  //projDjet->AddAnalysisParams("D0", "Charged", "R060", tracksD0Name);
+  projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);
+  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name);
 
   projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName);
   projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
