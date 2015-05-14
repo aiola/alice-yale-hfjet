@@ -32,7 +32,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fDeltaInvMinMass(0),
   fDeltaInvMaxMass(0),
   fMinDEta(-0.9),
-  fMaxDEta(0.9)
+  fMaxDEta(0.9),
+  fMinJetConstituents(2)
 {
 }
 
@@ -58,7 +59,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fDeltaInvMinMass(0),
   fDeltaInvMaxMass(0),
   fMinDEta(-0.9),
-  fMaxDEta(0.9)
+  fMaxDEta(0.9),
+  fMinJetConstituents(2)
 {
   fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
@@ -139,7 +141,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fDeltaInvMinMass(p.fDeltaInvMinMass),
   fDeltaInvMaxMass(p.fDeltaInvMaxMass),
   fMinDEta(p.fMinDEta),
-  fMaxDEta(p.fMaxDEta)
+  fMaxDEta(p.fMaxDEta),
+  fMinJetConstituents(p.fMinJetConstituents)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];

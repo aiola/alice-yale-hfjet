@@ -132,23 +132,31 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysis::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName)
+DJetCorrAnalysisParams* DJetCorrAnalysis::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName)
 {
   // Add the analysis params for the D meson type, jet type and jet radius provided.
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  fAnalysisParams->Add(new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName));
+  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName);
+
+  fAnalysisParams->Add(params);
+
+  return params;
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysis::AddAnalysisParams(DJetCorrAnalysisParams* params)
+DJetCorrAnalysisParams* DJetCorrAnalysis::AddAnalysisParams(DJetCorrAnalysisParams* params)
 {
   // Add the analysis params.
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  fAnalysisParams->Add(new DJetCorrAnalysisParams(*params));
+  DJetCorrAnalysisParams* paramsCopy = new DJetCorrAnalysisParams(*params);
+  
+  fAnalysisParams->Add(paramsCopy);
+
+  return paramsCopy;
 }
 
 //____________________________________________________________________________________
@@ -985,7 +993,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   TString prefix(params->GetName());
   
   Int_t n = 0;
-  for (Int_t i = 0; i < params->GetNzBins(); i++) {
+  for (Int_t i = 0; i < params->GetNzBins()-2; i++) {
     TString cuts(params->GetCutString(kMatched, dptBin, jetptBin, i));
     
     TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
@@ -1159,12 +1167,17 @@ Bool_t DJetCorrAnalysis::ProjectQA()
 Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
 {
   // Project histograms related to the D meson correlated to a jet.
+
+  TString cutsN;
+  TString cutsD;
   
   TString prefix(params->GetName());
 
-  ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus);
-  ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched);
-  ProjectDJetCorr(prefix, "Matched", params, kMatched);
+  ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, -1, -1, -1);
+  ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, -1, -1, -1);
+  ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, -1, -1);
+  //ProjectDJetCorr(prefix, "Matched_TrueJet", params, kMatched, -1, -1, -1, 1);
+  //ProjectDJetCorr(prefix, "Matched_FakeJet", params, kMatched, -1, -1, -1, -1);
 
   TString dCuts(Form("DPt_%02.0f_%02.0f", params->GetMinDPt(), params->GetMaxDPt()));
   dCuts.ReplaceAll(".", "");
@@ -1175,22 +1188,30 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
   TString zCuts(Form("z_%.1f_%.1f", params->GetMinZ(), params->GetMaxZ()));
   zCuts.ReplaceAll(".", "");
   
-  TString cutsN(Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data()));
-  TString cutsD(Form("%s_AnyMatchingStatus", dCuts.Data()));
+  cutsN = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
+  cutsD = Form("%s_AnyMatchingStatus", dCuts.Data());
+  GenerateRatios(cutsN, cutsD);
 
+  cutsN = Form("%s_%s_%s_Matched_FakeJet", dCuts.Data(), jetCuts.Data(), zCuts.Data());
+  cutsD = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
   GenerateRatios(cutsN, cutsD);
 
   for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
-    ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, i);
-    ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, i);
-    ProjectDJetCorr(prefix, "Matched", params, kMatched, i);
+    ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, i, -1, -1, 0);
+    ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, i, -1, -1, 0);
+    ProjectDJetCorr(prefix, "Matched", params, kMatched, i, -1, -1, 0);
+    //ProjectDJetCorr(prefix, "Matched_TrueJet", params, kMatched, i, -1, -1, 1);
+    //ProjectDJetCorr(prefix, "Matched_FakeJet", params, kMatched, i, -1, -1, -1);
 
     dCuts = Form("DPt_%02.0f_%02.0f", params->GetDPtBin(i), params->GetDPtBin(i+1));
     dCuts.ReplaceAll(".", "");
 
     cutsN = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
     cutsD = Form("%s_AnyMatchingStatus", dCuts.Data());
-    
+    GenerateRatios(cutsN, cutsD);
+
+    cutsN = Form("%s_%s_%s_Matched_FakeJet", dCuts.Data(), jetCuts.Data(), zCuts.Data());
+    cutsD = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
     GenerateRatios(cutsN, cutsD);
   }
 
@@ -1204,8 +1225,6 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
       ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, j, i);
     }
   }
-
-
 
   return kTRUE;
 }
@@ -1260,7 +1279,7 @@ Bool_t DJetCorrAnalysis::GenerateRatios(const char* nname, const char* dname)
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
                                          DJetCorrAnalysisParams* params, EMatchingStatus st,
-                                         Int_t dptBin, Int_t jetptBin, Int_t dzBin)
+                                         Int_t dptBin, Int_t jetptBin, Int_t dzBin, Int_t minJetConst)
 {
   // Project histograms related to the D meson with specified cuts.
   
@@ -1359,12 +1378,25 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
         minz = fDmesons->GetAxis(dzAxis)->GetBinLowEdge(z1bin+1) + fgkEpsilon;
       }
     
-      fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);    
+      fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);
+    }
+    
+    if (jetConstAxis >= 0) {
+      if (minJetConst > 0) {
+        fDmesons->GetAxis(jetConstAxis)->SetRangeUser(params->GetMinJetConstituents(), fDmesons->GetAxis(jetConstAxis)->GetXmax()+fgkEpsilon);
+      }
+      else if (minJetConst < 0) {
+        fDmesons->GetAxis(jetConstAxis)->SetRangeUser(0, params->GetMinJetConstituents());
+      }
+      else {
+        fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
+      }
     }
   }
   else {
     fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
     fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
+    fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
   }
 
   if (dInvMassAxis >= 0) {

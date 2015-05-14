@@ -213,7 +213,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   }
 
   // Charged jet analysis
-  if (0 && bDoChargedJets) {
+  if (bDoChargedJets) {
     AliEmcalJetTask *pChJetTask = AddTaskEmcalJet(sTracksName, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
     pChJetTask->SelectCollisionCandidates(kPhysSel);
     pChJetTask->SetFilterHybridTracks(kTRUE);
@@ -286,7 +286,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
       pQADStarTask->SetHistoBins(200, 0, 30);
     }
 
-    if (1) {
+    if (0) {
       AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
                                                                                       "DStartoKpipiCuts.root",
                                                                                       kFALSE,  //   Bool_t theMCon

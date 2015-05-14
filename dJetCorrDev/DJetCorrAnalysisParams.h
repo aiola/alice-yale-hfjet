@@ -22,6 +22,8 @@ class DJetCorrAnalysisParams : public TObject
   void        SetDeltaInvMassRange(Double_t min, Double_t max)     { fDeltaInvMinMass = min   ; fDeltaInvMaxMass = max   ; }
   void        SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double_t nsigma);
 
+  void        SetJetType(const char* type) { fJetType = type; }
+  
   const char* GetName()              const { return fName.Data()                                    ; }
   const char* GetTitle()             const { return GetName()                                       ; }
   const char* GetJetType()           const { return fJetType.Data()                                 ; }
@@ -58,6 +60,8 @@ class DJetCorrAnalysisParams : public TObject
   Double_t    GetMinDEta()             const { return fMinDEta                                      ; }
   Double_t    GetMaxDEta()             const { return fMaxDEta                                      ; }
 
+  Int_t       GetMinJetConstituents()  const { return fMinJetConstituents                           ; }
+
   TString     GetCutString(Int_t st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
   
  protected:
@@ -84,6 +88,7 @@ class DJetCorrAnalysisParams : public TObject
 
   Double_t        fMinDEta                   ;//  min eta of D meson
   Double_t        fMaxDEta                   ;//  max eta of D meson
+  Int_t           fMinJetConstituents        ;//  min number of jet constituents
   
  private:
  

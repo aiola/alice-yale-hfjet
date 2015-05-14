@@ -36,8 +36,8 @@ class DJetCorrAnalysis : public TObject {
   void   SetPlotFormat(const char* f)          { fPlotFormat       = f      ; }
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
 
-  void   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
-  void   AddAnalysisParams(DJetCorrAnalysisParams* params);
+  DJetCorrAnalysisParams*   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
+  DJetCorrAnalysisParams*   AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   Bool_t Init();
 
@@ -62,7 +62,7 @@ class DJetCorrAnalysis : public TObject {
 
   Bool_t          ProjectQA();
   Bool_t          ProjectCorrD(DJetCorrAnalysisParams* params);
-  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
+  Bool_t          ProjectDJetCorr(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1, Int_t minJetConst=0);
   Bool_t          GenerateRatios(const char* nname, const char* dname);
   Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin=-1, Int_t dzBin=-1);
   Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Int_t dptBin=-1, Int_t jetptBin=-1);
