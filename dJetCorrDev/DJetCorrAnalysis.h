@@ -66,7 +66,9 @@ class DJetCorrAnalysis : public TObject {
   Bool_t          GenerateRatios(const char* nname, const char* dname);
   Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin=-1, Int_t dzBin=-1);
   Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Int_t dptBin=-1, Int_t jetptBin=-1);
-  Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass=-1, Double_t massLimits=0);
+  Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle,
+                                            Double_t minMass, Double_t maxMass, Double_t pdgMass=-1, Double_t massLimits=0,
+                                            const char* bkgFormula=0, Int_t nparBkg=0);
   
   Bool_t          PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
                                  Double_t minDPt, Double_t maxDPt, Double_t minJetPt, Double_t maxJetPt, Double_t minZ, Double_t maxZ,

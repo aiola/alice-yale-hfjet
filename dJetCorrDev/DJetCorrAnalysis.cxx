@@ -919,7 +919,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
     n++;
   }
   
-  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass);
+  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params->GetBkgnFormula(), params->GetBkgnFormulaNpars());
 
   delete[] histos;
   
@@ -1027,7 +1027,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   
   Bool_t result = kTRUE;
 
-  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass);
+  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params->GetBkgnFormula(), params->GetBkgnFormulaNpars());
   delete[] histos;
 
   if (histos2) {
@@ -1039,7 +1039,10 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
 }    
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle, Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits)
+Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
+                                                   const char* name, const char* xTitle,
+                                                   Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
+                                                   const char* bkgFormula, Int_t nparBkg)
 {
   // Plot invariant mass histograms contained in histos.
 
@@ -1054,9 +1057,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const 
 
   Double_t w = cols*250;
   Double_t h = rows*250;
+
+  TString yaxisTitle;
+  yaxisTitle = Form("counts / (%.2f GeV/#it{c}^2)", histos[0]->GetXaxis()->GetBinWidth(1));
   
-  TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, "counts", 0, 1, kFALSE, h, w, cols, rows);
+  TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, yaxisTitle, 0, 1, kFALSE, h, w, cols, rows);
   for (Int_t i = 0; i < n; i++) {
+    histos[i]->Scale(1., "width");
+    
     TVirtualPad* pad = canvas->cd(i+1);
     TH1* blank = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
     if (!blank) {
@@ -1067,12 +1075,62 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos, const 
 
     if (histos[i]->GetSumw2N() == 0) histos[i]->Sumw2();
     Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());
+    histos[i]->SetMarkerStyle(kFullCircle);
+    histos[i]->SetMarkerSize(0.6);
+    histos[i]->SetMarkerColor(kBlue+3);
+    histos[i]->SetLineColor(kBlue+3);
     histos[i]->DrawCopy("same p");
+    
+    if (bkgFormula) {
+      TString formula(Form("%s + gaus(%d)", bkgFormula, nparBkg));
+      TString functName(Form("%s_fit", histos[i]->GetName()));
+      TF1* funct = new TF1(functName, formula, 0.139, 0.5);
+      Int_t pdgMassBin = histos[i]->GetXaxis()->FindBin(pdgMass);
+      Double_t bkgUnderPeak = (histos[i]->GetBinContent(pdgMassBin+3)+histos[i]->GetBinContent(pdgMassBin-3))/2;
+      Double_t sigPeak = histos[i]->GetBinContent(pdgMassBin) - bkgUnderPeak;
+      funct->SetParameter(0, bkgUnderPeak);
+      funct->SetParameter(nparBkg, sigPeak);
+      funct->FixParameter(nparBkg+1, pdgMass);
+      funct->SetParameter(nparBkg+2, 1e-2);
+      histos[i]->Fit(funct, "0");
+      TString bkgFunctName(functName);
+      bkgFunctName += "_bkg";
+      TString sigFunctName(functName);
+      bkgFunctName += "_sig";
+      TF1* bkgFunct = new TF1(bkgFunctName, bkgFormula, minMass, maxMass);
+      for (Int_t i = 0; i < nparBkg; i++) {
+        bkgFunct->SetParameter(i, funct->GetParameter(i));
+      }
+      TF1* sigFunct = new TF1(sigFunctName, "gaus(0)", minMass, maxMass);
+      sigFunct->SetParameter(0, funct->GetParameter(nparBkg));
+      sigFunct->SetParameter(1, funct->GetParameter(nparBkg+1));
+      sigFunct->SetParameter(2, funct->GetParameter(nparBkg+2));
 
-    TPaveText* pave = SetUpPaveText(0.15, 0.68, 0.90, 0.86, 13, histos[i]->GetTitle());
+      bkgFunct->SetLineColor(kBlue);
+      bkgFunct->SetLineWidth(2);
+      bkgFunct->Draw("same");
+
+      sigFunct->SetLineColor(kRed);
+      sigFunct->SetLineWidth(2);
+      sigFunct->Draw("same");
+
+      Double_t nRawSig = TMath::Abs(funct->Integral(sigFunct->GetParameter(1) - 2.5*sigFunct->GetParameter(2), sigFunct->GetParameter(1) + 2.5*sigFunct->GetParameter(2)));
+      Double_t nBkg = TMath::Abs(bkgFunct->Integral(sigFunct->GetParameter(1) - 2.5*sigFunct->GetParameter(2), sigFunct->GetParameter(1) + 2.5*sigFunct->GetParameter(2)));
+      Double_t nSig = nRawSig - nBkg;
+      Double_t nSigErr = funct->IntegralError(sigFunct->GetParameter(1) - 2.5*sigFunct->GetParameter(2), sigFunct->GetParameter(1) + 2.5*sigFunct->GetParameter(2), 0, 0, 1e-3);
+      Double_t sigOverBkg = nSig / nBkg;
+      //Double_t nSig2 = sigFunct->Integral(minMass, maxMass);
+      TString nSigString(Form("N_{D, sig} = %.1f #pm %.1f", nSig, nSigErr));
+      TString nSigOverBkgString(Form("Sig/Bkg = %.1f", sigOverBkg));
+      TPaveText* paveSig = SetUpPaveText(0.15, 0.62, 0.90, 0.79, 13, nSigString);
+      paveSig->AddText(nSigOverBkgString);
+      paveSig->Draw();
+    }
+
+    TPaveText* pave = SetUpPaveText(0.15, 0.73, 0.90, 0.91, 13, histos[i]->GetTitle());
     pave->Draw();
 
-    if (pdgMass > 0) {
+    if (pdgMass > 0 && !bkgFormula) {
       TLine *line = new TLine(pdgMass, 0, pdgMass, histos[i]->GetMaximum()*0.6);
       line->SetLineColor(kRed);
       line->SetLineWidth(1);
