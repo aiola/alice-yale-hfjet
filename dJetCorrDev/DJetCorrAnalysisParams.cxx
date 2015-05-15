@@ -33,7 +33,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fDeltaInvMaxMass(0),
   fMinDEta(-0.9),
   fMaxDEta(0.9),
-  fMinJetConstituents(2)
+  fMinJetConstituents(2),
+  fBkgnFormula(),
+  fBkgnFormulaNpars(0)
 {
 }
 
@@ -60,30 +62,30 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fDeltaInvMaxMass(0),
   fMinDEta(-0.9),
   fMaxDEta(0.9),
-  fMinJetConstituents(2)
+  fMinJetConstituents(2),
+  fBkgnFormula(),
+  fBkgnFormulaNpars(0)
 {
   fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {
-    fNDPtBins = 11;
+    fNDPtBins = 6;
     fDPtBins = new Double_t[fNDPtBins+1];
     fDPtBins[ 0] =  2.5;
-    fDPtBins[ 1] =  3.0;
-    fDPtBins[ 2] =  4.0;
-    fDPtBins[ 3] =  5.0;
-    fDPtBins[ 4] =  6.0;
-    fDPtBins[ 5] =  7.0;
-    fDPtBins[ 6] =  8.0;
-    fDPtBins[ 7] = 10.0;
-    fDPtBins[ 8] = 15.0;
-    fDPtBins[ 9] = 20.0;
-    fDPtBins[10] = 30.0;
-    fDPtBins[11] = 50.0;
+    fDPtBins[ 1] =  5.0;
+    fDPtBins[ 2] =  6.0;
+    fDPtBins[ 3] =  9.0;
+    fDPtBins[ 4] = 12.0;
+    fDPtBins[ 5] = 16.0;
+    fDPtBins[ 6] = 30.0;
 
     SetDeltaInvMassRange(413, 421, 0.08);
     SetInvMassRange(413, 0.60);
-    Set2ProngMassRange(421, 0.30);
+    Set2ProngMassRange(421, 0.20);
+
+    fBkgnFormula = "[0] * sqrt(x - 0.139) * exp([1] * (x - 0.139))";
+    fBkgnFormulaNpars = 2;
   }
   else {
     fNDPtBins = 9;
@@ -100,24 +102,26 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fDPtBins[ 9] = 40.0;
 
     SetInvMassRange(421, 0.30);
+
+    fBkgnFormula = "[0] * exp([1] * x)";
+    fBkgnFormulaNpars = 2;
   }
 
   fNJetPtBins = 3;
   fJetPtBins = new Double_t[fNJetPtBins+1];
   fJetPtBins[ 0] =   2.5;
-  fJetPtBins[ 1] =   5.0;
-  fJetPtBins[ 2] =  10.0;
+  fJetPtBins[ 1] =   8.0;
+  fJetPtBins[ 2] =  13.0;
   fJetPtBins[ 3] =  50.0;
 
-  fNzBins = 6;
+  fNzBins = 5;
   fzBins = new Double_t[fNzBins+1];
-  fzBins[ 0] =   0.1;
-  fzBins[ 1] =   0.4;
-  fzBins[ 2] =   0.6;
-  fzBins[ 3] =   0.8;
-  fzBins[ 4] =   1.0;
-  fzBins[ 5] =   1.2;
-  fzBins[ 6] =   2.0;
+  fzBins[ 0] =   0.30;
+  fzBins[ 1] =   0.50;
+  fzBins[ 2] =   0.80;
+  fzBins[ 3] =   1.00;
+  fzBins[ 4] =   1.20;
+  fzBins[ 5] =   2.00;
 }
 
 //____________________________________________________________________________________
@@ -142,7 +146,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fDeltaInvMaxMass(p.fDeltaInvMaxMass),
   fMinDEta(p.fMinDEta),
   fMaxDEta(p.fMaxDEta),
-  fMinJetConstituents(p.fMinJetConstituents)
+  fMinJetConstituents(p.fMinJetConstituents),
+  fBkgnFormula(p.fBkgnFormula),
+  fBkgnFormulaNpars(p.fBkgnFormulaNpars)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
