@@ -1,3 +1,4 @@
 simulation.root
 *.so
 *.d
+*.pdf
