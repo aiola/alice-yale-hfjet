@@ -69,20 +69,22 @@ void runJetResponse(
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddESDHandler.C");
     AliESDInputHandler* esdH = AddESDHandler();
 
-    if (0) { // MC
+    if (1) { // MC
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCHandler.C");
       AliMCEventHandler* mcH = AddMCHandler();
 
-      // Centrality selection task
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-      AliCentralitySelectionTask *centTask = AddTaskCentrality(kTRUE);
-
-      // Physics selection task
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask *pSelTask = AddTaskPhysicsSelection(kTRUE, kTRUE, kTRUE);
+      if (0) {
+        // Centrality selection task
+        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        AliCentralitySelectionTask *centTask = AddTaskCentrality(kTRUE);
+        
+        // Physics selection task
+        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+        AliPhysicsSelectionTask *pSelTask = AddTaskPhysicsSelection(kTRUE, kTRUE, kTRUE);
+      }
     }
 
-    if (1) { // Data
+    if (0) { // Data
       // Centrality selection task
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *centTask = AddTaskCentrality(kTRUE);
