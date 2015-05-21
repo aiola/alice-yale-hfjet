@@ -5,6 +5,7 @@
 #include <TString.h>
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
+#include <TF1.h>
 
 #include "DJetCorrAnalysisParams.h"
 
@@ -34,8 +35,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fMinDEta(-0.9),
   fMaxDEta(0.9),
   fMinJetConstituents(2),
-  fBkgnFormula(),
-  fBkgnFormulaNpars(0)
+  fMassFitTypeSig(MassFitter::kGaus),
+  fMassFitTypeBkg(MassFitter::kExpo)
 {
 }
 
@@ -63,8 +64,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMinDEta(-0.9),
   fMaxDEta(0.9),
   fMinJetConstituents(2),
-  fBkgnFormula(),
-  fBkgnFormulaNpars(0)
+  fMassFitTypeSig(MassFitter::kGaus),
+  fMassFitTypeBkg(MassFitter::kExpo)
 {
   fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
@@ -84,8 +85,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     SetInvMassRange(413, 0.60);
     Set2ProngMassRange(421, 0.20);
 
-    fBkgnFormula = "[0] * sqrt(x - 0.139) * exp([1] * (x - 0.139))";
-    fBkgnFormulaNpars = 2;
+    fMassFitTypeSig = MassFitter::kGaus;
+    fMassFitTypeBkg = MassFitter::kExpoPower;
   }
   else {
     fNDPtBins = 9;
@@ -103,8 +104,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
     SetInvMassRange(421, 0.30);
 
-    fBkgnFormula = "[0] * exp([1] * x)";
-    fBkgnFormulaNpars = 2;
+    fMassFitTypeSig = MassFitter::kGaus;
+    fMassFitTypeBkg = MassFitter::kExpo;
   }
 
   fNJetPtBins = 3;
@@ -147,8 +148,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fMinDEta(p.fMinDEta),
   fMaxDEta(p.fMaxDEta),
   fMinJetConstituents(p.fMinJetConstituents),
-  fBkgnFormula(p.fBkgnFormula),
-  fBkgnFormulaNpars(p.fBkgnFormulaNpars)
+  fMassFitTypeSig(p.fMassFitTypeSig),
+  fMassFitTypeBkg(p.fMassFitTypeBkg)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
@@ -227,4 +228,25 @@ TString DJetCorrAnalysisParams::GetCutString(Int_t st, Int_t dptBin, Int_t jetpt
   }
 
   return cuts;
+}
+
+//____________________________________________________________________________________
+MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
+{
+  Double_t minMass = fInvMinMass;
+  Double_t maxMass = fInvMaxMass;
+  Double_t startingSigma = 0.01;
+  Double_t startingSigmaBkg = 0.01;
+  if (fDmesonName == "DStar") {
+    minMass = fDeltaInvMinMass;
+    maxMass = fDeltaInvMaxMass;
+    startingSigma = 0.001;
+    startingSigmaBkg = 1;
+  }
+  
+  MassFitter* fitter = new MassFitter(name, fMassFitTypeSig, fMassFitTypeBkg, minMass, maxMass);
+  fitter->GetFitFunction()->SetParameter(1, startingSigmaBkg);
+  fitter->GetFitFunction()->SetParameter(4, startingSigma);
+  
+  return fitter;
 }

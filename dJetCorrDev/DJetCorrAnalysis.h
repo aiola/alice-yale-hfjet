@@ -67,8 +67,8 @@ class DJetCorrAnalysis : public TObject {
   Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin=-1, Int_t dzBin=-1);
   Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Int_t dptBin=-1, Int_t jetptBin=-1);
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle,
-                                            Double_t minMass, Double_t maxMass, Double_t pdgMass=-1, Double_t massLimits=0,
-                                            const char* bkgFormula=0, Int_t nparBkg=0);
+                                            Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
+                                            DJetCorrAnalysisParams* params, Bool_t doFit=kFALSE);
   
   Bool_t          PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
                                  Double_t minDPt, Double_t maxDPt, Double_t minJetPt, Double_t maxJetPt, Double_t minZ, Double_t maxZ,
@@ -139,6 +139,7 @@ class DJetCorrAnalysis : public TObject {
   TList          *fInputQAList               ;//! list contains the QA histograms
   THnSparse      *fDmesons                   ;//! THnSparse contains the results
   TList          *fOutputList                ;//! list contains the output histograms
+  TObjArray      *fMassFitters               ;//! array containing the mass fitter objects
   
   static const Double_t fgkEpsilon;
 

@@ -29,6 +29,8 @@
 #include <TGraphAsymmErrors.h>
 #include <TLine.h>
 
+#include "MassFitter.h"
+
 #include "DJetCorrAnalysisParams.h"
 
 #include "DJetCorrAnalysis.h"
@@ -77,7 +79,8 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fInputList(0),
   fInputQAList(0),
   fDmesons(0),
-  fOutputList(0)
+  fOutputList(0),
+  fMassFitters(0)
 {
   // Default ctr.
 
@@ -124,7 +127,8 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fInputList(0),
   fInputQAList(0),
   fDmesons(0),
-  fOutputList(0)
+  fOutputList(0),
+  fMassFitters(0)
 {
   // Standard ctr.
 
@@ -186,8 +190,16 @@ Bool_t DJetCorrAnalysis::Init()
     delete fOutputList;
     fOutputList = 0;
   }
-  fOutputList = new TList();
 
+  if (fMassFitters) {
+    delete fMassFitters;
+    fMassFitters = 0;
+  }
+  
+  fOutputList = new TList();
+  fMassFitters = new TObjArray();
+  fMassFitters->SetOwner(kTRUE);
+    
   Printf("Info-DJetCorrAnalysis::Init : Initialization done.");
 
   return kTRUE;
@@ -842,7 +854,11 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   
   Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
   Double_t Dstarmass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(413))->Mass();
-
+  //Double_t D0sigma = 1.605e-8;
+  //Double_t Dstarsigma = D0sigma + 8.34e-5;
+  //Double_t D0sigma = 0.002;
+  //Double_t Dstarsigma = 0.001;
+  
   TString fixedCuts(params->GetCutString(st, -1, jetptBin, dzBin));
   
   TString cname("fig_InvMassVsDPt");
@@ -877,12 +893,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   Double_t minMass = 0;
   Double_t maxMass = 0;
   Double_t pdgMass = -1;
+  //Double_t pdgSigma = 0;
   if (params->IsD0()) {
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
     minMass = D0mass - 0.15;
     maxMass = D0mass + 0.15;
     pdgMass = D0mass;
+    //pdgSigma = D0sigma;
   }
   else if (params->IsDStar()) {
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
@@ -890,6 +908,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
     pdgMass = Dstarmass - D0mass;
     minMass = pdgMass - 0.04;
     maxMass = pdgMass + 0.04;
+    //pdgSigma = Dstarsigma;
   }
   else {
     Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Meson type '%s' not recognized!", params->GetDmesonName());
@@ -919,7 +938,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
     n++;
   }
   
-  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params->GetBkgnFormula(), params->GetBkgnFormulaNpars());
+  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE);
 
   delete[] histos;
   
@@ -933,7 +952,11 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   
   Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
   Double_t Dstarmass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(413))->Mass();
-
+  //Double_t D0sigma = 1.605e-8;
+  //Double_t Dstarsigma = D0sigma + 8.34e-5;
+  //Double_t D0sigma = 0.002;
+  //Double_t Dstarsigma = 0.001;
+  
   TString fixedCuts(params->GetCutString(kMatched, dptBin, jetptBin, -1));
   fixedCuts += "_Matched";
   
@@ -943,6 +966,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   Double_t minMass = 0;
   Double_t maxMass = 0;
   Double_t pdgMass = -1;
+  //Double_t pdgSigma = 0;
   TH1** histos = 0;
     
   TString cname2;
@@ -958,6 +982,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
     pdgMass = D0mass;
+    //pdgSigma = D0sigma;
     minMass = D0mass - 0.15;
     maxMass = D0mass + 0.15;
     histos = new TH1*[params->GetNzBins()];
@@ -967,6 +992,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "DeltaInvMass";
     pdgMass = Dstarmass - D0mass;
+    //pdgSigma = Dstarsigma;
     minMass = pdgMass - 0.04;
     maxMass = pdgMass + 0.04;
     histos = new TH1*[params->GetNzBins()];
@@ -978,7 +1004,6 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     minMass2 = pdgMass2 - 0.20;
     maxMass2 = pdgMass2 + 0.20;
     histos2 = new TH1*[params->GetNzBins()];
-
     cname2 += params->GetName();
     cname2 += fixedCuts;
   }
@@ -1027,11 +1052,11 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   
   Bool_t result = kTRUE;
 
-  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params->GetBkgnFormula(), params->GetBkgnFormulaNpars());
+  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE);
   delete[] histos;
 
   if (histos2) {
-    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15) && result;
+    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15, params) && result;
     delete[] histos2;
   }
 
@@ -1042,7 +1067,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
 Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
                                                    const char* name, const char* xTitle,
                                                    Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
-                                                   const char* bkgFormula, Int_t nparBkg)
+                                                   DJetCorrAnalysisParams* params, Bool_t doFit)
 {
   // Plot invariant mass histograms contained in histos.
 
@@ -1055,11 +1080,11 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
 
   TString cname(name);
 
-  Double_t w = cols*250;
-  Double_t h = rows*250;
+  Double_t w = cols*320;
+  Double_t h = rows*320;
 
   TString yaxisTitle;
-  yaxisTitle = Form("counts / (%.2f GeV/#it{c}^2)", histos[0]->GetXaxis()->GetBinWidth(1));
+  yaxisTitle = Form("counts / (%.2f MeV/#it{c}^2)", histos[0]->GetXaxis()->GetBinWidth(1)*1000);
   
   TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, yaxisTitle, 0, 1, kFALSE, h, w, cols, rows);
   for (Int_t i = 0; i < n; i++) {
@@ -1071,7 +1096,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Could not find blank histogram!");
       continue;
     }
-    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.4);
+    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*2.0);
 
     if (histos[i]->GetSumw2N() == 0) histos[i]->Sumw2();
     Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());
@@ -1081,56 +1106,37 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
     histos[i]->SetLineColor(kBlue+3);
     histos[i]->DrawCopy("same p");
     
-    if (bkgFormula) {
-      TString formula(Form("%s + gaus(%d)", bkgFormula, nparBkg));
-      TString functName(Form("%s_fit", histos[i]->GetName()));
-      TF1* funct = new TF1(functName, formula, 0.139, 0.5);
-      Int_t pdgMassBin = histos[i]->GetXaxis()->FindBin(pdgMass);
-      Double_t bkgUnderPeak = (histos[i]->GetBinContent(pdgMassBin+3)+histos[i]->GetBinContent(pdgMassBin-3))/2;
-      Double_t sigPeak = histos[i]->GetBinContent(pdgMassBin) - bkgUnderPeak;
-      funct->SetParameter(0, bkgUnderPeak);
-      funct->SetParameter(nparBkg, sigPeak);
-      funct->FixParameter(nparBkg+1, pdgMass);
-      funct->SetParameter(nparBkg+2, 1e-2);
-      histos[i]->Fit(funct, "0");
-      TString bkgFunctName(functName);
-      bkgFunctName += "_bkg";
-      TString sigFunctName(functName);
-      bkgFunctName += "_sig";
-      TF1* bkgFunct = new TF1(bkgFunctName, bkgFormula, minMass, maxMass);
-      for (Int_t i = 0; i < nparBkg; i++) {
-        bkgFunct->SetParameter(i, funct->GetParameter(i));
+    if (doFit) {
+      TString fitterName(Form("%s_fitter", histos[i]->GetName()));
+      MassFitter* fitter = params->CreateMassFitter(fitterName);
+      fMassFitters->Add(fitter);
+
+      Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass), "width");
+      fitter->GetFitFunction()->FixParameter(0, integral);
+      fitter->GetFitFunction()->SetParameter(2, integral / 20);
+      fitter->GetFitFunction()->FixParameter(3, pdgMass);
+      
+      TFitResultPtr r = fitter->Fit(histos[i]);
+      Int_t fitStatus = r;
+      fitter->Draw("same");
+
+      TPaveText* paveSig = SetUpPaveText(0.12, 0.44, 0.87, 0.78, 13, fitter->GetSignalString());
+      paveSig->AddText(fitter->GetBackgroundString());
+      paveSig->AddText(fitter->GetSignalOverBackgroundString());
+      paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
+      if (fitStatus == 0) {
+        paveSig->AddText(fitter->GetChisquareString());
       }
-      TF1* sigFunct = new TF1(sigFunctName, "gaus(0)", minMass, maxMass);
-      sigFunct->SetParameter(0, funct->GetParameter(nparBkg));
-      sigFunct->SetParameter(1, funct->GetParameter(nparBkg+1));
-      sigFunct->SetParameter(2, funct->GetParameter(nparBkg+2));
-
-      bkgFunct->SetLineColor(kBlue);
-      bkgFunct->SetLineWidth(2);
-      bkgFunct->Draw("same");
-
-      sigFunct->SetLineColor(kRed);
-      sigFunct->SetLineWidth(2);
-      sigFunct->Draw("same");
-
-      Double_t nRawSig = TMath::Abs(funct->Integral(sigFunct->GetParameter(1) - 2.5*sigFunct->GetParameter(2), sigFunct->GetParameter(1) + 2.5*sigFunct->GetParameter(2)));
-      Double_t nBkg = TMath::Abs(bkgFunct->Integral(sigFunct->GetParameter(1) - 2.5*sigFunct->GetParameter(2), sigFunct->GetParameter(1) + 2.5*sigFunct->GetParameter(2)));
-      Double_t nSig = nRawSig - nBkg;
-      Double_t nSigErr = funct->IntegralError(sigFunct->GetParameter(1) - 2.5*sigFunct->GetParameter(2), sigFunct->GetParameter(1) + 2.5*sigFunct->GetParameter(2), 0, 0, 1e-3);
-      Double_t sigOverBkg = nSig / nBkg;
-      //Double_t nSig2 = sigFunct->Integral(minMass, maxMass);
-      TString nSigString(Form("N_{D, sig} = %.1f #pm %.1f", nSig, nSigErr));
-      TString nSigOverBkgString(Form("Sig/Bkg = %.1f", sigOverBkg));
-      TPaveText* paveSig = SetUpPaveText(0.15, 0.62, 0.90, 0.79, 13, nSigString);
-      paveSig->AddText(nSigOverBkgString);
+      else {
+        paveSig->AddText("Fit failed");
+      }
       paveSig->Draw();
     }
 
     TPaveText* pave = SetUpPaveText(0.15, 0.73, 0.90, 0.91, 13, histos[i]->GetTitle());
     pave->Draw();
 
-    if (pdgMass > 0 && !bkgFormula) {
+    if (pdgMass > 0 && !doFit) {
       TLine *line = new TLine(pdgMass, 0, pdgMass, histos[i]->GetMaximum()*0.6);
       line->SetLineColor(kRed);
       line->SetLineWidth(1);
@@ -1230,6 +1236,8 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
   TString cutsD;
   
   TString prefix(params->GetName());
+
+  Printf("Info-DJetCorrAnalysis::ProjectCorrD : Entering method.");
 
   ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, -1, -1, -1);
   ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, -1, -1, -1);
@@ -1345,6 +1353,8 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     return kFALSE;
   }
 
+  Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Method called with prefix = '%s', suffix = '%s'", prefix.Data(), suffix.Data());
+
   TString cuts(params->GetCutString(st, dptBin, jetptBin, dzBin));
 
   Double_t minDPt = params->GetMinDPt();
@@ -1401,6 +1411,12 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
   
   Int_t matchingStatusAxis = GetAxisIndex(fMatchingStatusAxisTitle);
 
+  Int_t dDeltaRDaghters[3] = {-1};
+  
+  for (Int_t i = 0; i < 3; i++) {
+    dDeltaRDaghters[i] = GetAxisIndex(Form(fDeltaRDaughterAxisTitle.Data(), i));
+  }
+  
   if (matchingStatusAxis >= 0) {
     if (st == kMatched) {
       fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,2);
@@ -1411,12 +1427,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     else {
       fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,4);
     }
-  }
-
-  Int_t dDeltaRDaghters[3] = {-1};
-  
-  for (Int_t i = 0; i < 3; i++) {
-    dDeltaRDaghters[i] = GetAxisIndex(Form(fDeltaRDaughterAxisTitle.Data(), i));
   }
 
   fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta());
@@ -1452,9 +1462,9 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     }
   }
   else {
-    fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
-    fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
-    fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
+    if (jetPtAxis >= 0) fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
+    if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
+    if (jetConstAxis >= 0) fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
   }
 
   if (dInvMassAxis >= 0) {
@@ -1684,6 +1694,8 @@ Bool_t DJetCorrAnalysis::LoadInputList(const char* inputListName)
     Printf("Error-DJetCorrAnalysis::OpenInputFile : Could not get list '%s' from directory '%s' of file '%s'", inputListName, fInputDirectoryFile->GetName(), fInputFile->GetName());
     return kFALSE;
   }
+
+  Printf("Info-DJetCorrAnalysis::LoadInputList : Success.");
 
   return kTRUE;
 }

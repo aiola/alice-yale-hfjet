@@ -94,7 +94,10 @@ void MassFitter::Reset(TH1* histo)
     }
   case kExpoPower:
     {
-      if (fMinMass > fPionMass) fMinMass = fPionMass;
+      if (fMinMass < fPionMass) {
+        Printf("MassFitter: setting min mass to %.3f", fPionMass);
+        fMinMass = fPionMass;
+      }
       fNParBkg = 2;
       break;
     }
@@ -133,7 +136,7 @@ void MassFitter::Reset(TH1* histo)
 }
 
 //____________________________________________________________________________________
-TF1* MassFitter::Fit(TH1* histo)
+TFitResultPtr MassFitter::Fit(TH1* histo)
 {
   if (!fFunction) {
     Reset(histo);
@@ -146,7 +149,7 @@ TF1* MassFitter::Fit(TH1* histo)
 }
 
 //____________________________________________________________________________________
-TF1* MassFitter::Fit()
+TFitResultPtr MassFitter::Fit()
 {
   if (!fHistogram) {
     Printf("Error: no histogram provided!");
@@ -157,7 +160,7 @@ TF1* MassFitter::Fit()
     Reset(fHistogram);
   }
   
-  fHistogram->Fit(fFunction, "0");
+  TFitResultPtr r = fHistogram->Fit(fFunction, "0");
 
   for (Int_t i = 1; i < fNParBkg; i++) {
     fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -185,15 +188,15 @@ TF1* MassFitter::Fit()
   case kExpo:
     {
       // Expo = a * exp(bx) -> integral = a/b*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
-      bkgScalingFactor = ((TMath::Exp(fFunction->GetParameter(1)*fMaxMass) - TMath::Exp(fFunction->GetParameter(1)*fMinMass)) /
-                          (TMath::Exp(fFunction->GetParameter(1)*maxMass)  - TMath::Exp(fFunction->GetParameter(1)*minMass)));
+      bkgScalingFactor = ((TMath::Exp(fFunction->GetParameter(1)*maxMass)  - TMath::Exp(fFunction->GetParameter(1)*minMass))/
+                          (TMath::Exp(fFunction->GetParameter(1)*fMaxMass) - TMath::Exp(fFunction->GetParameter(1)*fMinMass)));
       break;
     }
   case kExpoPower:
     {
       // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3*) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
-      bkgScalingFactor = ((TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMinMass-fPionMass)))) / 
-                          (TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(maxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(minMass-fPionMass)))));
+      bkgScalingFactor = ((TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(maxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(minMass-fPionMass)))) /
+                          (TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMinMass-fPionMass)))));
       break;
     }
   }
@@ -201,7 +204,7 @@ TF1* MassFitter::Fit()
   fBackground *= bkgScalingFactor;
   fBackgroundError *= bkgScalingFactor;
   
-  return fFunction;
+  return r;
 }
 
 //____________________________________________________________________________________
@@ -223,7 +226,7 @@ TString MassFitter::GetSignalString() const
 }
 
 //____________________________________________________________________________________
-TString MassFitter::GetBackgorundString() const
+TString MassFitter::GetBackgroundString() const
 {
   TString r;
   
@@ -247,33 +250,38 @@ TString MassFitter::GetSignalOverBackgroundString() const
   
   Double_t v = GetSignalOverBackground();
   Double_t vlog10 = TMath::Log10(v);
-  if (v < 0) {
-    Int_t prec = TMath::CeilNint(TMath::Abs(vlog10)) + 1;
-    r = Form("S/B=%%.%df", prec);
-    r = Form(r.Data(), v);
-  }
-  else {
-    r = Form("S/B=%.0f", v);
-  }
+  if (vlog10 < 1) vlog10 = 1;
+  
+  Int_t prec = TMath::CeilNint(TMath::Abs(vlog10));
+  r = Form("S/B=%%.%df", prec);
+  r = Form(r.Data(), v);
 
   return r;
 }
 
 //____________________________________________________________________________________
-TString MassFitter::GetSignalOverSqrtSignalBackgorundString() const
+TString MassFitter::GetSignalOverSqrtSignalBackgroundString() const
 {
   TString r;
   
   Double_t v = GetSignalOverSqrtSignalBackgorund();
   Double_t vlog10 = TMath::Log10(v);
-  if (v < 0) {
-    Int_t prec = TMath::CeilNint(TMath::Abs(vlog10)) + 1;
-    r = Form("S/#sqrt{S+B}=%%.%df", prec);
-    r = Form(r.Data(), v);
-  }
-  else {
-    r = Form("S/B=%.0f", v);
-  }
+  if (vlog10 < 1) vlog10 = 1;
+
+  Int_t prec = TMath::CeilNint(TMath::Abs(vlog10));
+  r = Form("S/#sqrt{S+B}=%%.%df", prec);
+  r = Form(r.Data(), v);
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetChisquareString() const
+{
+  TString r;
+  
+  Double_t v = fFunction->GetChisquare() / fFunction->GetNDF();
+  r = Form("#chi^{2}/NdF=%.2f", v);
 
   return r;
 }
