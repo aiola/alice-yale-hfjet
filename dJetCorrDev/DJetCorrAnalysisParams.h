@@ -5,6 +5,7 @@
 class TString;
 
 #include <TObject.h>
+#include <MassFitter.h>
 
 class DJetCorrAnalysisParams : public TObject
 {
@@ -62,11 +63,9 @@ class DJetCorrAnalysisParams : public TObject
 
   Int_t       GetMinJetConstituents()  const { return fMinJetConstituents                           ; }
 
-
-  const char* GetBkgnFormula()         const { return fBkgnFormula                                  ; }
-  Int_t       GetBkgnFormulaNpars()    const { return fBkgnFormulaNpars                             ; }
-
   TString     GetCutString(Int_t st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
+
+  MassFitter* CreateMassFitter(const char* name) const;
   
  protected:
   TString         fName                      ;//  object name
@@ -93,8 +92,8 @@ class DJetCorrAnalysisParams : public TObject
   Double_t        fMinDEta                   ;//  min eta of D meson
   Double_t        fMaxDEta                   ;//  max eta of D meson
   Int_t           fMinJetConstituents        ;//  min number of jet constituents
-  TString         fBkgnFormula               ;//
-  Int_t           fBkgnFormulaNpars          ;//
+  MassFitter::EMassFitTypeSig fMassFitTypeSig;//
+  MassFitter::EMassFitTypeBkg fMassFitTypeBkg;//
   
  private:
  

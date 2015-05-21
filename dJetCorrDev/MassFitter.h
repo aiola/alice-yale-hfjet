@@ -2,9 +2,13 @@
 // Author: Salvatore Aiola, Yale University (salvatore.aiola@cern.ch)
 // Copyright (c) 2015 Salvatore Aiola
 
+#ifndef MASSFITTER
+#define MASSFITTER
+
 #include <TNamed.h>
 #include <TMath.h>
 
+class TFitResultPtr;
 class TF1;
 class TH1;
 
@@ -28,8 +32,8 @@ class MassFitter : public TNamed {
   void SetMassFitTypes(EMassFitTypeSig ts, EMassFitTypeBkg tb)     { fMassFitTypeSig = ts; fMassFitTypeBkg = tb; Reset(); }
   
   void Reset(TH1* histo=0);
-  TF1* Fit(TH1* histo);
-  TF1* Fit();
+  TFitResultPtr Fit(TH1* histo);
+  TFitResultPtr Fit();
 
   void DisableBkg(Bool_t d = kTRUE) { fDisableBkg = d; }
   void DisableSig(Bool_t d = kTRUE) { fDisableSig = d; }
@@ -47,10 +51,11 @@ class MassFitter : public TNamed {
   Double_t GetSignalOverSqrtSignalBackgorund()   const { return fBackground+fSignal > fgkEpsilon ? fSignal/TMath::Sqrt(fSignal+fBackground) : 0 ; }
 
   TString  GetSignalString()                     const;
-  TString  GetBackgorundString()                 const;
+  TString  GetBackgroundString()                 const;
   TString  GetSignalOverBackgroundString()       const;
-  TString  GetSignalOverSqrtSignalBackgorundString()   const;
-
+  TString  GetSignalOverSqrtSignalBackgroundString()   const;
+  TString  GetChisquareString()                  const;
+  
   TF1*     GetFitFunction()                      const { return fFunction     ; }
   TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }
   TH1*     GetFitHistogram()                     const { return fHistogram    ; }
@@ -91,3 +96,5 @@ class MassFitter : public TNamed {
 
   ClassDef(MassFitter, 1);
 };
+
+#endif
