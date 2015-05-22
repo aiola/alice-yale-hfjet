@@ -16,8 +16,8 @@ MassFitter::MassFitter() :
   fMassFitTypeBkg(kExpo),
   fMean(0.),
   fMeanError(0.),
-  fSigma(0.),
-  fSigmaError(0.),
+  fWidth(0.),
+  fWidthError(0.),
   fSignal(0.),
   fSignalError(0.),
   fBackground(0.),
@@ -45,8 +45,8 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fMassFitTypeBkg(tb),
   fMean(0.),
   fMeanError(0.),
-  fSigma(0.),
-  fSigmaError(0.),
+  fWidth(0.),
+  fWidthError(0.),
   fSignal(0.),
   fSignalError(0.),
   fBackground(0.),
@@ -118,8 +118,8 @@ void MassFitter::Reset(TH1* histo)
 
   fMean = 0;
   fMeanError = 0;
-  fSigma = 0;
-  fSigmaError = 0;
+  fWidth = 0;
+  fWidthError = 0;
   
   delete fFunction;
   delete fFunctionBkg;
@@ -136,7 +136,7 @@ void MassFitter::Reset(TH1* histo)
 }
 
 //____________________________________________________________________________________
-TFitResultPtr MassFitter::Fit(TH1* histo)
+TFitResultPtr MassFitter::Fit(TH1* histo, Option_t* opt)
 {
   if (!fFunction) {
     Reset(histo);
@@ -145,11 +145,11 @@ TFitResultPtr MassFitter::Fit(TH1* histo)
     fHistogram = histo;
   }
 
-  return Fit();
+  return Fit(opt);
 }
 
 //____________________________________________________________________________________
-TFitResultPtr MassFitter::Fit()
+TFitResultPtr MassFitter::Fit(Option_t* opt)
 {
   if (!fHistogram) {
     Printf("Error: no histogram provided!");
@@ -160,7 +160,7 @@ TFitResultPtr MassFitter::Fit()
     Reset(fHistogram);
   }
   
-  TFitResultPtr r = fHistogram->Fit(fFunction, "0");
+  TFitResultPtr r = fHistogram->Fit(fFunction, opt);
 
   for (Int_t i = 1; i < fNParBkg; i++) {
     fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -169,18 +169,15 @@ TFitResultPtr MassFitter::Fit()
 
   fMean = fFunction->GetParameter(fNParBkg+1);
   fMeanError = fFunction->GetParError(fNParBkg+1);
-  fSigma = fFunction->GetParameter(fNParBkg+2);
-  fSigmaError = fFunction->GetParError(fNParBkg+2);
+  fWidth = fFunction->GetParameter(fNParBkg+2);
+  fWidthError = fFunction->GetParError(fNParBkg+2);
   
   fSignal = fFunction->GetParameter(fNParBkg);
   fSignalError = fFunction->GetParError(fNParBkg);
 
-  fBackground = fFunction->GetParameter(0) - fSignal;
-  fBackgroundError = TMath::Sqrt(fFunction->GetParError(0)*fFunction->GetParError(0) + fSignalError*fSignalError);
-
-  Double_t minMass = fMean - fSigma*3.0;
+  Double_t minMass = fMean - fWidth*3.0;
   if (minMass < fMinMass) minMass = fMinMass;
-  Double_t maxMass = fMean + fSigma*3.0;
+  Double_t maxMass = fMean + fWidth*3.0;
   if (maxMass > fMaxMass) maxMass = fMaxMass;
   
   Double_t bkgScalingFactor = 1.;
@@ -201,8 +198,8 @@ TFitResultPtr MassFitter::Fit()
     }
   }
 
-  fBackground *= bkgScalingFactor;
-  fBackgroundError *= bkgScalingFactor;
+  fBackground = (fFunction->GetParameter(0) - fSignal)*bkgScalingFactor;
+  fBackgroundError = TMath::Sqrt(fFunction->GetParError(0)*fFunction->GetParError(0) + fSignalError*fSignalError)*bkgScalingFactor;
   
   return r;
 }
@@ -214,7 +211,7 @@ TString MassFitter::GetSignalString() const
   
   Double_t sigErrLog10 = TMath::Log10(fSignalError);
   if (sigErrLog10 < 0) {
-    Int_t sigPrec = TMath::CeilNint(TMath::Abs(sigErrLog10));
+    Int_t sigPrec = TMath::CeilNint(-sigErrLog10);
     r = Form("S=%%.%df #pm %%.%df", sigPrec, sigPrec);
     r = Form(r.Data(), fSignal, fSignalError);
   }
@@ -232,7 +229,7 @@ TString MassFitter::GetBackgroundString() const
   
   Double_t bkgErrLog10 = TMath::Log10(fBackgroundError);
   if (bkgErrLog10 < 0) {
-    Int_t bkgPrec = TMath::CeilNint(TMath::Abs(bkgErrLog10));
+    Int_t bkgPrec = TMath::CeilNint(-bkgErrLog10);
     r = Form("B=%%.%df #pm %%.%df", bkgPrec, bkgPrec);
     r = Form(r.Data(), fBackground, fBackgroundError);
   }
@@ -250,9 +247,9 @@ TString MassFitter::GetSignalOverBackgroundString() const
   
   Double_t v = GetSignalOverBackground();
   Double_t vlog10 = TMath::Log10(v);
-  if (vlog10 < 1) vlog10 = 1;
+  if (vlog10 > -1) vlog10 = -1;
   
-  Int_t prec = TMath::CeilNint(TMath::Abs(vlog10));
+  Int_t prec = TMath::CeilNint(-vlog10);
   r = Form("S/B=%%.%df", prec);
   r = Form(r.Data(), v);
 
@@ -266,11 +263,135 @@ TString MassFitter::GetSignalOverSqrtSignalBackgroundString() const
   
   Double_t v = GetSignalOverSqrtSignalBackgorund();
   Double_t vlog10 = TMath::Log10(v);
-  if (vlog10 < 1) vlog10 = 1;
+  if (vlog10 > -1) vlog10 = -1;
 
-  Int_t prec = TMath::CeilNint(TMath::Abs(vlog10));
+  Int_t prec = TMath::CeilNint(-vlog10);
   r = Form("S/#sqrt{S+B}=%%.%df", prec);
   r = Form(r.Data(), v);
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetSignalMeanString() const
+{
+  TString r;
+
+  Double_t v = GetSignalMean();
+  Double_t vErr = GetSignalMeanError();
+  Double_t vLog10 = TMath::Log10(v);
+  Double_t vErrLog10 = TMath::Log10(vErr);
+
+  TString unit("GeV/#it{c}^{2}");
+  
+  if (vLog10 <-4) {
+    v *= 1000000.;
+    vErr *= 1000000.;
+    vLog10 += 3;
+    vErrLog10 += 3;
+    unit = "keV/#it{c}^{2}";
+  }
+  else if (vLog10 <-2) {
+    v *= 1000.;
+    vErr *= 1000.;
+    vLog10 += 3;
+    vErrLog10 += 3;
+    unit = "MeV/#it{c}^{2}";
+  }
+  
+  if (vErrLog10 < 0) {
+    Int_t vPrec = TMath::CeilNint(-vErrLog10);
+    r = Form("#mu=%%.%df #pm %%.%df GeV/#it{c}^{2}", vPrec, vPrec);
+    r = Form(r.Data(), v, vErr);
+  }
+  else {
+    r = Form("#mu=%.0f #pm %.0f GeV/#it{c}^{2}", v, vErr);
+  }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetSignalWidthString() const
+{
+  TString r;
+
+  Double_t v = GetSignalWidth();
+  Double_t vErr = GetSignalWidthError();
+  Double_t vLog10 = TMath::Log10(v);
+  Double_t vErrLog10 = TMath::Log10(vErr);
+
+  TString unit("GeV/#it{c}^{2}");
+  
+  if (vLog10 <-4) {
+    v *= 1000000.;
+    vErr *= 1000000.;
+    vLog10 += 3;
+    vErrLog10 += 3;
+    unit = "keV/#it{c}^{2}";
+  }
+  else if (vLog10 <-2) {
+    v *= 1000.;
+    vErr *= 1000.;
+    vLog10 += 3;
+    vErrLog10 += 3;
+    unit = "MeV/#it{c}^{2}";
+  }
+  
+  if (vErrLog10 < 0) {
+    Int_t vPrec = TMath::CeilNint(-vErrLog10);
+    r = Form("#sigma=%%.%df #pm %%.%df %s", vPrec, vPrec, unit.Data());
+    r = Form(r.Data(), v, vErr);
+  }
+  else {
+    r = Form("#sigma=%.0f #pm %.0f %s", v, vErr, unit.Data());
+  }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetBkgPar1String() const
+{
+  TString r;
+
+  if (fNParBkg > 1) {
+  
+    Double_t v = fFunction->GetParameter(1);
+    Double_t vErr = fFunction->GetParError(1);
+    Double_t vErrLog10 = TMath::Log10(vErr);
+    if (vErrLog10 < 0) {
+      Int_t vPrec = TMath::CeilNint(-vErrLog10);
+      r = Form("b=%%.%df #pm %%.%df", vPrec, vPrec);
+      r = Form(r.Data(), v, vErr);
+    }
+    else {
+      r = Form("b=%.0f #pm %.0f", v, vErr);
+    }
+  }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetBkgPar2String() const
+{
+  TString r;
+
+  if (fNParBkg > 2) {
+  
+    Double_t v = fFunction->GetParameter(2);
+    Double_t vErr = fFunction->GetParError(2);
+    Double_t vErrLog10 = TMath::Log10(vErr);
+    if (vErrLog10 < 0) {
+      Int_t vPrec = TMath::CeilNint(-vErrLog10);
+      r = Form("c=%%.%df #pm %%.%df", vPrec, vPrec);
+      r = Form(r.Data(), v, vErr);
+    }
+    else {
+      r = Form("c=%.0f #pm %.0f", v, vErr);
+    }
+  }
 
   return r;
 }
@@ -329,6 +450,10 @@ double MassFitter::FunctionBkg(double *x, double *p)
   case kExpoPower:
     {
       // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3*) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
+      if (x[0] < fPionMass) {
+        r = 0;
+        break;
+      }
       r = p[0] * TMath::Sqrt(x[0] - fPionMass) * TMath::Exp(-p[1] * (x[0] - fPionMass));
       r *= TMath::Sqrt(p[1]*p[1]*p[1]) / (TMath::Gamma(1.5) * (TMath::Gamma(1.5, p[1]*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, p[1]*(fMinMass-fPionMass)))); // p[0] is now the integral between fMinMass and fMaxMass
       break;
@@ -390,4 +515,16 @@ void MassFitter::Draw(Option_t* opt)
   
   fFunctionBkg->Draw(opt);
   fFunction->Draw(optAndSame);
+}
+
+//____________________________________________________________________________________
+void MassFitter::SetMassRange(Double_t min, Double_t max)
+{
+  if (fMinMass < fMaxMass) {
+    fMinMass = min;
+    fMaxMass = max;
+  }
+  else {
+    Printf("Error: min mass %.3f must be smaller then mass max %.3f!", min, max);
+  }
 }

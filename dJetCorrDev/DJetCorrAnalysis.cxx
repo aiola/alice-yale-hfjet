@@ -1096,7 +1096,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Could not find blank histogram!");
       continue;
     }
-    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*2.0);
+    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*2.8);
 
     if (histos[i]->GetSumw2N() == 0) histos[i]->Sumw2();
     Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());
@@ -1114,13 +1114,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass), "width");
       fitter->GetFitFunction()->FixParameter(0, integral);
       fitter->GetFitFunction()->SetParameter(2, integral / 20);
-      fitter->GetFitFunction()->FixParameter(3, pdgMass);
+      fitter->GetFitFunction()->SetParLimits(2, 0, integral);
+      fitter->GetFitFunction()->SetParameter(3, pdgMass);
       
-      TFitResultPtr r = fitter->Fit(histos[i]);
+      TFitResultPtr r = fitter->Fit(histos[i], "0");
       Int_t fitStatus = r;
       fitter->Draw("same");
 
-      TPaveText* paveSig = SetUpPaveText(0.12, 0.44, 0.87, 0.78, 13, fitter->GetSignalString());
+      TPaveText* paveSig = SetUpPaveText(0.12, 0.39, 0.39, 0.73, 13, fitter->GetSignalString());
       paveSig->AddText(fitter->GetBackgroundString());
       paveSig->AddText(fitter->GetSignalOverBackgroundString());
       paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
@@ -1131,9 +1132,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
         paveSig->AddText("Fit failed");
       }
       paveSig->Draw();
+
+      TPaveText* paveFit = SetUpPaveText(0.40, 0.48, 0.90, 0.75, 13, fitter->GetSignalMeanString());
+      paveFit->AddText(fitter->GetSignalWidthString());
+      paveFit->AddText(fitter->GetBkgPar1String());
+      paveFit->Draw();
     }
 
-    TPaveText* pave = SetUpPaveText(0.15, 0.73, 0.90, 0.91, 13, histos[i]->GetTitle());
+    TPaveText* pave = SetUpPaveText(0.10, 0.74, 0.90, 0.88, 13, histos[i]->GetTitle());
     pave->Draw();
 
     if (pdgMass > 0 && !doFit) {

@@ -32,20 +32,20 @@ class MassFitter : public TNamed {
   void SetMassFitTypes(EMassFitTypeSig ts, EMassFitTypeBkg tb)     { fMassFitTypeSig = ts; fMassFitTypeBkg = tb; Reset(); }
   
   void Reset(TH1* histo=0);
-  TFitResultPtr Fit(TH1* histo);
-  TFitResultPtr Fit();
+  TFitResultPtr Fit(TH1* histo, Option_t* opt="");
+  TFitResultPtr Fit(Option_t* opt="");
 
   void DisableBkg(Bool_t d = kTRUE) { fDisableBkg = d; }
   void DisableSig(Bool_t d = kTRUE) { fDisableSig = d; }
-  void SetMassRange(Double_t min, Double_t max) { fMinMass = min; fMaxMass = max; }
+  void SetMassRange(Double_t min, Double_t max);
 
-  Double_t GetMean()                             const { return fMean                 ; }
-  Double_t GetSigma()                            const { return fSigma                ; }
-  Double_t GetMeanError()                        const { return fMeanError            ; }
-  Double_t GetSigmaError()                       const { return fSigmaError           ; }
+  Double_t GetSignalMean()                       const { return fMean                 ; }
+  Double_t GetSignalMeanError()                  const { return fMeanError            ; }
+  Double_t GetSignalWidth()                      const { return fWidth                ; }
+  Double_t GetSignalWidthError()                 const { return fWidthError           ; }
   Double_t GetSignal()                           const { return fSignal               ; }
-  Double_t GetBackground()                       const { return fBackground           ; }
   Double_t GetSignalError()                      const { return fSignalError          ; }
+  Double_t GetBackground()                       const { return fBackground           ; }
   Double_t GetBackgroundError()                  const { return fBackgroundError      ; }
   Double_t GetSignalOverBackground()             const { return fBackground > fgkEpsilon ? fSignal/fBackground : 0                              ; }
   Double_t GetSignalOverSqrtSignalBackgorund()   const { return fBackground+fSignal > fgkEpsilon ? fSignal/TMath::Sqrt(fSignal+fBackground) : 0 ; }
@@ -55,6 +55,10 @@ class MassFitter : public TNamed {
   TString  GetSignalOverBackgroundString()       const;
   TString  GetSignalOverSqrtSignalBackgroundString()   const;
   TString  GetChisquareString()                  const;
+  TString  GetSignalMeanString()                 const;
+  TString  GetSignalWidthString()                const;
+  TString  GetBkgPar1String()                    const;
+  TString  GetBkgPar2String()                    const;
   
   TF1*     GetFitFunction()                      const { return fFunction     ; }
   TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }
@@ -69,10 +73,10 @@ class MassFitter : public TNamed {
  protected:
   EMassFitTypeSig   fMassFitTypeSig    ;//  Mass fit type for the signal
   EMassFitTypeBkg   fMassFitTypeBkg    ;//  Mass fit type for the background
-  Double_t          fMean              ;//  Signal extracted from the fit
-  Double_t          fMeanError         ;//  Signal error extracted from the fit
-  Double_t          fSigma             ;//  Background extracted from the fit
-  Double_t          fSigmaError        ;//  Background error extracted from the fit
+  Double_t          fMean              ;//  Signal mean extracted from the fit
+  Double_t          fMeanError         ;//  Signal mean error extracted from the fit
+  Double_t          fWidth             ;//  Signal width extracted from the fit
+  Double_t          fWidthError        ;//  Signal width error extracted from the fit
   Double_t          fSignal            ;//  Signal extracted from the fit
   Double_t          fSignalError       ;//  Signal error extracted from the fit
   Double_t          fBackground        ;//  Background extracted from the fit

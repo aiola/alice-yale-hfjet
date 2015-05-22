@@ -71,15 +71,17 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {
-    fNDPtBins = 6;
+    fNDPtBins = 8;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  2.5;
-    fDPtBins[ 1] =  5.0;
-    fDPtBins[ 2] =  6.0;
-    fDPtBins[ 3] =  9.0;
-    fDPtBins[ 4] = 12.0;
-    fDPtBins[ 5] = 16.0;
-    fDPtBins[ 6] = 30.0;
+    fDPtBins[ 0] =  1.0;
+    fDPtBins[ 1] =  3.0;
+    fDPtBins[ 2] =  5.0;
+    fDPtBins[ 3] =  6.0;
+    fDPtBins[ 4] =  7.0;
+    fDPtBins[ 5] =  9.0;
+    fDPtBins[ 6] = 12.0;
+    fDPtBins[ 7] = 16.0;
+    fDPtBins[ 8] = 30.0;
 
     SetDeltaInvMassRange(413, 421, 0.08);
     SetInvMassRange(413, 0.60);
@@ -110,19 +112,20 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
   fNJetPtBins = 3;
   fJetPtBins = new Double_t[fNJetPtBins+1];
-  fJetPtBins[ 0] =   2.5;
+  fJetPtBins[ 0] =   2.0;
   fJetPtBins[ 1] =   8.0;
   fJetPtBins[ 2] =  13.0;
   fJetPtBins[ 3] =  50.0;
 
-  fNzBins = 5;
+  fNzBins = 6;
   fzBins = new Double_t[fNzBins+1];
-  fzBins[ 0] =   0.30;
-  fzBins[ 1] =   0.50;
-  fzBins[ 2] =   0.80;
-  fzBins[ 3] =   1.00;
-  fzBins[ 4] =   1.20;
-  fzBins[ 5] =   2.00;
+  fzBins[ 0] =   0.10;
+  fzBins[ 1] =   0.30;
+  fzBins[ 2] =   0.50;
+  fzBins[ 3] =   0.80;
+  fzBins[ 4] =   1.00;
+  fzBins[ 5] =   1.20;
+  fzBins[ 6] =   2.00;
 }
 
 //____________________________________________________________________________________
@@ -240,13 +243,15 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   if (fDmesonName == "DStar") {
     minMass = fDeltaInvMinMass;
     maxMass = fDeltaInvMaxMass;
-    startingSigma = 0.001;
-    startingSigmaBkg = 1;
+    startingSigma = 7e-4;
+    startingSigmaBkg = 5;
   }
   
   MassFitter* fitter = new MassFitter(name, fMassFitTypeSig, fMassFitTypeBkg, minMass, maxMass);
   fitter->GetFitFunction()->SetParameter(1, startingSigmaBkg);
+  //fitter->GetFitFunction()->SetParLimits(1, startingSigmaBkg*0.1, startingSigmaBkg*10.);
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
+  fitter->GetFitFunction()->SetParLimits(4, startingSigma*0.5, startingSigma*1.5);
   
   return fitter;
 }
