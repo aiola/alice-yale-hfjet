@@ -15,8 +15,6 @@ class TList;
 class TDirectoryFile;
 class TH1;
 
-#include <TMap.h>
-
 #include "DJetCorrBase.h"
 
 class DJetCorrAnalysis : public DJetCorrBase {
@@ -82,7 +80,6 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString         fMatchingStatusAxisTitle   ;//  distance of a D meson daughter from the jet axis title
 
   THnSparse      *fDmesons                   ;//! THnSparse contains the results
-  TMap            fTHnAxisMap                ;//! mapping of axis titles with indexes
   TList          *fInputQAList               ;//! list contains the QA histograms
   TObjArray      *fMassFitters               ;//! array containing the mass fitter objects
 
