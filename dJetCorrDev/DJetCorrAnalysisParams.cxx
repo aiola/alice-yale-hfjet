@@ -117,15 +117,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fJetPtBins[ 2] =  13.0;
   fJetPtBins[ 3] =  50.0;
 
-  fNzBins = 6;
+  fNzBins = 5;
   fzBins = new Double_t[fNzBins+1];
-  fzBins[ 0] =   0.10;
-  fzBins[ 1] =   0.30;
-  fzBins[ 2] =   0.50;
-  fzBins[ 3] =   0.80;
-  fzBins[ 4] =   1.00;
-  fzBins[ 5] =   1.20;
-  fzBins[ 6] =   2.00;
+  //fzBins[ 0] =   0.10;
+  fzBins[ 0] =   0.30;
+  fzBins[ 1] =   0.50;
+  fzBins[ 2] =   0.80;
+  fzBins[ 3] =   1.00;
+  fzBins[ 4] =   1.20;
+  fzBins[ 5] =   2.00;
 }
 
 //____________________________________________________________________________________
