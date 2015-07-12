@@ -14,6 +14,7 @@ void runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets
 
   gROOT->LoadMacro("MassFitter.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
+  gROOT->LoadMacro("DJetCorrBase.cxx+g");
   gROOT->LoadMacro("DJetCorrAnalysis.cxx+g");
 
   DJetCorrAnalysis* projDjet = new DJetCorrAnalysis(train);
