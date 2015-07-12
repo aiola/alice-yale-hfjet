@@ -500,15 +500,34 @@ TVirtualPad* DJetCorrAnalysis::SetUpPad(TVirtualPad* pad,
 {
   if (!pad) return 0;
 
+  pad->SetLeftMargin(0.18);
+  pad->SetRightMargin(0.02);
+  pad->SetBottomMargin(0.12);
+  pad->SetTopMargin(0.08);
+  
   pad->SetLogx(logX);
   pad->SetLogy(logY);
   pad->cd();
 
   TString blankHistName(Form("%s_blankHist", pad->GetName()));
   TH1* blankHist = new TH1D(blankHistName, blankHistName, 1000, minX, maxX);
+  
   blankHist->GetXaxis()->SetTitle(xTitle);
-  blankHist->GetYaxis()->SetTitle(yTitle);
+  blankHist->GetXaxis()->SetTitleFont(43);
+  blankHist->GetXaxis()->SetTitleSize(15);
+  blankHist->GetXaxis()->SetTitleOffset(1.2);
+  blankHist->GetXaxis()->SetLabelFont(43);
+  blankHist->GetXaxis()->SetLabelSize(15);
+  blankHist->GetXaxis()->SetNdivisions(404, kTRUE);
+
   blankHist->GetYaxis()->SetRangeUser(minY, maxY);
+  blankHist->GetYaxis()->SetTitle(yTitle);
+  blankHist->GetYaxis()->SetTitleFont(43);
+  blankHist->GetYaxis()->SetTitleSize(15);
+  blankHist->GetYaxis()->SetTitleOffset(1.8);
+  blankHist->GetYaxis()->SetLabelFont(43);
+  blankHist->GetYaxis()->SetLabelSize(15);
+  
   blankHist->Draw();
 
   return pad;
@@ -531,7 +550,8 @@ TCanvas* DJetCorrAnalysis::SetUpCanvas(const char* name,
     canvas->Divide(cols, rows);
     Int_t n = rows * cols;
     for (Int_t i = 1; i <= n; i++) {
-      SetUpPad(canvas->cd(i), xTitle, minX, maxX, logX, yTitle, minY, maxY, logY); 
+      TVirtualPad* pad = canvas->cd(i);
+      SetUpPad(pad, xTitle, minX, maxX, logX, yTitle, minY, maxY, logY); 
     }
   }
   
@@ -1080,11 +1100,11 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
 
   TString cname(name);
 
-  Double_t w = cols*320;
+  Double_t w = cols*350;
   Double_t h = rows*320;
 
   TString yaxisTitle;
-  yaxisTitle = Form("counts / (%.2f MeV/#it{c}^2)", histos[0]->GetXaxis()->GetBinWidth(1)*1000);
+  yaxisTitle = Form("counts / (%.2f MeV/#it{c}^{2})", histos[0]->GetXaxis()->GetBinWidth(1)*1000);
   
   TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, yaxisTitle, 0, 1, kFALSE, h, w, cols, rows);
   for (Int_t i = 0; i < n; i++) {
@@ -1096,7 +1116,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Could not find blank histogram!");
       continue;
     }
-    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*2.8);
+    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.8);
 
     if (histos[i]->GetSumw2N() == 0) histos[i]->Sumw2();
     Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());
@@ -1121,25 +1141,29 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Int_t fitStatus = r;
       fitter->Draw("same");
 
-      TPaveText* paveSig = SetUpPaveText(0.12, 0.39, 0.39, 0.73, 13, fitter->GetSignalString());
-      paveSig->AddText(fitter->GetBackgroundString());
-      paveSig->AddText(fitter->GetSignalOverBackgroundString());
-      paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
+      //TPaveText* paveSig = SetUpPaveText(0.22, 0.41, 0.51, 0.84, 13, fitter->GetSignalString());
+      TPaveText* paveSig = SetUpPaveText(0.22, 0.66, 0.51, 0.80, 13, fitter->GetSignalOverSqrtSignalBackgroundString());
+      paveSig->AddText(" ");
+      //paveSig->AddText(fitter->GetBackgroundString());
+      //paveSig->AddText(fitter->GetSignalOverBackgroundString());
+      //paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
       if (fitStatus == 0) {
-        paveSig->AddText(fitter->GetChisquareString());
+        //paveSig->AddText(fitter->GetChisquareString());
       }
       else {
-        paveSig->AddText("Fit failed");
+        //paveSig->AddText("Fit failed");
       }
       paveSig->Draw();
 
-      TPaveText* paveFit = SetUpPaveText(0.40, 0.48, 0.90, 0.75, 13, fitter->GetSignalMeanString());
+      TPaveText* paveFit = SetUpPaveText(0.47, 0.66, 0.97, 0.80, 13, fitter->GetSignalMeanString());  //66->58, 80->84
       paveFit->AddText(fitter->GetSignalWidthString());
-      paveFit->AddText(fitter->GetBkgPar1String());
+      //paveFit->AddText(fitter->GetBkgPar1String());
       paveFit->Draw();
     }
 
-    TPaveText* pave = SetUpPaveText(0.10, 0.74, 0.90, 0.88, 13, histos[i]->GetTitle());
+    TPaveText* pave = SetUpPaveText(gPad->GetLeftMargin(), 0.81, 1-gPad->GetRightMargin(), 0.95, 15, histos[i]->GetTitle());
+    pave->SetTextAlign(22);
+    pave->SetTextFont(63);
     pave->Draw();
 
     if (pdgMass > 0 && !doFit) {
@@ -1163,6 +1187,20 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
     }
   }
 
+  canvas->cd(1);
+  TPaveText* paveWorkInProgress = SetUpPaveText(0.18, 0.94, 1.0, 0.98, 13, "ALICE Work in progress");
+  paveWorkInProgress->SetTextFont(63);
+  paveWorkInProgress->SetTextSize(15);
+  paveWorkInProgress->SetTextAlign(22);
+  paveWorkInProgress->Draw();
+
+  canvas->cd(2);
+  TPaveText* paveJets = SetUpPaveText(0.18, 0.94, 1.0, 0.98, 12, "13 < #it{p}_{T,jet}^{ch} < 50 GeV/#it{c}");
+  paveJets->SetTextFont(43);
+  paveJets->SetTextSize(13);
+  paveJets->SetTextAlign(22);
+  paveJets->Draw();  
+  
   if (fSavePlots) SavePlot(canvas);
 
   return kTRUE;
