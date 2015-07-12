@@ -10,7 +10,6 @@ class TCanvas;
 class TLegend;
 class TVirtualPad;
 class TPaveText;
-class DJetCorrAnalysisParams;
 class TObject;
 class TList;
 class TDirectoryFile;
@@ -18,26 +17,15 @@ class TH1;
 
 #include <TMap.h>
 
-class DJetCorrAnalysis : public TObject {
+#include "DJetCorrBase.h"
+
+class DJetCorrAnalysis : public DJetCorrBase {
   
  public:
   DJetCorrAnalysis();
   DJetCorrAnalysis(const char* train, const char* path = "$JETRESULTS");
 
-  enum EMatchingStatus {kAnyMatchingStatus, kNotMatched, kMatched};
-
-  void   SetInputTrain(const char* train)      { fTrainName        = train  ; CloseInputFile(); }
-  void   SetInputPath(const char* path)        { fInputPath        = path   ; CloseInputFile(); }
-  void   SetInputFileName(const char* fname)   { fInputFileName    = fname  ; CloseInputFile(); }
-  void   SetOutputFileName(const char* fname)  { fOutputFileName   = fname  ; }
   void   SetQAListName(const char* lname)      { fQAListName       = lname  ; }
-  void   SetOutputPath(const char* path)       { fOutputPath       = path   ; }
-  void   SetOverwrite(Bool_t ow = kTRUE)       { fOverwrite        = ow     ; }
-  void   SetPlotFormat(const char* f)          { fPlotFormat       = f      ; }
-  void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
-
-  DJetCorrAnalysisParams*   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
-  DJetCorrAnalysisParams*   AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   Bool_t Init();
 
@@ -46,64 +34,31 @@ class DJetCorrAnalysis : public TObject {
   Bool_t GenerateDJetCorrHistograms(const char* paramName);
   Bool_t GenerateDJetCorrHistograms(Int_t i);
   Bool_t GenerateDJetCorrHistograms();
-  
-  Bool_t SaveOutputFile();
-  
+   
   Bool_t PlotTrackHistograms();
   Bool_t PlotDJetCorrHistograms(DJetCorrAnalysisParams* params);
   Bool_t PlotDJetCorrHistograms(const char* paramName);
   Bool_t PlotDJetCorrHistograms(Int_t i);
   Bool_t PlotDJetCorrHistograms();
-  
+    
  protected:
-
   void            ClearInputData();
-  Int_t           GetAxisIndex(TString title);
-
+  Int_t           GetAxisIndex(TString title) { return DJetCorrBase::GetAxisIndex(title, fDmesons); }
+  
   Bool_t          ProjectQA();
   Bool_t          ProjectCorrD(DJetCorrAnalysisParams* params);
   Bool_t          ProjectDJetCorr(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1, Int_t minJetConst=0);
-  Bool_t          GenerateRatios(const char* nname, const char* dname);
+
   Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin=-1, Int_t dzBin=-1);
   Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Int_t dptBin=-1, Int_t jetptBin=-1);
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle,
                                             Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
                                             DJetCorrAnalysisParams* params, Bool_t doFit=kFALSE);
-  
-  Bool_t          PlotObservable(DJetCorrAnalysisParams* params, TString obsName, Double_t xmin, Double_t xmax,
-                                 Double_t minDPt, Double_t maxDPt, Double_t minJetPt, Double_t maxJetPt, Double_t minZ, Double_t maxZ,
-                                 Int_t step, Int_t rebin, Int_t norm, Int_t plotStats=0);
     
-  Bool_t          Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax, Int_t plotStats=0);
-  void            GenerateAxisMap(THnSparse* hn);
-  Bool_t          OpenInputFile();
-  Bool_t          LoadInputList(const char* lname);
   Bool_t          LoadQAList();
   Bool_t          LoadTHnSparse();
-  Bool_t          LoadOutputHistograms();
-  TVirtualPad*    SetUpPad(TVirtualPad* pad,
-                           const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
-                           const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY);
-  TCanvas*        SetUpCanvas(const char* name,
-                              const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
-                              const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
-                              Double_t w = 700, Double_t h = 500, Int_t rows=1, Int_t cols=1);
   
-  TLegend*        SetUpLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize);
-  TPaveText*      SetUpPaveText(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize, const char* text = 0);
-  
-  void            SavePlot(TCanvas* canvas);
-
-  void            CloseInputFile();
-
-  TString         fTrainName                 ;//  train name
-  TString         fInputPath                 ;//  train path
-  TString         fInputFileName             ;//  input file name
   TString         fQAListName                ;//  QA list name
-  TString         fInputDirFileName          ;//  input dir file name
-  TString         fOutputPath                ;//  output path
-  TString         fOutputFileName            ;//  output file name
-  Bool_t          fOverwrite                 ;//  whether the output file should be overwritten
 
   // Axis titles
   TString         fDPtAxisTitle              ;//  d meson pt axis title
@@ -126,22 +81,10 @@ class DJetCorrAnalysis : public TObject {
   TString         fDeltaRDaughterAxisTitle   ;//  distance of a D meson daughter from the jet axis title
   TString         fMatchingStatusAxisTitle   ;//  distance of a D meson daughter from the jet axis title
 
-  TString         fPlotFormat                ;//  plot format (pdf, eps, png...)
-  Bool_t          fSavePlots                 ;//  true if save plots
-
-  TList          *fAnalysisParams            ;//  list of analysis params
-  
-  TMap            fTHnAxisMap                ;//! mapping of axis titles with indexes
-  Bool_t          fTHnSparseMapGenerated     ;//! whether or not the axis map has been generated for the THnSparse
-  TFile          *fInputFile                 ;//! input file
-  TDirectoryFile *fInputDirectoryFile        ;//! input directory file
-  TList          *fInputList                 ;//! list contains the input hisograms
-  TList          *fInputQAList               ;//! list contains the QA histograms
   THnSparse      *fDmesons                   ;//! THnSparse contains the results
-  TList          *fOutputList                ;//! list contains the output histograms
+  TMap            fTHnAxisMap                ;//! mapping of axis titles with indexes
+  TList          *fInputQAList               ;//! list contains the QA histograms
   TObjArray      *fMassFitters               ;//! array containing the mass fitter objects
-  
-  static const Double_t fgkEpsilon;
 
  private:
    
