@@ -50,6 +50,7 @@ DJetCorrBase::DJetCorrBase() :
   fAnalysisParams(0),
   fPlotFormat(),
   fSavePlots(kFALSE),
+  fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
   fTHnSparseAxisMaps(),
   fInputFile(0),
   fInputDirectoryFile(0),
@@ -65,14 +66,15 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
   TObject(),
   fTrainName(train),
   fInputPath(path),
-  fInputFileName("AnalysisResults.root"),
-  fInputDirFileName("SA_DmesonJetCorr"),
+  fInputFileName(),
+  fInputDirFileName(),
   fOutputPath("../data/"),
   fOutputFileName("DJetCorr.root"),
   fOverwrite(kFALSE),
   fAnalysisParams(new TList()),
   fPlotFormat("pdf"),
   fSavePlots(kFALSE),
+  fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
   fTHnSparseAxisMaps(),
   fInputFile(0),
   fInputDirectoryFile(0),
@@ -84,11 +86,13 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
 }
 
 //____________________________________________________________________________________
-void DJetCorrBase::ClearInputData()
+Bool_t DJetCorrBase::ClearInputData()
 {
   // Clear the input data.
 
   fTHnSparseAxisMaps.Clear();
+
+  return kTRUE;
 }
 
 //____________________________________________________________________________________
@@ -98,7 +102,7 @@ DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, cons
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName);
+  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName, fAnaType);
 
   fAnalysisParams->Add(params);
 
@@ -264,6 +268,16 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   blankHist->Draw();
 
   return pad;
+}
+
+//____________________________________________________________________________________
+TCanvas* DJetCorrBase::SetUpCanvas(TH1* histo, Bool_t logX, Bool_t logY,
+                                   Double_t w, Double_t h, Int_t rows, Int_t cols)
+{
+  return SetUpCanvas(histo->GetName(),
+                     histo->GetXaxis()->GetTitle(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax(), logX,
+                     histo->GetYaxis()->GetTitle(), histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax(), logY,
+                     w, h, rows, cols);
 }
 
 //____________________________________________________________________________________

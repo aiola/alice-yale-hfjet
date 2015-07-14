@@ -44,7 +44,7 @@ class DJetCorrBase : public TObject {
   
  protected:
 
-  virtual void    ClearInputData();
+  virtual Bool_t  ClearInputData();
   Int_t           GetAxisIndex(TString title, THnSparse* hn);
 
   Bool_t          GenerateRatios(const char* nname, const char* dname);
@@ -66,6 +66,8 @@ class DJetCorrBase : public TObject {
                               const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
                               const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
                               Double_t w = 700, Double_t h = 500, Int_t rows=1, Int_t cols=1);
+  TCanvas*        SetUpCanvas(TH1* histo, Bool_t logX, Bool_t logY,
+                              Double_t w = 700, Double_t h = 500, Int_t rows=1, Int_t cols=1);
   
   TLegend*        SetUpLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize);
   TPaveText*      SetUpPaveText(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize, const char* text = 0);
@@ -86,6 +88,8 @@ class DJetCorrBase : public TObject {
   
   TString         fPlotFormat                ;//  plot format (pdf, eps, png...)
   Bool_t          fSavePlots                 ;//  true if save plots
+
+  DJetCorrAnalysisParams::DJetCorrAnalysisType fAnaType;//  analysis type
   
   TList           fTHnSparseAxisMaps         ;//! axis maps for THnSparse
   TFile          *fInputFile                 ;//! input file

@@ -10,11 +10,12 @@ class TString;
 class DJetCorrAnalysisParams : public TObject
 {
  public:
-  DJetCorrAnalysisParams();
-  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
-  DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
-
   enum {kAnyMatchingStatus, kNotMatched, kMatched};
+  enum DJetCorrAnalysisType {KUndefinedAna=0, kInvMassAna, kResponseMatrixAna};
+
+  DJetCorrAnalysisParams();
+  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, DJetCorrAnalysisType anaType);
+  DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
   
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass = min        ; fInvMaxMass = max        ; }
   void        SetInvMassRange(Int_t pdg, Double_t nsigma);
