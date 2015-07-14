@@ -41,7 +41,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName) :
+DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, DJetCorrAnalysisType anaType) :
   TObject(),
   fName(),
   fNDPtBins(0),
@@ -67,7 +67,12 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMassFitTypeSig(MassFitter::kGaus),
   fMassFitTypeBkg(MassFitter::kExpo)
 {
-  fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+  if (anaType == kInvMassAna) {
+    fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+  }
+  else if (anaType == kResponseMatrixAna) {
+    fInputListName = Form("AliJetResponseMaker_Jet_AKT%s%s_%s_pT0150_pt_scheme_Jet_AKT%s%s_mcparticles%s_pT0000_pt_scheme_Bias0_BiasType0_TPC_histos", fJetType.Data(), fJetRadius.Data(), fTracksName.Data(), fJetType.Data(), fJetRadius.Data(), fDmesonName.Data());
+  }
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {
@@ -117,15 +122,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fJetPtBins[ 2] =  13.0;
   fJetPtBins[ 3] =  50.0;
 
-  fNzBins = 5;
+  fNzBins = 6;
   fzBins = new Double_t[fNzBins+1];
-  //fzBins[ 0] =   0.10;
-  fzBins[ 0] =   0.30;
-  fzBins[ 1] =   0.50;
-  fzBins[ 2] =   0.80;
-  fzBins[ 3] =   1.00;
-  fzBins[ 4] =   1.20;
-  fzBins[ 5] =   2.00;
+  fzBins[ 0] =   0.10;
+  fzBins[ 1] =   0.30;
+  fzBins[ 2] =   0.50;
+  fzBins[ 3] =   0.80;
+  fzBins[ 4] =   1.00;
+  fzBins[ 5] =   1.20;
+  fzBins[ 6] =   2.00;
 }
 
 //____________________________________________________________________________________

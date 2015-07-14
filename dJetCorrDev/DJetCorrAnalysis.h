@@ -40,7 +40,7 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t PlotDJetCorrHistograms();
     
  protected:
-  void            ClearInputData();
+  Bool_t          ClearInputData();
   Int_t           GetAxisIndex(TString title) { return DJetCorrBase::GetAxisIndex(title, fDmesons); }
   
   Bool_t          ProjectQA();

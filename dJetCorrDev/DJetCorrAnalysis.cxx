@@ -65,6 +65,8 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fMassFitters(0)
 {
   // Default ctr.
+
+  fAnaType = DJetCorrAnalysisParams::kInvMassAna;
 }
 
 //____________________________________________________________________________________
@@ -95,6 +97,10 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fMassFitters(0)
 {
   // Standard ctr.
+
+  fAnaType = DJetCorrAnalysisParams::kInvMassAna;
+  fInputFileName = "AnalysisResults.root";
+  fInputDirFileName = "SA_DmesonJetCorr";
 }
 
 //____________________________________________________________________________________
@@ -122,18 +128,22 @@ Bool_t DJetCorrAnalysis::Init()
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysis::ClearInputData()
+Bool_t DJetCorrAnalysis::ClearInputData()
 {
   // Clear the input data.
 
-  DJetCorrBase::ClearInputData();
+  if (!DJetCorrBase::ClearInputData()) return kFALSE;
   
   fDmesons = 0;
+
+  return kTRUE;
 }
 
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::LoadTHnSparse()
 {
+  // Loads the THnSparse histograms.
+  
   if (!fDmesons) {
     fDmesons = static_cast<THnSparse*>(fInputList->FindObject("fDmesons"));
   }
