@@ -172,8 +172,8 @@ Bool_t DJetCorrResponse::ProjectResponseMatrices(DJetCorrAnalysisParams* params)
 
   Printf("Info-DJetCorrResponse::ProjectResponseMatrices : Start projections");
   
-  //ProjectResponseMatrix(params);
-  //ProjectResponseMatricesVsJetPt(params);
+  ProjectResponseMatrix(params);
+  ProjectResponseMatricesVsJetPt(params);
   ProjectResponseMatricesVsZ(params);
   
   TH1::AddDirectory(addDirStatus);
@@ -378,8 +378,8 @@ Bool_t DJetCorrResponse::PlotResponseMatrices(DJetCorrAnalysisParams* params)
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
 
-  //PlotResponseMatrix(params);
-  //PlotResponseMatricesVsJetPt(params);
+  PlotResponseMatrix(params);
+  PlotResponseMatricesVsJetPt(params);
   PlotResponseMatricesVsZ(params);
   
   return kTRUE;
