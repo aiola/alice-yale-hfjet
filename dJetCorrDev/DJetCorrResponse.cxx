@@ -225,7 +225,7 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix(DJetCorrAnalysisParams* params)
   fHistJets2->GetAxis(jetPtPartAxis)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
   fHistJets2->GetAxis(zPartAxis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
 
-  hname = Form("ResponseMatrix_JetPt_Z");
+  hname = Form("%s_ResponseMatrix_JetPt_Z", params->GetName());
   htitle = Form("Response matrix");
   Int_t dims[4] = {jetPt1Axis, z1Axis, jetPt2Axis, z2Axis};
   THnSparse* resp = fHistMatching->Projection(4, dims, "O");
@@ -299,7 +299,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* para
   fHistJets2->GetAxis(jetPtPartAxis)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
   fHistJets2->GetAxis(zPartAxis)->SetRangeUser(minzBin, maxzBin);
 
-  hname = Form("ResponseMatrix_JetPt_Z_%d_%d", TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
+  hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
   htitle = Form("Response matrix for jet #it{p}_{T}: %.2f < #it{z}_{||}^{part} < %.2f", minZ, maxZ);
   TH2* resp = fHistMatching->Projection(1, 0, "O");
 
@@ -353,7 +353,7 @@ Bool_t DJetCorrResponse::ProjectResponseZMatrix(DJetCorrAnalysisParams* params, 
   fHistJets2->GetAxis(jetPtPartAxis)->SetRangeUser(minJetPt, maxJetPt);
   fHistJets2->GetAxis(zPartAxis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
 
-  hname = Form("ResponseMatrix_Z_JetPt_%d_%d", TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
+  hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
   htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
   TH2* resp = fHistMatching->Projection(z2Axis, z1Axis, "O");
 
@@ -456,15 +456,15 @@ Bool_t DJetCorrResponse::PlotResponseMatricesVsZ(DJetCorrAnalysisParams* params)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrResponse::PlotResponseMatrix(DJetCorrAnalysisParams* /*params*/)
+Bool_t DJetCorrResponse::PlotResponseMatrix(DJetCorrAnalysisParams* params)
 {
   TString hname;
   
-  hname = Form("Efficiency_JetPt_Z");
+  hname = Form("%s_Efficiency_JetPt_Z", params->GetName());
   TH2* eff = static_cast<TH2*>(fOutputList->FindObject(hname));
   if (!eff) return kFALSE;
-
-  SetUpCanvas(eff->GetName(),
+  
+  SetUpCanvas(hname,
               eff->GetXaxis()->GetTitle(), 0., 30., kFALSE,
               eff->GetYaxis()->GetTitle(), 0., 1.2, kFALSE);
   eff->Draw("colz same");
@@ -473,17 +473,17 @@ Bool_t DJetCorrResponse::PlotResponseMatrix(DJetCorrAnalysisParams* /*params*/)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrResponse::PlotResponseJetPtMatrix(DJetCorrAnalysisParams* /*params*/, Double_t minZ, Double_t maxZ)
+Bool_t DJetCorrResponse::PlotResponseJetPtMatrix(DJetCorrAnalysisParams* params, Double_t minZ, Double_t maxZ)
 {
   TString hname;
-
-  hname = Form("ResponseMatrix_JetPt_Z_%d_%d", TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
+  
+  hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
   TH2* resp = static_cast<TH2*>(fOutputList->FindObject(hname));
   if (!resp) return kFALSE;
   SetUpCanvas(resp, kFALSE, kFALSE);
   resp->Draw("colz same");
   
-  hname = Form("Efficiency_JetPt_Z_%d_%d", TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
+  hname = Form("%s_Efficiency_JetPt_Z_%d_%d", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
   TH1* eff = static_cast<TH1*>(fOutputList->FindObject(hname));
   if (!eff) return kFALSE;
   SetUpCanvas(eff->GetName(),
@@ -495,11 +495,11 @@ Bool_t DJetCorrResponse::PlotResponseJetPtMatrix(DJetCorrAnalysisParams* /*param
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrResponse::PlotResponseZMatrix(DJetCorrAnalysisParams* /*params*/, Double_t minJetPt, Double_t maxJetPt)
+Bool_t DJetCorrResponse::PlotResponseZMatrix(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt)
 {
   TString hname;
 
-  hname = Form("ResponseMatrix_Z_JetPt_%d_%d", TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
+  hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
   TH2* resp = static_cast<TH2*>(fOutputList->FindObject(hname));
   if (!resp) return kFALSE;
   SetUpCanvas(resp->GetName(),
@@ -507,7 +507,7 @@ Bool_t DJetCorrResponse::PlotResponseZMatrix(DJetCorrAnalysisParams* /*params*/,
               resp->GetYaxis()->GetTitle(), 0., 1.2, kFALSE);
   resp->Draw("colz same");
   
-  hname = Form("Efficiency_Z_JetPt_%d_%d", TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
+  hname = Form("%s_Efficiency_Z_JetPt_%d_%d", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
   TH1* eff = static_cast<TH1*>(fOutputList->FindObject(hname));
   if (!eff) return kFALSE;
   SetUpCanvas(eff->GetName(),
