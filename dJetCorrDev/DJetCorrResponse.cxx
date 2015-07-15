@@ -209,15 +209,25 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix(DJetCorrAnalysisParams* params)
 
   if (!fHistMatching || !fHistJets2) return kFALSE;
 
-  fHistMatching->GetAxis(0)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
-  fHistMatching->GetAxis(10)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
+  Int_t jetPt1Axis = GetAxisIndex("p_{T,1}", fHistMatching, kTRUE);
+  Int_t z1Axis = GetAxisIndex("z_{flavour,1}", fHistMatching, kTRUE);
+  Int_t jetPt2Axis = GetAxisIndex("p_{T,2}", fHistMatching, kTRUE);
+  Int_t z2Axis = GetAxisIndex("z_{flavour,2}", fHistMatching, kTRUE);
 
-  fHistJets2->GetAxis(2)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
-  fHistJets2->GetAxis(4)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
+  Int_t jetPtPartAxis = GetAxisIndex("p_{T}", fHistJets2, kTRUE);
+  Int_t zPartAxis = GetAxisIndex("z_{flavour}", fHistJets2, kTRUE);
+
+  if (jetPt1Axis < 0 || z1Axis < 0 || jetPt2Axis < 0 || z2Axis < 0 || jetPtPartAxis < 0 || zPartAxis < 0) return kFALSE;
+
+  fHistMatching->GetAxis(jetPt2Axis)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
+  fHistMatching->GetAxis(z2Axis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
+
+  fHistJets2->GetAxis(jetPtPartAxis)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
+  fHistJets2->GetAxis(zPartAxis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
 
   hname = Form("ResponseMatrix_JetPt_Z");
   htitle = Form("Response matrix");
-  Int_t dims[4] = {0, 9, 1, 10};
+  Int_t dims[4] = {jetPt1Axis, z1Axis, jetPt2Axis, z2Axis};
   THnSparse* resp = fHistMatching->Projection(4, dims, "O");
 
   resp->SetName(hname);
@@ -233,7 +243,7 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix(DJetCorrAnalysisParams* params)
   eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   eff->GetZaxis()->SetTitle("Efficiency");
   
-  TH2* truth_proj = fHistJets2->Projection(4, 2, "O");
+  TH2* truth_proj = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "O");
 
   eff->Divide(truth_proj);
   delete truth_proj;
@@ -253,24 +263,41 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* para
 
   if (!fHistMatching || !fHistJets2) return kFALSE;
 
-  Int_t maxzBin = fHistMatching->GetAxis(10)->FindBin(maxZ);
-  Int_t minzBin = fHistMatching->GetAxis(10)->FindBin(minZ);
-      
-  if (fHistMatching->GetAxis(10)->GetBinUpEdge(maxzBin) == 1.0) { // if the up edge == 1.0 includes the next bin
-    maxzBin++;
-    Printf("maxz == %.10f", fHistMatching->GetAxis(10)->GetBinUpEdge(maxzBin));
-  }
+  Int_t jetPt1Axis = GetAxisIndex("p_{T,1}", fHistMatching, kTRUE);
+  Int_t z1Axis = GetAxisIndex("z_{flavour,1}", fHistMatching, kTRUE);
+  Int_t jetPt2Axis = GetAxisIndex("p_{T,2}", fHistMatching, kTRUE);
+  Int_t z2Axis = GetAxisIndex("z_{flavour,2}", fHistMatching, kTRUE);
 
-  if (fHistMatching->GetAxis(10)->GetBinLowEdge(minzBin) == 1.0) { // if the low edge == 1.0 excludes the first bin
-    minzBin++;
-    Printf("minz == %.10f", fHistMatching->GetAxis(10)->GetBinLowEdge(minzBin));
-  }
+  Int_t jetPtPartAxis = GetAxisIndex("p_{T}", fHistJets2, kTRUE);
+  Int_t zPartAxis = GetAxisIndex("z_{flavour}", fHistJets2, kTRUE);
+
+  if (jetPt1Axis < 0 || z1Axis < 0 || jetPt2Axis < 0 || z2Axis < 0 || jetPtPartAxis < 0 || zPartAxis < 0) return kFALSE;
+
+  Int_t minzBin = fHistMatching->GetAxis(z2Axis)->FindBin(minZ);
+  Int_t maxzBin = fHistMatching->GetAxis(z2Axis)->FindBin(maxZ);
+
+  if (fHistMatching->GetAxis(z2Axis)->GetBinUpEdge(minzBin) <= minZ ) minzBin++;
+  if (fHistMatching->GetAxis(z2Axis)->GetBinLowEdge(maxzBin) >= maxZ ) maxzBin--;
   
-  fHistMatching->GetAxis(0)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
-  fHistMatching->GetAxis(10)->SetRange(minzBin, maxzBin);
+  //Printf("minz == %.10f", fHistMatching->GetAxis(z2Axis)->GetBinLowEdge(minzBin));
+  //Printf("maxz == %.10f", fHistMatching->GetAxis(z2Axis)->GetBinUpEdge(maxzBin));
+  
+  if (fHistMatching->GetAxis(z2Axis)->GetBinUpEdge(maxzBin) == 1.0) { // if the up edge == 1.0 includes the next bin
+    maxzBin++;
+  }
 
-  fHistJets2->GetAxis(2)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
-  fHistJets2->GetAxis(4)->SetRangeUser(minzBin, maxzBin);
+  if (fHistMatching->GetAxis(z2Axis)->GetBinLowEdge(minzBin) == 1.0) { // if the low edge == 1.0 excludes the first bin
+    minzBin++;
+  }
+
+  //Printf("minz == %.10f", fHistMatching->GetAxis(z2Axis)->GetBinLowEdge(minzBin));
+  //Printf("maxz == %.10f", fHistMatching->GetAxis(z2Axis)->GetBinUpEdge(maxzBin));
+
+  fHistMatching->GetAxis(jetPt2Axis)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
+  fHistMatching->GetAxis(z2Axis)->SetRange(minzBin, maxzBin);
+
+  fHistJets2->GetAxis(jetPtPartAxis)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
+  fHistJets2->GetAxis(zPartAxis)->SetRangeUser(minzBin, maxzBin);
 
   hname = Form("ResponseMatrix_JetPt_Z_%d_%d", TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
   htitle = Form("Response matrix for jet #it{p}_{T}: %.2f < #it{z}_{||}^{part} < %.2f", minZ, maxZ);
@@ -309,16 +336,26 @@ Bool_t DJetCorrResponse::ProjectResponseZMatrix(DJetCorrAnalysisParams* params, 
   TString htitle;
 
   if (!fHistMatching || !fHistJets2) return kFALSE;
-  
-  fHistMatching->GetAxis(1)->SetRangeUser(minJetPt, maxJetPt);
-  fHistMatching->GetAxis(10)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
 
-  fHistJets2->GetAxis(2)->SetRangeUser(minJetPt, maxJetPt);
-  fHistJets2->GetAxis(4)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
+  Int_t jetPt1Axis = GetAxisIndex("p_{T,1}", fHistMatching, kTRUE);
+  Int_t z1Axis = GetAxisIndex("z_{flavour,1}", fHistMatching, kTRUE);
+  Int_t jetPt2Axis = GetAxisIndex("p_{T,2}", fHistMatching, kTRUE);
+  Int_t z2Axis = GetAxisIndex("z_{flavour,2}", fHistMatching, kTRUE);
+
+  Int_t jetPtPartAxis = GetAxisIndex("p_{T}", fHistJets2, kTRUE);
+  Int_t zPartAxis = GetAxisIndex("z_{flavour}", fHistJets2, kTRUE);
+
+  if (jetPt1Axis < 0 || z1Axis < 0 || jetPt2Axis < 0 || z2Axis < 0 || jetPtPartAxis < 0 || zPartAxis < 0) return kFALSE;
+  
+  fHistMatching->GetAxis(jetPt2Axis)->SetRangeUser(minJetPt, maxJetPt);
+  fHistMatching->GetAxis(z2Axis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
+
+  fHistJets2->GetAxis(jetPtPartAxis)->SetRangeUser(minJetPt, maxJetPt);
+  fHistJets2->GetAxis(zPartAxis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
 
   hname = Form("ResponseMatrix_Z_JetPt_%d_%d", TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt));
   htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
-  TH2* resp = fHistMatching->Projection(10, 9, "O");
+  TH2* resp = fHistMatching->Projection(z2Axis, z1Axis, "O");
 
   resp->SetName(hname);
   resp->SetTitle(htitle);
@@ -334,7 +371,7 @@ Bool_t DJetCorrResponse::ProjectResponseZMatrix(DJetCorrAnalysisParams* params, 
   eff->GetXaxis()->SetTitle("#it{z}_{||}^{part}");
   eff->GetYaxis()->SetTitle("Efficiency");
   
-  TH1* truth_proj = fHistJets2->Projection(4, "O");
+  TH1* truth_proj = fHistJets2->Projection(zPartAxis, "O");
   //truth_proj->Rebin(5);
   eff->Divide(truth_proj);
   delete truth_proj;

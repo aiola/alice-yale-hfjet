@@ -1022,17 +1022,17 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
 
     if (dzAxis >= 0) {
-      Int_t maxzBin = fDmesons->GetAxis(dzAxis)->FindBin(maxz);
       Int_t minzBin = fDmesons->GetAxis(dzAxis)->FindBin(minz);
+      Int_t maxzBin = fDmesons->GetAxis(dzAxis)->FindBin(maxz);
+      if (fDmesons->GetAxis(dzAxis)->GetBinUpEdge(minzBin) <= minz ) minzBin++;
+      if (fDmesons->GetAxis(dzAxis)->GetBinLowEdge(maxzBin) >= maxz ) maxzBin--;
       
       if (fDmesons->GetAxis(dzAxis)->GetBinUpEdge(maxzBin) == 1.0) { // if the up edge == 1.0 includes the next bin
         maxzBin++;
-        //Printf("maxz == %.10f", fDmesons->GetAxis(dzAxis)->GetBinUpEdge(maxzBin));
       }
 
       if (fDmesons->GetAxis(dzAxis)->GetBinLowEdge(minzBin) == 1.0) { // if the low edge == 1.0 excludes the first bin
         minzBin++;
-        //Printf("minz == %.10f", fDmesons->GetAxis(dzAxis)->GetBinUpEdge(minzBin));
       }
     
       fDmesons->GetAxis(dzAxis)->SetRange(minzBin, maxzBin);
