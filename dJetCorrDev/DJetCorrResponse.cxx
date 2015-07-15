@@ -252,12 +252,25 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* para
   TString htitle;
 
   if (!fHistMatching || !fHistJets2) return kFALSE;
+
+  Int_t maxzBin = fHistMatching->GetAxis(10)->FindBin(maxZ);
+  Int_t minzBin = fHistMatching->GetAxis(10)->FindBin(minZ);
+      
+  if (fHistMatching->GetAxis(10)->GetBinUpEdge(maxzBin) == 1.0) { // if the up edge == 1.0 includes the next bin
+    maxzBin++;
+    Printf("maxz == %.10f", fHistMatching->GetAxis(10)->GetBinUpEdge(maxzBin));
+  }
+
+  if (fHistMatching->GetAxis(10)->GetBinLowEdge(minzBin) == 1.0) { // if the low edge == 1.0 excludes the first bin
+    minzBin++;
+    Printf("minz == %.10f", fHistMatching->GetAxis(10)->GetBinLowEdge(minzBin));
+  }
   
   fHistMatching->GetAxis(0)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
-  fHistMatching->GetAxis(10)->SetRangeUser(minZ, maxZ);
+  fHistMatching->GetAxis(10)->SetRange(minzBin, maxzBin);
 
   fHistJets2->GetAxis(2)->SetRangeUser(params->GetMinJetPt(), params->GetMaxJetPt());
-  fHistJets2->GetAxis(4)->SetRangeUser(minZ, maxZ);
+  fHistJets2->GetAxis(4)->SetRangeUser(minzBin, maxzBin);
 
   hname = Form("ResponseMatrix_JetPt_Z_%d_%d", TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100));
   htitle = Form("Response matrix for jet #it{p}_{T}: %.2f < #it{z}_{||}^{part} < %.2f", minZ, maxZ);

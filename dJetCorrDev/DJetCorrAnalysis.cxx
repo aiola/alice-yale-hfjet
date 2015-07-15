@@ -1022,17 +1022,20 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
 
     if (dzAxis >= 0) {
-      if (TMath::Abs(maxz - 1.0) < fgkEpsilon) {
-        Int_t z1bin = fDmesons->GetAxis(dzAxis)->FindBin(1.0);
-        maxz = fDmesons->GetAxis(dzAxis)->GetBinLowEdge(z1bin) - fgkEpsilon;
+      Int_t maxzBin = fDmesons->GetAxis(dzAxis)->FindBin(maxz);
+      Int_t minzBin = fDmesons->GetAxis(dzAxis)->FindBin(minz);
+      
+      if (fDmesons->GetAxis(dzAxis)->GetBinUpEdge(maxzBin) == 1.0) { // if the up edge == 1.0 includes the next bin
+        maxzBin++;
+        //Printf("maxz == %.10f", fDmesons->GetAxis(dzAxis)->GetBinUpEdge(maxzBin));
       }
 
-      if (TMath::Abs(minz - 1.0) < fgkEpsilon) {
-        Int_t z1bin = fDmesons->GetAxis(dzAxis)->FindBin(1.0);
-        minz = fDmesons->GetAxis(dzAxis)->GetBinLowEdge(z1bin+1) + fgkEpsilon;
+      if (fDmesons->GetAxis(dzAxis)->GetBinLowEdge(minzBin) == 1.0) { // if the low edge == 1.0 excludes the first bin
+        minzBin++;
+        //Printf("minz == %.10f", fDmesons->GetAxis(dzAxis)->GetBinUpEdge(minzBin));
       }
     
-      fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);
+      fDmesons->GetAxis(dzAxis)->SetRange(minzBin, maxzBin);
     }
     
     if (jetConstAxis >= 0) {
