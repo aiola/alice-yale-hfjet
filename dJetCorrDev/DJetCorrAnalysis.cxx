@@ -699,17 +699,30 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
   TString yaxisTitle;
   yaxisTitle = Form("counts / (%.2f MeV/#it{c}^{2})", histos[0]->GetXaxis()->GetBinWidth(1)*1000);
   
-  TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, yaxisTitle, 0, 1, kFALSE, h, w, cols, rows);
+  TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, yaxisTitle, 0, 1, kFALSE, h, w, cols, rows, 0.18, 0.02, 0.12, 0.08);
   for (Int_t i = 0; i < n; i++) {
     histos[i]->Scale(1., "width");
     
     TVirtualPad* pad = canvas->cd(i+1);
-    TH1* blank = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
-    if (!blank) {
+    TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
+    if (!blankHist) {
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Could not find blank histogram!");
       continue;
     }
-    blank->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.8);
+    blankHist->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.8);
+
+    blankHist->GetXaxis()->SetTitleFont(43);
+    blankHist->GetXaxis()->SetTitleSize(15);
+    blankHist->GetXaxis()->SetTitleOffset(1.2);
+    blankHist->GetXaxis()->SetLabelFont(43);
+    blankHist->GetXaxis()->SetLabelSize(15);
+    blankHist->GetXaxis()->SetNdivisions(404, kTRUE);
+
+    blankHist->GetYaxis()->SetTitleFont(43);
+    blankHist->GetYaxis()->SetTitleSize(15);
+    blankHist->GetYaxis()->SetTitleOffset(1.8);
+    blankHist->GetYaxis()->SetLabelFont(43);
+    blankHist->GetYaxis()->SetLabelSize(15);
 
     if (histos[i]->GetSumw2N() == 0) histos[i]->Sumw2();
     Printf("Info-DJetCorrAnalysis::PlotInvMassHistograms : Now plotting '%s'", histos[i]->GetName());

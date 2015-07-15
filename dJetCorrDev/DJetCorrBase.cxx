@@ -233,14 +233,15 @@ void DJetCorrBase::SavePlot(TCanvas* canvas)
 //____________________________________________________________________________________
 TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
                                     const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
-                                    const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY)
+                                    const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
+                                    Double_t lmar, Double_t rmar, Double_t bmar, Double_t tmar)
 {
   if (!pad) return 0;
 
-  pad->SetLeftMargin(0.18);
-  pad->SetRightMargin(0.02);
-  pad->SetBottomMargin(0.12);
-  pad->SetTopMargin(0.08);
+  pad->SetLeftMargin(lmar);
+  pad->SetRightMargin(rmar);
+  pad->SetBottomMargin(bmar);
+  pad->SetTopMargin(tmar);
   
   pad->SetLogx(logX);
   pad->SetLogy(logY);
@@ -250,20 +251,9 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   TH1* blankHist = new TH1D(blankHistName, blankHistName, 1000, minX, maxX);
   
   blankHist->GetXaxis()->SetTitle(xTitle);
-  blankHist->GetXaxis()->SetTitleFont(43);
-  blankHist->GetXaxis()->SetTitleSize(15);
-  blankHist->GetXaxis()->SetTitleOffset(1.2);
-  blankHist->GetXaxis()->SetLabelFont(43);
-  blankHist->GetXaxis()->SetLabelSize(15);
-  blankHist->GetXaxis()->SetNdivisions(404, kTRUE);
 
   blankHist->GetYaxis()->SetRangeUser(minY, maxY);
   blankHist->GetYaxis()->SetTitle(yTitle);
-  blankHist->GetYaxis()->SetTitleFont(43);
-  blankHist->GetYaxis()->SetTitleSize(15);
-  blankHist->GetYaxis()->SetTitleOffset(1.8);
-  blankHist->GetYaxis()->SetLabelFont(43);
-  blankHist->GetYaxis()->SetLabelSize(15);
   
   blankHist->Draw();
 
@@ -272,19 +262,21 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
 
 //____________________________________________________________________________________
 TCanvas* DJetCorrBase::SetUpCanvas(TH1* histo, Bool_t logX, Bool_t logY,
-                                   Double_t w, Double_t h, Int_t rows, Int_t cols)
+                                   Double_t w, Double_t h, Int_t rows, Int_t cols,
+                                   Double_t lmar, Double_t rmar, Double_t bmar, Double_t tmar)
 {
   return SetUpCanvas(histo->GetName(),
                      histo->GetXaxis()->GetTitle(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax(), logX,
                      histo->GetYaxis()->GetTitle(), histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax(), logY,
-                     w, h, rows, cols);
+                     w, h, rows, cols, lmar, rmar, bmar, tmar);
 }
 
 //____________________________________________________________________________________
 TCanvas* DJetCorrBase::SetUpCanvas(const char* name,
                                    const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
                                    const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
-                                   Double_t w, Double_t h, Int_t rows, Int_t cols)
+                                   Double_t w, Double_t h, Int_t rows, Int_t cols,
+                                   Double_t lmar, Double_t rmar, Double_t bmar, Double_t tmar)
 {
   Printf("Info-DJetCorrBase::SetUpCanvas : Setting up canvas '%s'", name);
   
@@ -298,7 +290,8 @@ TCanvas* DJetCorrBase::SetUpCanvas(const char* name,
     Int_t n = rows * cols;
     for (Int_t i = 1; i <= n; i++) {
       TVirtualPad* pad = canvas->cd(i);
-      SetUpPad(pad, xTitle, minX, maxX, logX, yTitle, minY, maxY, logY); 
+      SetUpPad(pad, xTitle, minX, maxX, logX, yTitle, minY, maxY, logY,
+               lmar, rmar, bmar, tmar); 
     }
   }
   
