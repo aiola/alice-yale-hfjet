@@ -45,7 +45,7 @@ class DJetCorrBase : public TObject {
  protected:
 
   virtual Bool_t  ClearInputData();
-  Int_t           GetAxisIndex(TString title, THnSparse* hn);
+  Int_t           GetAxisIndex(TString title, THnSparse* hn, Bool_t messageOnFail=kFALSE);
 
   Bool_t          GenerateRatios(const char* nname, const char* dname);
 

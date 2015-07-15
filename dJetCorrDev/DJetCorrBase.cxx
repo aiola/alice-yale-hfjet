@@ -513,7 +513,7 @@ Bool_t DJetCorrBase::Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t
 }
 
 //____________________________________________________________________________________
-Int_t DJetCorrBase::GetAxisIndex(TString title, THnSparse* hn)
+Int_t DJetCorrBase::GetAxisIndex(TString title, THnSparse* hn, Bool_t messageOnFail)
 {
   TMap* axisMap = static_cast<TMap*>(fTHnSparseAxisMaps.FindObject(hn->GetName()));
   if (!axisMap) {
@@ -523,7 +523,7 @@ Int_t DJetCorrBase::GetAxisIndex(TString title, THnSparse* hn)
 
   TParameter<Int_t>* par = static_cast<TParameter<Int_t>*>(axisMap->GetValue(title));
   if (!par) {
-    //Printf("Warning-DJetCorrBase::GetAxisIndex : Could not find axis with title '%s'", title.Data());
+    if (messageOnFail) Printf("Warning-DJetCorrBase::GetAxisIndex : Could not find axis with title '%s' in histogram '%s'.", title.Data(), hn->GetName());
     return -1;
   }
   
