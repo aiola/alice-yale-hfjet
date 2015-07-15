@@ -26,11 +26,11 @@ void runDJetCorrResponse(const char* options = "run plot", const char* train = "
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);
-  //projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name);
+  projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);
+  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name);
 
   projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName);
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");
