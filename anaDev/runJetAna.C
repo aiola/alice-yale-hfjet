@@ -27,8 +27,8 @@ void runJetAna(
 	 UInt_t        iNumEvents    = 50000,                                 // number of events to be analyzed
 	 const char   *cRunPeriod    = "LHC110b",                             // set the run period
          const char   *cTaskName     = "JetAna",                              // sets name of grid generated macros
-         Bool_t       *bDoEmcal      = kFALSE,
-         Bool_t       *bDoHF         = kTRUE
+         Bool_t       *bDoEmcal      = kTRUE,
+         Bool_t       *bDoHF         = kFALSE
          )
 {
   //gSystem->SetFPEMask(TSystem::kInvalid | TSystem::kDivByZero | TSystem::kOverflow | TSystem::kUnderflow);
@@ -127,7 +127,8 @@ void runJetAna(
   }
 
   // User task
-  AddTaskJetAna(cDataType, cRunType, kPhysSel);
+  //AddTaskJetAna(cDataType, cRunType, kPhysSel);
+  AddTaskJetAnaNew(cDataType, cRunType, kPhysSel);
 	
   if (!pMgr->InitAnalysis()) return;
   pMgr->PrintStatus();
@@ -330,5 +331,6 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCompat.C");
 
-  gROOT->LoadMacro("addTask/AddTaskJetAna.C");
+  //gROOT->LoadMacro("addTask/AddTaskJetAna.C");
+  gROOT->LoadMacro("addTask/AddTaskJetAnaNew.C");
 }
