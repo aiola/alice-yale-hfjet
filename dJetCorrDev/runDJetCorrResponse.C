@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-void runDJetCorrResponse(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_435", const char* inputPath = "$JETRESULTS")
+void runDJetCorrResponse(const char* options = "plot", const char* train = "Jets_EMC_pp_MC_435", const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
   
@@ -37,7 +37,6 @@ void runDJetCorrResponse(const char* options = "run plot", const char* train = "
   
   if (optList->Contains("run")) {
     projDjet->ProjectResponseMatrices();
-    
     projDjet->SaveOutputFile();
   }
 
