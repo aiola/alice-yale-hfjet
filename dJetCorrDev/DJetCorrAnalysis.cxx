@@ -631,7 +631,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   TString prefix(params->GetName());
   
   Int_t n = 0;
-  for (Int_t i = 0; i < params->GetNzBins()-2; i++) {
+  for (Int_t i = 1; i < params->GetNzBins(); i++) {
     TString cuts(params->GetCutString(kMatched, dptBin, jetptBin, i));
     
     TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
