@@ -40,6 +40,7 @@ class DJetCorrResponse : public DJetCorrBase {
   Bool_t ProjectResponseMatricesVsJetPt(DJetCorrAnalysisParams* params);
   Bool_t ProjectResponseMatricesVsZ(DJetCorrAnalysisParams* params);
   Bool_t ProjectResponseMatrix(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseDPtMatrix(DJetCorrAnalysisParams* params);
   Bool_t ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* params, Double_t minZ, Double_t maxZ);
   Bool_t ProjectResponseZMatrix(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
 
