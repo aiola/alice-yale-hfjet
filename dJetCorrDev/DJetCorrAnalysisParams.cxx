@@ -78,7 +78,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   if (fDmesonName == "DStar") {
     fNDPtBins = 8;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  1.0;
+    fDPtBins[ 0] =  0.8;
     fDPtBins[ 1] =  3.0;
     fDPtBins[ 2] =  5.0;
     fDPtBins[ 3] =  6.0;
@@ -94,6 +94,13 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
     fMassFitTypeSig = MassFitter::kGaus;
     fMassFitTypeBkg = MassFitter::kExpoPower;
+
+    fNJetPtBins = 3;
+    fJetPtBins = new Double_t[fNJetPtBins+1];
+    fJetPtBins[ 0] =   0.0;
+    fJetPtBins[ 1] =   8.0;
+    fJetPtBins[ 2] =  13.0;
+    fJetPtBins[ 3] =  50.0;
   }
   else {
     fNDPtBins = 9;
@@ -113,14 +120,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
     fMassFitTypeSig = MassFitter::kGaus;
     fMassFitTypeBkg = MassFitter::kExpo;
-  }
 
-  fNJetPtBins = 3;
-  fJetPtBins = new Double_t[fNJetPtBins+1];
-  fJetPtBins[ 0] =   0.0;
-  fJetPtBins[ 1] =   8.0;
-  fJetPtBins[ 2] =  13.0;
-  fJetPtBins[ 3] =  50.0;
+    fNJetPtBins = 4;
+    fJetPtBins = new Double_t[fNJetPtBins+1];
+    fJetPtBins[ 0] =   0.0;
+    fJetPtBins[ 1] =   5.0;
+    fJetPtBins[ 2] =   8.0;
+    fJetPtBins[ 3] =  13.0;
+    fJetPtBins[ 4] =  50.0;
+  }
 
   fNzBins = 5;
   fzBins = new Double_t[fNzBins+1];

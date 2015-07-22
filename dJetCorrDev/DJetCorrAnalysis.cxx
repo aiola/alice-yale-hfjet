@@ -546,14 +546,20 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
     //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Cloning histogram '%s'", objname.Data());
     histos[n] = static_cast<TH1*>(hist->Clone(newName));
     //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Setting title of histogram '%s'", histos[i]->GetName());
-    TString htitle(Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c}\n%s", params->GetDPtBin(i), params->GetDPtBin(i+1), jetCuts.Data()));
+    TString htitle(Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c}", params->GetDPtBin(i), params->GetDPtBin(i+1)));
     histos[n]->SetTitle(htitle);
     n++;
   }
+
+  TObjArray* extraInfo = new TObjArray();
+  extraInfo->SetOwner(kTRUE);
+  extraInfo->Add(new TObjString("ALICE Work in progress"));
+  extraInfo->Add(new TObjString(jetCuts));
   
-  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE);
+  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo);
 
   delete[] histos;
+  delete extraInfo;
   
   return result;
 }
@@ -629,6 +635,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   cname += fixedCuts;
 
   TString prefix(params->GetName());
+
+  TString jetCuts;
+  if (jetptBin >= 0) {
+    jetCuts = Form("%.1f < #it{p}_{T,jet}^{ch} < %.1f GeV/#it{c}", params->GetJetPtBin(jetptBin), params->GetJetPtBin(jetptBin+1));
+  }
+  else {
+    jetCuts = Form("%.1f < #it{p}_{T,jet}^{ch} < %.1f GeV/#it{c}", params->GetMinJetPt(), params->GetMaxJetPt());
+  }
   
   Int_t n = 0;
   for (Int_t i = 1; i < params->GetNzBins(); i++) {
@@ -664,14 +678,21 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   }
   
   Bool_t result = kTRUE;
+  
+  TObjArray* extraInfo = new TObjArray();
+  extraInfo->SetOwner(kTRUE);
+  extraInfo->Add(new TObjString("ALICE Work in progress"));
+  extraInfo->Add(new TObjString(jetCuts));
 
-  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE);
+  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo);
   delete[] histos;
 
   if (histos2) {
-    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15, params) && result;
+    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15, params, kFALSE, extraInfo) && result;
     delete[] histos2;
   }
+
+  delete extraInfo;
 
   return result;
 }    
@@ -680,7 +701,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
 Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
                                                    const char* name, const char* xTitle,
                                                    Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
-                                                   DJetCorrAnalysisParams* params, Bool_t doFit)
+                                                   DJetCorrAnalysisParams* params, Bool_t doFit, TObjArray* extraInfo)
 {
   // Plot invariant mass histograms contained in histos.
 
@@ -713,14 +734,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
 
     blankHist->GetXaxis()->SetTitleFont(43);
     blankHist->GetXaxis()->SetTitleSize(15);
-    blankHist->GetXaxis()->SetTitleOffset(1.2);
+    blankHist->GetXaxis()->SetTitleOffset(2.5);
     blankHist->GetXaxis()->SetLabelFont(43);
     blankHist->GetXaxis()->SetLabelSize(15);
     blankHist->GetXaxis()->SetNdivisions(404, kTRUE);
 
     blankHist->GetYaxis()->SetTitleFont(43);
     blankHist->GetYaxis()->SetTitleSize(15);
-    blankHist->GetYaxis()->SetTitleOffset(1.8);
+    blankHist->GetYaxis()->SetTitleOffset(3.8);
     blankHist->GetYaxis()->SetLabelFont(43);
     blankHist->GetYaxis()->SetLabelSize(15);
 
@@ -732,38 +753,37 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
     histos[i]->SetLineColor(kBlue+3);
     histos[i]->DrawCopy("same p");
     
-    if (doFit) {
+    if (doFit) {      
       TString fitterName(Form("%s_fitter", histos[i]->GetName()));
       MassFitter* fitter = params->CreateMassFitter(fitterName);
       fMassFitters->Add(fitter);
 
       Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass), "width");
-      fitter->GetFitFunction()->FixParameter(0, integral);
-      fitter->GetFitFunction()->SetParameter(2, integral / 20);
-      fitter->GetFitFunction()->SetParLimits(2, 0, integral);
-      fitter->GetFitFunction()->SetParameter(3, pdgMass);
+      fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
+      fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
+      fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
+      fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
       
-      TFitResultPtr r = fitter->Fit(histos[i], "0");
+      TFitResultPtr r = fitter->Fit(histos[i], "0 E S");
       Int_t fitStatus = r;
+
       fitter->Draw("same");
 
-      //TPaveText* paveSig = SetUpPaveText(0.22, 0.41, 0.51, 0.84, 13, fitter->GetSignalString());
-      TPaveText* paveSig = SetUpPaveText(0.22, 0.66, 0.51, 0.80, 13, fitter->GetSignalOverSqrtSignalBackgroundString());
-      paveSig->AddText(" ");
-      //paveSig->AddText(fitter->GetBackgroundString());
-      //paveSig->AddText(fitter->GetSignalOverBackgroundString());
-      //paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
+      TPaveText* paveSig = SetUpPaveText(0.22, 0.41, 0.51, 0.84, 13, fitter->GetSignalString());
+      paveSig->AddText(fitter->GetBackgroundString());
+      paveSig->AddText(fitter->GetSignalOverBackgroundString());
+      paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
       if (fitStatus == 0) {
-        //paveSig->AddText(fitter->GetChisquareString());
+        paveSig->AddText(fitter->GetChisquareString());
       }
       else {
-        //paveSig->AddText("Fit failed");
+        paveSig->AddText("Fit failed");
       }
       paveSig->Draw();
 
-      TPaveText* paveFit = SetUpPaveText(0.47, 0.66, 0.97, 0.80, 13, fitter->GetSignalMeanString());  //66->58, 80->84
+      TPaveText* paveFit = SetUpPaveText(0.47, 0.58, 0.97, 0.84, 13, fitter->GetSignalMeanString());
       paveFit->AddText(fitter->GetSignalWidthString());
-      //paveFit->AddText(fitter->GetBkgPar1String());
+      paveFit->AddText(fitter->GetBkgPar1String());
       paveFit->Draw();
     }
 
@@ -793,19 +813,19 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
     }
   }
 
-  canvas->cd(1);
-  TPaveText* paveWorkInProgress = SetUpPaveText(0.18, 0.94, 1.0, 0.98, 13, "ALICE Work in progress");
-  paveWorkInProgress->SetTextFont(63);
-  paveWorkInProgress->SetTextSize(15);
-  paveWorkInProgress->SetTextAlign(22);
-  paveWorkInProgress->Draw();
-
-  canvas->cd(2);
-  TPaveText* paveJets = SetUpPaveText(0.18, 0.94, 1.0, 0.98, 12, "13 < #it{p}_{T,jet}^{ch} < 50 GeV/#it{c}");
-  paveJets->SetTextFont(43);
-  paveJets->SetTextSize(13);
-  paveJets->SetTextAlign(22);
-  paveJets->Draw();  
+  if (extraInfo) {
+    for (Int_t i = 0; i < extraInfo->GetEntriesFast() && i < n; i++) {
+      TObjString* info = static_cast<TObjString*>(extraInfo->At(i));
+      canvas->cd(i+1);
+      TPaveText* paveText = SetUpPaveText(0.18, 0.94, 1.0, 0.98, 12, info->GetString());
+      if (i == 0) {
+        paveText->SetTextFont(63);
+        paveText->SetTextSize(15);
+      }
+      paveText->SetTextAlign(22);
+      paveText->Draw();
+    }
+  }
   
   if (fSavePlots) SavePlot(canvas);
 
