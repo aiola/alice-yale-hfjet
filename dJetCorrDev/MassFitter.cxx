@@ -6,6 +6,7 @@
 #include <TF1.h>
 #include <TH1.h>
 #include <TDatabasePDG.h>
+#include <TFitter.h>
 
 const Double_t MassFitter::fgkEpsilon = 1e-15;
 
@@ -138,6 +139,8 @@ void MassFitter::Reset(TH1* histo)
 //____________________________________________________________________________________
 TFitResultPtr MassFitter::Fit(TH1* histo, Option_t* opt)
 {
+  TFitter::SetPrecision(0.1);
+  
   if (!fFunction) {
     Reset(histo);
   }
