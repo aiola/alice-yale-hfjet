@@ -4,7 +4,7 @@ void LoadMacros();
 
 void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local",
                    const UInt_t kPhysSel = AliEmcalPhysicsSelection::kEmcalOk,
-                   Bool_t bDoHF = kTRUE, Bool_t bDoChargedJets = kTRUE, Bool_t bDoFullJets = kFALSE,
+                   Bool_t bDoHF = kTRUE, Bool_t bDoChargedJets = kFALSE, Bool_t bDoFullJets = kFALSE,
                    Bool_t bDoTender = kFALSE, Bool_t bDoReclusterize = kFALSE, Bool_t bDoHadCorr = kFALSE, Bool_t bDoTrackingQA = kFALSE)
 {
   enum eDataType { kAod, kEsd };
@@ -59,8 +59,8 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   const Double_t kEMCtimeCut          =  75e-6;
   const Int_t eFlavourJetMatchingType = AliAnalysisTaskDmesonJetCorrelations::kJetLoop;    // kGeometricalMatching, kConstituentMatching, kJetLoop
 
-  //TString sTracksName("AODFilterTracks");
-  TString sTracksName("tracks");
+  TString sTracksName("AODFilterTracks");
+  //TString sTracksName("tracks");
   TString sClusName("EmcCaloClusters");
 
   TString sCellName;
@@ -94,11 +94,11 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     pHybTask->SetDist(kPropDist);
     pHybTask->SelectCollisionCandidates(kPhysSel);
   }
-  else if (0 && iDataType == kAod) { // for the moment disabled
+  else if (iDataType == kAod) { // for the moment disabled
     // Hybrid tracks maker for AOD
     AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter(sTracksName, "tracks", "LHC10b");
     pHybTask->SelectCollisionCandidates(kPhysSel);
-    pHybTask->SetAttemptProp(bDoHadCorr);
+    pHybTask->SetAttemptProp(kFALSE);
   }
 
   if (bDoTrackingQA) {
@@ -110,8 +110,9 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     if (bDoTender || bDoReclusterize) {
       // QA task
       AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sOrigClusName, sCellName, "", "",
-						      0, 0, 0, 0.15, 0.15, "TPC", "AliAnalysisTaskSAQA_BeforeTender");
-      pQATaskBefore->SetHistoBins(150, 0, 150);
+						      0, 0, 0, 0.15, 0., "TPC", "AliAnalysisTaskSAQA_BeforeTender");
+      pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);
+      pQATaskBefore->SetHistoBins(200, 0, 30);
       pQATaskBefore->SelectCollisionCandidates(kPhysSel);
     }
   }
@@ -152,9 +153,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
                                                                                   kTRUE, kFALSE, AliAnalysisTaskEMCALClusterizeFast::kFEEData);
     
     pClusterizerTask->SelectCollisionCandidates(kPhysSel);
-  }
 
-  if (bDoFullJets) {
     AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(AliEMCALRecoUtils::kBeamTestCorrected, kFALSE, 0, sClusName, 0.15, kFALSE);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
   }
@@ -163,8 +162,9 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     if (bDoTender || bDoReclusterize) {
       // QA task
       AliAnalysisTaskSAQA *pQATaskAfter = AddTaskSAQA("", sClusName, sCellName, "", "",
-						      0, 0, 0, 0.15, 0.15, "TPC", "AliAnalysisTaskSAQA_AfterTender");
-      pQATaskAfter->SetHistoBins(150, 0, 150);
+						      0, 0, 0, 0.15, 0., "TPC", "AliAnalysisTaskSAQA_AfterTender");
+      pQATaskAfter->GetClusterContainer(0)->SetClusECut(kClusPtCut);
+      pQATaskAfter->SetHistoBins(200, 0, 30);
       pQATaskAfter->SelectCollisionCandidates(kPhysSel);
     }
   }
@@ -198,17 +198,11 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   
   if (0) {
     // QA task
-    AliAnalysisTaskSAQA *pQATask = 0;
-
-    if (bDoFullJets) {
-      pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
-    }
-    else {
-      pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0.2, 1, 0, kTrackPtCut, kClusPtCut, "TPC");
-    }
+    AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0.2, 1, 0, kTrackPtCut, 0., "TPC");
     pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
-    pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
-    pQATask->SetAODfilterBits(256, 512);
+    //pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+    //pQATask->SetAODfilterBits(256, 512);
+    pQATask->GetClusterContainer(0)->SetClusECut(kClusPtCut);
     pQATask->SelectCollisionCandidates(kPhysSel);
     pQATask->SetHistoBins(200, 0, 30);
   }
