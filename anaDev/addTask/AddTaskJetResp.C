@@ -85,6 +85,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskTrackingQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskMCHFParticleSelector.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDmesonJetCorr.C");
 
@@ -93,7 +94,6 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(mcTracksName, kFALSE, kFALSE, 1);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
     mcPartTask->SetOnlyHIJING(kFALSE);
-    mcPartTask->SetSpecialPDG(413);
   }
 
   if (0 && (dType == kEsd || dType == kAod)) {
@@ -297,9 +297,10 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     // MC particle selector
     TString mcTracksDStarname = "mcparticlesDStar";
     
-    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(mcTracksDStarname, kFALSE, kTRUE, 0.);
+    AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDStarname, kFALSE, kTRUE, 0.);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
-    mcPartTask->SetSpecialPDG(413);
+    mcPartTask->SelectCharmtoDStartoKpipi();
+    //mcPartTask->SelectCharmtoD0toKpi();
 
     AliEmcalJetTask *chMcJetTaskchDStar = AddTaskEmcalJet(mcTracksDStarname, "", 1, jetRadius, 1, partLevPtCut, partLevPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 0);
     const char *chMcJetsDStarName = chMcJetTaskchDStar->GetName();

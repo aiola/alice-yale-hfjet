@@ -92,8 +92,8 @@ void AddTaskJetAnaNew(const char *cDataType = "AOD", const char *cRunType = "loc
       // QA task
       AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sClusName, sCellName, "", "",
                                                        0, 0, 0, 0.15, 0., "TPC", "AliAnalysisTaskSAQA_BeforeTender");
-      pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);      
-      pQATaskBefore->SetHistoBins(150, 0, 150);
+      pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);
+      pQATaskBefore->SetHistoBins(200, 0, 30);
       pQATaskBefore->SelectCollisionCandidates(kPhysSel);
     }
   }
@@ -143,12 +143,21 @@ void AddTaskJetAnaNew(const char *cDataType = "AOD", const char *cRunType = "loc
     // Cluster-track matcher task
     AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher(sTracksName, sClusName, 0.1, kFALSE, kTRUE, kTRUE, kTRUE);
     pMatcherTask->SelectCollisionCandidates(kPhysSel);
+    pMatcherTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
+    pMatcherTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+    pMatcherTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
+    pMatcherTask->GetClusterContainer(0)->SetClusECut(0.);
+    pMatcherTask->GetClusterContainer(0)->SetClusPtCut(0.);
+    pMatcherTask->SetAttemptProp(kFALSE);
     
     // Hadronic correction task
     AliHadCorrTask *pHadCorrTask = AddTaskHadCorr(sTracksName, sClusName, "", 
                                                   kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
-    pHadCorrTask->SetHistoBins(150,0,150);
     pHadCorrTask->SelectCollisionCandidates(kPhysSel);
+    pHadCorrTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
+    pHadCorrTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+    pHadCorrTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
+    pHadCorrTask->SetHistoBins(200, 0, 30);
   }
   
   if (1) {
@@ -156,7 +165,7 @@ void AddTaskJetAnaNew(const char *cDataType = "AOD", const char *cRunType = "loc
     AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sClusName, sCellName, "", "", 0.2, 1, 0, kTrackPtCut, 0., "TPC");
     pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
     pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
-    pQATask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(kClusPtCut);
+    pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(kClusPtCut);
     pQATask->SetAODfilterBits(256, 512);
     pQATask->SelectCollisionCandidates(kPhysSel);
     pQATask->SetHistoBins(200, 0, 30);

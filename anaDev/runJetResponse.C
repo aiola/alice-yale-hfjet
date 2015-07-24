@@ -155,7 +155,7 @@ void runJetResponse(
     // start analysis
     cout << "Starting Analysis...";
     mgr->SetUseProgressBar(1, 25);
-    //mgr->SetDebugLevel(2);
+    //mgr->SetDebugLevel(1);
     
     //mgr->AddClassDebug("AliJetContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);
@@ -163,7 +163,7 @@ void runJetResponse(
     //mgr->AddClassDebug("AliJetResponseMaker",100);
     //mgr->AddClassDebug("AliEmcalContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
-    //mgr->AddClassDebug("AliEmcalMCTrackSelector", AliLog::kDebug+5);
+    //mgr->AddClassDebug("AliMCHFParticleSelector", AliLog::kDebug);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();
