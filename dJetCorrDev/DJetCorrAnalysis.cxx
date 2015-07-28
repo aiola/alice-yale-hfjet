@@ -30,6 +30,7 @@
 #include <TLine.h>
 
 #include "MassFitter.h"
+#include "HistoStyler.h"
 
 #include "DJetCorrAnalysisParams.h"
 
@@ -359,6 +360,11 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
                    params->GetMinZ(), params->GetMaxZ(),
                    2, 1, 1, 1);
   }
+
+  PlotDPtSpectraVsJetPt(params);
+  PlotDPtSpectraVsDz(params);
+  PlotDPtSpectraVsMatchingStatus(params);
+  PlotDzSpectraVsJetPt(params);
   
   TH1::AddDirectory(addDirStatus);
   
@@ -461,6 +467,96 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
 }
 
 //____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params)
+{
+  TH1** histos = new TH1*[params->GetNJetPtBins()];
+  
+  for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
+    TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
+    TString spectrumName(Form("h%s_Spectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
+    histos[i] = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    if (!histos[i]) {
+      Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
+    }
+  }
+
+  TString cname(Form("fig_%s_DPtSpectraVsJetPt", params->GetName()));
+  Bool_t res = PlotSpectra(params->GetNJetPtBins(), histos, cname, kFALSE);
+
+  delete[] histos;
+
+  return res;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params)
+{
+  TH1** histos = new TH1*[params->GetNzBins()-1];
+  
+  for (Int_t i = 1; i < params->GetNzBins(); i++) {
+    TString spectrumCuts(params->GetCutString(kMatched, -1, -1, i));
+    TString spectrumName(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
+    histos[i-1] = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    if (!histos[i-1]) {
+      Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
+    }
+  }
+
+  TString cname(Form("fig_%s_DPtSpectraVsZ", params->GetName()));
+  Bool_t res = PlotSpectra(params->GetNzBins()-1, histos, cname, kFALSE);
+
+  delete[] histos;
+
+  return res;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params)
+{
+  TH1* histos[2] = {0};
+  
+  TString spectrumCuts(params->GetCutString(kMatched, -1, -1, -1));
+  
+  TString spectrumNameMatched(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
+  histos[0] = static_cast<TH1*>(fOutputList->FindObject(spectrumNameMatched));
+  if (!histos[0]) {
+    Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameMatched.Data());
+  }
+
+  TString spectrumNameNotMatched(Form("h%s_DPtSpectrum_%s_NotMatched", params->GetName(), spectrumCuts.Data()));
+  histos[1] = static_cast<TH1*>(fOutputList->FindObject(spectrumNameNotMatched));
+  if (!histos[1]) {
+    Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameNotMatched.Data());
+  }
+
+  
+  TString cname(Form("fig_%s_DPtSpectraVsMatchingStatus", params->GetName()));
+  return PlotSpectra(2, histos, cname, kFALSE);
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params)
+{
+  TH1** histos = new TH1*[params->GetNJetPtBins()-1];
+  
+  for (Int_t i = 1; i < params->GetNJetPtBins(); i++) {
+    TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
+    TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
+    histos[i-1] = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    if (!histos[i-1]) {
+      Printf("Error-DJetCorrAnalysis::PlotDzSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
+    }
+  }
+
+  TString cname(Form("fig_%s_DzSpectraVsJetPt", params->GetName()));
+  Bool_t res = PlotSpectra(params->GetNJetPtBins()-1, histos, cname, kFALSE);
+
+  delete[] histos;
+
+  return res;
+}
+
+//____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin, Int_t dzBin)
 {
   if (!fOutputList) return kFALSE;
@@ -529,6 +625,13 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   }
   
   TString prefix(params->GetName());
+
+  TString spectrumCuts(params->GetCutString(kMatched, -1, jetptBin, dzBin));
+  TString spectrumName(Form("h%s_DPtSpectrum_%s_%s", prefix.Data(), spectrumCuts.Data(), matchString.Data()));
+  TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNDPtBins(), params->GetDPtBins());
+  histSpectrum->GetXaxis()->SetTitle("#it{p}_{T,D}");
+  histSpectrum->GetYaxis()->SetTitle("counts");
+  fOutputList->Add(histSpectrum);
   
   TH1** histos = new TH1*[params->GetNDPtBins()];
   Int_t n = 0;
@@ -556,7 +659,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   extraInfo->Add(new TObjString("ALICE Work in progress"));
   extraInfo->Add(new TObjString(jetCuts));
   
-  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo);
+  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo, histSpectrum);
 
   delete[] histos;
   delete extraInfo;
@@ -643,6 +746,13 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   else {
     jetCuts = Form("%.1f < #it{p}_{T,jet}^{ch} < %.1f GeV/#it{c}", params->GetMinJetPt(), params->GetMaxJetPt());
   }
+
+  TString spectrumCuts(params->GetCutString(kMatched, dptBin, jetptBin, -1));
+  TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", prefix.Data(), spectrumCuts.Data()));
+  TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins()-1, params->GetzBins()+1);
+  histSpectrum->GetXaxis()->SetTitle("#it{z}_{D}");
+  histSpectrum->GetYaxis()->SetTitle("counts");
+  fOutputList->Add(histSpectrum);
   
   Int_t n = 0;
   for (Int_t i = 1; i < params->GetNzBins(); i++) {
@@ -684,24 +794,94 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   extraInfo->Add(new TObjString("ALICE Work in progress"));
   extraInfo->Add(new TObjString(jetCuts));
 
-  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo);
+  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo, histSpectrum);
   delete[] histos;
 
   if (histos2) {
-    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15, params, kFALSE, extraInfo) && result;
+    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15, params, kFALSE, extraInfo, 0x0) && result;
     delete[] histos2;
   }
 
   delete extraInfo;
 
   return result;
-}    
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::PlotSpectra(Int_t n, TH1** histSpectra, const char* name, Bool_t logY)
+{
+  // Plot spectra.
+
+  TString cname(name);
+
+  if (n <= 0) return kFALSE;
+
+  if (!histSpectra[0]) return kFALSE;
+
+  HistoStyler styler;
+  styler.SetMarkerStyle(kFullCircle);
+  styler.SetMarkerSize(0.8);
+  styler.SetVariableMarkerColor();
+  styler.SetVariableLineColor();
+  styler.SetLineWidth(1);
+  styler.Apply(n, histSpectra);
+  
+  Double_t min = histSpectra[0]->GetMinimum();
+  Double_t max = histSpectra[0]->GetMaximum();
+
+  TCanvas* canvas = SetUpCanvas(cname,
+                                histSpectra[0]->GetXaxis()->GetTitle(), histSpectra[0]->GetXaxis()->GetXmin(), histSpectra[0]->GetXaxis()->GetXmax(), kFALSE,
+                                histSpectra[0]->GetYaxis()->GetTitle(), min, max, logY);
+
+  TLegend* leg = SetUpLegend(0.58, 0.68, 0.88, 0.88, 14);
+  
+  for (Int_t i = 0; i < n; i++) {
+    if (!histSpectra[i]) continue;
+
+    Int_t minBin = histSpectra[i]->GetMinimumBin();
+    min = TMath::Min(min, histSpectra[i]->GetBinContent(minBin) - histSpectra[i]->GetBinError(minBin));
+    if (logY && min <= 0) min = 1e-1;
+
+    Int_t maxBin = histSpectra[i]->GetMaximumBin();
+    max = TMath::Max(max, histSpectra[i]->GetBinContent(maxBin) + histSpectra[i]->GetBinError(maxBin));
+
+    histSpectra[i]->Draw("same");
+
+    leg->AddEntry(histSpectra[i], histSpectra[i]->GetTitle(), "pe");
+  }
+
+  if (logY) {
+    min /= 2;
+    max *= 2;
+  }
+  else {
+    if (min > 0) min = 0;
+    else min -= max*0.5;
+
+    if (max > 0) max *= 1.5;
+    else max /= 1.5;
+  }
+
+  TH1* blankHist = dynamic_cast<TH1*>(canvas->GetListOfPrimitives()->At(0));
+  if (blankHist) {
+    blankHist->GetYaxis()->SetRangeUser(min, max);
+  }
+  else {
+    Printf("Error-DJetCorrAnalysis::PlotSpectra : Could not find blank histogram!");
+  }
+
+  leg->Draw();
+
+  if (fSavePlots) SavePlot(canvas);
+
+  return kTRUE;
+}
 
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
                                                    const char* name, const char* xTitle,
                                                    Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
-                                                   DJetCorrAnalysisParams* params, Bool_t doFit, TObjArray* extraInfo)
+                                                   DJetCorrAnalysisParams* params, Bool_t doFit, TObjArray* extraInfo, TH1* histSpectrum)
 {
   // Plot invariant mass histograms contained in histos.
 
@@ -775,6 +955,10 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
       if (fitStatus == 0) {
         paveSig->AddText(fitter->GetChisquareString());
+        if (histSpectrum) {
+          histSpectrum->SetBinContent(i+1, fitter->GetSignal());
+          histSpectrum->SetBinError(i+1, fitter->GetSignalError());
+        }
       }
       else {
         paveSig->AddText("Fit failed");
@@ -895,8 +1079,6 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
   ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, -1, -1, -1);
   ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, -1, -1, -1);
   ProjectDJetCorr(prefix, "Matched", params, kMatched, -1, -1, -1);
-  //ProjectDJetCorr(prefix, "Matched_TrueJet", params, kMatched, -1, -1, -1, 1);
-  //ProjectDJetCorr(prefix, "Matched_FakeJet", params, kMatched, -1, -1, -1, -1);
 
   TString dCuts(Form("DPt_%02.0f_%02.0f", params->GetMinDPt(), params->GetMaxDPt()));
   dCuts.ReplaceAll(".", "");
@@ -911,26 +1093,16 @@ Bool_t DJetCorrAnalysis::ProjectCorrD(DJetCorrAnalysisParams* params)
   cutsD = Form("%s_AnyMatchingStatus", dCuts.Data());
   GenerateRatios(cutsN, cutsD);
 
-  cutsN = Form("%s_%s_%s_Matched_FakeJet", dCuts.Data(), jetCuts.Data(), zCuts.Data());
-  cutsD = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
-  GenerateRatios(cutsN, cutsD);
-
   for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
     ProjectDJetCorr(prefix, "AnyMatchingStatus", params, kAnyMatchingStatus, i, -1, -1, 0);
     ProjectDJetCorr(prefix, "NotMatched", params, kNotMatched, i, -1, -1, 0);
     ProjectDJetCorr(prefix, "Matched", params, kMatched, i, -1, -1, 0);
-    //ProjectDJetCorr(prefix, "Matched_TrueJet", params, kMatched, i, -1, -1, 1);
-    //ProjectDJetCorr(prefix, "Matched_FakeJet", params, kMatched, i, -1, -1, -1);
 
     dCuts = Form("DPt_%02.0f_%02.0f", params->GetDPtBin(i), params->GetDPtBin(i+1));
     dCuts.ReplaceAll(".", "");
 
     cutsN = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
     cutsD = Form("%s_AnyMatchingStatus", dCuts.Data());
-    GenerateRatios(cutsN, cutsD);
-
-    cutsN = Form("%s_%s_%s_Matched_FakeJet", dCuts.Data(), jetCuts.Data(), zCuts.Data());
-    cutsD = Form("%s_%s_%s_Matched", dCuts.Data(), jetCuts.Data(), zCuts.Data());
     GenerateRatios(cutsN, cutsD);
   }
 
