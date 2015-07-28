@@ -39,7 +39,7 @@ ClassImp(DJetCorrBase);
 
 //____________________________________________________________________________________
 DJetCorrBase::DJetCorrBase() :
-  TObject(),
+  TNamed(),
   fTrainName(),
   fInputPath(),
   fInputFileName(),
@@ -50,12 +50,14 @@ DJetCorrBase::DJetCorrBase() :
   fAnalysisParams(0),
   fPlotFormat(),
   fSavePlots(kFALSE),
+  fAddTrainToCanvasName(kFALSE),
   fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
   fTHnSparseAxisMaps(),
   fInputFile(0),
   fInputDirectoryFile(0),
   fInputList(0),
-  fOutputList(0)
+  fOutputList(0),
+  fCanvases(0)
 {
   // Default ctr.
   
@@ -63,7 +65,7 @@ DJetCorrBase::DJetCorrBase() :
 
 //____________________________________________________________________________________
 DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
-  TObject(),
+  TNamed(train, train),
   fTrainName(train),
   fInputPath(path),
   fInputFileName(),
@@ -74,12 +76,14 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
   fAnalysisParams(new TList()),
   fPlotFormat("pdf"),
   fSavePlots(kFALSE),
+  fAddTrainToCanvasName(kFALSE),
   fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
   fTHnSparseAxisMaps(),
   fInputFile(0),
   fInputDirectoryFile(0),
   fInputList(0),
-  fOutputList(0)
+  fOutputList(0),
+  fCanvases(0)
 {
   // Standard ctr.
 
@@ -96,13 +100,13 @@ Bool_t DJetCorrBase::ClearInputData()
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName)
+DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC)
 {
   // Add the analysis params for the D meson type, jet type and jet radius provided.
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName, fAnaType);
+  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName, fAnaType, isMC);
 
   fAnalysisParams->Add(params);
 
@@ -153,9 +157,13 @@ Bool_t DJetCorrBase::Init()
     delete fOutputList;
     fOutputList = 0;
   }
-
-  
   fOutputList = new TList();
+
+  if (fCanvases) {
+    delete fCanvases;
+    fCanvases = 0;
+  }
+  fCanvases = new TList();  
     
   Printf("Info-DJetCorrBase::Init : Initialization done.");
 
@@ -279,8 +287,23 @@ TCanvas* DJetCorrBase::SetUpCanvas(const char* name,
                                    Double_t lmar, Double_t rmar, Double_t bmar, Double_t tmar)
 {
   Printf("Info-DJetCorrBase::SetUpCanvas : Setting up canvas '%s'", name);
+
+  TString cname;
+
+  if (fAddTrainToCanvasName) {
+    cname = Form("%s_%s", GetName(), name);
+  }
+  else {
+    cname = name;
+  }
+
+  TCanvas* canvas = static_cast<TCanvas*>(fCanvases->FindObject(cname));
+  if (canvas) {
+    Printf("Warning-DJetCorrBase::SetUpCanvas : Canvas '%s' already exists.", cname.Data());
+    return canvas;
+  }
   
-  TCanvas* canvas = new TCanvas(name, name, w, h);
+  canvas = new TCanvas(cname, cname, w, h);
   
   if (rows == 1 && cols == 1) {
     SetUpPad(canvas, xTitle, minX, maxX, logX, yTitle, minY, maxY, logY);    
@@ -294,6 +317,8 @@ TCanvas* DJetCorrBase::SetUpCanvas(const char* name,
                lmar, rmar, bmar, tmar); 
     }
   }
+
+  fCanvases->Add(canvas);
   
   return canvas;
 }
