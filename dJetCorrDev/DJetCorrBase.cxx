@@ -255,7 +255,7 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   blankHist->GetYaxis()->SetRangeUser(minY, maxY);
   blankHist->GetYaxis()->SetTitle(yTitle);
   
-  blankHist->Draw();
+  blankHist->Draw("AXIS");
 
   return pad;
 }
