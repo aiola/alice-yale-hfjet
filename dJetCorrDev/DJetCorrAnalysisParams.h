@@ -33,14 +33,17 @@ class DJetCorrAnalysisParams : public TObject
   const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
   const char* GetInputListName()     const { return fInputListName.Data()                           ; }
   Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
+  const Double_t* GetDPtBins()       const { return fDPtBins                                        ; }
   Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; }
   Double_t    GetMinDPt()            const { return fDPtBins[0]                                     ; }
   Double_t    GetMaxDPt()            const { return fDPtBins[fNDPtBins]                             ; }
   Int_t       GetNJetPtBins()        const { return fNJetPtBins                                     ; }
+  const Double_t* GetJetPtBins()     const { return fJetPtBins                                      ; }
   Double_t    GetJetPtBin(Int_t i)   const { return i >= 0 && i <= fNJetPtBins ? fJetPtBins[i] : -1 ; }
   Double_t    GetMinJetPt()          const { return fJetPtBins[0]                                   ; }
   Double_t    GetMaxJetPt()          const { return fJetPtBins[fNJetPtBins]                         ; }
   Int_t       GetNzBins()            const { return fNzBins                                         ; }
+  const Double_t* GetzBins()         const { return fzBins                                          ; }
   Double_t    GetzBin(Int_t i)       const { return i >= 0 && i <= fNzBins ? fzBins[i] : -1         ; }
   Double_t    GetMinZ()              const { return fzBins[0]                                       ; }
   Double_t    GetMaxZ()              const { return fzBins[fNzBins]                                 ; }
