@@ -18,7 +18,7 @@ class DJetCorrAnalysisParams;
 
 #include <TMap.h>
 
-class DJetCorrBase : public TObject {
+class DJetCorrBase : public TNamed {
   
  public:
   DJetCorrBase();
@@ -34,13 +34,17 @@ class DJetCorrBase : public TObject {
   void   SetOverwrite(Bool_t ow = kTRUE)       { fOverwrite        = ow     ; }
   void   SetPlotFormat(const char* f)          { fPlotFormat       = f      ; }
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
+  void   SetAddTrainToCanvasName(Bool_t s)     { fAddTrainToCanvasName= s   ; }
 
-  DJetCorrAnalysisParams*   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName);
+  DJetCorrAnalysisParams*   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE);
   DJetCorrAnalysisParams*   AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   virtual Bool_t Init();
   
   Bool_t SaveOutputFile();
+
+  TList* GetOutputList() { return fOutputList; }
+  TList* GetCanvasList() { return fCanvases  ; }
   
  protected:
 
@@ -91,6 +95,7 @@ class DJetCorrBase : public TObject {
   
   TString         fPlotFormat                ;//  plot format (pdf, eps, png...)
   Bool_t          fSavePlots                 ;//  true if save plots
+  Bool_t          fAddTrainToCanvasName      ;//  automatically add the train string to each canvas' name
 
   DJetCorrAnalysisParams::DJetCorrAnalysisType fAnaType;//  analysis type
   
@@ -99,6 +104,7 @@ class DJetCorrBase : public TObject {
   TDirectoryFile *fInputDirectoryFile        ;//! input directory file
   TList          *fInputList                 ;//! list contains the input hisograms
   TList          *fOutputList                ;//! list contains the output histograms
+  TList          *fCanvases                  ;//! list contains the canvases
   
   static const Double_t fgkEpsilon;
 
