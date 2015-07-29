@@ -1018,6 +1018,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
 
       if (fInvMassPlotNorm == kNormalizeBackground) {
         Double_t scaleFactor = 1. / fitter->GetBackground();
+        histos[i]->Scale(scaleFactor, "width");
         hcopy->Scale(scaleFactor, "width");
         fitter->NormalizeBackground();
         yaxisTitle = "arb. units";
@@ -1026,6 +1027,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
 
     if (fInvMassPlotNorm == kDivideByBinWidth) {
       hcopy->Scale(1., "width");
+      histos[i]->Scale(1., "width");
       if (fitter) fitter->DivideByBinWidth();
       yaxisTitle = Form("counts / (%.2f MeV/#it{c}^{2})", hcopy->GetXaxis()->GetBinWidth(1)*1000);
     }
