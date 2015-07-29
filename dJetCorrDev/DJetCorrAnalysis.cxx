@@ -42,6 +42,7 @@ ClassImp(DJetCorrAnalysis);
 DJetCorrAnalysis::DJetCorrAnalysis() :
   DJetCorrBase(),
   fQAListName(),
+  fInvMassPlotNorm(),
   fDPtAxisTitle(),
   fDEtaAxisTitle(),
   fDPhiAxisTitle(),
@@ -74,6 +75,7 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
 DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   DJetCorrBase(train, path),
   fQAListName("AliAnalysisTaskSAQA_AODFilterTracks_TPC_histos"),
+  fInvMassPlotNorm(kPureCounts),
   fDPtAxisTitle("#it{p}_{T,D} (GeV/#it{c})"),
   fDEtaAxisTitle("#eta_{D}"),
   fDPhiAxisTitle("#phi_{D} (rad)"),
@@ -467,16 +469,26 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
   TH1** histos = new TH1*[params->GetNJetPtBins()];
   
   for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
+    histos[i] = 0;
+    
     TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
     TString spectrumName(Form("h%s_Spectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-    histos[i] = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
-    if (!histos[i]) {
+    TH1* hs = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
+      continue;
+    }
+    spectrumName += "_copy";
+    histos[i] = static_cast<TH1*>(hs->Clone(spectrumName));
+
+    if (eventScaling && GetEvents() > 0) {
+      histos[i]->Scale(1. / GetEvents(), "width");
+      histos[i]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
 
@@ -489,16 +501,25 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
   TH1** histos = new TH1*[params->GetNzBins()-1];
   
   for (Int_t i = 1; i < params->GetNzBins(); i++) {
+    histos[i-1] = 0;
+    
     TString spectrumCuts(params->GetCutString(kMatched, -1, -1, i));
     TString spectrumName(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-    histos[i-1] = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
-    if (!histos[i-1]) {
+    TH1* hs = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
+      continue;
+    }
+    spectrumName += "_copy";
+    histos[i-1] = static_cast<TH1*>(hs->Clone(spectrumName));
+    if (eventScaling && GetEvents() > 0) {
+      histos[i-1]->Scale(1. / GetEvents(), "width");
+      histos[i-1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
 
@@ -511,40 +532,66 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
   TH1* histos[2] = {0};
   
   TString spectrumCuts(params->GetCutString(kMatched, -1, -1, -1));
   
   TString spectrumNameMatched(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-  histos[0] = static_cast<TH1*>(fOutputList->FindObject(spectrumNameMatched));
-  if (!histos[0]) {
+  TH1* hs0 = static_cast<TH1*>(fOutputList->FindObject(spectrumNameMatched));
+  if (hs0) {
+    spectrumNameMatched += "_copy";
+    histos[0] = static_cast<TH1*>(hs0->Clone(spectrumNameMatched));
+
+    if (eventScaling && GetEvents() > 0) {
+      histos[0]->Scale(1. / GetEvents(), "width");
+      histos[0]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
+    }
+  }
+  else {
     Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameMatched.Data());
   }
 
   TString spectrumNameNotMatched(Form("h%s_DPtSpectrum_%s_NotMatched", params->GetName(), spectrumCuts.Data()));
-  histos[1] = static_cast<TH1*>(fOutputList->FindObject(spectrumNameNotMatched));
-  if (!histos[1]) {
+  TH1* hs1 = static_cast<TH1*>(fOutputList->FindObject(spectrumNameNotMatched));
+  if (hs1) {
+    spectrumNameNotMatched += "_copy";
+    histos[1] = static_cast<TH1*>(hs1->Clone(spectrumNameNotMatched));
+
+    if (eventScaling && GetEvents() > 0) {
+      histos[1]->Scale(1. / GetEvents(), "width");
+      histos[1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
+    }
+  }
+  else {
     Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameNotMatched.Data());
   }
-
   
   TString cname(Form("fig_%s_DPtSpectraVsMatchingStatus", params->GetName()));
   return PlotSpectra(2, histos, cname, kFALSE);
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
   TH1** histos = new TH1*[params->GetNJetPtBins()-1];
   
   for (Int_t i = 1; i < params->GetNJetPtBins(); i++) {
+    histos[i-1] = 0;
+    
     TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
     TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-    histos[i-1] = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
-    if (!histos[i-1]) {
+    TH1* hs = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDzSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
+      continue;
+    }
+    spectrumName += "_copy";
+    histos[i-1] = static_cast<TH1*>(hs->Clone(spectrumName));
+    if (eventScaling && GetEvents() > 0) {
+      histos[i-1]->Scale(1. / GetEvents(), "width");
+      histos[i-1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
 
@@ -660,7 +707,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   extraInfo->Add(new TObjString(jetCuts));
   
   Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo, histSpectrum);
-
+  
   delete[] histos;
   delete extraInfo;
   
@@ -779,7 +826,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
       }
       TString newName2(objname2);
       newName2 += "_copy";
-      histos2[n] = static_cast<TH1*>(hist2->Clone(newName));
+      histos2[n] = static_cast<TH1*>(hist2->Clone(newName2));
       TString htitle2(Form("%.1f < #it{z}_{D} < %.1f", params->GetzBin(i), params->GetzBin(i+1)));
       histos2[n]->SetTitle(htitle2);
     }
@@ -898,19 +945,16 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
   Double_t h = rows*320;
 
   TString yaxisTitle;
-  yaxisTitle = Form("counts / (%.2f MeV/#it{c}^{2})", histos[0]->GetXaxis()->GetBinWidth(1)*1000);
+  yaxisTitle = "counts";
   
   TCanvas* canvas = SetUpCanvas(cname, xTitle, minMass, maxMass, kFALSE, yaxisTitle, 0, 1, kFALSE, h, w, cols, rows, 0.18, 0.02, 0.12, 0.08);
-  for (Int_t i = 0; i < n; i++) {
-    histos[i]->Scale(1., "width");
-    
+  for (Int_t i = 0; i < n; i++) {    
     TVirtualPad* pad = canvas->cd(i+1);
     TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
     if (!blankHist) {
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistograms : Could not find blank histogram!");
       continue;
     }
-    blankHist->GetYaxis()->SetRangeUser(0, histos[i]->GetMaximum()*1.8);
 
     blankHist->GetXaxis()->SetTitleFont(43);
     blankHist->GetXaxis()->SetTitleSize(15);
@@ -931,14 +975,16 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
     histos[i]->SetMarkerSize(0.6);
     histos[i]->SetMarkerColor(kBlue+3);
     histos[i]->SetLineColor(kBlue+3);
-    histos[i]->DrawCopy("same p");
+    TH1* hcopy = histos[i]->DrawCopy("same p");
+
+    MassFitter* fitter = 0;
     
     if (doFit) {      
       TString fitterName(Form("%s_fitter", histos[i]->GetName()));
-      MassFitter* fitter = params->CreateMassFitter(fitterName);
+      fitter = params->CreateMassFitter(fitterName);
       fMassFitters->Add(fitter);
 
-      Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass), "width");
+      Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass));
       fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
       fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
       fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
@@ -969,27 +1015,43 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       paveFit->AddText(fitter->GetSignalWidthString());
       paveFit->AddText(fitter->GetBkgPar1String());
       paveFit->Draw();
+
+      if (fInvMassPlotNorm == kNormalizeBackground) {
+        Double_t scaleFactor = 1. / fitter->GetBackground();
+        hcopy->Scale(scaleFactor, "width");
+        fitter->NormalizeBackground();
+        yaxisTitle = "arb. units";
+      }
     }
 
+    if (fInvMassPlotNorm == kDivideByBinWidth) {
+      hcopy->Scale(1., "width");
+      if (fitter) fitter->DivideByBinWidth();
+      yaxisTitle = Form("counts / (%.2f MeV/#it{c}^{2})", hcopy->GetXaxis()->GetBinWidth(1)*1000);
+    }
+
+    blankHist->GetYaxis()->SetRangeUser(0, hcopy->GetMaximum()*1.8);
+    blankHist->GetYaxis()->SetTitle(yaxisTitle);
+      
     TPaveText* pave = SetUpPaveText(gPad->GetLeftMargin(), 0.81, 1-gPad->GetRightMargin(), 0.95, 15, histos[i]->GetTitle());
     pave->SetTextAlign(22);
     pave->SetTextFont(63);
     pave->Draw();
 
     if (pdgMass > 0 && !doFit) {
-      TLine *line = new TLine(pdgMass, 0, pdgMass, histos[i]->GetMaximum()*0.6);
+      TLine *line = new TLine(pdgMass, 0, pdgMass, hcopy->GetMaximum()*0.6);
       line->SetLineColor(kRed);
       line->SetLineWidth(1);
       line->Draw();
     }
     if (massLimits > 0) {
-      TLine *line1 = new TLine(pdgMass - massLimits, 0, pdgMass - massLimits, histos[i]->GetMaximum());
+      TLine *line1 = new TLine(pdgMass - massLimits, 0, pdgMass - massLimits, hcopy->GetMaximum());
       line1->SetLineColor(kGreen+2);
       line1->SetLineWidth(1);
       line1->SetLineStyle(2);
       line1->Draw();
 
-      TLine *line2 = new TLine(pdgMass + massLimits, 0, pdgMass + massLimits, histos[i]->GetMaximum());
+      TLine *line2 = new TLine(pdgMass + massLimits, 0, pdgMass + massLimits, hcopy->GetMaximum());
       line2->SetLineColor(kGreen+2);
       line2->SetLineWidth(1);
       line2->SetLineStyle(2);

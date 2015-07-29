@@ -29,6 +29,7 @@ MassFitter::MassFitter() :
   fNParBkg(0),
   fMinMass(0.),
   fMaxMass(0.),
+  fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
   fHistogram(0),
@@ -58,6 +59,7 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fNParBkg(0),
   fMinMass(minMass),
   fMaxMass(maxMass),
+  fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
   fHistogram(0),
@@ -137,6 +139,13 @@ void MassFitter::Reset(TH1* histo)
 }
 
 //____________________________________________________________________________________
+void MassFitter::SetHistogram(TH1* histo)
+{
+  fHistogram = histo;
+  if (fHistogram) fScaleFactor = (fHistogram->GetXaxis()->GetXmax() - fHistogram->GetXaxis()->GetXmin()) / fHistogram->GetXaxis()->GetNbins();
+}
+
+//____________________________________________________________________________________
 TFitResultPtr MassFitter::Fit(TH1* histo, Option_t* opt)
 {
   TFitter::SetPrecision(0.1);
@@ -145,7 +154,7 @@ TFitResultPtr MassFitter::Fit(TH1* histo, Option_t* opt)
     Reset(histo);
   }
   else {
-    fHistogram = histo;
+    SetHistogram(histo);
   }
 
   return Fit(opt);
@@ -430,10 +439,11 @@ double MassFitter::FunctionSig(double *x, double *p)
       Printf("Error: signal fit type %d not recognized! Using Gaussian fit.", fMassFitTypeSig);
       fMassFitTypeSig = kGaus;
       fNParSig = 3;
-      r = FunctionSig(x, p);
+      return FunctionSig(x, p);
     }
   }
 
+  r *= fScaleFactor;
   return r;
 }
 
@@ -466,10 +476,11 @@ double MassFitter::FunctionBkg(double *x, double *p)
       Printf("Error: background fit type %d not recognized! Using exponential fit.", fMassFitTypeBkg);
       fMassFitTypeBkg = kExpo;
       fNParBkg = 2;
-      r = FunctionBkg(x, p);
+      return FunctionBkg(x, p);
     }
   }
 
+  r *= fScaleFactor;
   return r;
 }
 
@@ -530,4 +541,16 @@ void MassFitter::SetMassRange(Double_t min, Double_t max)
   else {
     Printf("Error: min mass %.3f must be smaller then mass max %.3f!", min, max);
   }
+}
+
+//____________________________________________________________________________________
+void MassFitter::DivideByBinWidth()
+{
+  fScaleFactor = 1.; 
+}
+
+//____________________________________________________________________________________
+void MassFitter::NormalizeBackground()
+{
+  fScaleFactor = 1. / fBackground;
 }
