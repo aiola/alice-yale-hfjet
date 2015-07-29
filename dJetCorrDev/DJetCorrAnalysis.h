@@ -20,10 +20,13 @@ class TH1;
 class DJetCorrAnalysis : public DJetCorrBase {
   
  public:
+  enum EInvMassPlotNorm { kPureCounts, kDivideByBinWidth, kNormalizeBackground };
+  
   DJetCorrAnalysis();
   DJetCorrAnalysis(const char* train, const char* path = "$JETRESULTS");
 
-  void   SetQAListName(const char* lname)      { fQAListName       = lname  ; }
+  void   SetQAListName(const char* lname)        { fQAListName      = lname  ; }
+  void   SetInvMassPlotNorm(EInvMassPlotNorm n)  { fInvMassPlotNorm = n      ; }
   
   Bool_t Init();
 
@@ -38,6 +41,11 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t PlotDJetCorrHistograms(const char* paramName);
   Bool_t PlotDJetCorrHistograms(Int_t i);
   Bool_t PlotDJetCorrHistograms();
+
+  Bool_t PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
+  Bool_t PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
+  Bool_t PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
+  Bool_t PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
     
  protected:
   Bool_t          ClearInputData();
@@ -52,18 +60,14 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle,
                                             Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
                                             DJetCorrAnalysisParams* params, Bool_t doFit=kFALSE, TObjArray* extraInfo=0, TH1* histSpectrum=0);
-
-  Bool_t          PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params);
-  Bool_t          PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params);
-  Bool_t          PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params);
-  Bool_t          PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params);
   
   Bool_t          PlotSpectra(Int_t n, TH1** histSpectra, const char* name, Bool_t logY);
     
   Bool_t          LoadQAList();
   Bool_t          LoadTHnSparse();
   
-  TString         fQAListName                ;//  QA list name
+  TString           fQAListName              ;//  QA list name
+  EInvMassPlotNorm  fInvMassPlotNorm         ;//  type of normalization used in invariant mass plots
 
   // Axis titles
   TString         fDPtAxisTitle              ;//  d meson pt axis title

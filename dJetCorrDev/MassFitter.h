@@ -26,7 +26,7 @@ class MassFitter : public TNamed {
   MassFitter();
   MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb, Double_t minMass, Double_t maxMass);
 
-  void SetHistogram(TH1* histo)                                    { fHistogram = histo                                 ; }
+  void SetHistogram(TH1* histo);
   void SetMassFitTypeSig(EMassFitTypeSig ts)                       { fMassFitTypeSig = ts                      ; Reset(); }
   void SetMassFitTypeBkg(EMassFitTypeBkg tb)                       { fMassFitTypeBkg = tb                      ; Reset(); }
   void SetMassFitTypes(EMassFitTypeSig ts, EMassFitTypeBkg tb)     { fMassFitTypeSig = ts; fMassFitTypeBkg = tb; Reset(); }
@@ -64,6 +64,9 @@ class MassFitter : public TNamed {
   TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }
   TH1*     GetFitHistogram()                     const { return fHistogram    ; }
 
+  void     DivideByBinWidth();
+  void     NormalizeBackground();
+
   void     Draw(Option_t* opt = "");
   
   double   FunctionSig(double *x, double *p);
@@ -87,6 +90,7 @@ class MassFitter : public TNamed {
   Int_t             fNParBkg           ;//  Number of parameters of the background function
   Double_t          fMinMass           ;//  Minimum mass value
   Double_t          fMaxMass           ;//  Maximum mass value
+  Double_t          fScaleFactor       ;//  Scale factor
   
   TF1*              fFunction          ;//! Fit function
   TF1*              fFunctionBkg       ;//! Bkg function
