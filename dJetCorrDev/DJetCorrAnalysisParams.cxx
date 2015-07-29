@@ -267,7 +267,7 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   fitter->GetFitFunction()->SetParameter(1, startingSigmaBkg);
   //fitter->GetFitFunction()->SetParLimits(1, startingSigmaBkg*0.1, startingSigmaBkg*10.);
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
-  fitter->GetFitFunction()->SetParLimits(4, startingSigma*0.5, startingSigma*1.5);
+  //fitter->GetFitFunction()->SetParLimits(4, startingSigma*0.5, startingSigma*1.5);
   
   return fitter;
 }
