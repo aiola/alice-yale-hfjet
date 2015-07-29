@@ -57,7 +57,8 @@ DJetCorrBase::DJetCorrBase() :
   fInputDirectoryFile(0),
   fInputList(0),
   fOutputList(0),
-  fCanvases(0)
+  fCanvases(0),
+  fEvents(0.)
 {
   // Default ctr.
   
@@ -83,7 +84,8 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
   fInputDirectoryFile(0),
   fInputList(0),
   fOutputList(0),
-  fCanvases(0)
+  fCanvases(0),
+  fEvents(0.)
 {
   // Standard ctr.
 
@@ -681,6 +683,10 @@ Bool_t DJetCorrBase::LoadInputList(const char* inputListName)
 
   Printf("Info-DJetCorrBase::LoadInputList : Success.");
 
+  GetEvents();
+
+  Printf("Info-DJetCorrBase::LoadInputList : Total number of events: %.0f.", fEvents);
+
   return kTRUE;
 }
 
@@ -755,4 +761,32 @@ Bool_t DJetCorrBase::SaveOutputFile()
   outputFile = 0;
   
   return kTRUE;
+}
+
+//____________________________________________________________________________________
+Double_t DJetCorrBase::GetEvents(Bool_t recalculate)
+{
+  if (fEvents == 0 || recalculate) {
+    fEvents = 0;
+
+    if (fOutputList) {
+
+      TH1* hevents = static_cast<TH1*>(fOutputList->FindObject("hEvents"));
+
+      if (!hevents && fInputList) {
+        TH1* hevents_temp = static_cast<TH1*>(fInputList->FindObject("fHistEventCount"));
+        if (hevents_temp) {
+          hevents = static_cast<TH1*>(hevents_temp->Clone("hEvents"));
+          hevents->SetTitle("hEvents");
+          fOutputList->Add(hevents);
+        }
+      }
+      
+      if (hevents) {
+        fEvents = hevents->GetBinContent(1);
+      }
+    }
+  }
+
+  return fEvents;
 }

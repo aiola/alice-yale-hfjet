@@ -43,11 +43,12 @@ class DJetCorrBase : public TNamed {
   
   Bool_t SaveOutputFile();
 
-  TList* GetOutputList() { return fOutputList; }
-  TList* GetCanvasList() { return fCanvases  ; }
+  TH1* GetOutputHistogram(const char* name) { return static_cast<TH1*>(fOutputList->FindObject(name))  ; }
+  TCanvas* GetCanvas(const char* name)      { return static_cast<TCanvas*>(fCanvases->FindObject(name)); }
+  Double_t GetEvents(Bool_t recalculate=kFALSE);
   
  protected:
-
+  
   virtual Bool_t  ClearInputData();
   Int_t           GetAxisIndex(TString title, THnSparse* hn, Bool_t messageOnFail=kFALSE);
 
@@ -105,6 +106,7 @@ class DJetCorrBase : public TNamed {
   TList          *fInputList                 ;//! list contains the input hisograms
   TList          *fOutputList                ;//! list contains the output histograms
   TList          *fCanvases                  ;//! list contains the canvases
+  Double_t        fEvents                    ;//! number of events
   
   static const Double_t fgkEpsilon;
 
