@@ -7,6 +7,7 @@
 #include <TAttMarker.h>
 
 class TH1;
+class TGraph;
 
 class HistoStyler : public TAttLine, public TAttFill, public TAttMarker {
   
@@ -21,7 +22,7 @@ class HistoStyler : public TAttLine, public TAttFill, public TAttMarker {
   HistoStyler();
 
   void       SetVariableMarkerColor(EMarkerColor v=kMarkerColorVariable)   { fVariableMarkerColor  = v; }
-  void       SetVariableMarkerStyle(EMarkerStyle v=kMarkerStyleOpen)       { fVariableMarkerStyle  = v; }
+  void       SetVariableMarkerStyle(EMarkerStyle v=kMarkerStyleFull)       { fVariableMarkerStyle  = v; }
 
   void       SetVariableLineColor(ELineColor v=kLineColorVariable)         { fVariableLineColor    = v; }
   void       SetVariableLineStyle(ELineStyle v=kLineStyleVariable)         { fVariableLineStyle    = v; }
@@ -30,24 +31,28 @@ class HistoStyler : public TAttLine, public TAttFill, public TAttMarker {
   void       SetVariableFillStyle(EFillStyle v=kFillStyleVariable)         { fVariableFillStyle    = v; }
 
   using TAttMarker::GetMarkerColor;
-  Color_t    GetMarkerColor(UShort_t i) const;
+  Color_t    GetMarkerColor(Int_t i) const;
 
   using TAttMarker::GetMarkerStyle;
-  Style_t    GetMarkerStyle(UShort_t i) const;
+  Style_t    GetMarkerStyle(Int_t i) const;
 
   using TAttLine::GetLineColor;
-  Color_t    GetLineColor(UShort_t i) const;
+  Color_t    GetLineColor(Int_t i) const;
   
   using TAttLine::GetLineStyle;
-  Style_t    GetLineStyle(UShort_t i) const;
+  Style_t    GetLineStyle(Int_t i) const;
 
   using TAttFill::GetFillColor;
-  Color_t    GetFillColor(UShort_t i) const;
+  Color_t    GetFillColor(Int_t i) const;
 
   using TAttFill::GetFillStyle;
-  Style_t    GetFillStyle(UShort_t i) const;
+  Style_t    GetFillStyle(Int_t i) const;
 
   void       Apply(Int_t n, TH1** histo) const;
+  void       Apply(TH1* histo, Int_t icolor, Int_t imarker) const;
+
+  void       Apply(Int_t n, TGraph** histo) const;
+  void       Apply(TGraph* histo, Int_t icolor, Int_t imarker) const;
 
   static const Int_t fgkNColors = 10;
   static const Int_t fgkNOpenMarkerStyles = 6;

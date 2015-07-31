@@ -54,9 +54,20 @@ void DJetCorrAnalysisComparer::Start()
 {
   fAnalysis1->SetSavePlots(kFALSE);
   fAnalysis1->SetAddTrainToCanvasName(kTRUE);
+  fAnalysis1->SetInvMassPlotNorm(DJetCorrAnalysis::kNormalizeBackground);
+    
   fAnalysis2->SetSavePlots(kFALSE);
   fAnalysis2->SetAddTrainToCanvasName(kTRUE);
+  fAnalysis2->SetInvMassPlotNorm(DJetCorrAnalysis::kNormalizeBackground);
   
   fAnalysis1->PlotDJetCorrHistograms();
   fAnalysis2->PlotDJetCorrHistograms();
+
+  DoTheJob();
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisComparer::DoTheJob()
+{
+  
 }

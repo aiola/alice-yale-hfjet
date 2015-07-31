@@ -258,11 +258,9 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   pad->cd();
 
   TString blankHistName(Form("%s_blankHist", pad->GetName()));
-  TH1* blankHist = new TH1D(blankHistName, blankHistName, 1000, minX, maxX);
+  TH2* blankHist = new TH2D(blankHistName, blankHistName, 1000, minX, maxX, 1000, minY, maxY);
   
   blankHist->GetXaxis()->SetTitle(xTitle);
-
-  blankHist->GetYaxis()->SetRangeUser(minY, maxY);
   blankHist->GetYaxis()->SetTitle(yTitle);
   
   blankHist->Draw("AXIS");
@@ -454,7 +452,7 @@ Bool_t DJetCorrBase::PlotObservable(DJetCorrAnalysisParams* params, TString obsN
     
         TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
         //Printf("Info-DJetCorrAnalysis::PlotObservable : Retrieving histogram '%s'", objname.Data());
-        TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
+        TH1* hist = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
         if (!hist) {
           Printf("Error-DJetCorrAnalysis::PlotObservable : Histogram '%s' not found!", objname.Data());
           continue;
@@ -771,7 +769,7 @@ Double_t DJetCorrBase::GetEvents(Bool_t recalculate)
 
     if (fOutputList) {
 
-      TH1* hevents = static_cast<TH1*>(fOutputList->FindObject("hEvents"));
+      TH1* hevents = dynamic_cast<TH1*>(fOutputList->FindObject("hEvents"));
 
       if (!hevents && fInputList) {
         TH1* hevents_temp = static_cast<TH1*>(fInputList->FindObject("fHistEventCount"));

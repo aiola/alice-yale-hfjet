@@ -37,25 +37,38 @@ class DJetCorrResponse : public DJetCorrBase {
   Bool_t ClearInputData();
   Bool_t LoadTHnSparse();
 
-  Bool_t ProjectResponseMatricesVsJetPt(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseMatricesVsZ(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseMatrix(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseDPtMatrix(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* params, Double_t minZ, Double_t maxZ);
-  Bool_t ProjectResponseZMatrix(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
+  Bool_t ProjectResponseDPtMatrix(DJetCorrAnalysisParams* params);
 
-  Bool_t PlotResponseMatricesVsJetPt(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseMatricesVsZ(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseMatrix(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseJetPtMatrix(DJetCorrAnalysisParams* params, Double_t minZ, Double_t maxZ);
-  Bool_t PlotResponseZMatrix(DJetCorrAnalysisParams* params, Double_t minJetPt, Double_t maxJetPt);
+  Bool_t ProjectResponseMatrices4DVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseZMatricesVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseZMatricesVsJetPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseJetPtMatricesVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseJetPtMatricesVsZ(DJetCorrAnalysisParams* params);
+  
+  Bool_t ProjectResponseMatrix4D(DJetCorrAnalysisParams* params, Int_t dptBin=-1);
+  Bool_t ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
+  Bool_t ProjectResponseZMatrix(DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+
+  Bool_t PlotResponseDPtMatrix(DJetCorrAnalysisParams* params);
+    
+  Bool_t PlotResponseMatrices4DVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseZMatricesVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseZMatricesVsJetPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseJetPtMatricesVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseJetPtMatricesVsZ(DJetCorrAnalysisParams* params);
+
+  Bool_t PlotResponseDPtMatrix(TCanvas*& canvasResp, TCanvas*& canvasEff, DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseMatrix4D(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t dptBin=-1);
+  Bool_t PlotResponseJetPtMatrix(TCanvas*& canvasResp, TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
+  Bool_t PlotResponseZMatrix(TCanvas*& canvasResp, TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+
+  TString         fEfficiencyMode      ;//  Efficiency mode
   
   THnSparse      *fHistMatching        ;//! THnSparse that contains the matched jets
   THnSparse      *fHistJets1           ;//! THnSparse that contains all reconstructed jets
   THnSparse      *fHistJets2           ;//! THnSparse that contains all generated jets
   
  private:
-   
   DJetCorrResponse(const DJetCorrResponse &source);
   DJetCorrResponse& operator=(const DJetCorrResponse& source); 
 

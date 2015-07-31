@@ -407,9 +407,9 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
   TLegend* legPhi = SetUpLegend(0.58, 0.68, 0.88, 0.88, 14);
   
   for (Int_t i = 0; i < 4; i++) {
-    TH1* hTrEta = static_cast<TH1*>(fOutputList->FindObject(Form("hTracks_%s_Eta", labels[i].Data())));
-    TH1* hTrPhi = static_cast<TH1*>(fOutputList->FindObject(Form("hTracks_%s_Phi", labels[i].Data())));
-    TH1* hTrPt = static_cast<TH1*>(fOutputList->FindObject(Form("hTracks_%s_Pt", labels[i].Data())));
+    TH1* hTrEta = dynamic_cast<TH1*>(fOutputList->FindObject(Form("hTracks_%s_Eta", labels[i].Data())));
+    TH1* hTrPhi = dynamic_cast<TH1*>(fOutputList->FindObject(Form("hTracks_%s_Phi", labels[i].Data())));
+    TH1* hTrPt = dynamic_cast<TH1*>(fOutputList->FindObject(Form("hTracks_%s_Pt", labels[i].Data())));
 
     if (!hTrEta) continue;
     if (!hTrPhi) continue;
@@ -478,7 +478,7 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, B
     
     TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
     TString spectrumName(Form("h%s_Spectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-    TH1* hs = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    TH1* hs = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumName));
     if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
       continue;
@@ -503,28 +503,28 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, B
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
-  TH1** histos = new TH1*[params->GetNzBins()-1];
+  TH1** histos = new TH1*[params->GetNzBins()];
   
-  for (Int_t i = 1; i < params->GetNzBins(); i++) {
-    histos[i-1] = 0;
+  for (Int_t i = 0; i < params->GetNzBins(); i++) {
+    histos[i] = 0;
     
     TString spectrumCuts(params->GetCutString(kMatched, -1, -1, i));
     TString spectrumName(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-    TH1* hs = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    TH1* hs = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumName));
     if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
       continue;
     }
     spectrumName += "_copy";
-    histos[i-1] = static_cast<TH1*>(hs->Clone(spectrumName));
+    histos[i] = static_cast<TH1*>(hs->Clone(spectrumName));
     if (eventScaling && GetEvents() > 0) {
-      histos[i-1]->Scale(1. / GetEvents(), "width");
-      histos[i-1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
+      histos[i]->Scale(1. / GetEvents(), "width");
+      histos[i]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
 
   TString cname(Form("fig_%s_DPtSpectraVsZ", params->GetName()));
-  Bool_t res = PlotSpectra(params->GetNzBins()-1, histos, cname, kFALSE);
+  Bool_t res = PlotSpectra(params->GetNzBins(), histos, cname, kFALSE);
 
   delete[] histos;
 
@@ -539,7 +539,7 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
   TString spectrumCuts(params->GetCutString(kMatched, -1, -1, -1));
   
   TString spectrumNameMatched(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-  TH1* hs0 = static_cast<TH1*>(fOutputList->FindObject(spectrumNameMatched));
+  TH1* hs0 = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumNameMatched));
   if (hs0) {
     spectrumNameMatched += "_copy";
     histos[0] = static_cast<TH1*>(hs0->Clone(spectrumNameMatched));
@@ -554,7 +554,7 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
   }
 
   TString spectrumNameNotMatched(Form("h%s_DPtSpectrum_%s_NotMatched", params->GetName(), spectrumCuts.Data()));
-  TH1* hs1 = static_cast<TH1*>(fOutputList->FindObject(spectrumNameNotMatched));
+  TH1* hs1 = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumNameNotMatched));
   if (hs1) {
     spectrumNameNotMatched += "_copy";
     histos[1] = static_cast<TH1*>(hs1->Clone(spectrumNameNotMatched));
@@ -582,7 +582,7 @@ Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bo
     
     TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
     TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
-    TH1* hs = static_cast<TH1*>(fOutputList->FindObject(spectrumName));
+    TH1* hs = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumName));
     if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDzSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
       continue;
@@ -686,7 +686,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
     TString cuts(params->GetCutString(st, i, jetptBin, dzBin));
     TString objname(Form("h%s_%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data(), matchString.Data()));
     //Printf("Info-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Retrieving histogram '%s'", objname.Data());
-    TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
+    TH1* hist = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
     if (!hist) {
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Histogram '%s' not found!", objname.Data());
       continue;
@@ -796,17 +796,17 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
 
   TString spectrumCuts(params->GetCutString(kMatched, dptBin, jetptBin, -1));
   TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", prefix.Data(), spectrumCuts.Data()));
-  TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins()-1, params->GetzBins()+1);
+  TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins(), params->GetzBins());
   histSpectrum->GetXaxis()->SetTitle("#it{z}_{D}");
   histSpectrum->GetYaxis()->SetTitle("counts");
   fOutputList->Add(histSpectrum);
   
   Int_t n = 0;
-  for (Int_t i = 1; i < params->GetNzBins(); i++) {
+  for (Int_t i = 0; i < params->GetNzBins(); i++) {
     TString cuts(params->GetCutString(kMatched, dptBin, jetptBin, i));
     
     TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
-    TH1* hist = static_cast<TH1*>(fOutputList->FindObject(objname));
+    TH1* hist = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
     if (!hist) {
       Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Histogram '%s' not found!", objname.Data());
       continue;
@@ -819,7 +819,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
 
     if (histos2) {
       TString objname2(Form("h%s_%s_%s_Matched", prefix.Data(), hname2.Data(), cuts.Data()));
-      TH1* hist2 = static_cast<TH1*>(fOutputList->FindObject(objname2));
+      TH1* hist2 = dynamic_cast<TH1*>(fOutputList->FindObject(objname2));
       if (!hist2) {
         Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDz : Histogram '%s' not found!", objname2.Data());
         continue;
@@ -1314,7 +1314,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
 
   if (dInvMassAxis >= 0) {
     TH1* hdinvmass = fDmesons->Projection(dInvMassAxis, "EA");
-    //hdinvmass->Rebin(3);
     hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
     fOutputList->Add(hdinvmass);
@@ -1324,7 +1323,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
 
   if (d2ProngInvMassAxis >= 0) {
     TH1* hd2pronginvmass = fDmesons->Projection(d2ProngInvMassAxis, "EA");
-    //hd2pronginvmass->Rebin(3);
     hd2pronginvmass->SetName(Form("h%s_D0InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
     fOutputList->Add(hd2pronginvmass);
@@ -1334,7 +1332,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
 
   if (dDeltaInvMassAxis >= 0) {
     TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis, "EA");
-    //hddeltainvmass->Rebin(3);
     hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
     fOutputList->Add(hddeltainvmass);
