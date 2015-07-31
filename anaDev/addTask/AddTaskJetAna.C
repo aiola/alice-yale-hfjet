@@ -57,7 +57,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   const Double_t kEMCtimeMin          = -50e-6;
   const Double_t kEMCtimeMax          = 100e-6;
   const Double_t kEMCtimeCut          =  75e-6;
-  const Int_t eFlavourJetMatchingType = AliAnalysisTaskDmesonJetCorrelations::kJetLoop;    // kGeometricalMatching, kConstituentMatching, kJetLoop
+  const Int_t eFlavourJetMatchingType = AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching;    // kGeometricalMatching, kConstituentMatching, kJetLoop
 
   TString sTracksName("AODFilterTracks");
   //TString sTracksName("tracks");

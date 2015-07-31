@@ -3,6 +3,7 @@
 // Copyright (c) 2015 Salvatore Aiola
 
 #include <TH1.h>
+#include <TGraph.h>
 #include "HistoStyler.h"
 
 ClassImp(HistoStyler);
@@ -47,7 +48,63 @@ void HistoStyler::Apply(Int_t n, TH1** histo) const
 }
 
 //____________________________________________________________________________________
-Color_t HistoStyler::GetMarkerColor(UShort_t i) const
+void HistoStyler::Apply(TH1* histo, Int_t icolor, Int_t imarker) const
+{
+  // Apply style to histograms.
+
+  if (!histo) return;
+    
+  histo->SetMarkerColor(GetMarkerColor(icolor));
+  histo->SetMarkerStyle(GetMarkerStyle(imarker));
+  histo->SetMarkerSize(GetMarkerSize());
+
+  histo->SetLineColor(GetLineColor(icolor));
+  histo->SetLineStyle(GetLineStyle());
+
+  histo->SetFillColor(GetFillColor(icolor));
+  histo->SetFillStyle(GetFillStyle());
+}
+
+//____________________________________________________________________________________
+void HistoStyler::Apply(Int_t n, TGraph** histo) const
+{
+  // Apply style to histograms.
+
+  for (Int_t i = 0; i < n; i++) {
+    if (!histo[i]) continue;
+    
+    histo[i]->SetMarkerColor(GetMarkerColor(i));
+    histo[i]->SetMarkerStyle(GetMarkerStyle(i));
+    histo[i]->SetMarkerSize(GetMarkerSize());
+
+    histo[i]->SetLineColor(GetLineColor(i));
+    histo[i]->SetLineStyle(GetLineStyle(i));
+
+    histo[i]->SetFillColor(GetFillColor(i));
+    histo[i]->SetFillStyle(GetFillStyle(i));
+  }
+}
+
+//____________________________________________________________________________________
+void HistoStyler::Apply(TGraph* histo, Int_t icolor, Int_t imarker) const
+{
+  // Apply style to histograms.
+
+  if (!histo) return;
+    
+  histo->SetMarkerColor(GetMarkerColor(icolor));
+  histo->SetMarkerStyle(GetMarkerStyle(imarker));
+  histo->SetMarkerSize(GetMarkerSize());
+
+  histo->SetLineColor(GetLineColor(icolor));
+  histo->SetLineStyle(GetLineStyle());
+
+  histo->SetFillColor(GetFillColor(icolor));
+  histo->SetFillStyle(GetFillStyle());
+}
+
+//____________________________________________________________________________________
+Color_t HistoStyler::GetMarkerColor(Int_t i) const
 {
   switch (fVariableMarkerColor) {
   case kMarkerColorFixed:
@@ -56,7 +113,10 @@ Color_t HistoStyler::GetMarkerColor(UShort_t i) const
     }
   case kMarkerColorVariable:
     {
-      if (i < fgkNColors) {
+      if (i < 0) {
+        return GetMarkerColor();
+      }
+      else if (i < fgkNColors) {
         return fgkColors[i];
       }
       else {
@@ -72,16 +132,17 @@ Color_t HistoStyler::GetMarkerColor(UShort_t i) const
 }
 
 //____________________________________________________________________________________
-Style_t HistoStyler::GetMarkerStyle(UShort_t i) const
+Style_t HistoStyler::GetMarkerStyle(Int_t i) const
 {
+  if (i < 0) return GetMarkerStyle();
+  
   switch (fVariableMarkerStyle) {
   case kMarkerStyleFixed:
     {
       return GetMarkerStyle();
     }
   case kMarkerStyleVariable:
-    {
-      
+    {      
       Int_t p = i % 2;
       if (p == 0) {
         UShort_t j = i / 2;
@@ -132,7 +193,7 @@ Style_t HistoStyler::GetMarkerStyle(UShort_t i) const
 }
 
 //____________________________________________________________________________________
-Color_t HistoStyler::GetLineColor(UShort_t i) const
+Color_t HistoStyler::GetLineColor(Int_t i) const
 {
   switch (fVariableLineColor) {
   case kLineColorFixed:
@@ -141,7 +202,10 @@ Color_t HistoStyler::GetLineColor(UShort_t i) const
     }
   case kLineColorVariable:
     {
-      if (i < fgkNColors) {
+      if (i < 0) {
+        return GetLineColor();
+      }
+      else if (i < fgkNColors) {
         return fgkColors[i];
       }
       else {
@@ -157,13 +221,13 @@ Color_t HistoStyler::GetLineColor(UShort_t i) const
 }
 
 //____________________________________________________________________________________
-Style_t HistoStyler::GetLineStyle(UShort_t /*i*/) const
+Style_t HistoStyler::GetLineStyle(Int_t /*i*/) const
 {
   return GetLineStyle();
 }
 
 //____________________________________________________________________________________
-Color_t HistoStyler::GetFillColor(UShort_t i) const
+Color_t HistoStyler::GetFillColor(Int_t i) const
 {
   switch (fVariableFillColor) {
   case kFillColorFixed:
@@ -172,7 +236,10 @@ Color_t HistoStyler::GetFillColor(UShort_t i) const
     }
   case kFillColorVariable:
     {
-      if (i < fgkNColors) {
+      if (i < 0) {
+        return GetFillColor();
+      }
+      else if (i < fgkNColors) {
         return fgkColors[i];
       }
       else {
@@ -188,7 +255,7 @@ Color_t HistoStyler::GetFillColor(UShort_t i) const
 }
 
 //____________________________________________________________________________________
-Style_t HistoStyler::GetFillStyle(UShort_t /*i*/) const
+Style_t HistoStyler::GetFillStyle(Int_t /*i*/) const
 {
   return GetFillStyle();
 }

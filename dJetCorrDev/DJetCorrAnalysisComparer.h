@@ -11,6 +11,7 @@ class DJetCorrAnalysisComparer : public TNamed {
   DJetCorrAnalysisComparer(DJetCorrAnalysis* ana1, DJetCorrAnalysis* ana2);
 
   void Start();
+  void DoTheJob();
   
  protected:
   DJetCorrAnalysis*        fAnalysis1; //! analysis 1

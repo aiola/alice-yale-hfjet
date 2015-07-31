@@ -60,7 +60,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
   Float_t     trackingEff         = 1.;
   Bool_t      forcePP             = kTRUE;
   Double_t    kGhostArea          = 0.01;
-  Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kJetLoop;    // kGeometricalMatching, kConstituentMatching, kJetLoop
+  Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching;    // kGeometricalMatching, kConstituentMatching, kJetLoop
 
   TF1* trackingEff_function = 0;
 
