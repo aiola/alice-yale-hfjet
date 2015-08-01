@@ -46,6 +46,10 @@ class DJetCorrBase : public TNamed {
   TH1* GetOutputHistogram(const char* name) { return static_cast<TH1*>(fOutputList->FindObject(name))  ; }
   TCanvas* GetCanvas(const char* name)      { return static_cast<TCanvas*>(fCanvases->FindObject(name)); }
   Double_t GetEvents(Bool_t recalculate=kFALSE);
+
+  static void FitGraphInPad(TGraph* graph, TPad* pad);
+  static void GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy);
+  static TLegend* GetLegend(TPad* pad);
   
  protected:
   

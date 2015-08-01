@@ -446,7 +446,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* para
   resp->Rebin2D(10,10);
 
   hname = Form("%s_Efficiency_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
-  htitle = Form("Efficiency for jet #it{p}_{T}: %.2f < #it{z}_{||}^{part} < %.2f", minZ, maxZ);
+  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{z}_{||}^{part} < %.1f", minDPt, maxDPt, minZ, maxZ);
   TH1* pass = resp->ProjectionY(hname);
   
   TH1* total = fHistJets2->Projection(2, "");
@@ -535,7 +535,7 @@ Bool_t DJetCorrResponse::ProjectResponseZMatrix(DJetCorrAnalysisParams* params, 
   resp->Rebin2D(5,5);
 
   hname = Form("%s_Efficiency_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
-  htitle = Form("Efficiency for #it{z}_{||}: %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
+  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
   TH1* pass = resp->ProjectionY(hname);
   
   TH1* total = fHistJets2->Projection(zPartAxis, "");
@@ -640,13 +640,15 @@ Bool_t DJetCorrResponse::PlotResponseZMatricesVsDPt(DJetCorrAnalysisParams* para
 {
   TCanvas* canvasResp = 0;
   TCanvas* canvasEff = 0;
-
-
+  
   TString cEffName = Form("%s_Efficiency_Z_Vs_DPt", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{z}_{||}", params->GetMinZ(), params->GetMaxZ(), kFALSE,
-                          "Efficiency", 0., 1., kFALSE);
+                          "#it{z}_{||}^{part}", params->GetMinZ(), params->GetMaxZ(), kFALSE,
+                          "Efficiency", 0., 1e-6, kFALSE);
+  canvasEff->cd();
+  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  leg->Draw();
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=2) {
     PlotResponseZMatrix(canvasResp, canvasEff, params, -1, idpt);
@@ -668,8 +670,12 @@ Bool_t DJetCorrResponse::PlotResponseZMatricesVsJetPt(DJetCorrAnalysisParams* pa
   TString cEffName = Form("%s_Efficiency_Z_Vs_JetPt", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{z}_{||}", params->GetMinZ(), params->GetMaxZ(), kFALSE,
-                          "Efficiency", 0., 1., kFALSE);
+                          "#it{z}_{||}^{part}", params->GetMinZ(), params->GetMaxZ(), kFALSE,
+                          "Efficiency", 0., 1e-6, kFALSE);
+
+  canvasEff->cd();
+  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  leg->Draw();
   
   for (Int_t ijetpt = -1; ijetpt < params->GetNJetPtBins(); ijetpt++) {
     PlotResponseZMatrix(canvasResp, canvasEff, params, ijetpt, -1);
@@ -691,8 +697,12 @@ Bool_t DJetCorrResponse::PlotResponseJetPtMatricesVsDPt(DJetCorrAnalysisParams* 
   TString cEffName = Form("%s_Efficiency_JetPt_Vs_DPt", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{p}_{T,jet}^{ch} GeV/#it{c}", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                          "Efficiency", 0., 1., kFALSE);
+                          "#it{p}_{T,jet}^{ch}^{part} GeV/#it{c}", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                          "Efficiency", 0., 1e-6, kFALSE);
+
+  canvasEff->cd();
+  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  leg->Draw();
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=2) {
     PlotResponseJetPtMatrix(canvasResp, canvasEff, params, -1, idpt);
@@ -714,8 +724,12 @@ Bool_t DJetCorrResponse::PlotResponseJetPtMatricesVsZ(DJetCorrAnalysisParams* pa
   TString cEffName = Form("%s_Efficiency_JetPt_Vs_Z", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{p}_{T,jet}^{ch} GeV/#it{c}", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                          "Efficiency", 0., 1., kFALSE);
+                          "#it{p}_{T,jet}^{ch}^{part} GeV/#it{c}", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                          "Efficiency", 0., 1e-6, kFALSE);
+
+  canvasEff->cd();
+  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  leg->Draw();
   
   for (Int_t iz = -1; iz < params->GetNzBins(); iz++) {
     PlotResponseJetPtMatrix(canvasResp, canvasEff, params, iz, -1);
@@ -834,7 +848,7 @@ Bool_t DJetCorrResponse::PlotResponseJetPtMatrix(TCanvas*& canvasResp, TCanvas*&
   if (!canvasEff && !GetCanvas(eff->GetName())) {
     canvasEff = SetUpCanvas(eff->GetName(),
                             eff->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                            eff->GetYaxis()->GetTitle(), 0., 1., kFALSE);
+                            eff->GetYaxis()->GetTitle(), 0., 1e-6, kFALSE);
   }
   
   if (canvasEff) {
@@ -842,6 +856,7 @@ Bool_t DJetCorrResponse::PlotResponseJetPtMatrix(TCanvas*& canvasResp, TCanvas*&
 
     TString hcopyName(Form("%s_copy", eff->GetName()));
     TGraphAsymmErrors* effCopy = static_cast<TGraphAsymmErrors*>(eff->Clone(hcopyName));
+    FitGraphInPad(effCopy, canvasEff);
     effCopy->Draw("same P");
 
     Int_t icolor = -1;
@@ -868,6 +883,11 @@ Bool_t DJetCorrResponse::PlotResponseJetPtMatrix(TCanvas*& canvasResp, TCanvas*&
     styler.SetLineWidth(1);
     styler.SetFillStyle(0);
     styler.Apply(effCopy, icolor, imarker);
+
+    TLegend* leg = GetLegend(canvasEff);
+    if (leg) {
+      leg->AddEntry(effCopy, effCopy->GetTitle(), "pe");
+    }
   }
   
   return kTRUE;
@@ -931,7 +951,7 @@ Bool_t DJetCorrResponse::PlotResponseZMatrix(TCanvas*& canvasResp, TCanvas*& can
   if (!canvasEff && !GetCanvas(eff->GetName())) {
     canvasEff = SetUpCanvas(eff->GetName(),
                             eff->GetXaxis()->GetTitle(), 0., 1.0, kFALSE,
-                            eff->GetYaxis()->GetTitle(), 0., 1., kFALSE);
+                            eff->GetYaxis()->GetTitle(), 0., 1e-6, kFALSE);
   }
 
   if (canvasEff) {
@@ -939,6 +959,7 @@ Bool_t DJetCorrResponse::PlotResponseZMatrix(TCanvas*& canvasResp, TCanvas*& can
 
     TString hcopyName(Form("%s_copy", eff->GetName()));
     TGraphAsymmErrors* effCopy = static_cast<TGraphAsymmErrors*>(eff->Clone(hcopyName));
+    FitGraphInPad(effCopy, canvasEff); 
     effCopy->Draw("same P");
 
     Int_t icolor = -1;
@@ -965,6 +986,11 @@ Bool_t DJetCorrResponse::PlotResponseZMatrix(TCanvas*& canvasResp, TCanvas*& can
     styler.SetLineWidth(1);
     styler.SetFillStyle(0);
     styler.Apply(effCopy, icolor, imarker);
+
+    TLegend* leg = GetLegend(canvasEff);
+    if (leg) {
+      leg->AddEntry(effCopy, effCopy->GetTitle(), "pe");
+    }
   }
   
   return kTRUE;
