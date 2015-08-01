@@ -2,6 +2,8 @@
 // Author: Salvatore Aiola, Yale University (salvatore.aiola@cern.ch)
 // Copyright (c) 2015 Salvatore Aiola
 
+#include <algorithm>
+
 #include <TList.h>
 #include <TFile.h>
 #include <TString.h>
@@ -258,7 +260,10 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   pad->cd();
 
   TString blankHistName(Form("%s_blankHist", pad->GetName()));
-  TH2* blankHist = new TH2D(blankHistName, blankHistName, 1000, minX, maxX, 1000, minY, maxY);
+  TH1* blankHist = new TH1D(blankHistName, blankHistName, 1000, minX, maxX);
+
+  blankHist->SetMinimum(minY);
+  blankHist->SetMaximum(maxY);
   
   blankHist->GetXaxis()->SetTitle(xTitle);
   blankHist->GetYaxis()->SetTitle(yTitle);
@@ -787,4 +792,46 @@ Double_t DJetCorrBase::GetEvents(Bool_t recalculate)
   }
 
   return fEvents;
+}
+
+//____________________________________________________________________________________
+void DJetCorrBase::FitGraphInPad(TGraph* graph, TPad* pad)
+{
+  TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
+  if (blankHist) {
+    Double_t miny = blankHist->GetMinimum();
+    Double_t maxy = blankHist->GetMaximum() / 1.8;
+  
+    GetMinMax(graph, miny, maxy);
+    
+    blankHist->SetMinimum(miny);
+    blankHist->SetMaximum(maxy * 1.8);
+  }
+  else {
+    Printf("Error-DJetCorrBase::FitGraphInPad : Could not find blank histogram!");
+  }
+}
+
+//____________________________________________________________________________________
+void DJetCorrBase::GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy)
+{
+  Double_t* array = graph->GetY();
+
+  for (Int_t i = 0; i < graph->GetN(); i++) {
+    if (miny > graph->GetY()[i] - graph->GetEYlow()[i]) miny = graph->GetY()[i] - graph->GetEYlow()[i];
+    if (maxy < graph->GetY()[i] + graph->GetEYhigh()[i]) maxy = graph->GetY()[i] + graph->GetEYhigh()[i];
+  } 
+}
+
+//____________________________________________________________________________________
+TLegend* DJetCorrBase::GetLegend(TPad* pad)
+{
+  TLegend* leg = 0;
+
+  for (Int_t i = 0; i < pad->GetListOfPrimitives()->GetEntries(); i++) {
+    leg = dynamic_cast<TLegend*>(pad->GetListOfPrimitives()->At(i));
+    if (leg) break;
+  }
+
+  return leg;
 }
