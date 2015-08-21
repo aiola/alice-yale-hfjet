@@ -8,7 +8,7 @@ void runJetResponse(
          const char   *runtype      = "local",                                     // local or grid
          const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
 	 const char   *localfiles   = "fileLists/files_LHC10f7a_fix_AOD136a.txt",  // set the local list file
-	 UInt_t        numfiles     = 50,                                          // number of files analyzed locally
+	 UInt_t        numfiles     = 90,                                          // number of files analyzed locally
 	 UInt_t        numevents    = 500000,                                       // number of events to be analyzed
 	 const char   *runperiod    = "LHC10f7a",                                  // set the run period
          const char   *taskname     = "JetResponse",                               // sets name of grid generated macros
