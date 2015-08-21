@@ -2,11 +2,11 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_502_503_504_505",
-                                      Bool_t isMC = kTRUE, Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_428_429_430_431",
+                                      Bool_t isMC = kFALSE, Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
-  
+  //gROOT->SetMustClean(kFALSE);
   TString tracksName = "tracks";
   //TString tracksD0Name = tracksName;
   //TString tracksDStarName = tracksName;
@@ -40,7 +40,7 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   projDjet->SetSavePlots(kTRUE);
 
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC);
-  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC);
+  //projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC);
 
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC);
   projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC);
@@ -51,15 +51,21 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   if (optList->Contains("run")) {
     projDjet->GenerateQAHistograms();
     projDjet->GenerateDJetCorrHistograms();
-    
-    if (!optList->Contains("plot")) projDjet->SaveOutputFile();
   }
 
   if (optList->Contains("plot")) {
     projDjet->PlotTrackHistograms();
-    projDjet->PlotDJetCorrHistograms();
-
-    projDjet->SaveOutputFile();
+    
+    if (optList->Contains("refit")) {
+      projDjet->PlotDJetCorrHistograms(kTRUE);
+      projDjet->SaveOutputFile();
+    }
+    else {
+      projDjet->PlotDJetCorrHistograms(kFALSE);
+    }
+  }
+  else {
+    if (optList->Contains("run")) projDjet->SaveOutputFile();
   }
 
   return projDjet;

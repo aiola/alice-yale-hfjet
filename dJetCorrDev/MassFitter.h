@@ -7,10 +7,11 @@
 
 #include <TNamed.h>
 #include <TMath.h>
+#include <TRef.h>
+#include <TFitResultPtr.h>
+#include <TH1.h>
 
-class TFitResultPtr;
 class TF1;
-class TH1;
 
 class MassFitter : public TNamed {
   
@@ -25,6 +26,8 @@ class MassFitter : public TNamed {
   
   MassFitter();
   MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb, Double_t minMass, Double_t maxMass);
+
+  ~MassFitter();
 
   void SetHistogram(TH1* histo);
   void SetMassFitTypeSig(EMassFitTypeSig ts)                       { fMassFitTypeSig = ts                      ; Reset(); }
@@ -62,7 +65,9 @@ class MassFitter : public TNamed {
   
   TF1*     GetFitFunction()                      const { return fFunction     ; }
   TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }
-  TH1*     GetFitHistogram()                     const { return fHistogram    ; }
+  TH1*     GetFitHistogram()                     const { return fHistogram == 0 ? static_cast<TH1*>(fHistogramRef.GetObject()) : fHistogram; }
+
+  TFitResultPtr GetFitStatus()                      const { return fFitResult    ; }
 
   void     DivideByBinWidth();
   void     NormalizeBackground();
@@ -91,9 +96,11 @@ class MassFitter : public TNamed {
   Double_t          fMinMass           ;//  Minimum mass value
   Double_t          fMaxMass           ;//  Maximum mass value
   Double_t          fScaleFactor       ;//  Scale factor
+  TFitResultPtr     fFitResult         ;//  Fit result
   
-  TF1*              fFunction          ;//! Fit function
-  TF1*              fFunctionBkg       ;//! Bkg function
+  TF1*              fFunction          ;//  Fit function
+  TF1*              fFunctionBkg       ;//  Bkg function
+  TRef              fHistogramRef      ;//  Histogram reference
   TH1*              fHistogram         ;//! Histogram to be fitted
   const Double_t    fPionMass          ;//! Pion mass 
   
