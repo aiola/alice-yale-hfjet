@@ -41,7 +41,7 @@ class DJetCorrBase : public TNamed {
   
   virtual Bool_t Init();
   
-  Bool_t SaveOutputFile();
+  virtual Bool_t SaveOutputFile();
 
   TH1* GetOutputHistogram(const char* name) { return static_cast<TH1*>(fOutputList->FindObject(name))  ; }
   TCanvas* GetCanvas(const char* name)      { return static_cast<TCanvas*>(fCanvases->FindObject(name)); }
@@ -52,7 +52,8 @@ class DJetCorrBase : public TNamed {
   static TLegend* GetLegend(TPad* pad);
   
  protected:
-  
+
+  virtual Bool_t  SaveOutputFile(TObjArray& arr);
   virtual Bool_t  ClearInputData();
   Int_t           GetAxisIndex(TString title, THnSparse* hn, Bool_t messageOnFail=kFALSE);
 
@@ -66,8 +67,9 @@ class DJetCorrBase : public TNamed {
   TMap*           GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
   Bool_t          LoadInputList(const char* lname);
+  TFile*          OpenOutputFile();
   virtual Bool_t  LoadTHnSparse()=0;
-  Bool_t          LoadOutputHistograms();
+  virtual Bool_t  LoadOutputHistograms();
   TVirtualPad*    SetUpPad(TVirtualPad* pad,
                            const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
                            const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,

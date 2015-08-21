@@ -29,7 +29,8 @@ class DJetCorrAnalysis : public DJetCorrBase {
   void   SetInvMassPlotNorm(EInvMassPlotNorm n)  { fInvMassPlotNorm = n      ; }
   
   Bool_t Init();
-
+  Bool_t SaveOutputFile();
+  
   Bool_t GenerateQAHistograms();
   Bool_t GenerateDJetCorrHistograms(DJetCorrAnalysisParams* params);
   Bool_t GenerateDJetCorrHistograms(const char* paramName);
@@ -40,14 +41,15 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t PlotDJetCorrHistograms(DJetCorrAnalysisParams* params);
   Bool_t PlotDJetCorrHistograms(const char* paramName);
   Bool_t PlotDJetCorrHistograms(Int_t i);
-  Bool_t PlotDJetCorrHistograms();
+  Bool_t PlotDJetCorrHistograms(Bool_t forceRefit=kFALSE);
 
   Bool_t PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
   Bool_t PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
   Bool_t PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
   Bool_t PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
-    
+  
  protected:
+  Bool_t          LoadOutputHistograms();
   Bool_t          ClearInputData();
   Int_t           GetAxisIndex(TString title) { return DJetCorrBase::GetAxisIndex(title, fDmesons); }
   
@@ -68,6 +70,7 @@ class DJetCorrAnalysis : public DJetCorrBase {
   
   TString           fQAListName              ;//  QA list name
   EInvMassPlotNorm  fInvMassPlotNorm         ;//  type of normalization used in invariant mass plots
+  Bool_t            fForceRefit              ;//  force refit of invariant mass plots
 
   // Axis titles
   TString         fDPtAxisTitle              ;//  d meson pt axis title
@@ -92,7 +95,7 @@ class DJetCorrAnalysis : public DJetCorrBase {
 
   THnSparse      *fDmesons                   ;//! THnSparse contains the results
   TList          *fInputQAList               ;//! list contains the QA histograms
-  TObjArray      *fMassFitters               ;//! array containing the mass fitter objects
+  TList          *fMassFitters               ;//! list containing the mass fitter objects
 
  private:
    

@@ -4,7 +4,6 @@
 
 #include "MassFitter.h"
 #include <TF1.h>
-#include <TH1.h>
 #include <TDatabasePDG.h>
 #include <TFitter.h>
 
@@ -32,6 +31,7 @@ MassFitter::MassFitter() :
   fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
+  fHistogramRef(),
   fHistogram(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
@@ -62,12 +62,19 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
+  fHistogramRef(),
   fHistogram(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Standard constructor.
 
   Reset();
+}
+
+//____________________________________________________________________________________
+MassFitter::~MassFitter()
+{
+
 }
 
 //____________________________________________________________________________________
@@ -112,7 +119,7 @@ void MassFitter::Reset(TH1* histo)
     }
   }
   
-  fHistogram = histo;
+  SetHistogram(histo);
 
   fSignal = 0;
   fSignalError = 0;
@@ -141,8 +148,12 @@ void MassFitter::Reset(TH1* histo)
 //____________________________________________________________________________________
 void MassFitter::SetHistogram(TH1* histo)
 {
+  if (!histo) return;
+
   fHistogram = histo;
-  if (fHistogram) fScaleFactor = (fHistogram->GetXaxis()->GetXmax() - fHistogram->GetXaxis()->GetXmin()) / fHistogram->GetXaxis()->GetNbins();
+  fHistogramRef = fHistogram;
+
+  fScaleFactor = (histo->GetXaxis()->GetXmax() - histo->GetXaxis()->GetXmin()) / histo->GetXaxis()->GetNbins();
 }
 
 //____________________________________________________________________________________
@@ -156,13 +167,15 @@ TFitResultPtr MassFitter::Fit(TH1* histo, Option_t* opt)
   else {
     SetHistogram(histo);
   }
-
+  
   return Fit(opt);
 }
 
 //____________________________________________________________________________________
 TFitResultPtr MassFitter::Fit(Option_t* opt)
 {
+  if (!fHistogram) fHistogram = static_cast<TH1*>(fHistogramRef.GetObject());
+  
   if (!fHistogram) {
     Printf("Error: no histogram provided!");
     return 0;
@@ -172,7 +185,7 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     Reset(fHistogram);
   }
   
-  TFitResultPtr r = fHistogram->Fit(fFunction, opt);
+  fFitResult = fHistogram->Fit(fFunction, opt);
 
   for (Int_t i = 1; i < fNParBkg; i++) {
     fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -213,7 +226,7 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
   fBackground = (fFunction->GetParameter(0) - fSignal)*bkgScalingFactor;
   fBackgroundError = TMath::Sqrt(fFunction->GetParError(0)*fFunction->GetParError(0) + fSignalError*fSignalError)*bkgScalingFactor;
   
-  return r;
+  return fFitResult;
 }
 
 //____________________________________________________________________________________

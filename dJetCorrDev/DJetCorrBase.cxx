@@ -175,7 +175,7 @@ Bool_t DJetCorrBase::Init()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrBase::LoadOutputHistograms()
+TFile* DJetCorrBase::OpenOutputFile()
 {
   TString fname(fOutputPath);
   
@@ -195,22 +195,19 @@ Bool_t DJetCorrBase::LoadOutputHistograms()
   if (!outputFile || outputFile->IsZombie()) {
     Printf("Error-DJetCorrBase::LoadOutputHistograms : Could not open file '%s' to read.", fname.Data()); 
     outputFile = 0;
-    return kFALSE;
-  }
-  
-  TList *keys = outputFile->GetListOfKeys();
-  if (!keys) {
-    Printf("Error-DJetCorrBase::LoadOutputHistograms : Could not get keys from file '%s'.", fname.Data()); 
-    return kFALSE;
   }
 
-  TIter next(keys);
-  TObject* key = 0;
-  while ((key = next())) {
-    TString objname(key->GetName());
-    TObject* obj = outputFile->Get(objname);
-    fOutputList->Add(obj);
-  }
+  return outputFile;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrBase::LoadOutputHistograms()
+{
+  TFile* outputFile = OpenOutputFile();
+
+  if (!outputFile) return kFALSE;
+
+  fOutputList = static_cast<TList*>(outputFile->Get("fOutputList"));
 
   outputFile->Close();
   delete outputFile;
@@ -720,8 +717,23 @@ void DJetCorrBase::CloseInputFile()
 //____________________________________________________________________________________
 Bool_t DJetCorrBase::SaveOutputFile()
 {
-  // Save the content of fOutputList in a file.
-  
+  // Save the output in a file.
+
+  TObjArray arr;
+  arr.SetOwner(kFALSE);
+
+  fOutputList->SetName("fOutputList");
+    
+  arr.Add(fOutputList);
+
+  return SaveOutputFile(arr);
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrBase::SaveOutputFile(TObjArray& arr)
+{
+  // Save the content arr in a file.
+
   TString opt("create");
   if (fOverwrite) opt = "recreate";
   
@@ -755,8 +767,18 @@ Bool_t DJetCorrBase::SaveOutputFile()
 
   outputFile->cd();
 
-  Printf("Info-DJetCorrBase::SaveOutputFile : Now streaming results."); 
-  fOutputList->Write();
+  Printf("Info-DJetCorrBase::SaveOutputFile : Now streaming results.");
+  TIter next(&arr);
+  TObject* obj = 0;
+  while ((obj = next())) {
+    TCollection* coll = dynamic_cast<TCollection*>(obj);
+    if (coll) {
+      coll->Write(coll->GetName(), TObject::kSingleKey);
+    }
+    else {
+      obj->Write();
+    }
+  }
 
   Printf("Info-DJetCorrBase::SaveOutputFile : Closing the output file."); 
   outputFile->Close();

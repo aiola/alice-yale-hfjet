@@ -43,6 +43,7 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   DJetCorrBase(),
   fQAListName(),
   fInvMassPlotNorm(),
+  fForceRefit(kFALSE),
   fDPtAxisTitle(),
   fDEtaAxisTitle(),
   fDPhiAxisTitle(),
@@ -76,6 +77,7 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   DJetCorrBase(train, path),
   fQAListName("AliAnalysisTaskSAQA_AODFilterTracks_TPC_histos"),
   fInvMassPlotNorm(kPureCounts),
+  fForceRefit(kFALSE),
   fDPtAxisTitle("#it{p}_{T,D} (GeV/#it{c})"),
   fDEtaAxisTitle("#eta_{D}"),
   fDPhiAxisTitle("#phi_{D} (rad)"),
@@ -122,7 +124,7 @@ Bool_t DJetCorrAnalysis::Init()
     fMassFitters = 0;
   }
   
-  fMassFitters = new TObjArray();
+  fMassFitters = new TList();
   fMassFitters->SetOwner(kTRUE);
     
   Printf("Info-DJetCorrAnalysis::Init : Initialization done.");
@@ -248,8 +250,10 @@ Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(DJetCorrAnalysisParams* para
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms()
-{  
+Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(Bool_t forceRefit)
+{
+  fForceRefit = forceRefit;
+  
   DJetCorrAnalysisParams* params = 0;
   TIter next(fAnalysisParams);
 
@@ -371,6 +375,40 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
   TH1::AddDirectory(addDirStatus);
   
   return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::LoadOutputHistograms()
+{
+  TFile* outputFile = OpenOutputFile();
+
+  if (!outputFile) return kFALSE;
+
+  fOutputList = static_cast<TList*>(outputFile->Get("fOutputList"));
+  fMassFitters = static_cast<TList*>(outputFile->Get("fMassFitters"));
+
+  outputFile->Close();
+  delete outputFile;
+  outputFile = 0;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::SaveOutputFile()
+{
+  // Save the output in a file.
+
+  TObjArray arr;
+  arr.SetOwner(kFALSE);
+  
+  fOutputList->SetName("fOutputList");
+  fMassFitters->SetName("fMassFitters");
+  
+  arr.Add(fOutputList);
+  arr.Add(fMassFitters);
+
+  return DJetCorrBase::SaveOutputFile(arr);
 }
 
 //____________________________________________________________________________________
@@ -575,10 +613,10 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
-  TH1** histos = new TH1*[params->GetNJetPtBins()-1];
+  TH1** histos = new TH1*[params->GetNJetPtBins()];
   
-  for (Int_t i = 1; i < params->GetNJetPtBins(); i++) {
-    histos[i-1] = 0;
+  for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
+    histos[i] = 0;
     
     TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
     TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
@@ -588,15 +626,15 @@ Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bo
       continue;
     }
     spectrumName += "_copy";
-    histos[i-1] = static_cast<TH1*>(hs->Clone(spectrumName));
+    histos[i] = static_cast<TH1*>(hs->Clone(spectrumName));
     if (eventScaling && GetEvents() > 0) {
-      histos[i-1]->Scale(1. / GetEvents(), "width");
-      histos[i-1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
+      histos[i]->Scale(1. / GetEvents(), "width");
+      histos[i]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
 
   TString cname(Form("fig_%s_DzSpectraVsJetPt", params->GetName()));
-  Bool_t res = PlotSpectra(params->GetNJetPtBins()-1, histos, cname, kFALSE);
+  Bool_t res = PlotSpectra(params->GetNJetPtBins(), histos, cname, kFALSE);
 
   delete[] histos;
 
@@ -797,7 +835,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   TString spectrumCuts(params->GetCutString(kMatched, dptBin, jetptBin, -1));
   TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", prefix.Data(), spectrumCuts.Data()));
   TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins(), params->GetzBins());
-  histSpectrum->GetXaxis()->SetTitle("#it{z}_{D}");
+  histSpectrum->GetXaxis()->SetTitle("#it{z}_{||}");
   histSpectrum->GetYaxis()->SetTitle("counts");
   fOutputList->Add(histSpectrum);
   
@@ -981,18 +1019,31 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
     
     if (doFit) {      
       TString fitterName(Form("%s_fitter", histos[i]->GetName()));
-      fitter = params->CreateMassFitter(fitterName);
-      fMassFitters->Add(fitter);
 
-      Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass));
-      fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
-      fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
-      fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
-      fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
+      fitter = static_cast<MassFitter*>(fMassFitters->FindObject(fitterName));
+      if (fForceRefit) {
+        fMassFitters->Remove(fitter);
+        delete fitter;
+        fitter = 0;
+      }
       
-      TFitResultPtr r = fitter->Fit(histos[i], "0 E S");
-      Int_t fitStatus = r;
+      if (!fitter) {
+        fitter = params->CreateMassFitter(fitterName);
+        fMassFitters->Add(fitter);
 
+        Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass));
+        fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
+        fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
+        fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
+        fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
+      
+        fitter->Fit(histos[i], "0 E S");
+
+      }
+      
+      TFitResultPtr r = fitter->GetFitStatus();
+      Int_t fitStatus = r;
+            
       fitter->Draw("same");
 
       TPaveText* paveSig = SetUpPaveText(0.22, 0.41, 0.51, 0.84, 13, fitter->GetSignalString());
