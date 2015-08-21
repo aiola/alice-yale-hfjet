@@ -263,6 +263,8 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
                                                                                        kTRUE,   //   Bool_t reco
                                                                                        "");
     pDStarMesonFilterTask->SetCombineDmesons(kTRUE);
+    //pDStarMesonFilterTask->SetRejectDfromB(kFALSE);
+    //pDStarMesonFilterTask->SetKeepOnlyDfromB(kTRUE);
     AliParticleContainer* trackContDStar = pDStarMesonFilterTask->AddParticleContainer(tracksName);
     trackContDStar->SetClassName("AliAODTrack");
     trackContDStar->SetFilterHybridTracks(kTRUE);
@@ -300,6 +302,8 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDStarname, kFALSE, kTRUE, 0.);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
     mcPartTask->SelectCharmtoDStartoKpipi();
+    //mcPartTask->SetRejectDfromB(kFALSE);
+    //mcPartTask->SetKeepOnlyDfromB(kTRUE);
     //mcPartTask->SelectCharmtoD0toKpi();
 
     AliEmcalJetTask *chMcJetTaskchDStar = AddTaskEmcalJet(mcTracksDStarname, "", 1, jetRadius, 1, partLevPtCut, partLevPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 0);
@@ -310,6 +314,9 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
                                                                                             kTRUE,  //   Bool_t theMCon
                                                                                             kFALSE,   //   Bool_t reco
                                                                                             "");
+    //pDStarMesonFilterTruthTask->SetRejectDfromB(kFALSE);
+    //pDStarMesonFilterTruthTask->SetKeepOnlyDfromB(kTRUE);
+
 
     AliAnalysisTaskDmesonJetCorrelations* pDStarMesonJetCorrGen = AddTaskDmesonJetCorr(AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi, "", 
                                                                                     mcTracksDStarname, "", chMcJetsDStarName, "",
