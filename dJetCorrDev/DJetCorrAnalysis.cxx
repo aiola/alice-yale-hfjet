@@ -1038,7 +1038,6 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
         fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
       
         fitter->Fit(histos[i], "0 E S");
-
       }
       
       TFitResultPtr r = fitter->GetFitStatus();

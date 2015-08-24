@@ -7,7 +7,6 @@
 
 #include <TNamed.h>
 #include <TMath.h>
-#include <TRef.h>
 #include <TFitResultPtr.h>
 #include <TH1.h>
 
@@ -65,9 +64,9 @@ class MassFitter : public TNamed {
   
   TF1*     GetFitFunction()                      const { return fFunction     ; }
   TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }
-  TH1*     GetFitHistogram()                     const { return fHistogram == 0 ? static_cast<TH1*>(fHistogramRef.GetObject()) : fHistogram; }
+  TH1*     GetFitHistogram()                     const { return fHistogram    ; }
 
-  TFitResultPtr GetFitStatus()                      const { return fFitResult    ; }
+  TFitResultPtr GetFitStatus()                   const { return fFitResult    ; }
 
   void     DivideByBinWidth();
   void     NormalizeBackground();
@@ -100,8 +99,7 @@ class MassFitter : public TNamed {
   
   TF1*              fFunction          ;//  Fit function
   TF1*              fFunctionBkg       ;//  Bkg function
-  TRef              fHistogramRef      ;//  Histogram reference
-  TH1*              fHistogram         ;//! Histogram to be fitted
+  TH1*              fHistogram         ;//  Histogram to be fitted
   const Double_t    fPionMass          ;//! Pion mass 
   
  private:
