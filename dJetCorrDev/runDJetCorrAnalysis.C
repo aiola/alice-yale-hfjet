@@ -2,11 +2,11 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_428_429_430_431",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_428_429_430_431",
                                       Bool_t isMC = kFALSE, Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
-  //gROOT->SetMustClean(kFALSE);
+
   TString tracksName = "tracks";
   //TString tracksD0Name = tracksName;
   //TString tracksDStarName = tracksName;
@@ -39,10 +39,10 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* 
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC);
-  //projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC);
+  projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC);
+  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC);
 
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC);
   projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC);
 
   TString opt(options);
@@ -53,20 +53,16 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* 
     projDjet->GenerateDJetCorrHistograms();
   }
 
-  if (optList->Contains("plot")) {
+  if (optList->Contains("refit")) {
     projDjet->PlotTrackHistograms();
-    
-    if (optList->Contains("refit")) {
-      projDjet->PlotDJetCorrHistograms(kTRUE);
-      projDjet->SaveOutputFile();
-    }
-    else {
-      projDjet->PlotDJetCorrHistograms(kFALSE);
-    }
+    projDjet->PlotDJetCorrHistograms(kTRUE);
   }
-  else {
-    if (optList->Contains("run")) projDjet->SaveOutputFile();
+  else if (optList->Contains("plot")) {
+    projDjet->PlotTrackHistograms();
+    projDjet->PlotDJetCorrHistograms(kFALSE);
   }
+
+  projDjet->SaveOutputFile();
 
   return projDjet;
 }

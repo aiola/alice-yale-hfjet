@@ -31,7 +31,6 @@ MassFitter::MassFitter() :
   fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
-  fHistogramRef(),
   fHistogram(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
@@ -62,7 +61,6 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
-  fHistogramRef(),
   fHistogram(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
@@ -151,7 +149,6 @@ void MassFitter::SetHistogram(TH1* histo)
   if (!histo) return;
 
   fHistogram = histo;
-  fHistogramRef = fHistogram;
 
   fScaleFactor = (histo->GetXaxis()->GetXmax() - histo->GetXaxis()->GetXmin()) / histo->GetXaxis()->GetNbins();
 }
@@ -173,9 +170,7 @@ TFitResultPtr MassFitter::Fit(TH1* histo, Option_t* opt)
 
 //____________________________________________________________________________________
 TFitResultPtr MassFitter::Fit(Option_t* opt)
-{
-  if (!fHistogram) fHistogram = static_cast<TH1*>(fHistogramRef.GetObject());
-  
+{  
   if (!fHistogram) {
     Printf("Error: no histogram provided!");
     return 0;
