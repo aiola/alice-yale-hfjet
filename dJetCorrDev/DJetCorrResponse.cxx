@@ -293,6 +293,12 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   resp->SetName(hname);
   resp->SetTitle(htitle);
 
+  // Rebin to the coarse binning ready for unfolding
+  hname += "_Coarse";
+  Int_t nbins[4] = {params->GetNJetPtBins(), params->GetNzBins(), params->GetNJetPtBins(), params->GetNzBins()};
+  const Double_t* bins[4] = {params->GetJetPtBins(), params->GetzBins(), params->GetJetPtBins(), params->GetzBins()};
+  THnSparse* coarseResp = Rebin(resp, hname, nbins, bins);
+
   hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
   htitle = Form("Efficiency");
   TH2* eff = resp->Projection(3, 2);
@@ -302,15 +308,31 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
   eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   eff->GetZaxis()->SetTitle("Efficiency");
-  
-  TH2* truth_proj = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
 
-  eff->Divide(truth_proj);
-  delete truth_proj;
-  truth_proj = 0;
+  // Rebin to the coarse binning ready for unfolding
+  hname += "_Coarse";
+  TH2* coarseEff = Rebin(eff, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+  
+  TH2* truth = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
+  hname = Form("%s_Truth_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  htitle = Form("Truth");
+  truth->SetName(hname);
+  truth->SetTitle(htitle);
+
+  // Rebin to the coarse binning ready for unfolding
+  hname += "_Coarse";
+  TH2* coarseTruth = Rebin(truth, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+  
+  eff->Divide(truth);
+  coarseEff->Divide(coarseTruth);
 
   fOutputList->Add(resp);
   fOutputList->Add(eff);
+  fOutputList->Add(truth);
+
+  fOutputList->Add(coarseResp);
+  fOutputList->Add(coarseEff);
+  fOutputList->Add(coarseTruth);
 
   return kTRUE;
 }
