@@ -857,3 +857,122 @@ TLegend* DJetCorrBase::GetLegend(TPad* pad)
 
   return leg;
 }
+
+//____________________________________________________________________________________
+Bool_t DJetCorrBase::CheckExactRebin(TAxis* orig, TAxis* dest)
+{
+  for (Int_t i = 0; i <= orig->GetNbins(); i++) {
+    Double_t xlow    = orig->GetBinLowEdge(i);
+    Double_t xup     = orig->GetBinUpEdge(i);
+    Int_t    xlowBin = dest->FindBin(xlow);
+    Int_t    xupBin  = dest->FindBin(xup);
+    if (TMath::Abs(xup - dest->GetBinLowEdge(xupBin)) < fgkEpsilon) {
+      xupBin--;
+    }
+    if (xlowBin != xupBin) {
+      Printf("Bin [%.2f, %.2f] -> [%.2f, %.2f] , [%.2f, %.2f]", xlow, xup, dest->GetBinLowEdge(xlowBin), dest->GetBinUpEdge(xlowBin), dest->GetBinLowEdge(xupBin), dest->GetBinUpEdge(xupBin));
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+void DJetCorrBase::GetBinCenter(THnSparse* hn, Int_t* coord_ind, Double_t* coord)
+{
+  for (Int_t idim = 0; idim < hn->GetNdimensions(); idim++) {
+    coord[idim] = hn->GetAxis(idim)->GetBinCenter(coord_ind[idim]);
+  }
+}
+
+//____________________________________________________________________________________
+THnSparse* DJetCorrBase::Rebin(THnSparse* orig, const char* name, const Int_t* nbins, const Double_t** bins)
+{
+  THnSparse* result = new THnSparseD(name, orig->GetTitle(), orig->GetNdimensions(), nbins);
+  for (Int_t idim = 0; idim < orig->GetNdimensions(); idim++) {
+    result->GetAxis(idim)->SetTitle(orig->GetAxis(idim)->GetTitle());
+    result->GetAxis(idim)->Set(nbins[idim], bins[idim]);
+    if (!CheckExactRebin(orig->GetAxis(idim), result->GetAxis(idim))) {
+      Printf("WARNING: unable to exact rebin axis %s of histogram %s", orig->GetAxis(idim)->GetTitle(), name);
+    }
+  }
+
+  Int_t* coord_ind = new Int_t[orig->GetNdimensions()];
+  Double_t* coord = new Double_t[orig->GetNdimensions()];
+    
+  for (Int_t ibin = 0; ibin < orig->GetNbins(); ibin++) {
+    Double_t content = orig->GetBinContent(ibin, coord_ind);
+    GetBinCenter(orig, coord_ind, coord);
+    Int_t newbin = result->GetBin(coord);
+    result->AddBinContent(newbin, content);
+    result->AddBinError2(newbin, orig->GetBinError2(ibin));
+  }
+
+  delete[] coord_ind;
+  delete[] coord;
+
+  return result;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::Rebin(TH1* orig, const char* name, Int_t nbins, const Double_t* bins)
+{
+  TH1* dest = new TH1D(name, orig->GetTitle(), nbins, bins);
+
+  if (!CheckExactRebin(orig->GetXaxis(), dest->GetXaxis())) Printf("WARNING: unable to exact rebin axis %s of histogram %s", orig->GetXaxis()->GetTitle(), name);
+  dest->GetXaxis()->SetTitle(orig->GetXaxis()->GetTitle());
+  
+  for (Int_t x = 0; x <= orig->GetNbinsX(); x++) {
+    Double_t xlow    = orig->GetXaxis()->GetBinLowEdge(x);
+    Double_t xup     = orig->GetXaxis()->GetBinUpEdge(x);
+    Int_t    xlowBin = dest->GetXaxis()->FindBin(xlow);
+    Int_t    xupBin  = dest->GetXaxis()->FindBin(xup);
+    if (TMath::Abs(xup - dest->GetXaxis()->GetBinLowEdge(xupBin)) < fgkEpsilon) xupBin--;
+    
+    Double_t content = orig->GetBinContent(x);
+    Double_t err     = orig->GetBinError(x);
+
+    dest->SetBinContent(xlowBin, dest->GetBinContent(xlowBin)+content);
+    dest->SetBinError(xlowBin, TMath::Sqrt(dest->GetBinError(xlowBin)*dest->GetBinError(xlowBin)+err*err));
+  }
+
+  return dest;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrBase::Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double_t* binsx, Int_t nbinsy, const Double_t* binsy)
+{
+  TH2* dest = new TH2D(name, orig->GetTitle(), nbinsx, binsx, nbinsy, binsy);
+
+  if (!CheckExactRebin(orig->GetXaxis(), dest->GetXaxis())) Printf("WARNING: unable to exact rebin axis %s of histogram %s", orig->GetXaxis()->GetTitle(), name);
+  if (!CheckExactRebin(orig->GetYaxis(), dest->GetYaxis())) Printf("WARNING: unable to exact rebin axis %s of histogram %s", orig->GetYaxis()->GetTitle(), name);
+
+  dest->GetXaxis()->SetTitle(orig->GetXaxis()->GetTitle());
+  dest->GetYaxis()->SetTitle(orig->GetYaxis()->GetTitle());
+  
+  for (Int_t x = 0; x <= orig->GetNbinsX(); x++) {
+    Double_t xlow    = orig->GetXaxis()->GetBinLowEdge(x);
+    Double_t xup     = orig->GetXaxis()->GetBinUpEdge(x);
+    Int_t    xlowBin = dest->GetXaxis()->FindBin(xlow);
+    Int_t    xupBin  = dest->GetXaxis()->FindBin(xup);
+    if (TMath::Abs(xup - dest->GetXaxis()->GetBinLowEdge(xupBin)) < fgkEpsilon) xupBin--;
+
+    for (Int_t y = 0; y <= orig->GetNbinsY(); y++) {
+      Double_t ylow    = orig->GetYaxis()->GetBinLowEdge(y);
+      Double_t yup     = orig->GetYaxis()->GetBinUpEdge(y);
+      Int_t    ylowBin = dest->GetYaxis()->FindBin(ylow);
+      Int_t    yupBin  = dest->GetYaxis()->FindBin(yup);
+      if (TMath::Abs(yup - dest->GetYaxis()->GetBinLowEdge(yupBin)) < fgkEpsilon) yupBin--;
+    
+      Double_t content = orig->GetBinContent(x,y);
+      Double_t err     = orig->GetBinError(x,y);
+
+      dest->SetBinContent(xlowBin, ylowBin, dest->GetBinContent(xlowBin, ylowBin)+content);
+      dest->SetBinError(xlowBin, ylowBin, TMath::Sqrt(dest->GetBinError(xlowBin, ylowBin)*dest->GetBinError(xlowBin, ylowBin)+err*err));
+    }
+  }
+
+  return dest;
+}
+

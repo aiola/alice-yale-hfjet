@@ -50,6 +50,12 @@ class DJetCorrBase : public TNamed {
   static void FitGraphInPad(TGraph* graph, TPad* pad);
   static void GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy);
   static TLegend* GetLegend(TPad* pad);
+
+  static THnSparse* Rebin(THnSparse* orig, const char* name, const Int_t* nbins, const Double_t** bins);
+  static TH1* Rebin(TH1* orig, const char* name, Int_t nbins, const Double_t* bins);
+  static TH2* Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double_t* binsx, Int_t nbinsy, const Double_t* binsy);
+  static Bool_t CheckExactRebin(TAxis* orig, TAxis* dest);
+  static void GetBinCenter(THnSparse* hn, Int_t* coord_ind, Double_t* coord);
   
  protected:
 
