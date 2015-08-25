@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_509_510_511_512",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "refit plot", const char* train = "Jets_EMC_pp_MC_509_510_511_512",
                                       Bool_t isMC = kTRUE, Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
@@ -62,7 +62,7 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
     projDjet->PlotDJetCorrHistograms(kFALSE);
   }
 
-  projDjet->SaveOutputFile();
+  if (!opt.IsNull()) projDjet->SaveOutputFile();
 
   return projDjet;
 }

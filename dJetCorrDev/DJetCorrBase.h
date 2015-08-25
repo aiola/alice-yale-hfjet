@@ -2,6 +2,9 @@
 // Author: Salvatore Aiola, Yale University (salvatore.aiola@cern.ch)
 // Copyright (c) 2015 Salvatore Aiola
 
+#ifndef DJETCORRBASE_H
+#define DJETCORRBASE_H
+
 class TString;
 class TFile;
 class TList;
@@ -43,8 +46,9 @@ class DJetCorrBase : public TNamed {
   
   virtual Bool_t SaveOutputFile();
 
-  TH1* GetOutputHistogram(const char* name) { return static_cast<TH1*>(fOutputList->FindObject(name))  ; }
-  TCanvas* GetCanvas(const char* name)      { return static_cast<TCanvas*>(fCanvases->FindObject(name)); }
+  TH1* GetOutputHistogram(const char* name) { return fOutputList == 0 ? 0 : dynamic_cast<TH1*>(fOutputList->FindObject(name)); }
+  THnSparse* GetOutputSparseHistogram(const char* name) { return fOutputList == 0 ? 0 : dynamic_cast<THnSparse*>(fOutputList->FindObject(name)); }
+  TCanvas* GetCanvas(const char* name)      { return fCanvases == 0 ? 0 : static_cast<TCanvas*>(fCanvases->FindObject(name)); }
   Double_t GetEvents(Bool_t recalculate=kFALSE);
 
   static void FitGraphInPad(TGraph* graph, TPad* pad);
@@ -129,3 +133,5 @@ class DJetCorrBase : public TNamed {
 
   ClassDef(DJetCorrBase, 1);
 };
+
+#endif

@@ -294,23 +294,36 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   resp->SetTitle(htitle);
 
   // Rebin to the coarse binning ready for unfolding
-  hname += "_Coarse";
+  hname = Form("%s_ResponseMatrix_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
   Int_t nbins[4] = {params->GetNJetPtBins(), params->GetNzBins(), params->GetNJetPtBins(), params->GetNzBins()};
   const Double_t* bins[4] = {params->GetJetPtBins(), params->GetzBins(), params->GetJetPtBins(), params->GetzBins()};
   THnSparse* coarseResp = Rebin(resp, hname, nbins, bins);
 
-  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
-  htitle = Form("Efficiency");
-  TH2* eff = resp->Projection(3, 2);
+  TH2* measured = resp->Projection(1, 0);
 
+  hname = Form("%s_Measured_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  htitle = Form("Counts");
+  
+  measured->SetName(hname);
+  measured->SetTitle(htitle);
+  measured->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} GeV/#it{c}");
+  measured->GetYaxis()->SetTitle("#it{z}_{||}^{det}");
+  measured->GetZaxis()->SetTitle("Counts");
+
+  // Rebin to the coarse binning ready for unfolding
+  hname = Form("%s_Measured_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseMeasured = Rebin(measured, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+
+  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
+  TH2* eff = resp->Projection(3, 2);
+  eff->SetTitle("Efficiecny");
   eff->SetName(hname);
   eff->SetTitle(htitle);
   eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
   eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   eff->GetZaxis()->SetTitle("Efficiency");
 
-  // Rebin to the coarse binning ready for unfolding
-  hname += "_Coarse";
+  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
   TH2* coarseEff = Rebin(eff, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
   
   TH2* truth = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
@@ -318,6 +331,9 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   htitle = Form("Truth");
   truth->SetName(hname);
   truth->SetTitle(htitle);
+  truth->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  truth->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  truth->GetZaxis()->SetTitle("Counts");
 
   // Rebin to the coarse binning ready for unfolding
   hname += "_Coarse";
@@ -327,10 +343,12 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   coarseEff->Divide(coarseTruth);
 
   fOutputList->Add(resp);
+  fOutputList->Add(measured);
   fOutputList->Add(eff);
   fOutputList->Add(truth);
 
   fOutputList->Add(coarseResp);
+  fOutputList->Add(coarseMeasured);
   fOutputList->Add(coarseEff);
   fOutputList->Add(coarseTruth);
 
@@ -1061,4 +1079,80 @@ Bool_t DJetCorrResponse::PlotResponseDPtMatrix(TCanvas*& canvasResp, TCanvas*& c
   }
   
   return kTRUE;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrResponse::GetTruthName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+  
+  TString  hname = Form("%s_Truth_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrResponse::GetMeasuredName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+  
+  TString  hname = Form("%s_Measured_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrResponse::GetResponseName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+  
+  TString  hname = Form("%s_ResponseMatrix_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
+
+
+//____________________________________________________________________________________
+TH2* DJetCorrResponse::GetTruth(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetTruthName(p)));
+  
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrResponse::GetMeasured(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMeasuredName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+THnSparse* DJetCorrResponse::GetResponse(Int_t p, Bool_t copy)
+{
+  THnSparse* hist = dynamic_cast<THnSparse*>(GetOutputSparseHistogram(GetResponseName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<THnSparse*>(hist->Clone(hname));
+  }
+
+  return hist;
 }

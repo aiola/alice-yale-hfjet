@@ -298,6 +298,8 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
     if (!result) return kFALSE;
 
     result = LoadOutputHistograms();
+    if (!result) result = GenerateDJetCorrHistograms();
+
     if (!result) return kFALSE;
   }
 
@@ -315,6 +317,8 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
   for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
     PlotInvMassHistogramsVsDz(params, -1, j);
   }
+
+  GenerateMeaduredSpectrum(params);
 
   // Delta R
   PlotObservable(params, "DeltaR", 0, 0,
@@ -427,6 +431,8 @@ Bool_t DJetCorrAnalysis::PlotTrackHistograms()
     if (!result) return kFALSE;
 
     result = LoadOutputHistograms();
+    if (!result) result = GenerateQAHistograms();
+    
     if (!result) return kFALSE;
   }
 
@@ -713,10 +719,22 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
 
   TString spectrumCuts(params->GetCutString(kMatched, -1, jetptBin, dzBin));
   TString spectrumName(Form("h%s_DPtSpectrum_%s_%s", prefix.Data(), spectrumCuts.Data(), matchString.Data()));
-  TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNDPtBins(), params->GetDPtBins());
-  histSpectrum->GetXaxis()->SetTitle("#it{p}_{T,D}");
-  histSpectrum->GetYaxis()->SetTitle("counts");
-  fOutputList->Add(histSpectrum);
+
+  TH1* histSpectrum = GetOutputHistogram(spectrumName);
+  if ((histSpectrum && fForceRefit) || !histSpectrum) {
+    if (histSpectrum) {
+      fOutputList->Remove(histSpectrum);
+      delete histSpectrum;
+    }
+
+    histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins(), params->GetzBins());
+    histSpectrum->GetXaxis()->SetTitle("#it{p}_{T,D}");
+    histSpectrum->GetYaxis()->SetTitle("counts");
+    fOutputList->Add(histSpectrum);
+  }
+  else {
+    histSpectrum = 0;
+  }
   
   TH1** histos = new TH1*[params->GetNDPtBins()];
   Int_t n = 0;
@@ -750,6 +768,46 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   delete extraInfo;
   
   return result;
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysis::GenerateMeaduredSpectrum(DJetCorrAnalysisParams* params)
+{
+  TString spectrum2Dcuts(params->GetCutString(kMatched, -1, -1, -1));
+  TString spectrum2Dname(Form("h%s_DzSpectrum2D_%s_Matched", params->GetName(), spectrum2Dcuts.Data()));
+
+  TH2* spectrum2D = static_cast<TH2*>(GetOutputHistogram(spectrum2Dname));
+  if (spectrum2D) {
+    if (fForceRefit) {
+      fOutputList->Remove(spectrum2D);
+      delete spectrum2D;
+    }
+    else {
+      return;
+    }
+  }
+  
+  spectrum2D = new TH2D(spectrum2Dname, spectrum2Dname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+  spectrum2D->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} GeV/#it{c}");
+  spectrum2D->GetYaxis()->SetTitle("#it{z}_{||}^{det}");
+  spectrum2D->GetZaxis()->SetTitle("Counts");
+  
+  for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
+    TString spectrumCuts(params->GetCutString(kMatched, -1, j, -1));
+    TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
+
+    TH1* spectrum = GetOutputHistogram(spectrumName);
+
+    if (!spectrum) continue;
+    
+    Int_t jetbin = j+1;
+    for (Int_t zbin = 0; zbin <= spectrum->GetNbinsX()+1; zbin++) {
+      spectrum2D->SetBinContent(jetbin, zbin, spectrum->GetBinContent(zbin));
+      spectrum2D->SetBinError(jetbin, zbin, spectrum->GetBinError(zbin));
+    }
+  }
+
+  fOutputList->Add(spectrum2D);
 }
 
 //____________________________________________________________________________________
@@ -834,11 +892,23 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
 
   TString spectrumCuts(params->GetCutString(kMatched, dptBin, jetptBin, -1));
   TString spectrumName(Form("h%s_DzSpectrum_%s_Matched", prefix.Data(), spectrumCuts.Data()));
-  TH1* histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins(), params->GetzBins());
-  histSpectrum->GetXaxis()->SetTitle("#it{z}_{||}");
-  histSpectrum->GetYaxis()->SetTitle("counts");
-  fOutputList->Add(histSpectrum);
-  
+
+  TH1* histSpectrum = GetOutputHistogram(spectrumName);
+  if ((histSpectrum && fForceRefit) || !histSpectrum) {
+    if (histSpectrum) {
+      fOutputList->Remove(histSpectrum);
+      delete histSpectrum;
+    }
+
+    histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins(), params->GetzBins());
+    histSpectrum->GetXaxis()->SetTitle("#it{z}_{||}");
+    histSpectrum->GetYaxis()->SetTitle("counts");
+    fOutputList->Add(histSpectrum);
+  }
+  else {
+    histSpectrum = 0;
+  }
+
   Int_t n = 0;
   for (Int_t i = 0; i < params->GetNzBins(); i++) {
     TString cuts(params->GetCutString(kMatched, dptBin, jetptBin, i));
@@ -1538,4 +1608,55 @@ Bool_t DJetCorrAnalysis::LoadQAList()
   }
     
   return kTRUE;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetTruthName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+ 
+  return "";
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetMeasuredName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString spectrum2Dcuts(params->GetCutString(kMatched, -1, -1, -1));
+  TString hname(Form("h%s_DzSpectrum2D_%s_Matched", params->GetName(), spectrum2Dcuts.Data()));
+  
+  return hname;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrAnalysis::GetTruth(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetTruthName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrAnalysis::GetMeasured(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMeasuredName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
 }

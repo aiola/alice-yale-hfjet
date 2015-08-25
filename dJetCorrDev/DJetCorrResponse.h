@@ -32,6 +32,14 @@ class DJetCorrResponse : public DJetCorrBase {
   Bool_t PlotResponseMatrices(const char* paramName);
   Bool_t PlotResponseMatrices(Int_t i);
   Bool_t PlotResponseMatrices();
+
+  TString GetTruthName(Int_t p);
+  TString GetMeasuredName(Int_t p);
+  TString GetResponseName(Int_t p);
+
+  TH2* GetTruth(Int_t p, Bool_t copy);
+  TH2* GetMeasured(Int_t p, Bool_t copy);
+  THnSparse* GetResponse(Int_t p, Bool_t copy);
   
  protected:
   Bool_t ClearInputData();
