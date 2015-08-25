@@ -1,8 +1,8 @@
 // root macro to use the class DJetCorrResponse
 
-class DJetCorrAnalysis;
+class DJetCorrResponse;
 
-void runDJetCorrResponse(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_508", const char* inputPath = "$JETRESULTS")
+DJetCorrResponse* runDJetCorrResponse(const char* options = "plot", const char* train = "Jets_EMC_pp_MC_508", Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
   
@@ -12,12 +12,14 @@ void runDJetCorrResponse(const char* options = "run plot", const char* train = "
   TString tracksD0Name = "DcandidatesAndTracksD0MCrec";
   TString tracksDStarName = "DcandidatesAndTracksDStarMCrec";
 
-  gROOT->LoadMacro("HistoStyler.cxx+g");
-  gROOT->LoadMacro("MassFitter.cxx+g");
-  gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
-  gROOT->LoadMacro("DJetCorrBase.cxx+g");
-  gROOT->LoadMacro("DJetCorrResponse.cxx+g");
-
+  if (loadLibs) {
+    gROOT->LoadMacro("HistoStyler.cxx+g");
+    gROOT->LoadMacro("MassFitter.cxx+g");
+    gROOT->LoadMacro("DJetCorrAnalysisParams.cxx+g");
+    gROOT->LoadMacro("DJetCorrBase.cxx+g");
+    gROOT->LoadMacro("DJetCorrResponse.cxx+g");
+  }
+  
   DJetCorrResponse* projDjet = new DJetCorrResponse(train);
   
   projDjet->SetOverwrite(kTRUE);
@@ -27,10 +29,10 @@ void runDJetCorrResponse(const char* options = "run plot", const char* train = "
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);
+  projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);
   projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name);
 
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName);
   projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
 
   TString opt(options);
@@ -44,6 +46,6 @@ void runDJetCorrResponse(const char* options = "run plot", const char* train = "
   if (optList->Contains("plot")) {
     projDjet->PlotResponseMatrices();
   }
+
+  return projDjet;
 }
-
-
