@@ -99,10 +99,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
     fNJetPtBins = 2;
     fJetPtBins = new Double_t[fNJetPtBins+1];
-    //fJetPtBins[ 0] =   0.0;
     fJetPtBins[ 0] =   8.0;
     fJetPtBins[ 1] =  13.0;
-    fJetPtBins[ 2] =  50.0;
+    fJetPtBins[ 2] =  30.0;
   }
   else {
     fNDPtBins = 9;
@@ -125,23 +124,19 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
     fNJetPtBins = 3;
     fJetPtBins = new Double_t[fNJetPtBins+1];
-    //fJetPtBins[ 0] =   0.0;
     fJetPtBins[ 0] =   5.0;
     fJetPtBins[ 1] =   8.0;
     fJetPtBins[ 2] =  13.0;
-    fJetPtBins[ 3] =  50.0;
+    fJetPtBins[ 3] =  30.0;
   }
 
   fNzBins = 4;
   fzBins = new Double_t[fNzBins+1];
-  //fzBins[ 0] =   0.00;
   fzBins[ 0] =   0.10;
   fzBins[ 1] =   0.30;
   fzBins[ 2] =   0.50;
   fzBins[ 3] =   0.80;
   fzBins[ 4] =   1.00;
-  //fzBins[ 6] =   1.20;
-  //fzBins[ 7] =   2.00;
 }
 
 //____________________________________________________________________________________
