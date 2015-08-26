@@ -61,7 +61,6 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fJetLeadPtAxisTitle(),
   fJetAreaAxisTitle(),
   fJetConstAxisTitle(),
-  fDeltaRDaughterAxisTitle(),
   fMatchingStatusAxisTitle(),
   fDmesons(0),
   fInputQAList(0),
@@ -95,7 +94,6 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fJetLeadPtAxisTitle("#it{p}_{T,particle}^{leading} (GeV/#it{c})"),
   fJetAreaAxisTitle("#it{A}_{jet}"),
   fJetConstAxisTitle("No. of constituents"),
-  fDeltaRDaughterAxisTitle("#Delta R_{d%d-jet}"),
   fMatchingStatusAxisTitle("Matching status"),
   fDmesons(0),
   fInputQAList(0),
@@ -155,6 +153,296 @@ Bool_t DJetCorrAnalysis::LoadTHnSparse()
   if (!fDmesons) {
     Printf("Error-DJetCorrAnalysis::LoadTHnSparse : could not open find THnSparse 'fDmesons'"); 
     return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::LoadTruthList(DJetCorrAnalysisParams* params)
+{
+  Bool_t result = kFALSE;
+
+  if (!fOutputList) {
+    result = Init();
+    if (!result) return kFALSE;
+  }
+  
+  result = LoadInputList(params->GetTruthInputListName());
+  if (!result) return kFALSE;
+
+  return kTRUE;
+}
+  
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::ProjectTruthSpectrum()
+{
+  Bool_t addDirStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  DJetCorrAnalysisParams* params = 0;
+  TIter next(fAnalysisParams);
+
+  while ((params = static_cast<DJetCorrAnalysisParams*>(next()))) ProjectTruthSpectrum(params);
+  
+  TH1::AddDirectory(addDirStatus);
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(DJetCorrAnalysisParams* params)
+{
+  // Project histograms related to the D meson correlated to a jet.
+
+  Bool_t result = kFALSE;
+
+  result = LoadTruthList(params);
+  if (!result) return kFALSE;
+  
+  result = LoadTHnSparse();
+  if (!result) return kFALSE;
+  
+  TString prefix(params->GetName());
+
+  Printf("Info-DJetCorrAnalysis::ProjectTruthSpectrum : Entering method.");
+
+  ProjectTruthSpectrum(prefix, "AnyMatchingStatus_Truth", params, kAnyMatchingStatus, -1, -1, -1);
+  ProjectTruthSpectrum(prefix, "NotMatched_Truth", params, kNotMatched, -1, -1, -1);
+  ProjectTruthSpectrum(prefix, "Matched_Truth", params, kMatched, -1, -1, -1);
+
+  for (Int_t i = 0; i < params->GetNDPtBins(); i++) {
+    ProjectTruthSpectrum(prefix, "AnyMatchingStatus_Truth", params, kAnyMatchingStatus, i, -1, -1, 0);
+    ProjectTruthSpectrum(prefix, "NotMatched_Truth", params, kNotMatched, i, -1, -1, 0);
+    ProjectTruthSpectrum(prefix, "Matched_Truth", params, kMatched, i, -1, -1, 0);
+  }
+
+  for (Int_t i = 0; i < params->GetNJetPtBins(); i++) {
+    ProjectTruthSpectrum(prefix, "Matched_Truth", params, kMatched, -1, i);
+  }
+
+  for (Int_t i = 0; i < params->GetNzBins(); i++) {
+    ProjectTruthSpectrum(prefix, "Matched_Truth", params, kMatched, -1, -1, i);
+    for (Int_t j = 0; j < params->GetNJetPtBins(); j++) {
+      ProjectTruthSpectrum(prefix, "Matched_Truth", params, kMatched, -1, j, i);
+    }
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin, Int_t jetptBin, Int_t dzBin, Int_t minJetConst)
+{
+  TString cuts(params->GetCutString(st, dptBin, jetptBin, dzBin));
+
+  Double_t minDPt = params->GetMinDPt();
+  Double_t maxDPt = params->GetMaxDPt();
+  if (dptBin >= 0) {
+    minDPt = params->GetDPtBin(dptBin);
+    maxDPt = params->GetDPtBin(dptBin+1);
+  }
+
+  Double_t minJetPt = params->GetMinJetPt();
+  Double_t maxJetPt = params->GetMaxJetPt();
+  if (jetptBin >= 0) {
+    minJetPt = params->GetJetPtBin(jetptBin);
+    maxJetPt = params->GetJetPtBin(jetptBin+1);
+  }
+
+  Double_t minz = params->GetMinZ();
+  Double_t maxz = params->GetMaxZ();
+  if (dzBin >= 0) {
+    minz = params->GetzBin(dzBin);
+    maxz = params->GetzBin(dzBin+1);
+  }
+
+  if (!suffix.IsNull()) suffix.Prepend("_");
+
+  Int_t dPtAxis = GetAxisIndex(fDPtAxisTitle);
+  if (dPtAxis < 0) return kFALSE;
+  
+  Int_t dEtaAxis = GetAxisIndex(fDEtaAxisTitle);
+  if (dEtaAxis < 0) return kFALSE;
+  
+  Int_t dPhiAxis = GetAxisIndex(fDPhiAxisTitle);
+  if (dPhiAxis < 0) return kFALSE;
+  
+  Int_t jetPtAxis = GetAxisIndex(fJetPtAxisTitle);
+  if (jetPtAxis < 0) return kFALSE;
+    
+  Int_t jetEtaAxis = GetAxisIndex(fJetEtaAxisTitle);
+  if (jetEtaAxis < 0) return kFALSE;
+  
+  Int_t jetPhiAxis = GetAxisIndex(fJetPhiAxisTitle);
+  if (jetPhiAxis < 0) return kFALSE;
+
+  Int_t dSoftPionPtAxis = GetAxisIndex(fDSoftPionPtAxisTitle);
+  
+  Int_t deltaRAxis = GetAxisIndex(fDeltaRAxisTitle);
+  Int_t deltaEtaAxis = GetAxisIndex(fDeltaEtaAxisTitle);
+  Int_t deltaPhiAxis = GetAxisIndex(fDeltaPhiAxisTitle);
+  Int_t dzAxis = GetAxisIndex(fDzAxisTitle);
+  Int_t jetConstAxis = GetAxisIndex(fJetConstAxisTitle);
+  
+  Int_t matchingStatusAxis = GetAxisIndex(fMatchingStatusAxisTitle);
+
+  if (matchingStatusAxis >= 0) {
+    if (st == kMatched) {
+      fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,2);
+    }
+    else if (st == kNotMatched) {
+      fDmesons->GetAxis(matchingStatusAxis)->SetRange(3,4);
+    }
+    else {
+      fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,4);
+    }
+  }
+
+  fDmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt, maxDPt);
+
+  if (st == kMatched) { // apply cuts on z and jet pt only if matched requested
+    fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
+
+    if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);
+    
+    if (jetConstAxis >= 0) {
+      if (minJetConst > 0) {
+        fDmesons->GetAxis(jetConstAxis)->SetRangeUser(params->GetMinJetConstituents(), fDmesons->GetAxis(jetConstAxis)->GetXmax()+fgkEpsilon);
+      }
+      else if (minJetConst < 0) {
+        fDmesons->GetAxis(jetConstAxis)->SetRangeUser(0, params->GetMinJetConstituents());
+      }
+      else {
+        fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
+      }
+    }
+  }
+  else {
+    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons that could possibly be matched to a jet
+     
+    if (jetPtAxis >= 0) fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
+    if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
+    if (jetConstAxis >= 0) fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
+  }
+
+  TH2* hDpos = fDmesons->Projection(dPhiAxis, dEtaAxis, "EO");
+  hDpos->SetName(Form("h%s_MesonPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+  fOutputList->Add(hDpos);
+
+  if (dSoftPionPtAxis >= 0) {
+    TH1* hdsoftpionpt = fDmesons->Projection(dSoftPionPtAxis, "EO");
+    hdsoftpionpt->SetName(Form("h%s_SoftPion_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+    fOutputList->Add(hdsoftpionpt);
+  }
+
+  TString hname;
+  
+  if (dPtAxis >=0 && dptBin == -1) {
+    hname = Form("h%s_MesonPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data());
+    if (!fOutputList->Contains(hname)) {
+      TH1* hDpt = fDmesons->Projection(dPtAxis, "EO");
+      hDpt->SetName(hname);
+      fOutputList->Add(hDpt);
+
+      if (dSoftPionPtAxis >= 0) {
+        TH2* hdsoftpionptVsDpt = fDmesons->Projection(dSoftPionPtAxis, dPtAxis, "EO");
+        hdsoftpionptVsDpt->SetName(Form("h%s_SoftPionVsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hdsoftpionptVsDpt);
+      }
+    }
+  }
+  
+  if (st == kMatched) {
+    if (deltaRAxis >= 0) {
+      TH1* hDeltaR = fDmesons->Projection(deltaRAxis, "EO");
+      hDeltaR->SetName(Form("h%s_DeltaR_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hDeltaR);
+
+      if (dPtAxis >=0 && dptBin == -1) {
+        TH2* hDeltaRVsDpt = fDmesons->Projection(deltaRAxis, dPtAxis, "EO");
+        hDeltaRVsDpt->SetName(Form("h%s_DeltaRvsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hDeltaRVsDpt);
+      }
+    }
+
+    if (jetConstAxis >= 0) {
+      TH1* hJetConst = fDmesons->Projection(jetConstAxis, "EO");
+      hJetConst->SetName(Form("h%s_JetConstituents_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hJetConst);
+
+      if (dzAxis >= 0 && dzBin == -1) {
+        TH2* hJetConstVsDz = fDmesons->Projection(jetConstAxis, dzAxis, "EO");
+        hJetConstVsDz->SetName(Form("h%s_JetConstituentsVsDz_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hJetConstVsDz);
+      }
+
+      if (jetPtAxis >= 0 && jetptBin == -1) {
+        TH2* hJetConstVsJetPt = fDmesons->Projection(jetConstAxis, jetPtAxis, "EO");
+        hJetConstVsJetPt->SetName(Form("h%s_JetConstituentsVsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hJetConstVsJetPt);
+      }
+    }
+
+    if (deltaEtaAxis >= 0) {
+      TH1* hDeltaEta = fDmesons->Projection(deltaEtaAxis, "EO");
+      hDeltaEta->SetName(Form("h%s_DeltaEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hDeltaEta);
+    }
+
+    if (deltaPhiAxis >= 0) {
+      TH1* hDeltaPhi = fDmesons->Projection(deltaPhiAxis, "EO");
+      hDeltaPhi->SetName(Form("h%s_DeltaPhi_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hDeltaPhi);
+    }
+    
+    if (dzAxis >= 0 && dzBin == -1) {
+      TH1* hdz = fDmesons->Projection(dzAxis, "EO");
+      hdz->SetName(Form("h%s_MesonZ_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hdz);
+
+      if (dPtAxis >=0 && dptBin == -1) {
+        TH2* hdzVsDPt = fDmesons->Projection(dzAxis, dPtAxis, "EO");
+        hdzVsDPt->SetName(Form("h%s_MesonZvsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hdzVsDPt);
+      }
+      
+      if (jetPtAxis >= 0 && jetptBin == -1) {
+        TH2* hdzVsJetPt = fDmesons->Projection(dzAxis, jetPtAxis, "EO");
+        hdzVsJetPt->SetName(Form("h%s_MesonZvsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hdzVsJetPt);
+
+	// Rebin to the coarse binning ready for unfolding
+	TString hname = Form("%s_Coarse", hdzVsJetPt->GetName());
+	TH2* hdzVsJetPtCoarse = Rebin(hdzVsJetPt, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+	fOutputList->Add(hdzVsJetPtCoarse);
+      }
+      
+      if (deltaRAxis >= 0) {
+        TH2* hdzVsDeltaR = fDmesons->Projection(dzAxis, deltaRAxis, "EO");
+        hdzVsDeltaR->SetName(Form("h%s_MesonZvsDeltaR_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hdzVsDeltaR);
+      }
+    }
+
+    if (jetPtAxis >= 0 && jetptBin == -1) {
+      TH1* hJetPt = fDmesons->Projection(jetPtAxis, "EO");
+      hJetPt->SetName(Form("h%s_JetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hJetPt);
+
+      if (dPtAxis >=0 && dptBin == -1) {
+        TH2* hDPtVsJetPt = fDmesons->Projection(dPtAxis, jetPtAxis, "EO");
+        hDPtVsJetPt->SetName(Form("h%s_MesonPtvsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        fOutputList->Add(hDPtVsJetPt);
+      }
+    }
+
+    if (jetEtaAxis >= 0 && jetPhiAxis >= 0) {
+      TH2* hJetpos = fDmesons->Projection(jetPhiAxis, jetEtaAxis, "EO");
+      hJetpos->SetName(Form("h%s_JetPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      fOutputList->Add(hJetpos);
+    }
   }
 
   return kTRUE;
@@ -347,29 +635,6 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
                  -1, -1,
                  params->GetMinZ(), params->GetMaxZ(),
                  1, 1, 1);
-
-  // Daughter 1
-  PlotObservable(params, "DeltaRDaughter0", 0, 2,
-                 -1, -1,
-                 params->GetMinJetPt(), params->GetMaxJetPt(),
-                 params->GetMinZ(), params->GetMaxZ(),
-                 2, 1, 1, 1);
-
-  // Daughter 2
-  PlotObservable(params, "DeltaRDaughter1", 0, 2,
-                 -1, -1,
-                 params->GetMinJetPt(), params->GetMaxJetPt(),
-                 params->GetMinZ(), params->GetMaxZ(),
-                 2, 1, 1, 1);
-
-  if (params->IsDStar()) {
-    // Daughter 3
-    PlotObservable(params, "DeltaRDaughter2", 0, 2,
-                   -1, -1,
-                   params->GetMinJetPt(), params->GetMaxJetPt(),
-                   params->GetMinZ(), params->GetMaxZ(),
-                   2, 1, 1, 1);
-  }
 
   PlotDPtSpectraVsJetPt(params);
   PlotDPtSpectraVsDz(params);
@@ -1372,12 +1637,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
   Int_t jetConstAxis = GetAxisIndex(fJetConstAxisTitle);
   
   Int_t matchingStatusAxis = GetAxisIndex(fMatchingStatusAxisTitle);
-
-  Int_t dDeltaRDaghters[3] = {-1};
-  
-  for (Int_t i = 0; i < 3; i++) {
-    dDeltaRDaghters[i] = GetAxisIndex(Form(fDeltaRDaughterAxisTitle.Data(), i));
-  }
   
   if (matchingStatusAxis >= 0) {
     if (st == kMatched) {
@@ -1391,28 +1650,12 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     }
   }
 
-  fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta());
   fDmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt, maxDPt);
 
   if (st == kMatched) { // apply cuts on z and jet pt only if matched requested
     fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
 
-    if (dzAxis >= 0) {
-      Int_t minzBin = fDmesons->GetAxis(dzAxis)->FindBin(minz);
-      Int_t maxzBin = fDmesons->GetAxis(dzAxis)->FindBin(maxz);
-      if (fDmesons->GetAxis(dzAxis)->GetBinUpEdge(minzBin) <= minz ) minzBin++;
-      if (fDmesons->GetAxis(dzAxis)->GetBinLowEdge(maxzBin) >= maxz ) maxzBin--;
-      
-      if (fDmesons->GetAxis(dzAxis)->GetBinUpEdge(maxzBin) == 1.0) { // if the up edge == 1.0 includes the next bin
-        maxzBin++;
-      }
-
-      if (fDmesons->GetAxis(dzAxis)->GetBinLowEdge(minzBin) == 1.0) { // if the low edge == 1.0 excludes the first bin
-        minzBin++;
-      }
-    
-      fDmesons->GetAxis(dzAxis)->SetRange(minzBin, maxzBin);
-    }
+    if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);
     
     if (jetConstAxis >= 0) {
       if (minJetConst > 0) {
@@ -1427,6 +1670,8 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     }
   }
   else {
+    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons that could possibly be matched to a jet
+    
     if (jetPtAxis >= 0) fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
     if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
     if (jetConstAxis >= 0) fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
@@ -1576,14 +1821,6 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
       hJetpos->SetName(Form("h%s_JetPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hJetpos);
     }
-
-    for (Int_t i = 0; i < 3; i++) {
-      if (dDeltaRDaghters[i] >= 0) {
-        TH1* hDeltaRDaughter = fDmesons->Projection(dDeltaRDaghters[i], "EO");
-        hDeltaRDaughter->SetName(Form("h%s_DeltaRDaughter%d_%s%s", prefix.Data(), i, cuts.Data(), suffix.Data()));
-        fOutputList->Add(hDeltaRDaughter);
-      }
-    }
   }
   
   return kTRUE;
@@ -1615,8 +1852,11 @@ TString DJetCorrAnalysis::GetTruthName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
- 
-  return "";
+
+  TString spectrum2Dcuts(params->GetCutString(kMatched, -1, -1, -1));
+  TString hname = Form("h%s_MesonZvsJetPt_%s_Matched_Truth_Coarse", params->GetName(), spectrum2Dcuts.Data());
+  
+  return hname;
 }
 
 //____________________________________________________________________________________

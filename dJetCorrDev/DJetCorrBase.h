@@ -39,8 +39,8 @@ class DJetCorrBase : public TNamed {
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
   void   SetAddTrainToCanvasName(Bool_t s)     { fAddTrainToCanvasName= s   ; }
 
-  DJetCorrAnalysisParams*   AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE);
-  DJetCorrAnalysisParams*   AddAnalysisParams(DJetCorrAnalysisParams* params);
+  DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE);
+  DJetCorrAnalysisParams* AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   virtual Bool_t Init();
   

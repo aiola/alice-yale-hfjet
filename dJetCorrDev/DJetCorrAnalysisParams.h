@@ -32,6 +32,7 @@ class DJetCorrAnalysisParams : public TObject
   const char* GetJetRadius()         const { return fJetRadius.Data()                               ; }
   const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
   const char* GetInputListName()     const { return fInputListName.Data()                           ; }
+  const char* GetTruthInputListName()const { return fTruthInputListName.Data()                      ; }
   Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
   const Double_t* GetDPtBins()       const { return fDPtBins                                        ; }
   Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; }
@@ -85,6 +86,7 @@ class DJetCorrAnalysisParams : public TObject
   TString         fDmesonName                ;//  "D0" or "DStar" etc.
   TString         fTracksName                ;//  usually "tracks" or "AODFilterTracks"
   TString         fInputListName             ;//  input list name
+  TString         fTruthInputListName        ;//  truth input list name
 
   Double_t        fInvMinMass                ;//  inv min mass
   Double_t        fInvMaxMass                ;//  inv max mass

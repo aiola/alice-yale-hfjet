@@ -14,8 +14,10 @@ class DJetCorrUnfold : public TNamed {
   DJetCorrUnfold();
   DJetCorrUnfold(DJetCorrAnalysis* ana, DJetCorrResponse* resp);
 
-  void   SetDataParamIndex(Int_t i) { fDataParamIndex = i; }
-  void   SetRespParamIndex(Int_t i) { fRespParamIndex = i; }
+  void   SetDataParamIndex(Int_t i)    { fDataParamIndex    = i; }
+  void   SetRespParamIndex(Int_t i)    { fRespParamIndex    = i; }
+  void   SetUseEfficiency(Bool_t b)    { fUseEfficiency     = b; }
+  void   SetUseKinEfficiency(Bool_t b) { fUseKinEfficiency  = b; }
 
   Bool_t Start();
   Bool_t Unfold();
