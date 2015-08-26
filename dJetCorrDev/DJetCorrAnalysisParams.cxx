@@ -26,6 +26,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fDmesonName(),
   fTracksName(),
   fInputListName(),
+  fTruthInputListName(),
   fInvMinMass(0),
   fInvMaxMass(0),
   f2ProngMinMass(0),
@@ -56,6 +57,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fDmesonName(dmeson),
   fTracksName(tracksName),
   fInputListName(),
+  fTruthInputListName(),
   fInvMinMass(0),
   fInvMaxMass(0),
   f2ProngMinMass(0),
@@ -69,8 +71,13 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMassFitTypeBkg(MassFitter::kExpo)
 {
   if (anaType == kInvMassAna) {
-    if (isMC) fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
-    else fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+    if (isMC) {
+      fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+      fTruthInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_MC_Jet_AKT%s%s_mcparticles%s_pT0000_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fDmesonName.Data());
+    }
+    else {
+      fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+    }
   }
   else if (anaType == kResponseMatrixAna) {
     fInputListName = Form("AliJetResponseMaker_Jet_AKT%s%s_%s_pT0150_pt_scheme_Jet_AKT%s%s_mcparticles%s_pT0000_pt_scheme_Bias0_BiasType0_TPC_histos", fJetType.Data(), fJetRadius.Data(), fTracksName.Data(), fJetType.Data(), fJetRadius.Data(), fDmesonName.Data());

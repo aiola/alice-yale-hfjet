@@ -182,6 +182,10 @@ Bool_t DJetCorrUnfold::Unfold()
   fUnfolded->GetYaxis()->SetName("yaxis");
   fUnfolded->GetZaxis()->SetName("zaxis");
 
+  new TCanvas;
+  fMeasured->Draw("colz");
+  
+  new TCanvas;
   fUnfolded->Draw("colz");
 
   return kTRUE;

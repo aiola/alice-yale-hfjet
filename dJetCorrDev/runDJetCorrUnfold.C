@@ -22,8 +22,10 @@ DJetCorrUnfold* runDJetCorrUnfold(const char* trainData = "Jets_EMC_pp_MC_509_51
   DJetCorrResponse* resp = runDJetCorrResponse("", trainResp, kFALSE, inputPath);
   
   DJetCorrUnfold* unfold = new DJetCorrUnfold(ana, resp);
-  unfold->SetDataParamIndex(1);
+  unfold->SetDataParamIndex(0);
   unfold->SetRespParamIndex(1);
+  unfold->SetUseEfficiency(kFALSE);
+  unfold->SetUseKinEfficiency(kFALSE);
   unfold->Start();
 
   return unfold;

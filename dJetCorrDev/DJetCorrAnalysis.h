@@ -48,6 +48,11 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
   Bool_t PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
 
+  Bool_t LoadTruthList(DJetCorrAnalysisParams* params);
+  Bool_t ProjectTruthSpectrum();
+  Bool_t ProjectTruthSpectrum(DJetCorrAnalysisParams* params);
+  Bool_t ProjectTruthSpectrum(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1, Int_t minJetConst=0);
+
   void GenerateMeaduredSpectrum(DJetCorrAnalysisParams* params);
 
   TString GetTruthName(Int_t p);
@@ -98,8 +103,7 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString         fJetLeadPtAxisTitle        ;//  jet leading pt axis title
   TString         fJetAreaAxisTitle          ;//  jet area axis title
   TString         fJetConstAxisTitle         ;//  jet constituents axis title
-  TString         fDeltaRDaughterAxisTitle   ;//  distance of a D meson daughter from the jet axis title
-  TString         fMatchingStatusAxisTitle   ;//  distance of a D meson daughter from the jet axis title
+  TString         fMatchingStatusAxisTitle   ;//  matching status
 
   THnSparse      *fDmesons                   ;//! THnSparse contains the results
   TList          *fInputQAList               ;//! list contains the QA histograms
