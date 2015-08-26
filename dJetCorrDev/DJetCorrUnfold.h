@@ -22,11 +22,14 @@ class DJetCorrUnfold : public TNamed {
   Bool_t PrepareData();
   Bool_t PrepareResponse();
   RooUnfoldResponse* GenerateRooUnfoldResponse();
+  void AddEfficiency(RooUnfoldResponse* resp, TH2* misses);
   
  protected:
   Int_t                    fDataParamIndex   ; //
   Int_t                    fRespParamIndex   ; //
-  Bool_t                   fForceRegeneration; // 
+  Bool_t                   fForceRegeneration; //
+  Bool_t                   fUseEfficiency    ; //
+  Bool_t                   fUseKinEfficiency ; //
 
   TH2*                     fTruth            ; //
   TH2*                     fMeasured         ; //
@@ -36,6 +39,8 @@ class DJetCorrUnfold : public TNamed {
   TH2*                     fResponseTruth    ; //
   TH2*                     fResponseMeasured ; //
   THnSparse*               fResponseMatrix   ; //
+  TH2*                     fResponseMisses   ; //
+  TH2*                     fResponseKinMisses; //
 
   DJetCorrAnalysis*        fAnalysis         ; //! analysis results
   DJetCorrResponse*        fResponse         ; //! response

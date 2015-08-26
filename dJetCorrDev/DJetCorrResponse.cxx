@@ -1174,6 +1174,25 @@ TString DJetCorrResponse::GetResponseName(Int_t p)
   return hname;
 }
 
+//____________________________________________________________________________________
+TString DJetCorrResponse::GetMissesName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+  
+  TString  hname = Form("%s_Misses_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrResponse::GetKinMissesName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+  
+  TString  hname = Form("%s_KinMisses_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
 
 //____________________________________________________________________________________
 TH2* DJetCorrResponse::GetTruth(Int_t p, Bool_t copy)
@@ -1215,6 +1234,36 @@ THnSparse* DJetCorrResponse::GetResponse(Int_t p, Bool_t copy)
     hname += "_copy";
 
     hist = static_cast<THnSparse*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrResponse::GetMisses(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMissesName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrResponse::GetKinMisses(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetKinMissesName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
   }
 
   return hist;
