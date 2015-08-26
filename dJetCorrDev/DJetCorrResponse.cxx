@@ -289,9 +289,77 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   htitle = Form("Response matrix");
   Int_t dims[4] = {jetPt1Axis, z1Axis, jetPt2Axis, z2Axis};
   THnSparse* resp = fHistMatching->Projection(4, dims, "");
-
   resp->SetName(hname);
   resp->SetTitle(htitle);
+
+  hname = Form("%s_Measured_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  TH2* measured = fHistMatching->Projection(z1Axis, jetPt1Axis);
+  measured->SetName(hname);
+  measured->SetTitle("Measured");
+  measured->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} GeV/#it{c}");
+  measured->GetYaxis()->SetTitle("#it{z}_{||}^{det}");
+  measured->GetZaxis()->SetTitle("Counts");
+
+  hname = Form("%s_TruthReco_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  TH2* truthReco = fHistMatching->Projection(z2Axis, jetPt2Axis);
+  truthReco->SetName(hname);
+  truthReco->SetTitle("Truth reconstructed");
+  truthReco->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  truthReco->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  truthReco->GetZaxis()->SetTitle("Counts");
+
+  hname = Form("%s_Truth_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  TH2* truth = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
+  truth->SetName(hname);
+  truth->SetTitle("Truth");
+  truth->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  truth->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  truth->GetZaxis()->SetTitle("Counts");
+
+  // Remove cuts at detector level to extract the missed events due to the kinematical restrictions
+  fHistMatching->GetAxis(jetPt1Axis)->SetRange(0, fHistMatching->GetAxis(jetPt1Axis)->GetNbins()+1);
+  fHistMatching->GetAxis(z1Axis)->SetRangeUser(0, fHistMatching->GetAxis(z1Axis)->GetNbins()+1);
+  fHistMatching->GetAxis(dPt1Axis)->SetRangeUser(0, fHistMatching->GetAxis(dPt1Axis)->GetNbins()+1);
+
+  hname = Form("%s_TruthRecoAll_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  TH2* truthRecoAll = fHistMatching->Projection(z2Axis, jetPt2Axis);
+  truthRecoAll->SetName(hname);
+  truthRecoAll->SetTitle("Truth reconstructed (all)");
+  truthRecoAll->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  truthRecoAll->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  truthRecoAll->GetZaxis()->SetTitle("Counts");
+
+  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
+  TH2* eff = static_cast<TH2*>(truthReco->Clone(hname));
+  eff->Divide(truth);
+  eff->SetTitle("Efficiecny");
+  eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  eff->GetZaxis()->SetTitle("Efficiency");
+
+  hname = Form("%s_Misses_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
+  TH2* misses = static_cast<TH2*>(truth->Clone(hname));
+  misses->Add(truthReco, -1);
+  misses->SetTitle("Misses = Truth - Truth reconstructed");
+  misses->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  misses->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  misses->GetZaxis()->SetTitle("Misses");
+
+  hname = Form("%s_KinEfficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
+  TH2* kinEff = static_cast<TH2*>(truthReco->Clone(hname));
+  kinEff->Divide(truthRecoAll);
+  kinEff->SetTitle("Kinematic efficiency");
+  kinEff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  kinEff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  kinEff->GetZaxis()->SetTitle("Efficiency");
+
+  hname = Form("%s_KinMisses_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
+  TH2* kinMisses = static_cast<TH2*>(truthRecoAll->Clone(hname));
+  kinMisses->Add(truthReco, -1);
+  kinMisses->SetTitle("Misses = Truth reconstructed (all) - Truth reconstructed");
+  kinMisses->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  kinMisses->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  kinMisses->GetZaxis()->SetTitle("Misses");
 
   // Rebin to the coarse binning ready for unfolding
   hname = Form("%s_ResponseMatrix_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
@@ -299,58 +367,53 @@ Bool_t DJetCorrResponse::ProjectResponseMatrix4D(DJetCorrAnalysisParams* params,
   const Double_t* bins[4] = {params->GetJetPtBins(), params->GetzBins(), params->GetJetPtBins(), params->GetzBins()};
   THnSparse* coarseResp = Rebin(resp, hname, nbins, bins);
 
-  TH2* measured = resp->Projection(1, 0);
-
-  hname = Form("%s_Measured_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
-  htitle = Form("Counts");
-  
-  measured->SetName(hname);
-  measured->SetTitle(htitle);
-  measured->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} GeV/#it{c}");
-  measured->GetYaxis()->SetTitle("#it{z}_{||}^{det}");
-  measured->GetZaxis()->SetTitle("Counts");
-
-  // Rebin to the coarse binning ready for unfolding
   hname = Form("%s_Measured_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
   TH2* coarseMeasured = Rebin(measured, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
 
-  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
-  TH2* eff = resp->Projection(3, 2);
-  eff->SetTitle("Efficiecny");
-  eff->SetName(hname);
-  eff->SetTitle(htitle);
-  eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
-  eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
-  eff->GetZaxis()->SetTitle("Efficiency");
-
-  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
-  TH2* coarseEff = Rebin(eff, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+  hname = Form("%s_TruthReco_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseTruthReco = Rebin(truthReco, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
   
-  TH2* truth = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
-  hname = Form("%s_Truth_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
-  htitle = Form("Truth");
-  truth->SetName(hname);
-  truth->SetTitle(htitle);
-  truth->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
-  truth->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
-  truth->GetZaxis()->SetTitle("Counts");
-
-  // Rebin to the coarse binning ready for unfolding
-  hname += "_Coarse";
+  hname = Form("%s_Truth_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
   TH2* coarseTruth = Rebin(truth, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+
+  hname = Form("%s_TruthRecoAll_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseTruthRecoAll = Rebin(truthRecoAll, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
   
-  eff->Divide(truth);
+  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseEff = static_cast<TH2*>(coarseTruthReco->Clone(hname));
   coarseEff->Divide(coarseTruth);
+
+  hname = Form("%s_Misses_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseMisses = static_cast<TH2*>(coarseTruth->Clone(hname));
+  coarseMisses->Add(coarseTruthReco, -1);
+
+  hname = Form("%s_KinEfficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseKinEff = static_cast<TH2*>(coarseTruthReco->Clone(hname));
+  coarseKinEff->Divide(coarseTruthRecoAll);
+
+  hname = Form("%s_KinMisses_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
+  TH2* coarseKinMisses = static_cast<TH2*>(coarseTruthRecoAll->Clone(hname));
+  coarseKinMisses->Add(coarseTruthReco, -1);
 
   fOutputList->Add(resp);
   fOutputList->Add(measured);
-  fOutputList->Add(eff);
+  fOutputList->Add(truthReco);
   fOutputList->Add(truth);
+  fOutputList->Add(truthRecoAll);
+  fOutputList->Add(eff);
+  fOutputList->Add(misses);
+  fOutputList->Add(kinEff);
+  fOutputList->Add(kinMisses);
 
   fOutputList->Add(coarseResp);
   fOutputList->Add(coarseMeasured);
-  fOutputList->Add(coarseEff);
+  fOutputList->Add(coarseTruthReco);
   fOutputList->Add(coarseTruth);
+  fOutputList->Add(coarseTruthRecoAll);
+  fOutputList->Add(coarseEff);
+  fOutputList->Add(coarseMisses);
+  fOutputList->Add(coarseKinEff);
+  fOutputList->Add(coarseKinMisses);
 
   return kTRUE;
 }
