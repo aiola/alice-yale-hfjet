@@ -39,6 +39,8 @@ DJetCorrUnfold::DJetCorrUnfold() :
   fDataParamIndex(0),
   fRespParamIndex(0),
   fForceRegeneration(kFALSE),
+  fUseEfficiency(kTRUE),
+  fUseKinEfficiency(kTRUE),
   fTruth(0),
   fMeasured(0),
   fUnfolded(0),
@@ -46,6 +48,8 @@ DJetCorrUnfold::DJetCorrUnfold() :
   fResponseTruth(0),
   fResponseMeasured(0),
   fResponseMatrix(0),
+  fResponseMisses(0),
+  fResponseKinMisses(0),
   fAnalysis(0),
   fResponse(0)
 {
@@ -58,6 +62,8 @@ DJetCorrUnfold::DJetCorrUnfold(DJetCorrAnalysis* ana, DJetCorrResponse* resp) :
   fDataParamIndex(0),
   fRespParamIndex(0),
   fForceRegeneration(kFALSE),
+  fUseEfficiency(kTRUE),
+  fUseKinEfficiency(kTRUE),
   fTruth(0),
   fMeasured(0),
   fUnfolded(0),
@@ -65,6 +71,8 @@ DJetCorrUnfold::DJetCorrUnfold(DJetCorrAnalysis* ana, DJetCorrResponse* resp) :
   fResponseTruth(0),
   fResponseMeasured(0),
   fResponseMatrix(0),
+  fResponseMisses(0),
+  fResponseKinMisses(0),
   fAnalysis(ana),
   fResponse(resp)
 {
@@ -129,6 +137,8 @@ Bool_t DJetCorrUnfold::PrepareResponse()
   fResponseTruth = fResponse->GetTruth(fRespParamIndex, kTRUE);
   fResponseMeasured = fResponse->GetMeasured(fRespParamIndex, kTRUE);
   fResponseMatrix = fResponse->GetResponse(fRespParamIndex, kTRUE);
+  fResponseMisses = fResponse->GetMisses(fRespParamIndex, kTRUE);
+  fResponseKinMisses = fResponse->GetKinMisses(fRespParamIndex, kTRUE);
 
   return kTRUE;
 }
@@ -197,6 +207,29 @@ RooUnfoldResponse* DJetCorrUnfold::GenerateRooUnfoldResponse()
 
   delete[] coord_ind;
   delete[] coord;
+
+  if (fUseEfficiency) {
+    AddEfficiency(resp, fResponseMisses);
+  }
+
+  if (fUseKinEfficiency) {
+    AddEfficiency(resp, fResponseKinMisses);
+  }
   
   return resp;
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::AddEfficiency(RooUnfoldResponse* resp, TH2* misses)
+{
+  if (!misses || !resp) return;
+  
+  for (Int_t jbin = 1; jbin <= misses->GetNbinsX(); jbin++) {
+    Double_t jetpt = misses->GetXaxis()->GetBinCenter(jbin);
+    for (Int_t zbin = 1; zbin <= misses->GetNbinsY(); zbin++) {
+      Double_t z = misses->GetYaxis()->GetBinCenter(zbin);
+
+      resp->Miss(jetpt, z, misses->GetBinContent(jbin, zbin));
+    }
+  }
 }

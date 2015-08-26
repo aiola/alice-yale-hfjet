@@ -1,4 +1,4 @@
-// root macro to use the class DJetCorrAnalysisComparer
+// root macro to use the class DJetCorrUnfold
 
 class DJetCorrUnfold;
 

@@ -36,10 +36,14 @@ class DJetCorrResponse : public DJetCorrBase {
   TString GetTruthName(Int_t p);
   TString GetMeasuredName(Int_t p);
   TString GetResponseName(Int_t p);
+  TString GetMissesName(Int_t p);
+  TString GetKinMissesName(Int_t p);
 
   TH2* GetTruth(Int_t p, Bool_t copy);
   TH2* GetMeasured(Int_t p, Bool_t copy);
   THnSparse* GetResponse(Int_t p, Bool_t copy);
+  TH2* GetMisses(Int_t p, Bool_t copy);
+  TH2* GetKinMisses(Int_t p, Bool_t copy);
   
  protected:
   Bool_t ClearInputData();
