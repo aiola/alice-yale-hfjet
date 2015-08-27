@@ -400,7 +400,13 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
     if (dzAxis >= 0 && dzBin == -1) {
       TH1* hdz = fDmesons->Projection(dzAxis, "EO");
       hdz->SetName(Form("h%s_MesonZ_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      hdz->GetXaxis()->SetTitle("#it{z}_{||}^{part}");
       fOutputList->Add(hdz);
+
+      // Rebin to the coarse binning ready for unfolding
+      TString hname = Form("%s_Coarse", hdz->GetName());
+      TH1* hdzCoarse = Rebin(hdz, hname, params->GetNzBins(), params->GetzBins());
+      fOutputList->Add(hdzCoarse);
 
       if (dPtAxis >=0 && dptBin == -1) {
         TH2* hdzVsDPt = fDmesons->Projection(dzAxis, dPtAxis, "EO");
@@ -411,14 +417,16 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
       if (jetPtAxis >= 0 && jetptBin == -1) {
         TH2* hdzVsJetPt = fDmesons->Projection(dzAxis, jetPtAxis, "EO");
         hdzVsJetPt->SetName(Form("h%s_MesonZvsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        hdzVsJetPt->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part}");
+        hdzVsJetPt->GetXaxis()->SetTitle("#it{z}_{||}^{part}");
         fOutputList->Add(hdzVsJetPt);
 
-	// Rebin to the coarse binning ready for unfolding
-	TString hname = Form("%s_Coarse", hdzVsJetPt->GetName());
-	TH2* hdzVsJetPtCoarse = Rebin(hdzVsJetPt, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
-	fOutputList->Add(hdzVsJetPtCoarse);
+        // Rebin to the coarse binning ready for unfolding
+        TString hname = Form("%s_Coarse", hdzVsJetPt->GetName());
+        TH2* hdzVsJetPtCoarse = Rebin(hdzVsJetPt, hname, params->GetNJetPtBins(), params->GetJetPtBins(), params->GetNzBins(), params->GetzBins());
+        fOutputList->Add(hdzVsJetPtCoarse);
       }
-      
+
       if (deltaRAxis >= 0) {
         TH2* hdzVsDeltaR = fDmesons->Projection(dzAxis, deltaRAxis, "EO");
         hdzVsDeltaR->SetName(Form("h%s_MesonZvsDeltaR_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
@@ -429,7 +437,13 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
     if (jetPtAxis >= 0 && jetptBin == -1) {
       TH1* hJetPt = fDmesons->Projection(jetPtAxis, "EO");
       hJetPt->SetName(Form("h%s_JetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+      hJetPt->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part}");
       fOutputList->Add(hJetPt);
+
+      // Rebin to the coarse binning ready for unfolding
+      TString hname = Form("%s_Coarse", hJetPt->GetName());
+      TH1* hJetPtCoarse = Rebin(hJetPt, hname, params->GetNJetPtBins(), params->GetJetPtBins());
+      fOutputList->Add(hJetPtCoarse);
 
       if (dPtAxis >=0 && dptBin == -1) {
         TH2* hDPtVsJetPt = fDmesons->Projection(dPtAxis, jetPtAxis, "EO");
@@ -1848,6 +1862,20 @@ Bool_t DJetCorrAnalysis::LoadQAList()
 }
 
 //____________________________________________________________________________________
+Bool_t DJetCorrAnalysis::Regenerate()
+{
+  Bool_t result = kFALSE;
+
+  result = GenerateDJetCorrHistograms();
+  if (!result) return kFALSE;
+
+  result = PlotDJetCorrHistograms(kTRUE);
+  if (!result) return kFALSE;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
 TString DJetCorrAnalysis::GetTruthName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
@@ -1869,34 +1897,4 @@ TString DJetCorrAnalysis::GetMeasuredName(Int_t p)
   TString hname(Form("h%s_DzSpectrum2D_%s_Matched", params->GetName(), spectrum2Dcuts.Data()));
   
   return hname;
-}
-
-//____________________________________________________________________________________
-TH2* DJetCorrAnalysis::GetTruth(Int_t p, Bool_t copy)
-{
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetTruthName(p)));
-
-  if (copy && hist) {
-    TString hname = hist->GetName();
-    hname += "_copy";
-
-    hist = static_cast<TH2*>(hist->Clone(hname));
-  }
-
-  return hist;
-}
-
-//____________________________________________________________________________________
-TH2* DJetCorrAnalysis::GetMeasured(Int_t p, Bool_t copy)
-{
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMeasuredName(p)));
-
-  if (copy && hist) {
-    TString hname = hist->GetName();
-    hname += "_copy";
-
-    hist = static_cast<TH2*>(hist->Clone(hname));
-  }
-
-  return hist;
 }
