@@ -48,6 +48,8 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
   Bool_t PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bool_t eventScaling=kFALSE);
 
+  Bool_t Regenerate();
+
   Bool_t LoadTruthList(DJetCorrAnalysisParams* params);
   Bool_t ProjectTruthSpectrum();
   Bool_t ProjectTruthSpectrum(DJetCorrAnalysisParams* params);
@@ -57,9 +59,6 @@ class DJetCorrAnalysis : public DJetCorrBase {
 
   TString GetTruthName(Int_t p);
   TString GetMeasuredName(Int_t p);
-
-  TH2* GetTruth(Int_t p, Bool_t copy);
-  TH2* GetMeasured(Int_t p, Bool_t copy);
   
  protected:
   Bool_t          LoadOutputHistograms();

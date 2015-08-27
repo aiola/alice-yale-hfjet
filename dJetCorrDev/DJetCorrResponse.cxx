@@ -1145,6 +1145,12 @@ Bool_t DJetCorrResponse::PlotResponseDPtMatrix(TCanvas*& canvasResp, TCanvas*& c
 }
 
 //____________________________________________________________________________________
+Bool_t DJetCorrResponse::Regenerate()
+{
+  return ProjectResponseMatrices();
+}
+
+//____________________________________________________________________________________
 TString DJetCorrResponse::GetTruthName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
@@ -1192,36 +1198,6 @@ TString DJetCorrResponse::GetKinMissesName(Int_t p)
   
   TString  hname = Form("%s_KinMisses_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
   return hname;
-}
-
-//____________________________________________________________________________________
-TH2* DJetCorrResponse::GetTruth(Int_t p, Bool_t copy)
-{
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetTruthName(p)));
-  
-  if (copy && hist) {
-    TString hname = hist->GetName();
-    hname += "_copy";
-
-    hist = static_cast<TH2*>(hist->Clone(hname));
-  }
-
-  return hist;
-}
-
-//____________________________________________________________________________________
-TH2* DJetCorrResponse::GetMeasured(Int_t p, Bool_t copy)
-{
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMeasuredName(p)));
-
-  if (copy && hist) {
-    TString hname = hist->GetName();
-    hname += "_copy";
-
-    hist = static_cast<TH2*>(hist->Clone(hname));
-  }
-
-  return hist;
 }
 
 //____________________________________________________________________________________

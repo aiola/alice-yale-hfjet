@@ -8,7 +8,6 @@
 class TString;
 class TFile;
 class TList;
-class THnSparse;
 class TCanvas;
 class TLegend;
 class TVirtualPad;
@@ -20,6 +19,7 @@ class TH1;
 class DJetCorrAnalysisParams;
 
 #include <TMap.h>
+#include <THnSparse.h>
 
 class DJetCorrBase : public TNamed {
   
@@ -51,8 +51,18 @@ class DJetCorrBase : public TNamed {
   TCanvas* GetCanvas(const char* name)      { return fCanvases == 0 ? 0 : static_cast<TCanvas*>(fCanvases->FindObject(name)); }
   Double_t GetEvents(Bool_t recalculate=kFALSE);
 
-  static void FitGraphInPad(TGraph* graph, TPad* pad);
+  virtual Bool_t Regenerate() { return kTRUE;}
+
+  TH2* GetTruth(Int_t p, Bool_t copy);
+  TH2* GetMeasured(Int_t p, Bool_t copy);
+
+  virtual TString GetTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetMeasuredName(Int_t /*p*/) { return ""; }
+
+  static void FitGraphInPad(TGraph* graph, TVirtualPad* pad);
+  static void FitHistogramInPad(TH1* hist, TVirtualPad* pad);
   static void GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy);
+  static void GetMinMax(TH1* hist, Double_t& miny, Double_t& maxy);
   static TLegend* GetLegend(TPad* pad);
 
   static THnSparse* Rebin(THnSparse* orig, const char* name, const Int_t* nbins, const Double_t** bins);
@@ -78,8 +88,9 @@ class DJetCorrBase : public TNamed {
   Bool_t          OpenInputFile();
   Bool_t          LoadInputList(const char* lname);
   TFile*          OpenOutputFile();
-  virtual Bool_t  LoadTHnSparse()=0;
+  virtual Bool_t  LoadTHnSparse() {return kTRUE;}
   virtual Bool_t  LoadOutputHistograms();
+
   TVirtualPad*    SetUpPad(TVirtualPad* pad,
                            const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
                            const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,

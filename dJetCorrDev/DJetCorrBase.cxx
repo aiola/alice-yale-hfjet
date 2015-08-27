@@ -817,7 +817,7 @@ Double_t DJetCorrBase::GetEvents(Bool_t recalculate)
 }
 
 //____________________________________________________________________________________
-void DJetCorrBase::FitGraphInPad(TGraph* graph, TPad* pad)
+void DJetCorrBase::FitGraphInPad(TGraph* graph, TVirtualPad* pad)
 {
   TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
   if (blankHist) {
@@ -835,6 +835,26 @@ void DJetCorrBase::FitGraphInPad(TGraph* graph, TPad* pad)
 }
 
 //____________________________________________________________________________________
+void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad)
+{
+  TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
+  if (blankHist) {
+    Double_t miny = blankHist->GetMinimum();
+    Double_t maxy = blankHist->GetMaximum() / 1.8;
+
+    GetMinMax(hist, miny, maxy);
+
+    blankHist->SetMinimum(miny);
+    blankHist->SetMaximum(maxy * 1.8);
+
+    hist->Draw("same");
+  }
+  else {
+    Printf("Error-DJetCorrBase::FitHistogramInPad : Could not find blank histogram!");
+  }
+}
+
+//____________________________________________________________________________________
 void DJetCorrBase::GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy)
 {
   Double_t* array = graph->GetY();
@@ -843,6 +863,16 @@ void DJetCorrBase::GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy)
     if (miny > graph->GetY()[i] - graph->GetEYlow()[i]) miny = graph->GetY()[i] - graph->GetEYlow()[i];
     if (maxy < graph->GetY()[i] + graph->GetEYhigh()[i]) maxy = graph->GetY()[i] + graph->GetEYhigh()[i];
   } 
+}
+
+//____________________________________________________________________________________
+void DJetCorrBase::GetMinMax(TH1* hist, Double_t& miny, Double_t& maxy)
+{
+  Int_t minBin = hist->GetMinimumBin();
+  miny = TMath::Min(hist->GetBinContent(minBin) - hist->GetBinError(minBin), miny);
+
+  Int_t maxBin = hist->GetMaximumBin();
+  maxy = TMath::Max(hist->GetBinContent(maxBin) + hist->GetBinError(maxBin), maxy);
 }
 
 //____________________________________________________________________________________
@@ -974,4 +1004,34 @@ TH2* DJetCorrBase::Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double
   }
 
   return dest;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrBase::GetTruth(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetTruthName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrBase::GetMeasured(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMeasuredName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
 }

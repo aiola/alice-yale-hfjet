@@ -29,45 +29,227 @@ ClassImp(DJetCorrAnalysisComparer);
 
 //____________________________________________________________________________________
 DJetCorrAnalysisComparer::DJetCorrAnalysisComparer() :
-  TNamed(),
-  fAnalysis1(0),
-  fAnalysis2(0)
+  DJetCorrBase(),
+  fParamIndexes(),
+  fForceRegeneration(kFALSE),
+  fMakeRatios(kTRUE),
+  fCompareTask(kNone),
+  fAnalysisArray(0)
 {
   // Default constructor.
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(DJetCorrAnalysis* ana1, DJetCorrAnalysis* ana2) :
-  TNamed(),
-  fAnalysis1(ana1),
-  fAnalysis2(ana2)
+DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task) :
+  DJetCorrBase("DJetCorrAnalysisComparer", ""),
+  fParamIndexes(),
+  fForceRegeneration(kFALSE),
+  fMakeRatios(kTRUE),
+  fCompareTask(task),
+  fAnalysisArray(0)
 {
-  // Constructor.
+  // Default constructor.
 
-  TString name(Form("%s_%s", ana1->GetName(), ana2->GetName()));
+  fAnalysisArray = new TObjArray();
+}
+
+//____________________________________________________________________________________
+DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task, DJetCorrBase* ana1, DJetCorrBase* ana2, Int_t ipar1, Int_t ipar2) :
+  DJetCorrBase("DJetCorrAnalysisComparer", ""),
+  fParamIndexes(10),
+  fForceRegeneration(kFALSE),
+  fMakeRatios(kTRUE),
+  fCompareTask(task),
+  fAnalysisArray(0)
+{
+  // Constructor for the very common case in which two analysis need to be compared.
+
+  fAnalysisArray = new TObjArray();
+
+  TString name = Form("%s_%s", ana1->GetName(), ana2->GetName());
+
+  SetInputTrain(name);
   SetName(name);
   SetTitle(name);
+  
+  AddAnalysis(ana1, ipar1);
+  AddAnalysis(ana2, ipar2);
 }
 
 //____________________________________________________________________________________
 void DJetCorrAnalysisComparer::Start()
 {
-  fAnalysis1->SetSavePlots(kFALSE);
-  fAnalysis1->SetAddTrainToCanvasName(kTRUE);
-  fAnalysis1->SetInvMassPlotNorm(DJetCorrAnalysis::kNormalizeBackground);
-    
-  fAnalysis2->SetSavePlots(kFALSE);
-  fAnalysis2->SetAddTrainToCanvasName(kTRUE);
-  fAnalysis2->SetInvMassPlotNorm(DJetCorrAnalysis::kNormalizeBackground);
-  
-  fAnalysis1->PlotDJetCorrHistograms();
-  fAnalysis2->PlotDJetCorrHistograms();
+  if (!fAnalysisArray) fAnalysisArray = new TObjArray();
 
-  DoTheJob();
+  Init();
+
+  Prepare();
+  ExecuteTasks();
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisComparer::DoTheJob()
+DJetCorrBase* DJetCorrAnalysisComparer::AddAnalysis(DJetCorrBase* ana, Int_t ipar)
 {
-  
+  fAnalysisArray->Add(ana);
+  if (fParamIndexes.GetSize() < fAnalysisArray->GetEntriesFast()) {
+    fParamIndexes.Set(fAnalysisArray->GetEntriesFast()*2+1);
+  }
+  fParamIndexes[fAnalysisArray->GetEntriesFast()-1] = ipar;
+
+  return ana;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysisComparer::Prepare()
+{
+  TIter next(fAnalysisArray);
+
+  DJetCorrBase* ana = 0;
+
+  while ((ana = static_cast<DJetCorrBase*>(next()))) {
+    Bool_t result = kFALSE;
+
+    if (!fForceRegeneration) {
+      result = ana->LoadOutputHistograms();
+    }
+
+    if (!result) {
+      ana->SetSavePlots(kFALSE);
+      ana->SetAddTrainToCanvasName(kTRUE);
+
+      result = ana->Regenerate();
+      if (!result) return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysisComparer::ExecuteTasks()
+{
+  if ((fCompareTask & kCompareTruth) == kCompareTruth) CompareTruth();
+  if ((fCompareTask & kCompareMeasured) == kCompareMeasured) CompareMeasured();
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisComparer::CompareMeasured()
+{
+  TObjArray array(fAnalysisArray->GetEntriesFast());
+  array.SetOwner(kTRUE);
+
+  TIter next(fAnalysisArray);
+
+  DJetCorrBase* ana = 0;
+  Int_t i = 0;
+
+  while ((ana = static_cast<DJetCorrBase*>(next()))) {
+    TH2* measured = ana->GetMeasured(fParamIndexes[i], kTRUE);
+    if (!measured) continue;
+    measured->Scale(1. / measured->Integral());
+    TString hname = Form("%s_%s", ana->GetName(), measured->GetName());
+    measured->SetName(hname);
+    measured->SetTitle(ana->GetName());
+    array.Add(measured);
+    i++;
+  }
+
+  CompareZvsJetPt("Measured", array);
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisComparer::CompareTruth()
+{
+  TObjArray array(fAnalysisArray->GetEntriesFast());
+  array.SetOwner(kTRUE);
+
+  TIter next(fAnalysisArray);
+
+  DJetCorrBase* ana = 0;
+  Int_t i = 0;
+
+  while ((ana = static_cast<DJetCorrBase*>(next()))) {
+    TH2* truth = ana->GetTruth(fParamIndexes[i], kTRUE);
+    if (!truth) continue;
+    truth->Scale(1. / truth->Integral());
+    TString hname = Form("%s_%s", ana->GetName(), truth->GetName());
+    truth->SetName(hname);
+    truth->SetTitle(ana->GetName());
+    array.Add(truth);
+    i++;
+  }
+
+  CompareZvsJetPt("Truth", array);
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& array)
+{
+  gStyle->SetOptStat(0);
+
+  Printf("Entering method DJetCorrAnalysisComparer::CompareZvsJetPt");
+
+  TIter next(&array);
+
+  TCanvas* canvas = 0;
+  TH2* hist = 0;
+  Int_t i = 0;
+
+  TObjArray baselineHistos;
+
+  HistoStyler styler;
+  styler.SetMarkerStyle(kFullCircle);
+  styler.SetMarkerSize(0.8);
+  styler.SetVariableMarkerColor();
+  styler.SetVariableLineColor();
+  styler.SetLineWidth(1);
+
+  TLegend* leg = SetUpLegend(0.10, 0.70, 0.46, 0.86, 12);
+
+  while ((hist = static_cast<TH2*>(next()))) {
+
+    if (!canvas) {
+      Int_t nrows = 1;
+      if (fMakeRatios) nrows = 2;
+      canvas = SetUpCanvas(name,
+                           "#it{z}_{||}", 0, 1., kFALSE,
+                           "arb. units", 0, 0, kFALSE,
+                           1200, 400*nrows, nrows, hist->GetNbinsX());
+    }
+
+    for (Int_t ibin = 1; ibin <= hist->GetNbinsX(); ibin++) {
+      TString hname = Form("%s_JetPt_%d_%d", hist->GetName(), TMath::FloorNint(hist->GetXaxis()->GetBinLowEdge(ibin)*10), TMath::FloorNint(hist->GetXaxis()->GetBinUpEdge(ibin)*10));
+      Printf("Now projecting %s", hname.Data());
+      TH1* proj = hist->ProjectionY(hname, ibin, ibin);
+      proj->SetTitle(hist->GetTitle());
+      styler.Apply(proj, i, 0);
+      fOutputList->Add(proj);
+      FitHistogramInPad(proj, canvas->cd(ibin));
+      if (ibin == 1) leg->AddEntry(proj, proj->GetTitle(), "pe");
+
+      if (fMakeRatios) {
+        TVirtualPad* pad = canvas->cd(ibin+hist->GetNbinsX());
+        if (baselineHistos.GetEntriesFast() < hist->GetNbinsX()) {
+          baselineHistos.Add(proj);
+
+          TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
+          if (blankHist) blankHist->GetYaxis()->SetTitle("ratio");
+        }
+        else {
+          hname += "Ratio";
+          TH1* ratio = static_cast<TH1*>(proj->Clone(hname));
+          ratio->Divide(static_cast<TH1*>(baselineHistos.At(ibin-1)));
+          styler.Apply(ratio, i, 0);
+          FitHistogramInPad(ratio, pad);
+          fOutputList->Add(ratio);
+        }
+      }
+    }
+    i++;
+  }
+
+  canvas->cd(1);
+  leg->Draw();
 }

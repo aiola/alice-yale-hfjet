@@ -90,26 +90,19 @@ Bool_t DJetCorrUnfold::PrepareData()
   
   fAnalysis->SetSavePlots(kFALSE);
   fAnalysis->SetAddTrainToCanvasName(kFALSE);
-  fAnalysis->SetInvMassPlotNorm(DJetCorrAnalysis::kNormalizeBackground);
   
   Bool_t result = kFALSE;
 
   if (!fForceRegeneration) {
-    Printf("Now loading histograms"); 
     result = fAnalysis->LoadOutputHistograms();
   }
   
   if (!result) {
-    result = fAnalysis->GenerateDJetCorrHistograms();
-    if (!result) return kFALSE;
-    
-    result = fAnalysis->PlotDJetCorrHistograms(kTRUE);
+    result = fAnalysis->Regenerate();
     if (!result) return kFALSE;
   }
-
-  Printf("Now getting histograms");
   
-  fTruth = fAnalysis->GetTruth(fRespParamIndex, kTRUE);
+  fTruth = fAnalysis->GetTruth(fDataParamIndex, kTRUE);
   fMeasured = fAnalysis->GetMeasured(fDataParamIndex, kTRUE);
 
   return kTRUE;
@@ -130,7 +123,7 @@ Bool_t DJetCorrUnfold::PrepareResponse()
   }
   
   if (!result) {
-    result = fResponse->ProjectResponseMatrices();
+    result = fResponse->Regenerate();
     if (!result) return kFALSE;
   }
 
@@ -148,15 +141,12 @@ Bool_t DJetCorrUnfold::Start()
 {
   Bool_t result = kFALSE;
 
-  Printf("now preparing data");
   result = PrepareData();
   if (!result) return kFALSE;
 
-  Printf("now preparing response");
   result = PrepareResponse();
   if (!result) return kFALSE;
 
-  Printf("now unfolding");
   result = Unfold();
   return result;
 }
@@ -177,6 +167,7 @@ Bool_t DJetCorrUnfold::Unfold()
   }
   
   RooUnfoldBayes bayes(resp, fMeasured);
+  bayes.SetRegParm(2);
   fUnfolded = static_cast<TH2*>(bayes.Hreco());
   fUnfolded->GetXaxis()->SetName("xaxis");
   fUnfolded->GetYaxis()->SetName("yaxis");
@@ -187,6 +178,9 @@ Bool_t DJetCorrUnfold::Unfold()
   
   new TCanvas;
   fUnfolded->Draw("colz");
+
+  new TCanvas;
+  fTruth->Draw("colz");
 
   return kTRUE;
 }
