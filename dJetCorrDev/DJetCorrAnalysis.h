@@ -57,9 +57,12 @@ class DJetCorrAnalysis : public DJetCorrBase {
 
   void GenerateMeaduredSpectrum(DJetCorrAnalysisParams* params);
 
-  TString GetTruthName(Int_t p);
-  TString GetMeasuredName(Int_t p);
-  
+  TString GetDzTruthName(Int_t p);
+  TString GetDzMeasuredName(Int_t p);
+
+  TString GetDPtTruthName(Int_t p);
+  TString GetDPtMeasuredName(Int_t p);
+
  protected:
   Bool_t          LoadOutputHistograms();
   Bool_t          ClearInputData();

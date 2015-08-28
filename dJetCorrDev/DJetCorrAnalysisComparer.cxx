@@ -146,24 +146,29 @@ void DJetCorrAnalysisComparer::CompareMeasured()
   Int_t i = 0;
 
   while ((ana = static_cast<DJetCorrBase*>(next()))) {
-    TH2* measured = ana->GetMeasured(fParamIndexes[i], kTRUE);
-    if (!measured) continue;
-    measured->Scale(1. / measured->Integral());
-    TString hname = Form("%s_%s", ana->GetName(), measured->GetName());
-    measured->SetName(hname);
-    measured->SetTitle(ana->GetName());
-    array.Add(measured);
+    TH2* measured = ana->GetDzMeasured(fParamIndexes[i], kTRUE);
+    if (measured) {
+      measured->Scale(1. / measured->Integral(), "width");
+      TString hname = Form("%s_%s", ana->GetName(), measured->GetName());
+      measured->SetName(hname);
+      measured->SetTitle(ana->GetName());
+      array.Add(measured);
+    }
+
     i++;
   }
 
-  CompareZvsJetPt("Measured", array);
+  CompareZvsJetPt("DzSpectraComparisonMeasured", array);
 }
 
 //____________________________________________________________________________________
 void DJetCorrAnalysisComparer::CompareTruth()
 {
-  TObjArray array(fAnalysisArray->GetEntriesFast());
-  array.SetOwner(kTRUE);
+  TObjArray arrayDz(fAnalysisArray->GetEntriesFast());
+  arrayDz.SetOwner(kTRUE);
+
+  TObjArray arrayDPt(fAnalysisArray->GetEntriesFast());
+  arrayDPt.SetOwner(kFALSE);
 
   TIter next(fAnalysisArray);
 
@@ -171,17 +176,30 @@ void DJetCorrAnalysisComparer::CompareTruth()
   Int_t i = 0;
 
   while ((ana = static_cast<DJetCorrBase*>(next()))) {
-    TH2* truth = ana->GetTruth(fParamIndexes[i], kTRUE);
-    if (!truth) continue;
-    truth->Scale(1. / truth->Integral());
-    TString hname = Form("%s_%s", ana->GetName(), truth->GetName());
-    truth->SetName(hname);
-    truth->SetTitle(ana->GetName());
-    array.Add(truth);
+    TH2* truthDz = ana->GetDzTruth(fParamIndexes[i], kTRUE);
+    if (truthDz) {
+      truthDz->Scale(1. / truthDz->Integral(), "width");
+      TString hname = Form("%s_%s", ana->GetName(), truthDz->GetName());
+      truthDz->SetName(hname);
+      truthDz->SetTitle(ana->GetName());
+      arrayDz.Add(truthDz);
+    }
+
+    TH1* truthDPt = ana->GetDPtTruth(fParamIndexes[i], kTRUE);
+    if (truthDPt) {
+      truthDPt->Scale(1. / truthDPt->Integral(), "width");
+      TString hname = Form("%s_%s", ana->GetName(), truthDPt->GetName());
+      truthDPt->SetName(hname);
+      truthDPt->SetTitle(ana->GetName());
+      arrayDPt.Add(truthDPt);
+    }
+
     i++;
   }
 
-  CompareZvsJetPt("Truth", array);
+  CompareZvsJetPt("DzSpectraComparisonTruth", arrayDz);
+
+  CompareDPt("DPtSpectraComparisonTruth", arrayDPt);
 }
 
 //____________________________________________________________________________________
@@ -189,7 +207,9 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
 {
   gStyle->SetOptStat(0);
 
-  Printf("Entering method DJetCorrAnalysisComparer::CompareZvsJetPt");
+  Printf("Entering method DJetCorrAnalysisComparer::CompareZvsJetPt: %d histograms to compare", array.GetEntriesFast());
+
+  if (array.GetEntriesFast() == 0) return;
 
   TIter next(&array);
 
@@ -216,7 +236,7 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
       canvas = SetUpCanvas(name,
                            "#it{z}_{||}", 0, 1., kFALSE,
                            "arb. units", 0, 0, kFALSE,
-                           1200, 400*nrows, nrows, hist->GetNbinsX());
+                           400*hist->GetNbinsX(), 400*nrows, nrows, hist->GetNbinsX());
     }
 
     for (Int_t ibin = 1; ibin <= hist->GetNbinsX(); ibin++) {
@@ -252,4 +272,77 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
 
   canvas->cd(1);
   leg->Draw();
+
+  if (fSavePlots) SavePlot(canvas);
 }
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisComparer::CompareDPt(const char* name, TObjArray& array)
+{
+  gStyle->SetOptStat(0);
+
+  Printf("Entering method DJetCorrAnalysisComparer::CompareDPt: %d histograms to compare", array.GetEntriesFast());
+
+  if (array.GetEntriesFast() == 0) return;
+
+  TIter next(&array);
+
+  TCanvas* canvas = 0;
+  TH1* hist = 0;
+  Int_t i = 0;
+
+  TH1* baselineHisto = 0;
+
+  HistoStyler styler;
+  styler.SetMarkerStyle(kFullCircle);
+  styler.SetMarkerSize(0.8);
+  styler.SetVariableMarkerColor();
+  styler.SetVariableLineColor();
+  styler.SetLineWidth(1);
+
+  TLegend* leg = SetUpLegend(0.40, 0.70, 0.76, 0.86, 12);
+
+  while ((hist = static_cast<TH1*>(next()))) {
+    if (!canvas) {
+      Int_t nrows = 1;
+      if (fMakeRatios) nrows = 2;
+      canvas = SetUpCanvas(name,
+                           "#it{p}_{T,D}", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax(), kFALSE,
+                           "arb. units", 1, 1, kTRUE,
+                           500, 500*nrows, nrows, 1);
+    }
+
+    TVirtualPad* pad = canvas->cd();
+    if (fMakeRatios) pad = canvas->cd(1);
+
+    styler.Apply(hist, i, 0);
+    fOutputList->Add(hist);
+    FitHistogramInPad(hist, pad);
+    leg->AddEntry(hist, hist->GetTitle(), "pe");
+
+    if (fMakeRatios) {
+      pad = canvas->cd(2);
+      if (!baselineHisto) {
+        baselineHisto = hist;
+
+        TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
+        if (blankHist) blankHist->GetYaxis()->SetTitle("ratio");
+      }
+      else {
+        TString hname = Form("%sRatio", hist->GetName());
+        TH1* ratio = static_cast<TH1*>(hist->Clone(hname));
+        ratio->Divide(baselineHisto);
+        styler.Apply(ratio, i, 0);
+        FitHistogramInPad(ratio, pad);
+        fOutputList->Add(ratio);
+      }
+    }
+    i++;
+  }
+
+  canvas->cd(1);
+  leg->Draw();
+
+  if (fSavePlots) SavePlot(canvas);
+}
+

@@ -14,7 +14,7 @@ class DJetCorrAnalysisParams : public TObject
   enum DJetCorrAnalysisType {KUndefinedAna=0, kInvMassAna, kResponseMatrixAna};
 
   DJetCorrAnalysisParams();
-  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC=kFALSE);
+  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
   DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
   
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass = min        ; fInvMaxMass = max        ; }

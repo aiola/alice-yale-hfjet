@@ -18,10 +18,15 @@ DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets
     gROOT->LoadMacro("DJetCorrAnalysisComparer.cxx+g");
   }
   
-  DJetCorrBase* ana  = runDJetCorrAnalysis("", train1, kTRUE, kFALSE, inputPath);
-  DJetCorrBase* resp = runDJetCorrAnalysis("", train2, kTRUE, kFALSE, inputPath);
+  DJetCorrBase* ana1 = runDJetCorrAnalysis("", train1, kFALSE, kTRUE, kFALSE, inputPath);
+  DJetCorrBase* ana2 = runDJetCorrAnalysis("", train2, kFALSE, kTRUE, kTRUE, inputPath);
   
-  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth, ana, resp, 0, 0);
+  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth, ana1, ana2, 0, 0);
+  comparer->SetSavePlots(kTRUE);
+  comparer->SetOverwrite(kTRUE);
   comparer->SetMakeRatios(kFALSE);
   comparer->Start();
+  comparer->SaveOutputFile();
+
+  return comparer;
 }

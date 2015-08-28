@@ -43,7 +43,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
 
 //____________________________________________________________________________________
 DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius,
-                                               const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC) :
+                                               const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC, Bool_t isBkgSub) :
   TObject(),
   fName(),
   fNDPtBins(0),
@@ -72,7 +72,12 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 {
   if (anaType == kInvMassAna) {
     if (isMC) {
-      fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+      if (isBkgSub) {
+        fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_MCrec_Jet_AKT%s%s_%sMCrec_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+      }
+      else {
+        fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
+      }
       fTruthInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_MC_Jet_AKT%s%s_mcparticles%s_pT0000_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fDmesonName.Data());
     }
     else {
@@ -87,7 +92,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   if (fDmesonName == "DStar") {
     fNDPtBins = 8;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  0.8;
+    fDPtBins[ 0] =  1.6;
     fDPtBins[ 1] =  3.0;
     fDPtBins[ 2] =  5.0;
     fDPtBins[ 3] =  6.0;
@@ -111,18 +116,18 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fJetPtBins[ 2] =  30.0;
   }
   else {
-    fNDPtBins = 9;
+    fNDPtBins = 8;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  0.5;
-    fDPtBins[ 1] =  1.0;
-    fDPtBins[ 2] =  2.0;
-    fDPtBins[ 3] =  3.0;
-    fDPtBins[ 4] =  4.0;
-    fDPtBins[ 5] =  5.0;
-    fDPtBins[ 6] =  6.0;
-    fDPtBins[ 7] = 10.0;
-    fDPtBins[ 8] = 20.0;
-    fDPtBins[ 9] = 40.0;
+    //fDPtBins[ 0] =  0.4;
+    fDPtBins[ 0] =  1.0;
+    fDPtBins[ 1] =  2.0;
+    fDPtBins[ 2] =  3.0;
+    fDPtBins[ 3] =  4.0;
+    fDPtBins[ 4] =  5.0;
+    fDPtBins[ 5] =  6.0;
+    fDPtBins[ 6] = 10.0;
+    fDPtBins[ 7] = 15.0;
+    fDPtBins[ 8] = 30.0;
 
     SetInvMassRange(421, 0.30);
 
@@ -139,9 +144,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
   fNzBins = 4;
   fzBins = new Double_t[fNzBins+1];
-  fzBins[ 0] =   0.10;
-  fzBins[ 1] =   0.30;
-  fzBins[ 2] =   0.50;
+  fzBins[ 0] =   0.20;
+  fzBins[ 1] =   0.40;
+  fzBins[ 2] =   0.60;
   fzBins[ 3] =   0.80;
   fzBins[ 4] =   1.00;
 }

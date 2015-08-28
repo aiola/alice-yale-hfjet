@@ -26,6 +26,7 @@ class DJetCorrAnalysisComparer : public DJetCorrBase {
   void CompareTruth();
   void CompareMeasured();
   void CompareZvsJetPt(const char* name, TObjArray& array);
+  void CompareDPt(const char* name, TObjArray& array);
 
   DJetCorrBase* AddAnalysis(DJetCorrBase* ana, Int_t ipar=0);
   

@@ -104,13 +104,13 @@ Bool_t DJetCorrBase::ClearInputData()
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC)
+DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC, Bool_t isBkgSub)
 {
   // Add the analysis params for the D meson type, jet type and jet radius provided.
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName, fAnaType, isMC);
+  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName, fAnaType, isMC, isBkgSub);
 
   fAnalysisParams->Add(params);
 
@@ -835,18 +835,32 @@ void DJetCorrBase::FitGraphInPad(TGraph* graph, TVirtualPad* pad)
 }
 
 //____________________________________________________________________________________
-void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad)
+void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad, Double_t extraFactor)
 {
   TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
   if (blankHist) {
     Double_t miny = blankHist->GetMinimum();
-    Double_t maxy = blankHist->GetMaximum() / 1.8;
+    if (pad->GetLogy()) miny *= extraFactor;
+    Double_t maxy = blankHist->GetMaximum() / extraFactor;
 
     GetMinMax(hist, miny, maxy);
 
-    blankHist->SetMinimum(miny);
-    blankHist->SetMaximum(maxy * 1.8);
+    if (pad->GetLogy()) {
+      if (miny <= 0) miny = blankHist->GetMinimum() / extraFactor;
+      if (maxy <= 0) maxy = blankHist->GetMaximum() * extraFactor;
 
+      miny /= extraFactor;
+    }
+    else {
+      miny = 0;
+    }
+
+    maxy *= extraFactor;
+
+    blankHist->SetMinimum(miny);
+    blankHist->SetMaximum(maxy);
+
+    //Printf("Now drawing %s", hist->GetName());
     hist->Draw("same");
   }
   else {
@@ -891,7 +905,7 @@ TLegend* DJetCorrBase::GetLegend(TPad* pad)
 //____________________________________________________________________________________
 Bool_t DJetCorrBase::CheckExactRebin(TAxis* orig, TAxis* dest)
 {
-  for (Int_t i = 0; i <= orig->GetNbins(); i++) {
+  for (Int_t i = 1; i <= orig->GetNbins(); i++) {
     Double_t xlow    = orig->GetBinLowEdge(i);
     Double_t xup     = orig->GetBinUpEdge(i);
     Int_t    xlowBin = dest->FindBin(xlow);
@@ -953,18 +967,15 @@ TH1* DJetCorrBase::Rebin(TH1* orig, const char* name, Int_t nbins, const Double_
   if (!CheckExactRebin(orig->GetXaxis(), dest->GetXaxis())) Printf("WARNING: unable to exact rebin axis %s of histogram %s", orig->GetXaxis()->GetTitle(), name);
   dest->GetXaxis()->SetTitle(orig->GetXaxis()->GetTitle());
   
-  for (Int_t x = 0; x <= orig->GetNbinsX(); x++) {
-    Double_t xlow    = orig->GetXaxis()->GetBinLowEdge(x);
-    Double_t xup     = orig->GetXaxis()->GetBinUpEdge(x);
-    Int_t    xlowBin = dest->GetXaxis()->FindBin(xlow);
-    Int_t    xupBin  = dest->GetXaxis()->FindBin(xup);
-    if (TMath::Abs(xup - dest->GetXaxis()->GetBinLowEdge(xupBin)) < fgkEpsilon) xupBin--;
+  for (Int_t xBin = 0; xBin <= orig->GetNbinsX()+1; xBin++) {
+    Double_t xVal     = orig->GetXaxis()->GetBinCenter(xBin);
+    Int_t    xDestBin = dest->GetXaxis()->FindBin(xVal);
     
-    Double_t content = orig->GetBinContent(x);
-    Double_t err     = orig->GetBinError(x);
+    Double_t content = orig->GetBinContent(xBin);
+    Double_t err     = orig->GetBinError(xBin);
 
-    dest->SetBinContent(xlowBin, dest->GetBinContent(xlowBin)+content);
-    dest->SetBinError(xlowBin, TMath::Sqrt(dest->GetBinError(xlowBin)*dest->GetBinError(xlowBin)+err*err));
+    dest->SetBinContent(xDestBin, dest->GetBinContent(xDestBin)+content);
+    dest->SetBinError(xDestBin, TMath::Sqrt(dest->GetBinError(xDestBin)*dest->GetBinError(xDestBin)+err*err));
   }
 
   return dest;
@@ -981,25 +992,19 @@ TH2* DJetCorrBase::Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double
   dest->GetXaxis()->SetTitle(orig->GetXaxis()->GetTitle());
   dest->GetYaxis()->SetTitle(orig->GetYaxis()->GetTitle());
   
-  for (Int_t x = 0; x <= orig->GetNbinsX(); x++) {
-    Double_t xlow    = orig->GetXaxis()->GetBinLowEdge(x);
-    Double_t xup     = orig->GetXaxis()->GetBinUpEdge(x);
-    Int_t    xlowBin = dest->GetXaxis()->FindBin(xlow);
-    Int_t    xupBin  = dest->GetXaxis()->FindBin(xup);
-    if (TMath::Abs(xup - dest->GetXaxis()->GetBinLowEdge(xupBin)) < fgkEpsilon) xupBin--;
+  for (Int_t xBin = 0; xBin <= orig->GetNbinsX(); xBin++) {
+    Double_t xVal     = orig->GetXaxis()->GetBinCenter(xBin);
+    Int_t    xDestBin = dest->GetXaxis()->FindBin(xVal);
 
-    for (Int_t y = 0; y <= orig->GetNbinsY(); y++) {
-      Double_t ylow    = orig->GetYaxis()->GetBinLowEdge(y);
-      Double_t yup     = orig->GetYaxis()->GetBinUpEdge(y);
-      Int_t    ylowBin = dest->GetYaxis()->FindBin(ylow);
-      Int_t    yupBin  = dest->GetYaxis()->FindBin(yup);
-      if (TMath::Abs(yup - dest->GetYaxis()->GetBinLowEdge(yupBin)) < fgkEpsilon) yupBin--;
+    for (Int_t yBin = 0; yBin <= orig->GetNbinsY(); yBin++) {
+      Double_t yVal     = orig->GetYaxis()->GetBinCenter(yBin);
+      Int_t    yDestBin = dest->GetYaxis()->FindBin(yVal);
     
-      Double_t content = orig->GetBinContent(x,y);
-      Double_t err     = orig->GetBinError(x,y);
+      Double_t content = orig->GetBinContent(xBin, yBin);
+      Double_t err     = orig->GetBinError(xBin, yBin);
 
-      dest->SetBinContent(xlowBin, ylowBin, dest->GetBinContent(xlowBin, ylowBin)+content);
-      dest->SetBinError(xlowBin, ylowBin, TMath::Sqrt(dest->GetBinError(xlowBin, ylowBin)*dest->GetBinError(xlowBin, ylowBin)+err*err));
+      dest->SetBinContent(xDestBin, yDestBin, dest->GetBinContent(xDestBin, yDestBin)+content);
+      dest->SetBinError(xDestBin, yDestBin, TMath::Sqrt(dest->GetBinError(xDestBin, yDestBin)*dest->GetBinError(xDestBin, yDestBin)+err*err));
     }
   }
 
@@ -1007,9 +1012,9 @@ TH2* DJetCorrBase::Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double
 }
 
 //____________________________________________________________________________________
-TH2* DJetCorrBase::GetTruth(Int_t p, Bool_t copy)
+TH2* DJetCorrBase::GetDzTruth(Int_t p, Bool_t copy)
 {
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetTruthName(p)));
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetDzTruthName(p)));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1022,15 +1027,45 @@ TH2* DJetCorrBase::GetTruth(Int_t p, Bool_t copy)
 }
 
 //____________________________________________________________________________________
-TH2* DJetCorrBase::GetMeasured(Int_t p, Bool_t copy)
+TH2* DJetCorrBase::GetDzMeasured(Int_t p, Bool_t copy)
 {
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetMeasuredName(p)));
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetDzMeasuredName(p)));
 
   if (copy && hist) {
     TString hname = hist->GetName();
     hname += "_copy";
 
     hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy)
+{
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtTruthName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH1*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy)
+{
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtMeasuredName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH1*>(hist->Clone(hname));
   }
 
   return hist;
