@@ -3,7 +3,8 @@
 class DJetCorrAnalysis;
 
 DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_508",
-                                      Bool_t isMC = kTRUE, Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
+                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
+                                      const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
 
@@ -39,11 +40,11 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
-  //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC);
-  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC);
+  //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub);
+  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
 
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC);
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC);
+  //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
+  //projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");

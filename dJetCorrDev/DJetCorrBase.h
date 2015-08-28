@@ -39,7 +39,7 @@ class DJetCorrBase : public TNamed {
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
   void   SetAddTrainToCanvasName(Bool_t s)     { fAddTrainToCanvasName= s   ; }
 
-  DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE);
+  DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
   DJetCorrAnalysisParams* AddAnalysisParams(DJetCorrAnalysisParams* params);
   
   virtual Bool_t Init();
@@ -53,14 +53,20 @@ class DJetCorrBase : public TNamed {
 
   virtual Bool_t Regenerate() { return kTRUE;}
 
-  TH2* GetTruth(Int_t p, Bool_t copy);
-  TH2* GetMeasured(Int_t p, Bool_t copy);
+  TH2* GetDzTruth(Int_t p, Bool_t copy);
+  TH2* GetDzMeasured(Int_t p, Bool_t copy);
 
-  virtual TString GetTruthName(Int_t /*p*/) { return ""; }
-  virtual TString GetMeasuredName(Int_t /*p*/) { return ""; }
+  TH1* GetDPtTruth(Int_t p, Bool_t copy);
+  TH1* GetDPtMeasured(Int_t p, Bool_t copy);
+
+  virtual TString GetDzTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetDzMeasuredName(Int_t /*p*/) { return ""; }
+
+  virtual TString GetDPtTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetDPtMeasuredName(Int_t /*p*/) { return ""; }
 
   static void FitGraphInPad(TGraph* graph, TVirtualPad* pad);
-  static void FitHistogramInPad(TH1* hist, TVirtualPad* pad);
+  static void FitHistogramInPad(TH1* hist, TVirtualPad* pad, Double_t extraFactor=1.8);
   static void GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy);
   static void GetMinMax(TH1* hist, Double_t& miny, Double_t& maxy);
   static TLegend* GetLegend(TPad* pad);

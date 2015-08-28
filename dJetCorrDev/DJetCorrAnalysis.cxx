@@ -346,6 +346,11 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
       hDpt->SetName(hname);
       fOutputList->Add(hDpt);
 
+      // Rebin to the coarse binning ready for unfolding
+      TString hname = Form("%s_Coarse", hDpt->GetName());
+      TH1* hDptCoarse = Rebin(hDpt, hname, params->GetNDPtBins(), params->GetDPtBins());
+      fOutputList->Add(hDptCoarse);
+
       if (dSoftPionPtAxis >= 0) {
         TH2* hdsoftpionptVsDpt = fDmesons->Projection(dSoftPionPtAxis, dPtAxis, "EO");
         hdsoftpionptVsDpt->SetName(Form("h%s_SoftPionVsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
@@ -650,10 +655,10 @@ Bool_t DJetCorrAnalysis::PlotDJetCorrHistograms(DJetCorrAnalysisParams* params)
                  params->GetMinZ(), params->GetMaxZ(),
                  1, 1, 1);
 
-  PlotDPtSpectraVsJetPt(params);
-  PlotDPtSpectraVsDz(params);
-  PlotDPtSpectraVsMatchingStatus(params);
-  PlotDzSpectraVsJetPt(params);
+  PlotDPtSpectraVsJetPt(params, kTRUE);
+  PlotDPtSpectraVsDz(params, kTRUE);
+  PlotDPtSpectraVsMatchingStatus(params, kTRUE);
+  PlotDzSpectraVsJetPt(params, kTRUE);
   
   TH1::AddDirectory(addDirStatus);
   
@@ -800,7 +805,7 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, B
     histos[i] = 0;
     
     TString spectrumCuts(params->GetCutString(kMatched, -1, i, -1));
-    TString spectrumName(Form("h%s_Spectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
+    TString spectrumName(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
     TH1* hs = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumName));
     if (!hs) {
       Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsJetPt : Histogram '%s' not found!", spectrumName.Data());
@@ -816,7 +821,7 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, B
   }
 
   TString cname(Form("fig_%s_DPtSpectraVsJetPt", params->GetName()));
-  Bool_t res = PlotSpectra(params->GetNJetPtBins(), histos, cname, kFALSE);
+  Bool_t res = PlotSpectra(params->GetNJetPtBins(), histos, cname, kTRUE);
 
   delete[] histos;
 
@@ -847,7 +852,7 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool
   }
 
   TString cname(Form("fig_%s_DPtSpectraVsZ", params->GetName()));
-  Bool_t res = PlotSpectra(params->GetNzBins(), histos, cname, kFALSE);
+  Bool_t res = PlotSpectra(params->GetNzBins(), histos, cname, kTRUE);
 
   delete[] histos;
 
@@ -857,9 +862,9 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* params, Bool_t eventScaling)
 {
-  TH1* histos[2] = {0};
+  TH1* histos[3] = {0};
   
-  TString spectrumCuts(params->GetCutString(kMatched, -1, -1, -1));
+  TString spectrumCuts = params->GetCutString(kMatched, -1, -1, -1);
   
   TString spectrumNameMatched(Form("h%s_DPtSpectrum_%s_Matched", params->GetName(), spectrumCuts.Data()));
   TH1* hs0 = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumNameMatched));
@@ -871,10 +876,14 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
       histos[0]->Scale(1. / GetEvents(), "width");
       histos[0]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
+
+    histos[0]->SetTitle("Matched");
   }
   else {
     Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameMatched.Data());
   }
+
+  spectrumCuts = params->GetCutString(kNotMatched, -1, -1, -1);
 
   TString spectrumNameNotMatched(Form("h%s_DPtSpectrum_%s_NotMatched", params->GetName(), spectrumCuts.Data()));
   TH1* hs1 = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumNameNotMatched));
@@ -886,13 +895,34 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
       histos[1]->Scale(1. / GetEvents(), "width");
       histos[1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
+
+    histos[1]->SetTitle("Not Matched");
+  }
+  else {
+    Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameNotMatched.Data());
+  }
+
+  spectrumCuts = params->GetCutString(kAnyMatchingStatus, -1, -1, -1);
+
+  TString spectrumNameAnyMatchingStatus(Form("h%s_DPtSpectrum_%s_AnyMatchingStatus", params->GetName(), spectrumCuts.Data()));
+  TH1* hs2 = dynamic_cast<TH1*>(fOutputList->FindObject(spectrumNameAnyMatchingStatus));
+  if (hs1) {
+    spectrumNameAnyMatchingStatus += "_copy";
+    histos[2] = static_cast<TH1*>(hs2->Clone(spectrumNameAnyMatchingStatus));
+
+    if (eventScaling && GetEvents() > 0) {
+      histos[2]->Scale(1. / GetEvents(), "width");
+      histos[2]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
+    }
+
+    histos[2]->SetTitle("All");
   }
   else {
     Printf("Error-DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus : Histogram '%s' not found!", spectrumNameNotMatched.Data());
   }
   
   TString cname(Form("fig_%s_DPtSpectraVsMatchingStatus", params->GetName()));
-  return PlotSpectra(2, histos, cname, kFALSE);
+  return PlotSpectra(3, histos, cname, kTRUE);
 }
 
 //____________________________________________________________________________________
@@ -996,7 +1026,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   
   TString prefix(params->GetName());
 
-  TString spectrumCuts(params->GetCutString(kMatched, -1, jetptBin, dzBin));
+  TString spectrumCuts(params->GetCutString(st, -1, jetptBin, dzBin));
   TString spectrumName(Form("h%s_DPtSpectrum_%s_%s", prefix.Data(), spectrumCuts.Data(), matchString.Data()));
 
   TH1* histSpectrum = GetOutputHistogram(spectrumName);
@@ -1006,7 +1036,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
       delete histSpectrum;
     }
 
-    histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNzBins(), params->GetzBins());
+    histSpectrum = new TH1D(spectrumName, jetCuts, params->GetNDPtBins(), params->GetDPtBins());
     histSpectrum->GetXaxis()->SetTitle("#it{p}_{T,D}");
     histSpectrum->GetYaxis()->SetTitle("counts");
     fOutputList->Add(histSpectrum);
@@ -1260,49 +1290,26 @@ Bool_t DJetCorrAnalysis::PlotSpectra(Int_t n, TH1** histSpectra, const char* nam
   styler.SetLineWidth(1);
   styler.Apply(n, histSpectra);
   
-  Double_t min = histSpectra[0]->GetMinimum();
-  Double_t max = histSpectra[0]->GetMaximum();
+  Double_t min = TMath::Infinity();
+  Double_t max = -TMath::Infinity();
 
   TCanvas* canvas = SetUpCanvas(cname,
                                 histSpectra[0]->GetXaxis()->GetTitle(), histSpectra[0]->GetXaxis()->GetXmin(), histSpectra[0]->GetXaxis()->GetXmax(), kFALSE,
                                 histSpectra[0]->GetYaxis()->GetTitle(), min, max, logY);
 
   TLegend* leg = SetUpLegend(0.58, 0.68, 0.88, 0.88, 14);
+
+  Double_t extraFactor = 1.5;
+  if (logY) extraFactor = 2.0;
   
   for (Int_t i = 0; i < n; i++) {
     if (!histSpectra[i]) continue;
 
-    Int_t minBin = histSpectra[i]->GetMinimumBin();
-    min = TMath::Min(min, histSpectra[i]->GetBinContent(minBin) - histSpectra[i]->GetBinError(minBin));
-    if (logY && min <= 0) min = 1e-1;
-
-    Int_t maxBin = histSpectra[i]->GetMaximumBin();
-    max = TMath::Max(max, histSpectra[i]->GetBinContent(maxBin) + histSpectra[i]->GetBinError(maxBin));
-
-    histSpectra[i]->Draw("same");
+    FitHistogramInPad(histSpectra[i], canvas, extraFactor);
 
     leg->AddEntry(histSpectra[i], histSpectra[i]->GetTitle(), "pe");
   }
 
-  if (logY) {
-    min /= 2;
-    max *= 2;
-  }
-  else {
-    if (min > 0) min = 0;
-    else min -= max*0.5;
-
-    if (max > 0) max *= 1.5;
-    else max /= 1.5;
-  }
-
-  TH1* blankHist = dynamic_cast<TH1*>(canvas->GetListOfPrimitives()->At(0));
-  if (blankHist) {
-    blankHist->GetYaxis()->SetRangeUser(min, max);
-  }
-  else {
-    Printf("Error-DJetCorrAnalysis::PlotSpectra : Could not find blank histogram!");
-  }
 
   leg->Draw();
 
@@ -1876,7 +1883,7 @@ Bool_t DJetCorrAnalysis::Regenerate()
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysis::GetTruthName(Int_t p)
+TString DJetCorrAnalysis::GetDzTruthName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
@@ -1888,7 +1895,7 @@ TString DJetCorrAnalysis::GetTruthName(Int_t p)
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysis::GetMeasuredName(Int_t p)
+TString DJetCorrAnalysis::GetDzMeasuredName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
@@ -1896,5 +1903,31 @@ TString DJetCorrAnalysis::GetMeasuredName(Int_t p)
   TString spectrum2Dcuts(params->GetCutString(kMatched, -1, -1, -1));
   TString hname(Form("h%s_DzSpectrum2D_%s_Matched", params->GetName(), spectrum2Dcuts.Data()));
   
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetDPtTruthName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString spectrumCuts(params->GetCutString(kAnyMatchingStatus, -1, -1, -1));
+  TString hname = Form("h%s_MesonPt_%s_AnyMatchingStatus_Truth_Coarse", params->GetName(), spectrumCuts.Data());
+
+  Printf("%s", hname.Data());
+
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetDPtMeasuredName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString spectrumCuts(params->GetCutString(kAnyMatchingStatus, -1, -1, -1));
+  TString hname(Form("h%s_DPtSpectrum_%s_AnyMatchingStatus", params->GetName(), spectrumCuts.Data()));
+
   return hname;
 }
