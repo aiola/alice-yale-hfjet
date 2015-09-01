@@ -1058,6 +1058,39 @@ TH2* DJetCorrBase::Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double
 }
 
 //____________________________________________________________________________________
+TH1* DJetCorrBase::Rebin(TH1* orig, const char* name, Int_t nbins, Double_t min, Double_t max)
+{
+  Double_t* bins = GenerateFixedArray(nbins, min, max);
+  TH1* res = Rebin(orig, name, nbins, bins);
+  delete[] bins;
+  return res;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrBase::Rebin(TH2* orig, const char* name, Int_t nbinsx, Double_t minX, Double_t maxX, Int_t nbinsy, Double_t minY, Double_t maxY)
+{
+  Double_t* binsX = GenerateFixedArray(nbinsx, minX, maxX);
+  Double_t* binsY = GenerateFixedArray(nbinsy, minY, maxY);
+
+  TH2* res = Rebin(orig, name, nbinsx, binsX, nbinsy, binsY);
+  delete[] binsX;
+  delete[] binsY;
+  return res;
+}
+
+//____________________________________________________________________________________
+Double_t* DJetCorrBase::GenerateFixedArray(Int_t n, Double_t min, Double_t max)
+{
+  Double_t* res = new Double_t[n+1];
+  Double_t binWidth = (max-min) / n;
+  res[0] = min;
+  for (Int_t i = 1; i <= n; i++) {
+    res[i] = res[i-1] + binWidth;
+  }
+  return res;
+}
+
+//____________________________________________________________________________________
 TH2* DJetCorrBase::GetDzTruth(Int_t p, Bool_t copy)
 {
   TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetDzTruthName(p)));
@@ -1155,4 +1188,20 @@ const char* DJetCorrBase::GetParamName(Int_t i) const
   else {
     return 0;
   }
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrBase::Normalize(TH2* orig, const char* name)
+{
+  TH2* res = static_cast<TH2*>(orig->Clone(name));
+
+  for (Int_t y = 0; y <= res->GetNbinsY(); y++) {
+    Double_t integral = res->Integral(0, -1, y, y);
+    for (Int_t x = 0; x <= res->GetNbinsX(); x++) {
+      res->SetBinContent(x, y, res->GetBinContent(x, y) / integral);
+      res->SetBinError(x, y, res->GetBinError(x, y) / integral);
+    }
+  }
+
+  return res;
 }
