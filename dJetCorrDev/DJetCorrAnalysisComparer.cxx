@@ -34,6 +34,7 @@ DJetCorrAnalysisComparer::DJetCorrAnalysisComparer() :
   fForceRegeneration(kFALSE),
   fMakeRatios(kTRUE),
   fCompareTask(kNone),
+  fNormalizationType(kIntegral),
   fAnalysisArray(0)
 {
   // Default constructor.
@@ -46,6 +47,7 @@ DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task) :
   fForceRegeneration(kFALSE),
   fMakeRatios(kTRUE),
   fCompareTask(task),
+  fNormalizationType(kIntegral),
   fAnalysisArray(0)
 {
   // Default constructor.
@@ -162,7 +164,7 @@ void DJetCorrAnalysisComparer::CompareMeasured()
 
     TH2* measuredDz = ana->GetDzMeasured(fParamIndexes[i], kTRUE);
     if (measuredDz) {
-      measuredDz->Scale(1. / measuredDz->Integral(), "width");
+      NormalizeHistogram(measuredDz, ana);
       TString hname = Form("%s_%s", ana->GetName(), measuredDz->GetName());
       measuredDz->SetName(hname);
       measuredDz->SetTitle(ana->GetName());
@@ -171,7 +173,7 @@ void DJetCorrAnalysisComparer::CompareMeasured()
 
     TH1* measuredDPt = ana->GetDPtMeasured(fParamIndexes[i], kTRUE);
     if (measuredDPt) {
-      measuredDPt->Scale(1. / measuredDPt->Integral(), "width");
+      NormalizeHistogram(measuredDPt, ana);
       TString hname = Form("%s_%s", ana->GetName(), measuredDPt->GetName());
       measuredDPt->SetName(hname);
       measuredDPt->SetTitle(ana->GetName());
@@ -211,7 +213,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
 
     TH2* truthDz = ana->GetDzTruth(fParamIndexes[i], kTRUE);
     if (truthDz) {
-      truthDz->Scale(1. / truthDz->Integral(), "width");
+      NormalizeHistogram(truthDz, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthDz->GetName());
       truthDz->SetName(hname);
       truthDz->SetTitle(ana->GetName());
@@ -220,7 +222,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
 
     TH1* truthDPt = ana->GetDPtTruth(fParamIndexes[i], kTRUE);
     if (truthDPt) {
-      truthDPt->Scale(1. / truthDPt->Integral(), "width");
+      NormalizeHistogram(truthDPt, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthDPt->GetName());
       truthDPt->SetName(hname);
       truthDPt->SetTitle(ana->GetName());
@@ -380,3 +382,13 @@ void DJetCorrAnalysisComparer::CompareDPt(const char* name, TObjArray& array)
   if (fSavePlots) SavePlot(canvas);
 }
 
+//____________________________________________________________________________________
+void DJetCorrAnalysisComparer::NormalizeHistogram(TH1* hist, DJetCorrBase* ana)
+{
+  if (fNormalizationType == kIntegral) {
+    hist->Scale(1. / hist->Integral(), "width");
+  }
+  else if (fNormalizationType == kEvents && ana->GetEvents() > 0) {
+    hist->Scale(1. / ana->GetEvents(), "width");
+  }
+}

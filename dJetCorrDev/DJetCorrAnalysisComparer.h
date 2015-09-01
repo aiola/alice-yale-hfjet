@@ -10,8 +10,8 @@ class TArrayI;
 class DJetCorrAnalysisComparer : public DJetCorrBase {
   
  public:
-  enum ECompareTask { kNone=0, kCompareTruth=1<<1, kCompareMeasured=1<<2 };
-  enum ENormalizationType { kNone=0, kIntegral=1, kEvents=2 };
+  enum ECompareTask { kNoTask=0, kCompareTruth=1<<1, kCompareMeasured=1<<2 };
+  enum ENormalizationType { kNotNormalized=0, kIntegral=1, kEvents=2 };
 
   DJetCorrAnalysisComparer();
   DJetCorrAnalysisComparer(UInt_t task);
@@ -19,7 +19,7 @@ class DJetCorrAnalysisComparer : public DJetCorrBase {
 
   void SetCompareTask(UInt_t task)        { fCompareTask       = task; }
   void SetMakeRatios(Bool_t r)            { fMakeRatios        = r   ; }
-  void SetNormalizationType(UInt_t task)  { fNormalizationType = task; }
+  void SetNormalizationType(ENormalizationType n)  { fNormalizationType = n; }
 
   void Start();
   Bool_t Prepare();
@@ -33,13 +33,15 @@ class DJetCorrAnalysisComparer : public DJetCorrBase {
   DJetCorrBase* AddAnalysis(DJetCorrBase* ana, Int_t ipar=0);
   
  protected:
+  void NormalizeHistogram(TH1* hist, DJetCorrBase* ana);
+
   TArrayI              fParamIndexes     ; //
   Bool_t               fForceRegeneration; //
   Bool_t               fMakeRatios       ; //
   UInt_t               fCompareTask      ; //
   ENormalizationType   fNormalizationType; //
 
-  TObjArray*        fAnalysisArray    ; //! analysis array
+  TObjArray*           fAnalysisArray    ; //! analysis array
   
  private: 
   DJetCorrAnalysisComparer(const DJetCorrAnalysisComparer &source);

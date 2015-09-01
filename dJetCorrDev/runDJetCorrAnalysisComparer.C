@@ -25,6 +25,7 @@ DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets
   comparer->SetSavePlots(kTRUE);
   comparer->SetOverwrite(kTRUE);
   comparer->SetMakeRatios(kTRUE);
+  comparer->SetNormalizationType(DJetCorrAnalysisComparer::kEvents);
   comparer->Start();
   comparer->SaveOutputFile();
 
