@@ -48,11 +48,14 @@ class HistoStyler : public TAttLine, public TAttFill, public TAttMarker {
   using TAttFill::GetFillStyle;
   Style_t    GetFillStyle(Int_t i) const;
 
-  void       Apply(Int_t n, TH1** histo) const;
-  void       Apply(TH1* histo, Int_t icolor, Int_t imarker) const;
+  void       Apply(Int_t n, TObject** obj) const;
+  void       Apply(Int_t n, TH1** obj) const;
+  void       Apply(Int_t n, TGraph** obj) const;
+  void       Apply(TObject* obj, Int_t icolor, Int_t imarker) const;
 
-  void       Apply(Int_t n, TGraph** histo) const;
-  void       Apply(TGraph* histo, Int_t icolor, Int_t imarker) const;
+  void       ApplyLine(TAttLine* obj, Int_t icolor) const;
+  void       ApplyFill(TAttFill* obj, Int_t icolor) const;
+  void       ApplyMarker(TAttMarker* obj, Int_t icolor, Int_t imarker) const;
 
   static const Int_t fgkNColors = 10;
   static const Int_t fgkNOpenMarkerStyles = 6;

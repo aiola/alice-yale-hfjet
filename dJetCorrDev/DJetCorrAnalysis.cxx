@@ -104,6 +104,7 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fAnaType = DJetCorrAnalysisParams::kInvMassAna;
   fInputFileName = "AnalysisResults.root";
   fInputDirFileName = "SA_DmesonJetCorr";
+  fOutputFileName = "DJetCorrAnalysis.root";
 }
 
 //____________________________________________________________________________________
@@ -1305,7 +1306,7 @@ Bool_t DJetCorrAnalysis::PlotSpectra(Int_t n, TH1** histSpectra, const char* nam
   for (Int_t i = 0; i < n; i++) {
     if (!histSpectra[i]) continue;
 
-    FitHistogramInPad(histSpectra[i], canvas, extraFactor);
+    FitHistogramInPad(histSpectra[i], canvas, "", kFALSE, extraFactor);
 
     leg->AddEntry(histSpectra[i], histSpectra[i]->GetTitle(), "pe");
   }

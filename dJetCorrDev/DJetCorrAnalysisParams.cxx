@@ -90,17 +90,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   if (fDmesonName == "DStar") {
-    fNDPtBins = 8;
+    fNDPtBins = 6;
     fDPtBins = new Double_t[fNDPtBins+1];
     fDPtBins[ 0] =  1.6;
-    fDPtBins[ 1] =  3.0;
-    fDPtBins[ 2] =  5.0;
-    fDPtBins[ 3] =  6.0;
-    fDPtBins[ 4] =  7.0;
-    fDPtBins[ 5] =  9.0;
-    fDPtBins[ 6] = 12.0;
-    fDPtBins[ 7] = 16.0;
-    fDPtBins[ 8] = 30.0;
+    fDPtBins[ 1] =  4.0;
+    fDPtBins[ 2] =  6.0;
+    fDPtBins[ 3] =  8.0;
+    fDPtBins[ 4] = 10.0;
+    fDPtBins[ 5] = 15.0;
+    fDPtBins[ 6] = 30.0;
 
     SetDeltaInvMassRange(413, 421, 0.08);
     SetInvMassRange(413, 0.60);
@@ -116,18 +114,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fJetPtBins[ 2] =  30.0;
   }
   else {
-    fNDPtBins = 8;
+    fNDPtBins = 6;
     fDPtBins = new Double_t[fNDPtBins+1];
-    //fDPtBins[ 0] =  0.4;
     fDPtBins[ 0] =  1.0;
-    fDPtBins[ 1] =  2.0;
-    fDPtBins[ 2] =  3.0;
-    fDPtBins[ 3] =  4.0;
-    fDPtBins[ 4] =  5.0;
-    fDPtBins[ 5] =  6.0;
-    fDPtBins[ 6] = 10.0;
-    fDPtBins[ 7] = 15.0;
-    fDPtBins[ 8] = 30.0;
+    fDPtBins[ 1] =  3.0;
+    fDPtBins[ 2] =  5.0;
+    fDPtBins[ 3] =  7.0;
+    fDPtBins[ 4] = 10.0;
+    fDPtBins[ 5] = 15.0;
+    fDPtBins[ 6] = 30.0;
 
     SetInvMassRange(421, 0.30);
 
@@ -272,9 +267,46 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   
   MassFitter* fitter = new MassFitter(name, fMassFitTypeSig, fMassFitTypeBkg, minMass, maxMass);
   fitter->GetFitFunction()->SetParameter(1, startingSigmaBkg);
-  //fitter->GetFitFunction()->SetParLimits(1, startingSigmaBkg*0.1, startingSigmaBkg*10.);
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
-  //fitter->GetFitFunction()->SetParLimits(4, startingSigma*0.5, startingSigma*1.5);
   
   return fitter;
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisParams::GetDPtBinRange(Double_t& minDPt, Double_t& maxDPt, Int_t dptBin) const
+{
+  if (dptBin >= 0 && dptBin < GetNDPtBins()) {
+    minDPt = GetDPtBin(dptBin);
+    maxDPt = GetDPtBin(dptBin+1);
+  }
+  else {
+    minDPt = GetMinDPt();
+    maxDPt = GetMaxDPt();
+  }
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisParams::GetzBinRange(Double_t& minZ, Double_t& maxZ, Int_t zBin) const
+{
+  if (zBin >= 0 && zBin < GetNzBins()) {
+    minZ = GetzBin(zBin);
+    maxZ = GetzBin(zBin+1);
+  }
+  else {
+    minZ = GetMinZ();
+    maxZ = GetMaxZ();
+  }
+}
+
+//____________________________________________________________________________________
+void DJetCorrAnalysisParams::GetJetPtBinRange(Double_t& minJetPt, Double_t& maxJetPt, Int_t jetPtBin) const
+{
+  if (jetPtBin >= 0 && jetPtBin < GetNJetPtBins()) {
+    minJetPt = GetJetPtBin(jetPtBin);
+    maxJetPt = GetJetPtBin(jetPtBin+1);
+  }
+  else {
+    minJetPt = GetMinJetPt();
+    maxJetPt = GetMaxJetPt();
+  }
 }

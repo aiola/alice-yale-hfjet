@@ -70,6 +70,10 @@ class DJetCorrAnalysisParams : public TObject
 
   TString     GetCutString(Int_t st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
 
+  void GetDPtBinRange(Double_t& minDPt, Double_t& maxDPt, Int_t dptBin=-1) const;
+  void GetzBinRange(Double_t& minZ, Double_t& maxZ, Int_t zBin=-1) const;
+  void GetJetPtBinRange(Double_t& minJetPt, Double_t& maxJetPt, Int_t jetPtBin=-1) const;
+
   MassFitter* CreateMassFitter(const char* name) const;
   
  protected:

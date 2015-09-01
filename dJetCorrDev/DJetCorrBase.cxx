@@ -817,17 +817,55 @@ Double_t DJetCorrBase::GetEvents(Bool_t recalculate)
 }
 
 //____________________________________________________________________________________
-void DJetCorrBase::FitGraphInPad(TGraph* graph, TVirtualPad* pad)
+void DJetCorrBase::FitObjectInPad(TObject* obj, TVirtualPad* pad, Option_t* opt, Bool_t copyAxisTitle, Double_t extraFactor)
 {
+  if (obj->InheritsFrom("TGraph")) {
+    FitGraphInPad(static_cast<TGraph*>(obj), pad, opt, copyAxisTitle, extraFactor);
+  }
+  else if (obj->InheritsFrom("TH1")) {
+    FitHistogramInPad(static_cast<TH1*>(obj), pad, opt, copyAxisTitle, extraFactor);
+  }
+  else {
+    Printf("Don't know how to draw this object!");
+  }
+}
+
+//____________________________________________________________________________________
+void DJetCorrBase::FitGraphInPad(TGraph* graph, TVirtualPad* pad, Option_t* opt, Bool_t copyAxisTitle, Double_t extraFactor)
+{
+  TString strOpt(opt);
+  if (!strOpt.Contains("same")) strOpt += "same";
+
   TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
   if (blankHist) {
+    if (copyAxisTitle) {
+      blankHist->GetXaxis()->SetTitle(graph->GetXaxis()->GetTitle());
+      blankHist->GetYaxis()->SetTitle(graph->GetYaxis()->GetTitle());
+    }
+
     Double_t miny = blankHist->GetMinimum();
-    Double_t maxy = blankHist->GetMaximum() / 1.8;
+    if (pad->GetLogy()) miny *= extraFactor;
+    Double_t maxy = blankHist->GetMaximum() / extraFactor;
   
     GetMinMax(graph, miny, maxy);
     
+    if (pad->GetLogy()) {
+      if (miny <= 0) miny = blankHist->GetMinimum() / extraFactor;
+      if (maxy <= 0) maxy = blankHist->GetMaximum() * extraFactor;
+
+      miny /= extraFactor;
+    }
+    else {
+      miny = 0;
+    }
+
+    maxy *= extraFactor;
+
     blankHist->SetMinimum(miny);
-    blankHist->SetMaximum(maxy * 1.8);
+    blankHist->SetMaximum(maxy);
+
+    pad->cd();
+    graph->Draw(strOpt);
   }
   else {
     Printf("Error-DJetCorrBase::FitGraphInPad : Could not find blank histogram!");
@@ -835,10 +873,18 @@ void DJetCorrBase::FitGraphInPad(TGraph* graph, TVirtualPad* pad)
 }
 
 //____________________________________________________________________________________
-void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad, Double_t extraFactor)
+void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad, Option_t* opt, Bool_t copyAxisTitle, Double_t extraFactor)
 {
+  TString strOpt(opt);
+  if (!strOpt.Contains("same")) strOpt += "same";
+
   TH1* blankHist = dynamic_cast<TH1*>(pad->GetListOfPrimitives()->At(0));
   if (blankHist) {
+    if (copyAxisTitle) {
+      blankHist->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
+      blankHist->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
+    }
+
     Double_t miny = blankHist->GetMinimum();
     if (pad->GetLogy()) miny *= extraFactor;
     Double_t maxy = blankHist->GetMaximum() / extraFactor;
@@ -860,8 +906,8 @@ void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad, Double_t extra
     blankHist->SetMinimum(miny);
     blankHist->SetMaximum(maxy);
 
-    //Printf("Now drawing %s", hist->GetName());
-    hist->Draw("same");
+    pad->cd();
+    hist->Draw(strOpt);
   }
   else {
     Printf("Error-DJetCorrBase::FitHistogramInPad : Could not find blank histogram!");
@@ -1069,4 +1115,44 @@ TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy)
   }
 
   return hist;
+}
+
+//____________________________________________________________________________________
+void DJetCorrBase::MakeBinomialConsistent(TH1* pass, TH1* total)
+{
+  Int_t nbinsx, nbinsy, nbinsz, nbins;
+
+  nbinsx = pass->GetNbinsX();
+  nbinsy = pass->GetNbinsY();
+  nbinsz = pass->GetNbinsZ();
+
+  switch(pass->GetDimension()) {
+    case 1: nbins = nbinsx + 2; break;
+    case 2: nbins = (nbinsx + 2) * (nbinsy + 2); break;
+    case 3: nbins = (nbinsx + 2) * (nbinsy + 2) * (nbinsz + 2); break;
+    default: nbins = 0;
+  }
+
+  for(Int_t i = 0; i < nbins; ++i) {
+    if (pass->GetBinContent(i) == 0 || total->GetBinContent(i) == 0) {
+      pass->SetBinContent(i, 0);
+      total->SetBinContent(i, 0);
+    }
+
+    if(pass->GetBinContent(i) > total->GetBinContent(i)) {
+      pass->SetBinContent(i, total->GetBinContent(i));
+    }
+  }
+}
+
+//____________________________________________________________________________________
+const char* DJetCorrBase::GetParamName(Int_t i) const
+{
+  TObject* obj = fAnalysisParams->At(i);
+  if (obj) {
+    return obj->GetName();
+  }
+  else {
+    return 0;
+  }
 }

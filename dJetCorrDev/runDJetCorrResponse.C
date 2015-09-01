@@ -21,10 +21,10 @@ DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const ch
   }
   
   DJetCorrResponse* projDjet = new DJetCorrResponse(train);
-  
+
+  //projDjet->SetEfficiencyMode("TH1");
   projDjet->SetOverwrite(kTRUE);
   projDjet->SetInputPath(inputPath);
-  projDjet->SetOutputFileName("DJetCorr.root");
 
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
