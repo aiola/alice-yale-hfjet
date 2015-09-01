@@ -21,7 +21,7 @@ DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets
   DJetCorrBase* ana1 = runDJetCorrAnalysis("", train1, kFALSE, kTRUE, kFALSE, inputPath);
   DJetCorrBase* ana2 = runDJetCorrAnalysis("", train2, kFALSE, kTRUE, kTRUE, inputPath);
   
-  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth | DJetCorrAnalysisComparer::kCompareMeasured, ana1, ana2, 0, 0);
+  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth | DJetCorrAnalysisComparer::kCompareMeasured, ana1, ana2, 1, 1);
   comparer->SetSavePlots(kTRUE);
   comparer->SetOverwrite(kTRUE);
   comparer->SetMakeRatios(kTRUE);

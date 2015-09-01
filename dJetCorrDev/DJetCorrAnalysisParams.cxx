@@ -254,13 +254,26 @@ TString DJetCorrAnalysisParams::GetCutString(Int_t st, Int_t dptBin, Int_t jetpt
 //____________________________________________________________________________________
 MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
 {
-  Double_t minMass = fInvMinMass;
-  Double_t maxMass = fInvMaxMass;
-  Double_t startingSigma = 0.01;
-  Double_t startingSigmaBkg = 0.01;
-  if (fDmesonName == "DStar") {
+  Double_t minMass = 0.;
+  Double_t maxMass = 0.;
+  Double_t minFitRange = 0.;
+  Double_t maxFitRange = 0.;
+  Double_t startingSigma = 0.;
+  Double_t startingSigmaBkg = 0.;
+
+  if (fDmesonName == "D0") {
+    minMass = fInvMinMass;
+    maxMass = fInvMaxMass;
+    minFitRange = fInvMinMass;
+    maxFitRange = fInvMaxMass;
+    startingSigma = 0.01;
+    startingSigmaBkg = 0.01;
+  }
+  else if (fDmesonName == "DStar") {
     minMass = fDeltaInvMinMass;
     maxMass = fDeltaInvMaxMass;
+    minFitRange = fDeltaInvMinMass;
+    maxFitRange = fDeltaInvMaxMass;
     startingSigma = 7e-4;
     startingSigmaBkg = 5;
   }
@@ -268,7 +281,8 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   MassFitter* fitter = new MassFitter(name, fMassFitTypeSig, fMassFitTypeBkg, minMass, maxMass);
   fitter->GetFitFunction()->SetParameter(1, startingSigmaBkg);
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
-  
+  fitter->SetFitRange(minFitRange, maxFitRange);
+
   return fitter;
 }
 

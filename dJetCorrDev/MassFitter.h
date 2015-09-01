@@ -40,6 +40,7 @@ class MassFitter : public TNamed {
   void DisableBkg(Bool_t d = kTRUE) { fDisableBkg = d; }
   void DisableSig(Bool_t d = kTRUE) { fDisableSig = d; }
   void SetMassRange(Double_t min, Double_t max);
+  void SetFitRange(Double_t min, Double_t max);
 
   Double_t GetSignalMean()                       const { return fMean                 ; }
   Double_t GetSignalMeanError()                  const { return fMeanError            ; }
@@ -94,6 +95,8 @@ class MassFitter : public TNamed {
   Int_t             fNParBkg           ;//  Number of parameters of the background function
   Double_t          fMinMass           ;//  Minimum mass value
   Double_t          fMaxMass           ;//  Maximum mass value
+  Double_t          fMinFitRange       ;//  Minimum fit range
+  Double_t          fMaxFitRange       ;//  Maximum fit range
   Double_t          fScaleFactor       ;//  Scale factor
   TFitResultPtr     fFitResult         ;//  Fit result
   
