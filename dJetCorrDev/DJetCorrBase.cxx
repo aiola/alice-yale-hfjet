@@ -956,11 +956,11 @@ Bool_t DJetCorrBase::CheckExactRebin(TAxis* orig, TAxis* dest)
     Double_t xup     = orig->GetBinUpEdge(i);
     Int_t    xlowBin = dest->FindBin(xlow);
     Int_t    xupBin  = dest->FindBin(xup);
-    if (TMath::Abs(xup - dest->GetBinLowEdge(xupBin)) < fgkEpsilon) {
+    if (TMath::Abs(xup - dest->GetBinLowEdge(xupBin)) < fgkEpsilon && xupBin > 0) {
       xupBin--;
     }
     if (xlowBin != xupBin) {
-      Printf("Bin [%.2f, %.2f] -> [%.2f, %.2f] , [%.2f, %.2f]", xlow, xup, dest->GetBinLowEdge(xlowBin), dest->GetBinUpEdge(xlowBin), dest->GetBinLowEdge(xupBin), dest->GetBinUpEdge(xupBin));
+      Printf("Bin %d = [%.2f, %.2f] -> %d = [%.2f, %.2f], %d = [%.2f, %.2f]", i, xlow, xup, xlowBin, dest->GetBinLowEdge(xlowBin), dest->GetBinUpEdge(xlowBin), xupBin, dest->GetBinLowEdge(xupBin), dest->GetBinUpEdge(xupBin));
       return kFALSE;
     }
   }
@@ -1197,6 +1197,7 @@ TH2* DJetCorrBase::Normalize(TH2* orig, const char* name)
 
   for (Int_t y = 0; y <= res->GetNbinsY(); y++) {
     Double_t integral = res->Integral(0, -1, y, y);
+    if (integral == 0.) continue;
     for (Int_t x = 0; x <= res->GetNbinsX(); x++) {
       res->SetBinContent(x, y, res->GetBinContent(x, y) / integral);
       res->SetBinError(x, y, res->GetBinError(x, y) / integral);
