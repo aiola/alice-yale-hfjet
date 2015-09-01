@@ -5,7 +5,7 @@ class DJetCorrAnalysisComparer;
 #include "runDJetCorrAnalysis.C"
 #include "runDJetCorrResponse.C"
 
-DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets_EMC_pp_MC_509_510_511_512", const char* train2 = "Jets_EMC_pp_MC_508",
+DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets_EMC_pp_MC_509_510_511_512", const char* train2 = "Jets_EMC_pp_MC_605_606_607_608",
                                                       Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   if (loadLibs) {
@@ -21,10 +21,10 @@ DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets
   DJetCorrBase* ana1 = runDJetCorrAnalysis("", train1, kFALSE, kTRUE, kFALSE, inputPath);
   DJetCorrBase* ana2 = runDJetCorrAnalysis("", train2, kFALSE, kTRUE, kTRUE, inputPath);
   
-  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth, ana1, ana2, 0, 0);
+  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth | DJetCorrAnalysisComparer::kCompareMeasured, ana1, ana2, 0, 0);
   comparer->SetSavePlots(kTRUE);
   comparer->SetOverwrite(kTRUE);
-  comparer->SetMakeRatios(kFALSE);
+  comparer->SetMakeRatios(kTRUE);
   comparer->Start();
   comparer->SaveOutputFile();
 

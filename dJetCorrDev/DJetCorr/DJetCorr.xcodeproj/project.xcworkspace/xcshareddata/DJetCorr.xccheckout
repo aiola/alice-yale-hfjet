@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>7CD2596F-EEC4-4DC0-BB63-F4C57BF2543B</string>
 	<key>IDESourceControlProjectName</key>
-	<string>project</string>
+	<string>DJetCorr</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>D6DC8DC7F30394F960410CB063A1E153FEE405C0</key>
 		<string>https://git.cern.ch/reps/alice-yale-hfjet</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>dJetCorrDev/DJetCorr/DJetCorr.xcodeproj/project.xcworkspace</string>
+	<string>dJetCorrDev/DJetCorr/DJetCorr.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>D6DC8DC7F30394F960410CB063A1E153FEE405C0</key>

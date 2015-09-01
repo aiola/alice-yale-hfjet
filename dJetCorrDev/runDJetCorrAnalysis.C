@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_508",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_605_606_607_608",
                                       Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
                                       const char* inputPath = "$JETRESULTS")
 {
@@ -31,7 +31,6 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   
   projDjet->SetOverwrite(kTRUE);
   projDjet->SetInputPath(inputPath);
-  projDjet->SetOutputFileName("DJetCorr.root");
 
   TString qaListName(Form("AliAnalysisTaskSAQA_%s_TPC_histos", tracksName.Data()));
   
@@ -44,7 +43,7 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
 
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");

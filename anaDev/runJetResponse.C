@@ -3,20 +3,20 @@
 class AliAnalysisGrid;
 
 //______________________________________________________________________________
-void runJetResponse( 
-	 const char   *datatype     = "AOD",                                       // set the analysis type, AOD, ESD or sESD
-         const char   *runtype      = "local",                                     // local or grid
-         const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
-	 const char   *localfiles   = "fileLists/files_LHC10f7a_fix_AOD136a.txt",  // set the local list file
-	 UInt_t        numfiles     = 90,                                          // number of files analyzed locally
-	 UInt_t        numevents    = 500000,                                       // number of events to be analyzed
-	 const char   *runperiod    = "LHC10f7a",                                  // set the run period
-         const char   *taskname     = "JetResponse",                               // sets name of grid generated macros
-         Bool_t        doEmcal      = kFALSE
-         )
+void runJetResponse(
+                    const char   *datatype     = "AOD",                                       // set the analysis type, AOD, ESD or sESD
+                    const char   *runtype      = "local",                                     // local or grid
+                    const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
+                    const char   *localfiles   = "fileLists/files_prodPP2010pass4SalvatoreSplitPtHard_2.txt",  // set the local list file
+                    UInt_t        numfiles     = 500,                                         // number of files analyzed locally
+                    UInt_t        numevents    = 1234567890,                                  // number of events to be analyzed
+                    const char   *runperiod    = "LHC10f7a",                                  // set the run period
+                    const char   *taskname     = "JetResponse",                               // sets name of grid generated macros
+                    Bool_t        doEmcal      = kFALSE
+                    )
 {
   //gSystem->SetFPEMask(TSystem::kInvalid | TSystem::kDivByZero | TSystem::kOverflow | TSystem::kUnderflow);
-  
+
   Int_t nrunnumbers = 1;
   Int_t runnumbers[] = {117112};
 
@@ -24,9 +24,9 @@ void runJetResponse(
   enum eRunType  { kLocal, kGrid };
 
   eRunType rType;
-  if (!strcmp(runtype, "grid")) 
+  if (!strcmp(runtype, "grid"))
     rType = kGrid;
-  else if (!strcmp(runtype, "local")) 
+  else if (!strcmp(runtype, "local"))
     rType = kLocal;
   else {
     cout << "Incorrect run option, check first argument of run macro" << endl;
@@ -77,7 +77,7 @@ void runJetResponse(
         // Centrality selection task
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *centTask = AddTaskCentrality(kTRUE);
-        
+
         // Physics selection task
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
         AliPhysicsSelectionTask *pSelTask = AddTaskPhysicsSelection(kTRUE, kTRUE, kTRUE);
@@ -114,8 +114,8 @@ void runJetResponse(
     gROOT->LoadMacro("addTask/AddTaskJetResp.C");
     AddTaskJetResp(datatype, "local");
   }
-	
-  if (!mgr->InitAnalysis()) 
+
+  if (!mgr->InitAnalysis())
     return;
   mgr->PrintStatus();
 
@@ -132,7 +132,7 @@ void runJetResponse(
     }
     TString subDir = Form("/%d",run);
 
-    AliAnalysisGrid *plugin = CreateAlienHandler(taskname, gridmode, runNumbers, runperiod, dataPattern.Data(), subDir.Data()); 
+    AliAnalysisGrid *plugin = CreateAlienHandler(taskname, gridmode, runNumbers, runperiod, dataPattern.Data(), subDir.Data());
     mgr->SetGridHandler(plugin);
 
     // start analysis
@@ -156,7 +156,7 @@ void runJetResponse(
     cout << "Starting Analysis...";
     mgr->SetUseProgressBar(1, 25);
     //mgr->SetDebugLevel(1);
-    
+
     //mgr->AddClassDebug("AliJetContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);
     //mgr->AddClassDebug("AliEmcalJetTask",AliLog::kDebug+1);
@@ -184,11 +184,11 @@ void LoadLibs()
   gSystem->Load("$FASTJET/lib/libsiscone_spherical");
   gSystem->Load("$FASTJET/lib/libfastjetplugins");
   gSystem->Load("$FASTJET/lib/libfastjetcontribfragile");
-  
+
   // Aliroot jet libs
   gSystem->Load("libPWGJE");
   gSystem->Load("libPWGJEEMCALJetTasks");
-   
+
   // include path
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGJE/EMCALJetTasks/");
@@ -197,12 +197,12 @@ void LoadLibs()
 }
 
 //______________________________________________________________________________
-AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, const TArrayI &runNumbers, 
-				    const char *runPeriod = "LHC12a15e", const char *dataPattern = "*/*AOD.root", const char* subdir="")
+AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, const TArrayI &runNumbers,
+                                    const char *runPeriod = "LHC12a15e", const char *dataPattern = "*/*AOD.root", const char* subdir="")
 {
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   plugin->SetRunMode(gridmode);
-  
+
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   plugin->SetROOTVersion("v5-34-05");
@@ -210,7 +210,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   plugin->AddExternalPackage("fastjet::v2.4.2");
 
   // Declare input data to be processed.
-  
+
   // Create automatically XML collections using alien 'find' command.
   // Define production directory LFN
   TString datadir;
@@ -248,13 +248,13 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   // comment out the next line when using the "terminate" option, unless
   // you want separate merged files for each run
   plugin->SetMergeViaJDL();
-  
+
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   plugin->SetGridWorkingDir(taskname);
-  
+
   // Declare alien output directory. Relative to working directory.
   plugin->SetGridOutputDir("out"); // In this case will be $HOME/taskname/out
-  
+
   plugin->AddIncludePath("-I$PWD/.");
   //plugin->AddIncludePath("-I$PWD/PWGEMCAL/EMCAL/.");
   plugin->AddIncludePath("-I$PWD/PWGJEEMCALJetTasks/EMCALJetTasks/.");
@@ -265,7 +265,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes.
   //plugin->SetAnalysisSource("");
-  
+
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
   plugin->SetAdditionalRootLibs("libGui.so libXMLParser.so libMinuit2.so libProof.so");
@@ -277,28 +277,28 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   // SetOutputFiles("list.root other.filename") to choose which files to save
   plugin->SetDefaultOutputs();
   //plugin->SetOutputFiles("list.root");
-  
+
   // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
   plugin->SetAnalysisMacro(Form("%s.C",taskname));
-  
+
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
   plugin->SetSplitMaxInputFileNumber(8);
-  
+
   // Optionally modify the executable name (default analysis.sh)
   plugin->SetExecutable(Form("%s.sh",taskname));
-  
+
   // set number of test files to use in "test" mode
   plugin->SetNtestFiles(2);
-  
+
   // Optionally resubmit threshold.
   plugin->SetMasterResubmitThreshold(90);
-  
+
   // Optionally set time to live (default 30000 sec)
   plugin->SetTTL(50000);
-  
+
   // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
-  
+
   // Optionally modify the name of the generated JDL (default analysis.jdl)
   plugin->SetJDLName(Form("%s.jdl",taskname));
   

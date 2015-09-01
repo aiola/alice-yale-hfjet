@@ -23,6 +23,8 @@ class DJetCorrResponse : public DJetCorrBase {
   DJetCorrResponse();
   DJetCorrResponse(const char* train, const char* path = "$JETRESULTS");
 
+  void SetEfficiencyMode(const char* m) { fEfficiencyMode = m; }
+
   Bool_t ProjectResponseMatrices(DJetCorrAnalysisParams* params);
   Bool_t ProjectResponseMatrices(const char* paramName);
   Bool_t ProjectResponseMatrices(Int_t i);
@@ -49,30 +51,34 @@ class DJetCorrResponse : public DJetCorrBase {
   Bool_t ClearInputData();
   Bool_t LoadTHnSparse();
 
-  Bool_t ProjectResponseDPtMatrix(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseJetPtZVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseZVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseZVsJetPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseJetPtVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseJetPtVsZ(DJetCorrAnalysisParams* params);
+  Bool_t ProjectResponseDPt(DJetCorrAnalysisParams* params);
 
-  Bool_t ProjectResponseMatrices4DVsDPt(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseZMatricesVsDPt(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseZMatricesVsJetPt(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseJetPtMatricesVsDPt(DJetCorrAnalysisParams* params);
-  Bool_t ProjectResponseJetPtMatricesVsZ(DJetCorrAnalysisParams* params);
-  
-  Bool_t ProjectResponseMatrix4D(DJetCorrAnalysisParams* params, Int_t dptBin=-1);
-  Bool_t ProjectResponseJetPtMatrix(DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
-  Bool_t ProjectResponseZMatrix(DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+  Bool_t ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, Int_t dptBin=-1);
+  Bool_t ProjectResponseJetPt(DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
+  Bool_t ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
 
-  Bool_t PlotResponseDPtMatrix(DJetCorrAnalysisParams* params);
-    
-  Bool_t PlotResponseMatrices4DVsDPt(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseZMatricesVsDPt(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseZMatricesVsJetPt(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseJetPtMatricesVsDPt(DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseJetPtMatricesVsZ(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseJetPtZVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseZVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseZVsJetPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseJetPtVsDPt(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseJetPtVsZ(DJetCorrAnalysisParams* params);
+  Bool_t PlotResponseDPt(DJetCorrAnalysisParams* params);
 
-  Bool_t PlotResponseDPtMatrix(TCanvas*& canvasResp, TCanvas*& canvasEff, DJetCorrAnalysisParams* params);
-  Bool_t PlotResponseMatrix4D(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t dptBin=-1);
-  Bool_t PlotResponseJetPtMatrix(TCanvas*& canvasResp, TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
-  Bool_t PlotResponseZMatrix(TCanvas*& canvasResp, TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+  Bool_t PlotEfficiencyJetPtZ(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t dptBin=-1);
+  Bool_t PlotEfficiencyJetPt(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
+  Bool_t PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+  Bool_t PlotEfficiencyDPt(TCanvas*& canvasEff, DJetCorrAnalysisParams* params);
+
+  Bool_t PlotResponseMatrixJetPt(TCanvas*& canvasResp, DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
+  Bool_t PlotResponseMatrixZ(TCanvas*& canvasResp, DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+  Bool_t PlotResponseMatrixDPt(TCanvas*& canvasResp, DJetCorrAnalysisParams* params);
+
+  Bool_t PlotResponseMatrixDPt(DJetCorrAnalysisParams* params);
 
   TString         fEfficiencyMode      ;//  Efficiency mode
   

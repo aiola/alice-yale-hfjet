@@ -28,79 +28,74 @@ HistoStyler::HistoStyler() :
 }
 
 //____________________________________________________________________________________
-void HistoStyler::Apply(Int_t n, TH1** histo) const
+void HistoStyler::Apply(Int_t n, TObject** obj) const
 {
   // Apply style to histograms.
 
   for (Int_t i = 0; i < n; i++) {
-    if (!histo[i]) continue;
-    
-    histo[i]->SetMarkerColor(GetMarkerColor(i));
-    histo[i]->SetMarkerStyle(GetMarkerStyle(i));
-    histo[i]->SetMarkerSize(GetMarkerSize());
-
-    histo[i]->SetLineColor(GetLineColor(i));
-    histo[i]->SetLineStyle(GetLineStyle(i));
-
-    histo[i]->SetFillColor(GetFillColor(i));
-    histo[i]->SetFillStyle(GetFillStyle(i));
+    Apply(obj[i], i, i);
   }
 }
 
 //____________________________________________________________________________________
-void HistoStyler::Apply(TH1* histo, Int_t icolor, Int_t imarker) const
-{
-  // Apply style to histograms.
-
-  if (!histo) return;
-    
-  histo->SetMarkerColor(GetMarkerColor(icolor));
-  histo->SetMarkerStyle(GetMarkerStyle(imarker));
-  histo->SetMarkerSize(GetMarkerSize());
-
-  histo->SetLineColor(GetLineColor(icolor));
-  histo->SetLineStyle(GetLineStyle());
-
-  histo->SetFillColor(GetFillColor(icolor));
-  histo->SetFillStyle(GetFillStyle());
-}
-
-//____________________________________________________________________________________
-void HistoStyler::Apply(Int_t n, TGraph** histo) const
+void HistoStyler::Apply(Int_t n, TH1** obj) const
 {
   // Apply style to histograms.
 
   for (Int_t i = 0; i < n; i++) {
-    if (!histo[i]) continue;
-    
-    histo[i]->SetMarkerColor(GetMarkerColor(i));
-    histo[i]->SetMarkerStyle(GetMarkerStyle(i));
-    histo[i]->SetMarkerSize(GetMarkerSize());
-
-    histo[i]->SetLineColor(GetLineColor(i));
-    histo[i]->SetLineStyle(GetLineStyle(i));
-
-    histo[i]->SetFillColor(GetFillColor(i));
-    histo[i]->SetFillStyle(GetFillStyle(i));
+    Apply(obj[i], i, i);
   }
 }
 
 //____________________________________________________________________________________
-void HistoStyler::Apply(TGraph* histo, Int_t icolor, Int_t imarker) const
+void HistoStyler::Apply(Int_t n, TGraph** obj) const
 {
   // Apply style to histograms.
 
-  if (!histo) return;
-    
-  histo->SetMarkerColor(GetMarkerColor(icolor));
-  histo->SetMarkerStyle(GetMarkerStyle(imarker));
-  histo->SetMarkerSize(GetMarkerSize());
+  for (Int_t i = 0; i < n; i++) {
+    Apply(obj[i], i, i);
+  }
+}
 
-  histo->SetLineColor(GetLineColor(icolor));
-  histo->SetLineStyle(GetLineStyle());
+//____________________________________________________________________________________
+void HistoStyler::Apply(TObject* obj, Int_t icolor, Int_t imarker) const
+{
+  // Apply style to histograms.
 
-  histo->SetFillColor(GetFillColor(icolor));
-  histo->SetFillStyle(GetFillStyle());
+  ApplyLine(dynamic_cast<TAttLine*>(obj), icolor);
+  ApplyFill(dynamic_cast<TAttFill*>(obj), icolor);
+  ApplyMarker(dynamic_cast<TAttMarker*>(obj), icolor, imarker);
+}
+
+//____________________________________________________________________________________
+void HistoStyler::ApplyMarker(TAttMarker* obj, Int_t icolor, Int_t imarker) const
+{
+  // Apply style to histograms.
+  if (!obj) return;
+
+  obj->SetMarkerColor(GetMarkerColor(icolor));
+  obj->SetMarkerStyle(GetMarkerStyle(imarker));
+  obj->SetMarkerSize(GetMarkerSize());
+}
+
+//____________________________________________________________________________________
+void HistoStyler::ApplyLine(TAttLine* obj, Int_t icolor) const
+{
+  // Apply style to histograms.
+  if (!obj) return;
+
+  obj->SetLineColor(GetLineColor(icolor));
+  obj->SetLineStyle(GetLineStyle());
+}
+
+//____________________________________________________________________________________
+void HistoStyler::ApplyFill(TAttFill* obj, Int_t icolor) const
+{
+  // Apply style to histograms.
+  if (!obj) return;
+
+  obj->SetFillColor(GetFillColor(icolor));
+  obj->SetFillStyle(GetFillStyle());
 }
 
 //____________________________________________________________________________________

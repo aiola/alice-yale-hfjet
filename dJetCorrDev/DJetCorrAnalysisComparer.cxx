@@ -51,6 +51,7 @@ DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task) :
   // Default constructor.
 
   fAnalysisArray = new TObjArray();
+  fOutputFileName = "DJetCorrAnalysisComparer.root";
 }
 
 //____________________________________________________________________________________
@@ -65,6 +66,7 @@ DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task, DJetCorrBase* an
   // Constructor for the very common case in which two analysis need to be compared.
 
   fAnalysisArray = new TObjArray();
+  fOutputFileName = "DJetCorrAnalysisComparer.root";
 
   TString name = Form("%s_%s", ana1->GetName(), ana2->GetName());
 
@@ -137,28 +139,50 @@ Bool_t DJetCorrAnalysisComparer::ExecuteTasks()
 //____________________________________________________________________________________
 void DJetCorrAnalysisComparer::CompareMeasured()
 {
-  TObjArray array(fAnalysisArray->GetEntriesFast());
-  array.SetOwner(kTRUE);
+  TObjArray arrayDz(fAnalysisArray->GetEntriesFast());
+  arrayDz.SetOwner(kTRUE);
+
+  TObjArray arrayDPt(fAnalysisArray->GetEntriesFast());
+  arrayDPt.SetOwner(kFALSE);
 
   TIter next(fAnalysisArray);
 
   DJetCorrBase* ana = 0;
   Int_t i = 0;
 
+  TString compareDzName("DzSpectraComparisonMeasured");
+  TString compareDPtName("DPtSpectraComparisonMeasured");
+
   while ((ana = static_cast<DJetCorrBase*>(next()))) {
-    TH2* measured = ana->GetDzMeasured(fParamIndexes[i], kTRUE);
-    if (measured) {
-      measured->Scale(1. / measured->Integral(), "width");
-      TString hname = Form("%s_%s", ana->GetName(), measured->GetName());
-      measured->SetName(hname);
-      measured->SetTitle(ana->GetName());
-      array.Add(measured);
+    compareDzName += "_";
+    compareDzName += ana->GetParamName(fParamIndexes[i]);
+
+    compareDPtName += "_";
+    compareDPtName += ana->GetParamName(fParamIndexes[i]);
+
+    TH2* measuredDz = ana->GetDzMeasured(fParamIndexes[i], kTRUE);
+    if (measuredDz) {
+      measuredDz->Scale(1. / measuredDz->Integral(), "width");
+      TString hname = Form("%s_%s", ana->GetName(), measuredDz->GetName());
+      measuredDz->SetName(hname);
+      measuredDz->SetTitle(ana->GetName());
+      arrayDz.Add(measuredDz);
+    }
+
+    TH1* measuredDPt = ana->GetDPtMeasured(fParamIndexes[i], kTRUE);
+    if (measuredDPt) {
+      measuredDPt->Scale(1. / measuredDPt->Integral(), "width");
+      TString hname = Form("%s_%s", ana->GetName(), measuredDPt->GetName());
+      measuredDPt->SetName(hname);
+      measuredDPt->SetTitle(ana->GetName());
+      arrayDPt.Add(measuredDPt);
     }
 
     i++;
   }
 
-  CompareZvsJetPt("DzSpectraComparisonMeasured", array);
+  CompareZvsJetPt(compareDzName, arrayDz);
+  CompareDPt(compareDPtName, arrayDPt);
 }
 
 //____________________________________________________________________________________
@@ -175,7 +199,16 @@ void DJetCorrAnalysisComparer::CompareTruth()
   DJetCorrBase* ana = 0;
   Int_t i = 0;
 
+  TString compareDzName("DzSpectraComparisonTruth");
+  TString compareDPtName("DPtSpectraComparisonTruth");
+
   while ((ana = static_cast<DJetCorrBase*>(next()))) {
+    compareDzName += "_";
+    compareDzName += ana->GetParamName(fParamIndexes[i]);
+
+    compareDPtName += "_";
+    compareDPtName += ana->GetParamName(fParamIndexes[i]);
+
     TH2* truthDz = ana->GetDzTruth(fParamIndexes[i], kTRUE);
     if (truthDz) {
       truthDz->Scale(1. / truthDz->Integral(), "width");
@@ -197,9 +230,8 @@ void DJetCorrAnalysisComparer::CompareTruth()
     i++;
   }
 
-  CompareZvsJetPt("DzSpectraComparisonTruth", arrayDz);
-
-  CompareDPt("DPtSpectraComparisonTruth", arrayDPt);
+  CompareZvsJetPt(compareDzName, arrayDz);
+  CompareDPt(compareDPtName, arrayDPt);
 }
 
 //____________________________________________________________________________________
@@ -251,6 +283,7 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
 
       if (fMakeRatios) {
         TVirtualPad* pad = canvas->cd(ibin+hist->GetNbinsX());
+        pad->SetLogy(kFALSE);
         if (baselineHistos.GetEntriesFast() < hist->GetNbinsX()) {
           baselineHistos.Add(proj);
 
@@ -322,6 +355,7 @@ void DJetCorrAnalysisComparer::CompareDPt(const char* name, TObjArray& array)
 
     if (fMakeRatios) {
       pad = canvas->cd(2);
+      pad->SetLogy(kFALSE);
       if (!baselineHisto) {
         baselineHisto = hist;
 

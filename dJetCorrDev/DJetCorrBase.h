@@ -41,6 +41,8 @@ class DJetCorrBase : public TNamed {
 
   DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
   DJetCorrAnalysisParams* AddAnalysisParams(DJetCorrAnalysisParams* params);
+
+  const char* GetParamName(Int_t i) const;
   
   virtual Bool_t Init();
   
@@ -65,8 +67,9 @@ class DJetCorrBase : public TNamed {
   virtual TString GetDPtTruthName(Int_t /*p*/) { return ""; }
   virtual TString GetDPtMeasuredName(Int_t /*p*/) { return ""; }
 
-  static void FitGraphInPad(TGraph* graph, TVirtualPad* pad);
-  static void FitHistogramInPad(TH1* hist, TVirtualPad* pad, Double_t extraFactor=1.8);
+  static void FitObjectInPad(TObject* obj, TVirtualPad* pad, Option_t* opt="", Bool_t copyAxisTitle=kFALSE, Double_t extraFactor=1.8);
+  static void FitGraphInPad(TGraph* graph, TVirtualPad* pad, Option_t* opt="", Bool_t copyAxisTitle=kFALSE, Double_t extraFactor=1.8);
+  static void FitHistogramInPad(TH1* hist, TVirtualPad* pad, Option_t* opt="", Bool_t copyAxisTitle=kFALSE, Double_t extraFactor=1.8);
   static void GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy);
   static void GetMinMax(TH1* hist, Double_t& miny, Double_t& maxy);
   static TLegend* GetLegend(TPad* pad);
@@ -76,6 +79,7 @@ class DJetCorrBase : public TNamed {
   static TH2* Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double_t* binsx, Int_t nbinsy, const Double_t* binsy);
   static Bool_t CheckExactRebin(TAxis* orig, TAxis* dest);
   static void GetBinCenter(THnSparse* hn, Int_t* coord_ind, Double_t* coord);
+  static void MakeBinomialConsistent(TH1* pass, TH1* total);
   
  protected:
 
