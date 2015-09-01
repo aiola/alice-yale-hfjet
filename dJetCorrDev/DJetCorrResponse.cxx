@@ -536,34 +536,39 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
   fHistJets2->GetAxis(zPartAxis)->SetRangeUser(minZ, maxZ);
   fHistJets2->GetAxis(dPtPartAxis)->SetRangeUser(minDPt, maxDPt);
 
-  hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
+  hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f_Full", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
   htitle = Form("Response matrix for jet #it{p}_{T}: %.2f < #it{z}_{||}^{part} < %.2f", minZ, maxZ);
-  TH2* resp = fHistMatching->Projection(jetPt2Axis, jetPt1Axis, "");
-  resp->SetName(hname);
-  resp->SetTitle(htitle);
-  resp->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} GeV/#it{c}");
-  resp->GetYaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  TH2* respFull = fHistMatching->Projection(jetPt2Axis, jetPt1Axis, "A");
+  respFull->SetName(hname);
+  respFull->SetTitle(htitle);
+  respFull->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} GeV/#it{c}");
+  respFull->GetYaxis()->SetTitle("#it{p}_{T,jet}^{part} GeV/#it{c}");
+  fOutputList->Add(respFull);
 
-  TH1* total = fHistJets2->Projection(jetPtPartAxis, "");
-  total->Sumw2();
-  total->SetName("total");
+  TH1* totalFull = fHistJets2->Projection(jetPtPartAxis, "");
+  totalFull->Sumw2();
+  totalFull->SetName("totalFull");
 
   // Rebinning factor
-  Int_t nbinsOld = total->GetNbinsX();
-  Int_t rebinFactor = 1;
-  if (nbinsOld % 5 == 0) rebinFactor = 5;
-  else if (nbinsOld % 4 == 0) rebinFactor = 4;
-  else if (nbinsOld % 6 == 0) rebinFactor = 6;
-  else if (nbinsOld % 3 == 0) rebinFactor = 3;
-  else if (nbinsOld % 7 == 0) rebinFactor = 7;
-  else if (nbinsOld % 2 == 0) rebinFactor = 2;
-  if (rebinFactor > 1) {
-    resp->Rebin2D(rebinFactor, rebinFactor);
-    total->Rebin(rebinFactor);
-  }
+  Int_t nbins = totalFull->GetNbinsX();
+  if (nbins % 5 == 0) nbins /= 5;
+  else if (nbins % 4 == 0) nbins /= 4;
+  else if (nbins % 6 == 0) nbins /= 6;
+  else if (nbins % 3 == 0) nbins /= 3;
+  else if (nbins % 7 == 0) nbins /= 7;
+  else if (nbins % 2 == 0) nbins /= 2;
 
+  hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
+
+  TH2* resp = Rebin(respFull, hname, nbins, params->GetMinJetPt(), params->GetMaxJetPt(), nbins, params->GetMinJetPt(), params->GetMaxJetPt());
   fOutputList->Add(resp);
 
+  hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f_Norm", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
+
+  TH2* respNorm = Normalize(resp, hname);
+  fOutputList->Add(respNorm);
+
+  TH1* total = Rebin(totalFull, "total", nbins, params->GetMinJetPt(), params->GetMaxJetPt());
   TH1* pass = resp->ProjectionY("pass");
   pass->Sumw2();
 
@@ -591,6 +596,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
 
   delete pass;
   delete total;
+  delete totalFull;
 
   return kTRUE;
 }
@@ -639,25 +645,33 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
   fHistJets2->GetAxis(zPartAxis)->SetRangeUser(params->GetMinZ(), params->GetMaxZ());
   fHistJets2->GetAxis(dPtPartAxis)->SetRangeUser(minDPt, maxDPt);
 
-  hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
+  hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f_Full", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
   htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
-  TH2* resp = fHistMatching->Projection(z2Axis, z1Axis, "");
+  TH2* respFull = fHistMatching->Projection(z2Axis, z1Axis, "A");
+  respFull->SetName(hname);
+  respFull->SetTitle(htitle);
+  respFull->GetXaxis()->SetTitle("#it{z}_{||}^{det}");
+  respFull->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
+  fOutputList->Add(respFull);
 
-  resp->SetName(hname);
-  resp->SetTitle(htitle);
-  resp->GetXaxis()->SetTitle("#it{z}_{||}^{det}");
-  resp->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
-  resp->Rebin2D(5,5);
+  hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
 
+  TH2* resp = Rebin(respFull, hname, params->GetNzBins(), params->GetzBins(), params->GetNzBins(), params->GetzBins());
   fOutputList->Add(resp);
+
+  hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f_Norm", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
+
+  TH2* respNorm = Normalize(resp, hname);
+  fOutputList->Add(respNorm);
+
+  TH1* totalFull = fHistJets2->Projection(zPartAxis, "");
+  totalFull->SetName("totalFull");
+  totalFull->Sumw2();
+
+  TH1* total = Rebin(totalFull, "total", params->GetNzBins(), params->GetzBins());
 
   TH1* pass = resp->ProjectionY("pass");
   pass->Sumw2();
-  
-  TH1* total = fHistJets2->Projection(zPartAxis, "");
-  total->SetName("total");
-  total->Rebin(5);
-  total->Sumw2();
 
   hname = Form("%s_Efficiency_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
   htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
@@ -683,6 +697,7 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
 
   delete pass;
   delete total;
+  delete totalFull;
 
   return kTRUE;
 }
@@ -931,7 +946,7 @@ Bool_t DJetCorrResponse::PlotResponseMatrixJetPt(TCanvas*& canvasResp, DJetCorrA
   Double_t maxZ = 0;
   params->GetzBinRange(minZ, maxZ, zBin);
 
-  TString hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
+  TString hname = Form("%s_ResponseMatrix_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f_Norm", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
   TH2* resp = dynamic_cast<TH2*>(fOutputList->FindObject(hname));
   if (!resp) {
     Printf("Error-DJetCorrResponse::PlotResponseJetPtMatrix : Could not find histogram '%s'!", hname.Data());
@@ -1035,7 +1050,7 @@ Bool_t DJetCorrResponse::PlotResponseMatrixZ(TCanvas*& canvasResp, DJetCorrAnaly
   Double_t maxJetPt = 0;
   params->GetJetPtBinRange(minJetPt, maxJetPt, jetPtBin);
 
-  TString hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f",
+  TString hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f_Norm",
                        params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
   TH2* resp = dynamic_cast<TH2*>(fOutputList->FindObject(hname));
   if (!resp) {
@@ -1045,8 +1060,8 @@ Bool_t DJetCorrResponse::PlotResponseMatrixZ(TCanvas*& canvasResp, DJetCorrAnaly
 
   if (!canvasResp && !GetCanvas(resp->GetName())) {
     canvasResp = SetUpCanvas(resp->GetName(),
-                             resp->GetXaxis()->GetTitle(), 0., 1.0, kFALSE,
-                             resp->GetYaxis()->GetTitle(), 0., 1.0, kFALSE);
+                             resp->GetXaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE,
+                             resp->GetYaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE);
   }
 
   if (canvasResp) {

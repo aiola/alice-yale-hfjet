@@ -77,10 +77,14 @@ class DJetCorrBase : public TNamed {
   static THnSparse* Rebin(THnSparse* orig, const char* name, const Int_t* nbins, const Double_t** bins);
   static TH1* Rebin(TH1* orig, const char* name, Int_t nbins, const Double_t* bins);
   static TH2* Rebin(TH2* orig, const char* name, Int_t nbinsx, const Double_t* binsx, Int_t nbinsy, const Double_t* binsy);
+  static TH1* Rebin(TH1* orig, const char* name, Int_t nbins, Double_t min, Double_t max);
+  static TH2* Rebin(TH2* orig, const char* name, Int_t nbinsx, Double_t minX, Double_t maxX, Int_t nbinsy, Double_t minY, Double_t maxY);
   static Bool_t CheckExactRebin(TAxis* orig, TAxis* dest);
   static void GetBinCenter(THnSparse* hn, Int_t* coord_ind, Double_t* coord);
   static void MakeBinomialConsistent(TH1* pass, TH1* total);
-  
+  static Double_t* GenerateFixedArray(Int_t n, Double_t min, Double_t max);
+  static TH2* Normalize(TH2* orig, const char* name);
+
  protected:
 
   virtual Bool_t  SaveOutputFile(TObjArray& arr);
