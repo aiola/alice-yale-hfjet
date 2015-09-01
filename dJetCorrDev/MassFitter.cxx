@@ -28,6 +28,8 @@ MassFitter::MassFitter() :
   fNParBkg(0),
   fMinMass(0.),
   fMaxMass(0.),
+  fMinFitRange(0.),
+  fMaxFitRange(0.),
   fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
@@ -58,6 +60,8 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fNParBkg(0),
   fMinMass(minMass),
   fMaxMass(maxMass),
+  fMinFitRange(minMass),
+  fMaxFitRange(maxMass),
   fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
@@ -180,7 +184,7 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     Reset(fHistogram);
   }
   
-  fFitResult = fHistogram->Fit(fFunction, opt);
+  fFitResult = fHistogram->Fit(fFunction, opt, "", fMinFitRange, fMaxFitRange);
 
   for (Int_t i = 1; i < fNParBkg; i++) {
     fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -545,6 +549,18 @@ void MassFitter::SetMassRange(Double_t min, Double_t max)
   if (fMinMass < fMaxMass) {
     fMinMass = min;
     fMaxMass = max;
+  }
+  else {
+    Printf("Error: min mass %.3f must be smaller then mass max %.3f!", min, max);
+  }
+}
+
+//____________________________________________________________________________________
+void MassFitter::SetFitRange(Double_t min, Double_t max)
+{
+  if (fMinFitRange < fMaxFitRange) {
+    fMinFitRange = min;
+    fMaxFitRange = max;
   }
   else {
     Printf("Error: min mass %.3f must be smaller then mass max %.3f!", min, max);
