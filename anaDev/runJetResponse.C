@@ -7,7 +7,7 @@ void runJetResponse(
                     const char   *datatype     = "AOD",                                       // set the analysis type, AOD, ESD or sESD
                     const char   *runtype      = "local",                                     // local or grid
                     const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
-                    const char   *localfiles   = "fileLists/files_prodPP2010pass4SalvatoreSplitPtHard_2.txt",  // set the local list file
+                    const char   *localfiles   = "fileLists/files_LHC10f7a_fix_AOD136a.txt",  // set the local list file
                     UInt_t        numfiles     = 500,                                         // number of files analyzed locally
                     UInt_t        numevents    = 1234567890,                                  // number of events to be analyzed
                     const char   *runperiod    = "LHC10f7a",                                  // set the run period
@@ -154,8 +154,8 @@ void runJetResponse(
 
     // start analysis
     cout << "Starting Analysis...";
-    mgr->SetUseProgressBar(1, 25);
-    //mgr->SetDebugLevel(1);
+    //mgr->SetUseProgressBar(1, 25);
+    mgr->SetDebugLevel(2);
 
     //mgr->AddClassDebug("AliJetContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);

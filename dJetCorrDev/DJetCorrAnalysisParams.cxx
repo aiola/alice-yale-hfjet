@@ -37,7 +37,9 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fMaxDEta(0.9),
   fMinJetConstituents(2),
   fMassFitTypeSig(MassFitter::kGaus),
-  fMassFitTypeBkg(MassFitter::kExpo)
+  fMassFitTypeBkg(MassFitter::kExpo),
+  fIsMC(kFALSE),
+  fIsBkgSub(kFALSE)
 {
 }
 
@@ -68,11 +70,13 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMaxDEta(0.9),
   fMinJetConstituents(2),
   fMassFitTypeSig(MassFitter::kGaus),
-  fMassFitTypeBkg(MassFitter::kExpo)
+  fMassFitTypeBkg(MassFitter::kExpo),
+  fIsMC(isMC),
+  fIsBkgSub(isBkgSub)
 {
   if (anaType == kInvMassAna) {
-    if (isMC) {
-      if (isBkgSub) {
+    if (fIsMC) {
+      if (fIsBkgSub) {
         fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_MCrec_Jet_AKT%s%s_%sMCrec_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
       }
       else {
@@ -89,6 +93,14 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   }
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
+  fNzBins = 4;
+  fzBins = new Double_t[fNzBins+1];
+  fzBins[ 0] =   0.20;
+  fzBins[ 1] =   0.40;
+  fzBins[ 2] =   0.60;
+  fzBins[ 3] =   0.80;
+  fzBins[ 4] =   1.00;
+
   if (fDmesonName == "DStar") {
     fNDPtBins = 6;
     fDPtBins = new Double_t[fNDPtBins+1];
@@ -102,7 +114,13 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
     SetDeltaInvMassRange(413, 421, 0.08);
     SetInvMassRange(413, 0.60);
-    Set2ProngMassRange(421, 0.20);
+
+    f2ProngMinMass = new Double_t[fNzBins];
+    f2ProngMaxMass = new Double_t[fNzBins];
+    Set2ProngMassRange(421, 0.16, 0);
+    Set2ProngMassRange(421, 0.19, 1);
+    Set2ProngMassRange(421, 0.22, 2);
+    Set2ProngMassRange(421, 0.24, 3);
 
     fMassFitTypeSig = MassFitter::kGaus;
     fMassFitTypeBkg = MassFitter::kExpoPower;
@@ -136,14 +154,6 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fJetPtBins[ 2] =  13.0;
     fJetPtBins[ 3] =  30.0;
   }
-
-  fNzBins = 4;
-  fzBins = new Double_t[fNzBins+1];
-  fzBins[ 0] =   0.20;
-  fzBins[ 1] =   0.40;
-  fzBins[ 2] =   0.60;
-  fzBins[ 3] =   0.80;
-  fzBins[ 4] =   1.00;
 }
 
 //____________________________________________________________________________________
@@ -191,11 +201,14 @@ void DJetCorrAnalysisParams::SetInvMassRange(Int_t pdg, Double_t range)
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisParams::Set2ProngMassRange(Int_t pdg, Double_t range)
+void DJetCorrAnalysisParams::Set2ProngMassRange(Int_t pdg, Double_t range, Int_t i)
 {
+  if (!f2ProngMaxMass || !f2ProngMinMass) return;
+  if (i < 0 || i >= fNzBins) return;
+
   TParticlePDG* part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg));
-  f2ProngMinMass = part->Mass() - range/2;
-  f2ProngMaxMass = part->Mass() + range/2;
+  f2ProngMinMass[i] = part->Mass() - range/2;
+  f2ProngMaxMass[i] = part->Mass() + range/2;
 }
 
 //____________________________________________________________________________________
@@ -322,5 +335,43 @@ void DJetCorrAnalysisParams::GetJetPtBinRange(Double_t& minJetPt, Double_t& maxJ
   else {
     minJetPt = GetMinJetPt();
     maxJetPt = GetMaxJetPt();
+  }
+}
+
+//____________________________________________________________________________________
+Double_t DJetCorrAnalysisParams::Get2ProngMinMass(Int_t zBin, Int_t dptBin) const
+{
+  if (!f2ProngMinMass) return 0.;
+  if (zBin >= 0) {
+    if (zBin >= fNzBins) zBin = fNzBins-1;
+    return f2ProngMinMass[zBin];
+  }
+  else if (dptBin >=0) {
+    zBin = TMath::FloorNint((Double_t)dptBin * fNzBins / fNDPtBins);
+    return Get2ProngMinMass(zBin, -1);
+  }
+  else {
+    Double_t min = f2ProngMinMass[0];
+    for (Int_t i = 1; i < fNzBins; i++) if (min > f2ProngMinMass[i]) min = f2ProngMinMass[i];
+    return min;
+  }
+}
+
+//____________________________________________________________________________________
+Double_t DJetCorrAnalysisParams::Get2ProngMaxMass(Int_t zBin, Int_t dptBin) const
+{
+  if (!f2ProngMaxMass) return 0.;
+  if (zBin >= 0) {
+    if (zBin >= fNzBins) zBin = fNzBins-1;
+    return f2ProngMaxMass[zBin];
+  }
+  else if (dptBin >=0) {
+    zBin = TMath::FloorNint((Double_t)dptBin * fNzBins / fNDPtBins);
+    return Get2ProngMaxMass(zBin, -1);
+  }
+  else {
+    Double_t max = f2ProngMaxMass[0];
+    for (Int_t i = 1; i < fNzBins; i++) if (max < f2ProngMaxMass[i]) max = f2ProngMaxMass[i];
+    return max;
   }
 }

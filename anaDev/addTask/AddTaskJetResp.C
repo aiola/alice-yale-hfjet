@@ -62,6 +62,14 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
   Double_t    kGhostArea          = 0.01;
   Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching;    // kGeometricalMatching, kConstituentMatching, kJetLoop
 
+  AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType kDmesonType = AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi;
+  AliAnalysisTaskDmesonJetCorrelations::ECandidateType kDmesonCorrType = AliAnalysisTaskDmesonJetCorrelations::kD0toKpi; //kDstartoKpipi  
+  AliEmcalJet::EFlavourTag kFlavourCut = AliEmcalJet::kD0;
+  TString sDmesonCandName = "DSBcandidates";
+  TString sTracksDcandidatesName(sDmesonCandName);
+  sTracksDcandidatesName += "AndTracksD0MCrec";
+  TString mcTracksDMesonname = "mcparticlesD0";
+
   TF1* trackingEff_function = 0;
 
   Double_t kRhoMinEta = -0.7+jetRadius;
@@ -254,107 +262,90 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     taskFull->GetParticleContainer(1)->SelectPhysicalPrimaries(kTRUE);
   }
 
-    // HF-jet analysis
+  // HF-jet analysis
   if (dohf) {
 
-    AliAnalysisTaskSEDmesonsFilterCJ* pDStarMesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
-                                                                                       "DStartoKpipiCuts.root",
-                                                                                       kTRUE,  //   Bool_t theMCon
-                                                                                       kTRUE,   //   Bool_t reco
-                                                                                       "");
-    pDStarMesonFilterTask->SetCombineDmesons(kTRUE);
-    //pDStarMesonFilterTask->SetRejectDfromB(kFALSE);
-    //pDStarMesonFilterTask->SetKeepOnlyDfromB(kTRUE);
-    AliParticleContainer* trackContDStar = pDStarMesonFilterTask->AddParticleContainer(tracksName);
-    trackContDStar->SetClassName("AliAODTrack");
-    trackContDStar->SetFilterHybridTracks(kTRUE);
+    AliAnalysisTaskSEDmesonsFilterCJ* pDMesonFilterRec = AddTaskSEDmesonsFilterCJ(kDmesonType,
+										   "",
+										   kTRUE,  //   Bool_t theMCon
+										   kTRUE,   //   Bool_t reco
+										   "");
+    pDMesonFilterRec->SetCombineDmesons(kTRUE);
+    //pDMesonFilterRec->SetRejectDfromB(kFALSE);
+    //pDMesonFilterRec->SetKeepOnlyDfromB(kTRUE);
+    AliParticleContainer* trackContDMeson = pDMesonFilterRec->AddParticleContainer(tracksName);
+    trackContDMeson->SetClassName("AliAODTrack");
+    trackContDMeson->SetFilterHybridTracks(kTRUE);
 
-    TString sTracksDStarName = "DcandidatesAndTracksDStarMCrec";
-    
     if (1) {
       // QA task
-      AliAnalysisTaskSAQA *pQADStarTask = AddTaskSAQA(sTracksDStarName, "", "", "", "", jetRadius, 1, 0, trackPtCut, clusPtCut, "TPC");
-      //pQADStarTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
-      //pQADStarTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
-      //pQADStarTask->SetAODfilterBits(256, 512);
-      pQADStarTask->SetHistoBins(200, 0, 30);
+      AliAnalysisTaskSAQA *pQADcandidatesTask = AddTaskSAQA(sTracksDcandidatesName, "", "", "", "", jetRadius, 1, 0, trackPtCut, clusPtCut, "TPC");
+      pQADcandidatesTask->SetHistoBins(200, 0, 30);
     }
     
-    AliEmcalJetTask *pChJetDStarTask = AddTaskEmcalJet(sTracksDStarName, "", 1, jetRadius, 1, trackPtCut, clusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 1);
-    TString sChJetsDStarName = pChJetDStarTask->GetName();
+    AliEmcalJetTask *pChJetDMesonTask = AddTaskEmcalJet(sTracksDcandidatesName, "", 1, jetRadius, 1, trackPtCut, clusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 1);
+    TString sChJetsDMesonName = pChJetDMesonTask->GetName();
 
-    AliAnalysisTaskDmesonJetCorrelations* pDStarMesonJetCorrRec = AddTaskDmesonJetCorr(AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi, "", 
-                                                                                       sTracksDStarName, "", sChJetsDStarName, "",
-                                                                                       jetRadius, jetPtCut, jetAreaCut, "TPC", 0,
-                                                                                       "AliAnalysisTaskDmesonJetCorrelations", "MCrec");
-    pDStarMesonJetCorrRec->SetMaxR(jetRadius);
-    pDStarMesonJetCorrRec->SetMatchingType(eFlavourJetMatchingType);
-    pDStarMesonJetCorrRec->SetPlotOnlyAcceptedJets(kTRUE);
-    pDStarMesonJetCorrRec->SetShowDeltaEta(kTRUE);
-    pDStarMesonJetCorrRec->SetShowDeltaPhi(kTRUE);
-    pDStarMesonJetCorrRec->SetShow2ProngInvMass(kTRUE);
-    pDStarMesonJetCorrRec->SetShowInvMass(kTRUE);
-    pDStarMesonJetCorrRec->SetShowJetConstituents(kTRUE);
-
-    // MC particle selector
-    TString mcTracksDStarname = "mcparticlesDStar";
-    
-    AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDStarname, kFALSE, kTRUE, 0.);
+    AliAnalysisTaskDmesonJetCorrelations* pDMesonJetCorrRec = AddTaskDmesonJetCorr(kDmesonCorrType, "", 
+										   sTracksDcandidatesName, "", sChJetsDMesonName, "",
+										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, sDmesonCandName,
+										   "AliAnalysisTaskDmesonJetCorrelations", "MCrec");
+    pDMesonJetCorrRec->SetMaxR(jetRadius);
+    pDMesonJetCorrRec->SetMatchingType(eFlavourJetMatchingType);
+    pDMesonJetCorrRec->SetPlotOnlyAcceptedJets(kTRUE);
+    pDMesonJetCorrRec->SetShowDeltaEta(kTRUE);
+    pDMesonJetCorrRec->SetShowDeltaPhi(kTRUE);
+    if (kDmesonCorrType == AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi) pDMesonJetCorrRec->SetShow2ProngInvMass(kTRUE);
+    pDMesonJetCorrRec->SetShowInvMass(kTRUE);
+    pDMesonJetCorrRec->SetShowJetConstituents(kTRUE);
+    return;
+    // MC particle selector    
+    AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDMesonname, kFALSE, kTRUE, 0.);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
-    mcPartTask->SelectCharmtoDStartoKpipi();
+    if (kDmesonType == AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi) {
+      mcPartTask->SelectCharmtoDStartoKpipi();
+    }
+    else {
+      mcPartTask->SelectCharmtoD0toKpi();
+    }
     //mcPartTask->SetRejectDfromB(kFALSE);
     //mcPartTask->SetKeepOnlyDfromB(kTRUE);
     //mcPartTask->SelectCharmtoD0toKpi();
 
-    AliEmcalJetTask *chMcJetTaskchDStar = AddTaskEmcalJet(mcTracksDStarname, "", 1, jetRadius, 1, partLevPtCut, partLevPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 0);
-    const char *chMcJetsDStarName = chMcJetTaskchDStar->GetName();
+    AliEmcalJetTask *chMcJetTaskchDMeson = AddTaskEmcalJet(mcTracksDMesonname, "", 1, jetRadius, 1, partLevPtCut, partLevPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 0);
+    const char *chMcJetsDMesonName = chMcJetTaskchDMeson->GetName();
     
-    AliAnalysisTaskSEDmesonsFilterCJ* pDStarMesonFilterTruthTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
-                                                                                            "DStartoKpipiCuts.root",
-                                                                                            kTRUE,  //   Bool_t theMCon
-                                                                                            kFALSE,   //   Bool_t reco
-                                                                                            "");
+    AliAnalysisTaskSEDmesonsFilterCJ* pDMesonFilterGen = AddTaskSEDmesonsFilterCJ(kDmesonType,
+										  "",
+										  kTRUE,  //   Bool_t theMCon
+										  kFALSE,   //   Bool_t reco
+										  "");
     //pDStarMesonFilterTruthTask->SetRejectDfromB(kFALSE);
     //pDStarMesonFilterTruthTask->SetKeepOnlyDfromB(kTRUE);
 
-
-    AliAnalysisTaskDmesonJetCorrelations* pDStarMesonJetCorrGen = AddTaskDmesonJetCorr(AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi, "", 
-                                                                                    mcTracksDStarname, "", chMcJetsDStarName, "",
-                                                                                    jetRadius, jetPtCut, jetAreaCut, "TPC", 0,
-                                                                                    "AliAnalysisTaskDmesonJetCorrelations", "MC");
-    pDStarMesonJetCorrGen->SetMaxR(jetRadius);
-    pDStarMesonJetCorrGen->SetMatchingType(eFlavourJetMatchingType);
-    pDStarMesonJetCorrGen->SetPlotOnlyAcceptedJets(kTRUE);
-    pDStarMesonJetCorrGen->SetShowDeltaEta(kTRUE);
-    pDStarMesonJetCorrGen->SetShowDeltaPhi(kTRUE);
-    pDStarMesonJetCorrGen->SetShow2ProngInvMass(kTRUE);
-    pDStarMesonJetCorrGen->SetShowInvMass(kTRUE);
-    pDStarMesonJetCorrGen->SetParticleLevel(kTRUE);
-    pDStarMesonJetCorrGen->SetShowJetConstituents(kTRUE);
+    AliAnalysisTaskDmesonJetCorrelations* pDMesonJetCorrGen = AddTaskDmesonJetCorr(kDmesonCorrType, "", 
+										   mcTracksDMesonname, "", chMcJetsDMesonName, "",
+										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, "Dcandidates",
+										   "AliAnalysisTaskDmesonJetCorrelations", "MC");
+    pDMesonJetCorrGen->SetMaxR(jetRadius);
+    pDMesonJetCorrGen->SetMatchingType(eFlavourJetMatchingType);
+    pDMesonJetCorrGen->SetPlotOnlyAcceptedJets(kTRUE);
+    pDMesonJetCorrGen->SetShowDeltaEta(kTRUE);
+    pDMesonJetCorrGen->SetShowDeltaPhi(kTRUE);
+    if (kDmesonCorrType == AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi) pDMesonJetCorrGen->SetShow2ProngInvMass(kTRUE);
+    pDMesonJetCorrGen->SetShowInvMass(kTRUE);
+    pDMesonJetCorrGen->SetParticleLevel(kTRUE);
+    pDMesonJetCorrGen->SetShowJetConstituents(kTRUE);
 
     // Analysis task
-    AliJetResponseMaker *taskCharged = AddTaskJetResponseMaker(sTracksDStarName, "", sChJetsDStarName, "", jetRadius, mcTracksDStarname, "", chMcJetsDStarName, "", jetRadius,
+    AliJetResponseMaker *taskCharged = AddTaskJetResponseMaker(sTracksDcandidatesName, "", sChJetsDMesonName, "", jetRadius, mcTracksDMesonname, "", chMcJetsDMesonName, "", jetRadius,
 							      jetPtCut, jetAreaCut, jetBias, biasType, matching, matchingLevel, matchingLevel, "TPC");
     taskCharged->SetHistoType(histoType);
     //taskCharged->GetParticleContainer(1)->SelectPhysicalPrimaries(kTRUE);
     taskCharged->SetFlavourZAxis(kTRUE);
     taskCharged->SetFlavourPtAxis(kTRUE);
-    taskCharged->GetJetContainer(0)->SetFlavourCut(AliEmcalJet::kDStar);
-    taskCharged->GetJetContainer(1)->SetFlavourCut(AliEmcalJet::kDStar);
-
-    if (0) {
-      AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
-                                                                                      "DStartoKpipiCuts.root",
-                                                                                      kTRUE,  //   Bool_t theMCon
-                                                                                      kTRUE,   //   Bool_t reco
-                                                                                      "");
-
-      AliAnalysisTaskSEDmesonsFilterCJ* pD0mesonFilterTruthTask = AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi,
-                                                                                           "DStartoKpipiCuts.root",
-                                                                                           kTRUE,  //   Bool_t theMCon
-                                                                                           kFALSE,   //   Bool_t reco
-                                                                                           "");
-    }
+    taskCharged->GetJetContainer(0)->SetFlavourCut(kFlavourCut);
+    taskCharged->GetJetContainer(1)->SetFlavourCut(kFlavourCut);
   }
 
   UInt_t physSel = 0;

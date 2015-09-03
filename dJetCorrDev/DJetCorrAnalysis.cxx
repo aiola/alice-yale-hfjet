@@ -23,10 +23,6 @@
 #include <TPaveText.h>
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
-#include <TGraph.h>
-#include <TGraph2D.h>
-#include <TGraphErrors.h>
-#include <TGraphAsymmErrors.h>
 #include <TLine.h>
 
 #include "MassFitter.h"
@@ -238,26 +234,17 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
 {
   TString cuts(params->GetCutString(st, dptBin, jetptBin, dzBin));
 
-  Double_t minDPt = params->GetMinDPt();
-  Double_t maxDPt = params->GetMaxDPt();
-  if (dptBin >= 0) {
-    minDPt = params->GetDPtBin(dptBin);
-    maxDPt = params->GetDPtBin(dptBin+1);
-  }
+  Double_t minDPt = 0;
+  Double_t maxDPt = 0;
+  params->GetDPtBinRange(minDPt, maxDPt, dptBin);
 
-  Double_t minJetPt = params->GetMinJetPt();
-  Double_t maxJetPt = params->GetMaxJetPt();
-  if (jetptBin >= 0) {
-    minJetPt = params->GetJetPtBin(jetptBin);
-    maxJetPt = params->GetJetPtBin(jetptBin+1);
-  }
+  Double_t minz = 0;
+  Double_t maxz = 0;
+  params->GetzBinRange(minz, maxz, dzBin);
 
-  Double_t minz = params->GetMinZ();
-  Double_t maxz = params->GetMaxZ();
-  if (dzBin >= 0) {
-    minz = params->GetzBin(dzBin);
-    maxz = params->GetzBin(dzBin+1);
-  }
+  Double_t minJetPt = 0;
+  Double_t maxJetPt = 0;
+  params->GetJetPtBinRange(minJetPt, maxJetPt, jetptBin);
 
   if (!suffix.IsNull()) suffix.Prepend("_");
 
@@ -321,7 +308,7 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
     }
   }
   else {
-    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons that could possibly be matched to a jet
+    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons in a defined eta region (usually the eta region is defined by the jet axis)
      
     if (jetPtAxis >= 0) fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
     if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
@@ -964,10 +951,6 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   
   Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
   Double_t Dstarmass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(413))->Mass();
-  //Double_t D0sigma = 1.605e-8;
-  //Double_t Dstarsigma = D0sigma + 8.34e-5;
-  //Double_t D0sigma = 0.002;
-  //Double_t Dstarsigma = 0.001;
   
   TString fixedCuts(params->GetCutString(st, -1, jetptBin, dzBin));
   
@@ -1003,22 +986,19 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
   Double_t minMass = 0;
   Double_t maxMass = 0;
   Double_t pdgMass = -1;
-  //Double_t pdgSigma = 0;
   if (params->IsD0()) {
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
-    minMass = D0mass - 0.15;
-    maxMass = D0mass + 0.15;
+    minMass = params->GetInvMinMass();
+    maxMass = params->GetInvMaxMass();
     pdgMass = D0mass;
-    //pdgSigma = D0sigma;
   }
   else if (params->IsDStar()) {
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "DeltaInvMass";
     pdgMass = Dstarmass - D0mass;
-    minMass = pdgMass - 0.04;
-    maxMass = pdgMass + 0.04;
-    //pdgSigma = Dstarsigma;
+    minMass = params->GetDeltaInvMinMass();
+    maxMass = params->GetDeltaInvMaxMass();
   }
   else {
     Printf("Error-DJetCorrAnalysis::PlotInvMassHistogramsVsDPt : Meson type '%s' not recognized!", params->GetDmesonName());
@@ -1067,15 +1047,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* para
     n++;
   }
 
-  TObjArray* extraInfo = new TObjArray();
-  extraInfo->SetOwner(kTRUE);
-  extraInfo->Add(new TObjString("ALICE Work in progress"));
-  extraInfo->Add(new TObjString(jetCuts));
+  TObjArray extraInfo;
+  extraInfo.SetOwner(kTRUE);
+  extraInfo.Add(new TObjString("ALICE Work in progress"));
+  extraInfo.Add(new TObjString(jetCuts));
   
-  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo, histSpectrum);
+  Bool_t result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0x0, 0x0, params, kTRUE, &extraInfo, histSpectrum);
   
   delete[] histos;
-  delete extraInfo;
   
   return result;
 }
@@ -1127,10 +1106,6 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   
   Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
   Double_t Dstarmass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(413))->Mass();
-  //Double_t D0sigma = 1.605e-8;
-  //Double_t Dstarsigma = D0sigma + 8.34e-5;
-  //Double_t D0sigma = 0.002;
-  //Double_t Dstarsigma = 0.001;
   
   TString fixedCuts(params->GetCutString(kMatched, dptBin, jetptBin, -1));
   fixedCuts += "_Matched";
@@ -1141,7 +1116,6 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   Double_t minMass = 0;
   Double_t maxMass = 0;
   Double_t pdgMass = -1;
-  //Double_t pdgSigma = 0;
   TH1** histos = 0;
     
   TString cname2;
@@ -1157,9 +1131,8 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     xTitle = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "InvMass";
     pdgMass = D0mass;
-    //pdgSigma = D0sigma;
-    minMass = D0mass - 0.15;
-    maxMass = D0mass + 0.15;
+    minMass = params->GetInvMinMass();
+    maxMass = params->GetInvMaxMass();
     histos = new TH1*[params->GetNzBins()];
   }
   else if (params->IsDStar()) {
@@ -1167,17 +1140,16 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     xTitle = "#it{m}(K#pi#pi) - #it{m}(K#pi) (GeV/#it{c}^{2})";
     hname = "DeltaInvMass";
     pdgMass = Dstarmass - D0mass;
-    //pdgSigma = Dstarsigma;
-    minMass = pdgMass - 0.04;
-    maxMass = pdgMass + 0.04;
+    minMass = params->GetDeltaInvMinMass();
+    maxMass = params->GetDeltaInvMaxMass();
     histos = new TH1*[params->GetNzBins()];
 
     cname2 = "fig_D0InvMassVsDz";
     xTitle2 = "#it{m}(K#pi) (GeV/#it{c}^{2})";
     hname2 = "D0InvMass";
     pdgMass2 = D0mass;
-    minMass2 = pdgMass2 - 0.20;
-    maxMass2 = pdgMass2 + 0.20;
+    minMass2 = params->Get2ProngMinMass();
+    maxMass2 = params->Get2ProngMaxMass();
     histos2 = new TH1*[params->GetNzBins()];
     cname2 += params->GetName();
     cname2 += fixedCuts;
@@ -1219,9 +1191,15 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
     histSpectrum = 0;
   }
 
+  Double_t* minMassSel = new Double_t[params->GetNzBins()];
+  Double_t* maxMassSel = new Double_t[params->GetNzBins()];
+
   Int_t n = 0;
   for (Int_t i = 0; i < params->GetNzBins(); i++) {
     TString cuts(params->GetCutString(kMatched, dptBin, jetptBin, i));
+
+    minMassSel[i] = params->Get2ProngMinMass(i, dptBin);
+    maxMassSel[i] = params->Get2ProngMaxMass(i, dptBin);
     
     TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
     TH1* hist = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
@@ -1254,20 +1232,21 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   
   Bool_t result = kTRUE;
   
-  TObjArray* extraInfo = new TObjArray();
-  extraInfo->SetOwner(kTRUE);
-  extraInfo->Add(new TObjString("ALICE Work in progress"));
-  extraInfo->Add(new TObjString(jetCuts));
+  TObjArray extraInfo;
+  extraInfo.SetOwner(kTRUE);
+  extraInfo.Add(new TObjString("ALICE Work in progress"));
+  extraInfo.Add(new TObjString(jetCuts));
 
-  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0, params, kTRUE, extraInfo, histSpectrum);
+  result = PlotInvMassHistogramArray(n, histos, cname, xTitle, minMass, maxMass, pdgMass, 0x0, 0x0, params, kTRUE, &extraInfo, histSpectrum);
   delete[] histos;
 
   if (histos2) {
-    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, 0.15, params, kFALSE, extraInfo, 0x0) && result;
+    result = PlotInvMassHistogramArray(n, histos2, cname2, xTitle2, minMass2, maxMass2, pdgMass2, minMassSel, maxMassSel, params, kFALSE, &extraInfo, 0x0) && result;
     delete[] histos2;
   }
 
-  delete extraInfo;
+  delete[] minMassSel;
+  delete[] maxMassSel;
 
   return result;
 }
@@ -1322,7 +1301,7 @@ Bool_t DJetCorrAnalysis::PlotSpectra(Int_t n, TH1** histSpectra, const char* nam
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
                                                    const char* name, const char* xTitle,
-                                                   Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
+                                                   Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t* minMassSel, Double_t* maxMassSel,
                                                    DJetCorrAnalysisParams* params, Bool_t doFit, TObjArray* extraInfo, TH1* histSpectrum)
 {
   // Plot invariant mass histograms contained in histos.
@@ -1396,10 +1375,23 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       
         fitter->Fit(histos[i], "0 E S");
       }
-      
+
       TFitResultPtr r = fitter->GetFitStatus();
       Int_t fitStatus = r;
-            
+
+      if (histSpectrum) {
+        if (params->IsBkgSub()) {
+          histSpectrum->SetBinContent(i+1, histos[i]->GetEntries());
+          histSpectrum->SetBinError(i+1, TMath::Sqrt(histos[i]->GetEntries()));
+        }
+        else {
+          if (fitStatus == 0) {
+            histSpectrum->SetBinContent(i+1, fitter->GetSignal());
+            histSpectrum->SetBinError(i+1, fitter->GetSignalError());
+          }
+        }
+      }
+
       fitter->Draw("same");
 
       TPaveText* paveSig = SetUpPaveText(0.22, 0.41, 0.51, 0.84, 13, fitter->GetSignalString());
@@ -1408,10 +1400,6 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       paveSig->AddText(fitter->GetSignalOverSqrtSignalBackgroundString());
       if (fitStatus == 0) {
         paveSig->AddText(fitter->GetChisquareString());
-        if (histSpectrum) {
-          histSpectrum->SetBinContent(i+1, fitter->GetSignal());
-          histSpectrum->SetBinError(i+1, fitter->GetSignalError());
-        }
       }
       else {
         paveSig->AddText("Fit failed");
@@ -1421,6 +1409,7 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       TPaveText* paveFit = SetUpPaveText(0.47, 0.58, 0.97, 0.84, 13, fitter->GetSignalMeanString());
       paveFit->AddText(fitter->GetSignalWidthString());
       paveFit->AddText(fitter->GetBkgPar1String());
+      paveFit->AddText(fitter->GetTotalEntriesString());
       paveFit->Draw();
 
       if (fInvMassPlotNorm == kNormalizeBackground) {
@@ -1453,14 +1442,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       line->SetLineWidth(1);
       line->Draw();
     }
-    if (massLimits > 0) {
-      TLine *line1 = new TLine(pdgMass - massLimits, 0, pdgMass - massLimits, hcopy->GetMaximum());
+    if (maxMassSel && minMassSel) {
+      TLine *line1 = new TLine(minMassSel[i], 0, minMassSel[i], hcopy->GetMaximum());
       line1->SetLineColor(kGreen+2);
       line1->SetLineWidth(1);
       line1->SetLineStyle(2);
       line1->Draw();
 
-      TLine *line2 = new TLine(pdgMass + massLimits, 0, pdgMass + massLimits, hcopy->GetMaximum());
+      TLine *line2 = new TLine(maxMassSel[i], 0, maxMassSel[i], hcopy->GetMaximum());
       line2->SetLineColor(kGreen+2);
       line2->SetLineWidth(1);
       line2->SetLineStyle(2);
@@ -1606,26 +1595,17 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
 
   TString cuts(params->GetCutString(st, dptBin, jetptBin, dzBin));
 
-  Double_t minDPt = params->GetMinDPt();
-  Double_t maxDPt = params->GetMaxDPt();
-  if (dptBin >= 0) {
-    minDPt = params->GetDPtBin(dptBin);
-    maxDPt = params->GetDPtBin(dptBin+1);
-  }
+  Double_t minDPt = 0;
+  Double_t maxDPt = 0;
+  params->GetDPtBinRange(minDPt, maxDPt, dptBin);
 
-  Double_t minJetPt = params->GetMinJetPt();
-  Double_t maxJetPt = params->GetMaxJetPt();
-  if (jetptBin >= 0) {
-    minJetPt = params->GetJetPtBin(jetptBin);
-    maxJetPt = params->GetJetPtBin(jetptBin+1);
-  }
+  Double_t minz = 0;
+  Double_t maxz = 0;
+  params->GetzBinRange(minz, maxz, dzBin);
 
-  Double_t minz = params->GetMinZ();
-  Double_t maxz = params->GetMaxZ();
-  if (dzBin >= 0) {
-    minz = params->GetzBin(dzBin);
-    maxz = params->GetzBin(dzBin+1);
-  }
+  Double_t minJetPt = 0;
+  Double_t maxJetPt = 0;
+  params->GetJetPtBinRange(minJetPt, maxJetPt, jetptBin);
 
   if (!suffix.IsNull()) suffix.Prepend("_");
 
@@ -1692,7 +1672,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     }
   }
   else {
-    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons that could possibly be matched to a jet
+    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons in a defined eta region (usually the eta region is defined by the jet axis)
     
     if (jetPtAxis >= 0) fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
     if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
@@ -1714,7 +1694,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
     fOutputList->Add(hd2pronginvmass);
     
-    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(params->Get2ProngMinMass(), params->Get2ProngMaxMass());    
+    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(params->Get2ProngMinMass(dzBin, dptBin), params->Get2ProngMaxMass(dzBin, dptBin));
   }
 
   if (dDeltaInvMassAxis >= 0) {
@@ -1729,7 +1709,7 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
       fOutputList->Add(hdsoftpionptVsDeltaInvMass);
     }
     
-    fDmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(params->GetDeltaInvMinMass(), params->GetDeltaInvMaxMass());    
+    fDmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(params->GetDeltaInvMinMass(), params->GetDeltaInvMaxMass());
   }
 
   TH2* hDpos = fDmesons->Projection(dPhiAxis, dEtaAxis, "EO");
