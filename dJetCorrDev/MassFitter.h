@@ -62,6 +62,7 @@ class MassFitter : public TNamed {
   TString  GetSignalWidthString()                const;
   TString  GetBkgPar1String()                    const;
   TString  GetBkgPar2String()                    const;
+  TString  GetTotalEntriesString()               const;
   
   TF1*     GetFitFunction()                      const { return fFunction     ; }
   TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }

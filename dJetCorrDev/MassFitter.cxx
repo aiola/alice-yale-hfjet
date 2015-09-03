@@ -236,11 +236,11 @@ TString MassFitter::GetSignalString() const
   Double_t sigErrLog10 = TMath::Log10(fSignalError);
   if (sigErrLog10 < 0) {
     Int_t sigPrec = TMath::CeilNint(-sigErrLog10);
-    r = Form("S=%%.%df #pm %%.%df", sigPrec, sigPrec);
+    r = Form("S=%%.%df#pm%%.%df", sigPrec, sigPrec);
     r = Form(r.Data(), fSignal, fSignalError);
   }
   else {
-    r = Form("S=%.0f #pm %.0f", fSignal, fSignalError);
+    r = Form("S=%.0f#pm%.0f", fSignal, fSignalError);
   }
 
   return r;
@@ -254,11 +254,11 @@ TString MassFitter::GetBackgroundString() const
   Double_t bkgErrLog10 = TMath::Log10(fBackgroundError);
   if (bkgErrLog10 < 0) {
     Int_t bkgPrec = TMath::CeilNint(-bkgErrLog10);
-    r = Form("B=%%.%df #pm %%.%df", bkgPrec, bkgPrec);
+    r = Form("B=%%.%df#pm%%.%df", bkgPrec, bkgPrec);
     r = Form(r.Data(), fBackground, fBackgroundError);
   }
   else {
-    r = Form("B=%.0f #pm %.0f", fBackground, fBackgroundError);
+    r = Form("B=%.0f#pm%.0f", fBackground, fBackgroundError);
   }
 
   return r;
@@ -325,11 +325,11 @@ TString MassFitter::GetSignalMeanString() const
   
   if (vErrLog10 < 0) {
     Int_t vPrec = TMath::CeilNint(-vErrLog10);
-    r = Form("#mu=%%.%df #pm %%.%df GeV/#it{c}^{2}", vPrec, vPrec);
+    r = Form("#mu=%%.%df#pm%%.%df GeV/#it{c}^{2}", vPrec, vPrec);
     r = Form(r.Data(), v, vErr);
   }
   else {
-    r = Form("#mu=%.0f #pm %.0f GeV/#it{c}^{2}", v, vErr);
+    r = Form("#mu=%.0f#pm%.0f GeV/#it{c}^{2}", v, vErr);
   }
 
   return r;
@@ -364,11 +364,11 @@ TString MassFitter::GetSignalWidthString() const
   
   if (vErrLog10 < 0) {
     Int_t vPrec = TMath::CeilNint(-vErrLog10);
-    r = Form("#sigma=%%.%df #pm %%.%df %s", vPrec, vPrec, unit.Data());
+    r = Form("#sigma=%%.%df#pm%%.%df %s", vPrec, vPrec, unit.Data());
     r = Form(r.Data(), v, vErr);
   }
   else {
-    r = Form("#sigma=%.0f #pm %.0f %s", v, vErr, unit.Data());
+    r = Form("#sigma=%.0f#pm%.0f %s", v, vErr, unit.Data());
   }
 
   return r;
@@ -386,11 +386,11 @@ TString MassFitter::GetBkgPar1String() const
     Double_t vErrLog10 = TMath::Log10(vErr);
     if (vErrLog10 < 0) {
       Int_t vPrec = TMath::CeilNint(-vErrLog10);
-      r = Form("b=%%.%df #pm %%.%df", vPrec, vPrec);
+      r = Form("b=%%.%df#pm%%.%df", vPrec, vPrec);
       r = Form(r.Data(), v, vErr);
     }
     else {
-      r = Form("b=%.0f #pm %.0f", v, vErr);
+      r = Form("b=%.0f#pm%.0f", v, vErr);
     }
   }
 
@@ -409,13 +409,24 @@ TString MassFitter::GetBkgPar2String() const
     Double_t vErrLog10 = TMath::Log10(vErr);
     if (vErrLog10 < 0) {
       Int_t vPrec = TMath::CeilNint(-vErrLog10);
-      r = Form("c=%%.%df #pm %%.%df", vPrec, vPrec);
+      r = Form("c=%%.%df#pm%%.%df", vPrec, vPrec);
       r = Form(r.Data(), v, vErr);
     }
     else {
-      r = Form("c=%.0f #pm %.0f", v, vErr);
+      r = Form("c=%.0f#pm%.0f", v, vErr);
     }
   }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetTotalEntriesString() const
+{
+  TString r;
+
+  Double_t nentries = fHistogram->GetEntries();
+  r = Form("Entries = %.1f#pm%.1f", nentries, TMath::Sqrt(nentries));
 
   return r;
 }

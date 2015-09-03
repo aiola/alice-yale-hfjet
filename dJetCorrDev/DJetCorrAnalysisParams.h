@@ -19,10 +19,16 @@ class DJetCorrAnalysisParams : public TObject
   
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass = min        ; fInvMaxMass = max        ; }
   void        SetInvMassRange(Int_t pdg, Double_t nsigma);
-  void        Set2ProngMassRange(Double_t min, Double_t max)       { f2ProngMinMass = min     ; f2ProngMaxMass = max     ; }
-  void        Set2ProngMassRange(Int_t pdg, Double_t nsigma);
+  void        Set2ProngMassRange(Double_t min, Double_t max, Int_t i)       { f2ProngMinMass[i] = min     ; f2ProngMaxMass[i] = max     ; }
+  void        Set2ProngMassRange(Int_t pdg, Double_t nsigma, Int_t i);
   void        SetDeltaInvMassRange(Double_t min, Double_t max)     { fDeltaInvMinMass = min   ; fDeltaInvMaxMass = max   ; }
   void        SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double_t nsigma);
+
+  void        SetIsMC(Bool_t mc)      { fIsMC     = mc   ; }
+  void        SetIsBkgSub(Bool_t bkg) { fIsBkgSub = bkg  ; }
+
+  Bool_t      IsBkgSub()        const { return fIsBkgSub ; }
+  Bool_t      IsMC()            const { return fIsMC     ; }
 
   void        SetJetType(const char* type) { fJetType = type; }
   
@@ -55,9 +61,9 @@ class DJetCorrAnalysisParams : public TObject
   Double_t    GetInvMinMass()          const { return fInvMinMass                                   ; }
   Double_t    GetInvMaxMass()          const { return fInvMaxMass                                   ; }
 
-  Bool_t      IsIn2ProngMassRange(Double_t mass)    const { return (mass < f2ProngMaxMass && mass > f2ProngMinMass); }
-  Double_t    Get2ProngMinMass()       const { return f2ProngMinMass                                ; }
-  Double_t    Get2ProngMaxMass()       const { return f2ProngMaxMass                                ; }
+  Bool_t      IsIn2ProngMassRange(Double_t mass, Int_t zBin=-1, Int_t dptBin=-1) const { return (mass < Get2ProngMaxMass(zBin, dptBin) && mass > Get2ProngMinMass(zBin, dptBin)); }
+  Double_t    Get2ProngMinMass(Int_t zBin=-1, Int_t dptBin=-1) const;
+  Double_t    Get2ProngMaxMass(Int_t zBin=-1, Int_t dptBin=-1) const;
       
   Bool_t      IsInDeltaInvMassRange(Double_t dmass)    const { return (dmass < fDeltaInvMaxMass && dmass > fDeltaInvMinMass); }
   Double_t    GetDeltaInvMinMass()     const { return fDeltaInvMinMass                              ; }
@@ -94,8 +100,8 @@ class DJetCorrAnalysisParams : public TObject
 
   Double_t        fInvMinMass                ;//  inv min mass
   Double_t        fInvMaxMass                ;//  inv max mass
-  Double_t        f2ProngMinMass             ;//  2-prong min mass (D* -> D0pi)
-  Double_t        f2ProngMaxMass             ;//  2-prong max mass (D* -> D0pi)  
+  Double_t       *f2ProngMinMass             ;//[fNzBins] 2-prong min mass (D* -> D0pi)
+  Double_t       *f2ProngMaxMass             ;//[fNzBins] 2-prong max mass (D* -> D0pi)
   Double_t        fDeltaInvMinMass           ;//  delta inv min mass (D* -> D0pi)
   Double_t        fDeltaInvMaxMass           ;//  delta inv max mass (D* -> D0pi)
 
@@ -104,6 +110,9 @@ class DJetCorrAnalysisParams : public TObject
   Int_t           fMinJetConstituents        ;//  min number of jet constituents
   MassFitter::EMassFitTypeSig fMassFitTypeSig;//
   MassFitter::EMassFitTypeBkg fMassFitTypeBkg;//
+
+  Bool_t          fIsMC                      ;//
+  Bool_t          fIsBkgSub                  ;//
   
  private:
  

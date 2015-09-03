@@ -75,7 +75,7 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t          PlotInvMassHistogramsVsDPt(DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t jetptBin=-1, Int_t dzBin=-1);
   Bool_t          PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* params, Int_t dptBin=-1, Int_t jetptBin=-1);
   Bool_t          PlotInvMassHistogramArray(Int_t n, TH1** histos, const char* name, const char* xTitle,
-                                            Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t massLimits,
+                                            Double_t minMass, Double_t maxMass, Double_t pdgMass, Double_t* minMassSel, Double_t* maxMassSel,
                                             DJetCorrAnalysisParams* params, Bool_t doFit=kFALSE, TObjArray* extraInfo=0, TH1* histSpectrum=0);
   
   Bool_t          PlotSpectra(Int_t n, TH1** histSpectra, const char* name, Bool_t logY);
