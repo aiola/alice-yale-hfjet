@@ -375,3 +375,101 @@ Double_t DJetCorrAnalysisParams::Get2ProngMaxMass(Int_t zBin, Int_t dptBin) cons
     return max;
   }
 }
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetDPtRangeLabel(Int_t dptBin, const char* lev) const
+{
+  TString r;
+
+  Double_t min = 0.;
+  Double_t max = 0.;
+  GetDPtBinRange(min, max, dptBin);
+
+  r = Form("%.1f < #it{p}_{T,D}^{%s} < %.1f GeV/#it{c}", min, lev, max);
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetJetPtRangeLabel(Int_t jetptBin, const char* lev) const
+{
+  TString r;
+
+  Double_t min = 0.;
+  Double_t max = 0.;
+  GetJetPtBinRange(min, max, jetptBin);
+
+  r = Form("%.1f < #it{p}_{T,ch.jet}^{%s} < %.1f GeV/#it{c}", min, lev, max);
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetzRangeLabel(Int_t zBin, const char* lev) const
+{
+  TString r;
+
+  Double_t min = 0.;
+  Double_t max = 0.;
+  GetzBinRange(min, max, zBin);
+
+  r = Form("%.1f < #it{z}_{||}^{%s} < %.1f", min, lev, max);
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetLabelNoJet() const
+{
+  TString r;
+
+  if (IsD0()) {
+    r = "D^{0} #rightarrow K^{-} #pi^{+} and c.c.";
+  }
+  else if (IsDStar()) {
+    r = "D^{*+} #rightarrow D^{0} #pi^{+} #rightarrow K^{-} #pi^{+} #pi^{+} and c.c.";
+  }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetLabel() const
+{
+  TString r;
+
+  if (IsD0()) {
+    r = Form("D^{0} #rightarrow K^{-} #pi^{+} and c.c. in #it{R}=%.1f anti-#it{k}_{T} jets", GetJetRadiusDouble());
+  }
+  else if (IsDStar()) {
+    r = Form("D^{*+} #rightarrow D^{0} #pi^{+} #rightarrow K^{-} #pi^{+} #pi^{+} and c.c. in #it{R}=%.1f anti-#it{k}_{T} jets", GetJetRadiusDouble());
+  }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+Double_t DJetCorrAnalysisParams::GetJetRadiusDouble() const
+{
+  Double_t r = 0.;
+  if (fJetRadius.Contains("R060")) {
+    r = 0.6;
+  }
+  else if (fJetRadius.Contains("R050")) {
+    r = 0.5;
+  }
+  else if (fJetRadius.Contains("R040")) {
+    r = 0.4;
+  }
+  else if (fJetRadius.Contains("R030")) {
+    r = 0.3;
+  }
+  else if (fJetRadius.Contains("R020")) {
+    r = 0.2;
+  }
+  else if (fJetRadius.Contains("R010")) {
+    r = 0.1;
+  }
+
+  return r;
+}

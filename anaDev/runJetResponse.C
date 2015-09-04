@@ -154,8 +154,8 @@ void runJetResponse(
 
     // start analysis
     cout << "Starting Analysis...";
-    //mgr->SetUseProgressBar(1, 25);
-    mgr->SetDebugLevel(2);
+    mgr->SetUseProgressBar(1, 25);
+    //mgr->SetDebugLevel(2);
 
     //mgr->AddClassDebug("AliJetContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);

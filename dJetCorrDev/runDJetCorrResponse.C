@@ -33,7 +33,7 @@ DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const ch
   projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name);
 
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName);
-  //projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
+  projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");

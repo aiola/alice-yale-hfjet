@@ -80,6 +80,13 @@ class DJetCorrAnalysisParams : public TObject
   void GetzBinRange(Double_t& minZ, Double_t& maxZ, Int_t zBin=-1) const;
   void GetJetPtBinRange(Double_t& minJetPt, Double_t& maxJetPt, Int_t jetPtBin=-1) const;
 
+  TString     GetDPtRangeLabel(Int_t dptBin=-1, const char* lev="part") const;
+  TString     GetJetPtRangeLabel(Int_t dptBin=-1, const char* lev="part") const;
+  TString     GetzRangeLabel(Int_t dptBin=-1, const char* lev="part") const;
+  TString     GetLabel() const;
+  TString     GetLabelNoJet() const;
+  Double_t    GetJetRadiusDouble() const;
+
   MassFitter* CreateMassFitter(const char* name) const;
   
  protected:

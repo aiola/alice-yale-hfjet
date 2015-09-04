@@ -291,7 +291,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* measured = fHistMatching->Projection(z1Axis, jetPt1Axis);
   measured->SetName(hname);
   measured->SetTitle("Measured");
-  measured->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} (GeV/#it{c})");
+  measured->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{det} (GeV/#it{c})");
   measured->GetYaxis()->SetTitle("#it{z}_{||}^{det}");
   measured->GetZaxis()->SetTitle("Counts");
 
@@ -299,7 +299,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* truthReco = fHistMatching->Projection(z2Axis, jetPt2Axis);
   truthReco->SetName(hname);
   truthReco->SetTitle("Truth reconstructed");
-  truthReco->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  truthReco->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   truthReco->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   truthReco->GetZaxis()->SetTitle("Counts");
 
@@ -307,7 +307,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* truth = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
   truth->SetName(hname);
   truth->SetTitle("Truth");
-  truth->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  truth->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   truth->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   truth->GetZaxis()->SetTitle("Counts");
 
@@ -320,7 +320,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* truthRecoAll = fHistMatching->Projection(z2Axis, jetPt2Axis);
   truthRecoAll->SetName(hname);
   truthRecoAll->SetTitle("Truth reconstructed (all)");
-  truthRecoAll->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  truthRecoAll->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   truthRecoAll->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   truthRecoAll->GetZaxis()->SetTitle("Counts");
 
@@ -328,7 +328,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* eff = static_cast<TH2*>(truthReco->Clone(hname));
   eff->Divide(truth);
   eff->SetTitle("Efficiecny");
-  eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  eff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   eff->GetZaxis()->SetTitle("Efficiency");
 
@@ -336,7 +336,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* misses = static_cast<TH2*>(truth->Clone(hname));
   misses->Add(truthReco, -1);
   misses->SetTitle("Misses = Truth - Truth reconstructed");
-  misses->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  misses->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   misses->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   misses->GetZaxis()->SetTitle("Misses");
 
@@ -344,7 +344,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* kinEff = static_cast<TH2*>(truthReco->Clone(hname));
   kinEff->Divide(truthRecoAll);
   kinEff->SetTitle("Kinematic efficiency");
-  kinEff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  kinEff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   kinEff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   kinEff->GetZaxis()->SetTitle("Efficiency");
 
@@ -352,7 +352,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* kinMisses = static_cast<TH2*>(truthRecoAll->Clone(hname));
   kinMisses->Add(truthReco, -1);
   kinMisses->SetTitle("Misses = Truth reconstructed (all) - Truth reconstructed");
-  kinMisses->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  kinMisses->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   kinMisses->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   kinMisses->GetZaxis()->SetTitle("Misses");
 
@@ -565,8 +565,8 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
   TH2* respFull = fHistMatching->Projection(jetPt2Axis, jetPt1Axis, "A");
   respFull->SetName(hname);
   respFull->SetTitle(htitle);
-  respFull->GetXaxis()->SetTitle("#it{p}_{T,jet}^{det} (GeV/#it{c})");
-  respFull->GetYaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+  respFull->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{det} (GeV/#it{c})");
+  respFull->GetYaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
   fOutputList->Add(respFull);
 
   TH1* totalFull = fHistJets2->Projection(jetPtPartAxis, "A");
@@ -603,7 +603,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
     TH1* eff = static_cast<TH1*>(pass->Clone(hname));
     eff->Divide(total);
     eff->SetTitle(htitle);
-    eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+    eff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
     eff->GetYaxis()->SetTitle("Efficiency");
 
     fOutputList->Add(eff);
@@ -613,7 +613,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
     TGraphAsymmErrors* eff = new TGraphAsymmErrors(pass, total, fEfficiencyMode);
     eff->SetName(hname);
     eff->SetTitle(htitle);
-    eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part} (GeV/#it{c})");
+    eff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
     eff->GetYaxis()->SetTitle("Efficiency");
     fOutputList->Add(eff);
   }
@@ -670,7 +670,7 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
   fHistJets2->GetAxis(dPtPartAxis)->SetRangeUser(minDPt, maxDPt);
 
   hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f_Full", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
-  htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
+  htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
   TH2* respFull = fHistMatching->Projection(z2Axis, z1Axis, "A");
   respFull->SetName(hname);
   respFull->SetTitle(htitle);
@@ -698,7 +698,7 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
   //pass->Sumw2();
 
   hname = Form("%s_Efficiency_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
-  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
+  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
   if (fEfficiencyMode.Contains("TH1")) {
     TH1* eff = static_cast<TH1*>(pass->Clone(hname));
     eff->Divide(total);
@@ -822,11 +822,28 @@ Bool_t DJetCorrResponse::PlotResponseZVsDPt(DJetCorrAnalysisParams* params)
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=1) {
     PlotResponseMatrixZ(canvasResp, params, -2, idpt);
+
+    canvasResp->cd();
+    TString respLabel = "ALICE Simulation  ";
+    respLabel += params->GetLabel();
+    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
+    respLabel = params->GetJetPtRangeLabel();
+    respLabel += ", ";
+    respLabel += params->GetDPtRangeLabel(idpt);
+    paveResp->AddText(respLabel);
+    paveResp->Draw();
+
     if (fSavePlots) SavePlot(canvasResp);
     canvasResp = 0;
 
     PlotEfficiencyZ(canvasEff, params, -2, idpt);
   }
+
+  canvasEff->cd();
+  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
+  pave->AddText(params->GetLabel());
+  pave->AddText(params->GetJetPtRangeLabel());
+  pave->Draw();
 
   if (fSavePlots) SavePlot(canvasEff);
   
@@ -848,14 +865,30 @@ Bool_t DJetCorrResponse::PlotResponseZVsJetPt(DJetCorrAnalysisParams* params)
   canvasEff->cd();
   TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
   leg->Draw();
-  
+
   for (Int_t ijetpt = -1; ijetpt < params->GetNJetPtBins(); ijetpt++) {
     PlotResponseMatrixZ(canvasResp, params, ijetpt, -2);
+    canvasResp->cd();
+    TString respLabel("ALICE Simulation  ");
+    respLabel += params->GetLabel();
+    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
+    respLabel = params->GetJetPtRangeLabel(ijetpt);
+    respLabel += ", ";
+    respLabel += params->GetDPtRangeLabel();
+    paveResp->AddText(respLabel);
+    paveResp->Draw();
+
     if (fSavePlots) SavePlot(canvasResp);
     canvasResp = 0;
 
     PlotEfficiencyZ(canvasEff, params, ijetpt, -2);
   }
+
+  canvasEff->cd();
+  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
+  pave->AddText(params->GetLabel());
+  pave->AddText(params->GetDPtRangeLabel());
+  pave->Draw();
 
   if (fSavePlots) SavePlot(canvasEff);
   
@@ -871,7 +904,7 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsDPt(DJetCorrAnalysisParams* params)
   TString cEffName = Form("%s_Efficiency_JetPt_Vs_DPt", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{p}_{T,jet}^{ch}^{part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                          "#it{p}_{T,ch.jet}^{ch}^{part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
@@ -880,11 +913,28 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsDPt(DJetCorrAnalysisParams* params)
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=1) {
     PlotResponseMatrixJetPt(canvasResp, params, -2, idpt);
+
+    canvasResp->cd();
+    TString respLabel("ALICE Simulation ");
+    respLabel += params->GetLabel();
+    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
+    respLabel = params->GetzRangeLabel();
+    respLabel += ", ";
+    respLabel += params->GetDPtRangeLabel(idpt);
+    paveResp->AddText(respLabel);
+    paveResp->Draw();
+
     if (fSavePlots) SavePlot(canvasResp);
     canvasResp = 0;
 
     PlotEfficiencyJetPt(canvasEff, params, -2, idpt);
   }
+
+  canvasEff->cd();
+  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
+  pave->AddText(params->GetLabel());
+  pave->AddText(params->GetzRangeLabel());
+  pave->Draw();
 
   if (fSavePlots) SavePlot(canvasEff);
   
@@ -894,26 +944,44 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsDPt(DJetCorrAnalysisParams* params)
 //____________________________________________________________________________________
 Bool_t DJetCorrResponse::PlotResponseJetPtVsZ(DJetCorrAnalysisParams* params)
 {
+
   TCanvas* canvasResp = 0;
   TCanvas* canvasEff = 0;
 
   TString cEffName = Form("%s_Efficiency_JetPt_Vs_Z", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{p}_{T,jet}^{ch}^{part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                          "#it{p}_{T,ch.jet}^{ch}^{part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
   TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
   leg->Draw();
-  
+
   for (Int_t iz = -1; iz < params->GetNzBins(); iz++) {
     PlotResponseMatrixJetPt(canvasResp, params, iz, -2);
+
+    canvasResp->cd();
+    TString respLabel("ALICE Simulation  ");
+    respLabel += params->GetLabel();
+    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
+    respLabel = params->GetzRangeLabel(iz);
+    respLabel += ", ";
+    respLabel += params->GetDPtRangeLabel();
+    paveResp->AddText(respLabel);
+    paveResp->Draw();
+
     if (fSavePlots) SavePlot(canvasResp);
     canvasResp = 0;
 
     PlotEfficiencyJetPt(canvasEff, params, iz, -2);
   }
+
+  canvasEff->cd();
+  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
+  pave->AddText(params->GetLabel());
+  pave->AddText(params->GetDPtRangeLabel());
+  pave->Draw();
 
   if (fSavePlots) SavePlot(canvasEff);
  
@@ -944,13 +1012,21 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPtZ(TCanvas*& canvasEff, DJetCorrAnaly
     return kFALSE;
   }
 
-  if (!canvasEff && !GetCanvas(hname)) {
-    canvasEff = SetUpCanvas(hname,
-                            eff->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                            eff->GetYaxis()->GetTitle(), 0., 1., kFALSE);
+  Bool_t doPlotting = kFALSE;
+  if (canvasEff) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasEff = GetCanvas(eff->GetName());
+    if (!canvasEff) {
+      canvasEff = SetUpCanvas(hname,
+                              eff->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                              eff->GetYaxis()->GetTitle(), 0., 1., kFALSE);
+      doPlotting = kTRUE;
+    }
   }
 
-  if (canvasEff) {
+  if (doPlotting) {
     canvasEff->cd();
     eff->Draw("colz same");
     eff->GetZaxis()->SetRangeUser(0.,1.);
@@ -977,13 +1053,21 @@ Bool_t DJetCorrResponse::PlotResponseMatrixJetPt(TCanvas*& canvasResp, DJetCorrA
     return kFALSE;
   }
 
-  if (!canvasResp && !GetCanvas(resp->GetName())) {
-    canvasResp = SetUpCanvas(resp->GetName(),
-                             resp->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                             resp->GetYaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE);
+  Bool_t doPlotting = kFALSE;
+  if (canvasResp) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasResp = GetCanvas(resp->GetName());
+    if (!canvasResp) {
+      canvasResp = SetUpCanvas(resp->GetName(),
+                               resp->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                               resp->GetYaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE);
+      doPlotting = kTRUE;
+    }
   }
 
-  if (canvasResp) {
+  if (doPlotting) {
     canvasResp->cd();
     resp->Draw("colz same");
     gPad->SetLogz();
@@ -1010,13 +1094,21 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPt(TCanvas*& canvasEff, DJetCorrAnalys
     return kFALSE;
   }
 
-  if (!canvasEff && !GetCanvas(eff->GetName())) {
-    canvasEff = SetUpCanvas(eff->GetName(),
-                            "", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                            "", 0., 1e-6, kFALSE);
-  }
-  
+  Bool_t doPlotting = kFALSE;
   if (canvasEff) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasEff = GetCanvas(eff->GetName());
+    if (!canvasEff) {
+      canvasEff = SetUpCanvas(eff->GetName(),
+                              "", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                              "", 0., 1e-6, kFALSE);
+      doPlotting = kTRUE;
+    }
+  }
+
+  if (doPlotting) {
     TString hcopyName(Form("%s_copy", eff->GetName()));
     TString hcopyTitle;
     Int_t icolor = -1;
@@ -1082,13 +1174,21 @@ Bool_t DJetCorrResponse::PlotResponseMatrixZ(TCanvas*& canvasResp, DJetCorrAnaly
     return kFALSE;
   }
 
-  if (!canvasResp && !GetCanvas(resp->GetName())) {
-    canvasResp = SetUpCanvas(resp->GetName(),
-                             resp->GetXaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE,
-                             resp->GetYaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE);
+  Bool_t doPlotting = kFALSE;
+  if (canvasResp) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasResp = GetCanvas(resp->GetName());
+    if (!canvasResp) {
+      canvasResp = SetUpCanvas(resp->GetName(),
+                               resp->GetXaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE,
+                               resp->GetYaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE);
+      doPlotting = kTRUE;
+    }
   }
 
-  if (canvasResp) {
+  if (doPlotting) {
     canvasResp->cd();
     resp->Draw("colz same");
     gPad->SetLogz();
@@ -1115,13 +1215,21 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
     return kFALSE;
   }
 
-  if (!canvasEff && !GetCanvas(eff->GetName())) {
-    canvasEff = SetUpCanvas(eff->GetName(),
-                            "", 0., 1.0, kFALSE,
-                            "", 0., 1e-6, kFALSE);
+  Bool_t doPlotting = kFALSE;
+  if (canvasEff) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasEff = GetCanvas(eff->GetName());
+    if (!canvasEff) {
+      canvasEff = SetUpCanvas(eff->GetName(),
+                              "", 0., 1.0, kFALSE,
+                              "", 0., 1e-6, kFALSE);
+      doPlotting = kTRUE;
+    }
   }
 
-  if (canvasEff) {
+  if (doPlotting) {
     TString hcopyName(Form("%s_copy", eff->GetName()));
     TString hcopyTitle;
     Int_t icolor = -1;
@@ -1130,12 +1238,12 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
     if (jetPtBin >= -1 && dptBin >= -1) {
       icolor = jetPtBin;
       imarker = dptBin;
-      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}",
                         minDPt, maxDPt, minJetPt, maxJetPt);
     }
     else if (jetPtBin >= -1) {
       icolor = jetPtBin;
-      hcopyTitle = Form("%.1f < #it{p}_{T,jet}^{part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}",
                         minJetPt, maxJetPt);
     }
     else if (dptBin >= -1) {
@@ -1175,10 +1283,25 @@ Bool_t DJetCorrResponse::PlotResponseDPt(DJetCorrAnalysisParams* params)
   TCanvas* canvasResp = 0;
 
   Bool_t res1 = PlotResponseMatrixDPt(canvasResp, params);
-  if (res1 && fSavePlots) SavePlot(canvasResp);
+  if (res1) {
+    canvasResp->cd();
+    TString respLabel("ALICE Simulation  ");
+    respLabel += params->GetLabelNoJet();
+    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
+    paveResp->Draw();
+
+    if (fSavePlots) SavePlot(canvasResp);
+  }
 
   Bool_t res2 = PlotEfficiencyDPt(canvasEff, params);
-  if (res2 && fSavePlots) SavePlot(canvasEff);
+  if (res2) {
+    canvasEff->cd();
+    TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 20, "ALICE Simulation");
+    pave->AddText(params->GetLabelNoJet());
+    pave->Draw();
+
+    if (fSavePlots) SavePlot(canvasEff);
+  }
 
   return res1 && res2;
 }
@@ -1192,14 +1315,22 @@ Bool_t DJetCorrResponse::PlotResponseMatrixDPt(TCanvas*& canvasResp, DJetCorrAna
     Printf("Error-DJetCorrResponse::PlotResponseDPtMatrix : Could not find histogram '%s'!", hname.Data());
     return kFALSE;
   }
-  
-  if (!canvasResp && !GetCanvas(resp->GetName())) {
-    canvasResp = SetUpCanvas(resp->GetName(),
-                             resp->GetXaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE,
-                             resp->GetYaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE);
+
+  Bool_t doPlotting = kFALSE;
+  if (canvasResp) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasResp = GetCanvas(resp->GetName());
+    if (!canvasResp) {
+      canvasResp = SetUpCanvas(resp->GetName(),
+                               resp->GetXaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE,
+                               resp->GetYaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE);
+      doPlotting = kTRUE;
+    }
   }
 
-  if (canvasResp) {
+  if (doPlotting) {
     canvasResp->cd();
     resp->Draw("colz same");
     gPad->SetLogz();
@@ -1217,14 +1348,22 @@ Bool_t DJetCorrResponse::PlotEfficiencyDPt(TCanvas*& canvasEff, DJetCorrAnalysis
     Printf("Error-DJetCorrResponse::PlotResponseDPtMatrix : Could not find histogram '%s'!", hname.Data());
     return kFALSE;
   }
-  
-  if (!canvasEff && !GetCanvas(eff->GetName())) {
-    canvasEff = SetUpCanvas(eff->GetName(),
-                            "", params->GetMinDPt(), params->GetMaxDPt(), kFALSE,
-                            "", 0., 0., kFALSE);
+
+  Bool_t doPlotting = kFALSE;
+  if (canvasEff) {
+    doPlotting = kTRUE;
+  }
+  else {
+    canvasEff = GetCanvas(eff->GetName());
+    if (!canvasEff) {
+      canvasEff = SetUpCanvas(eff->GetName(),
+                              "", params->GetMinDPt(), params->GetMaxDPt(), kFALSE,
+                              "", 0., 0., kFALSE);
+      doPlotting = kTRUE;
+    }
   }
 
-  if (canvasEff) {
+  if (doPlotting) {
     canvasEff->cd();
     FitObjectInPad(eff, canvasEff, "P E", kTRUE);
   }
