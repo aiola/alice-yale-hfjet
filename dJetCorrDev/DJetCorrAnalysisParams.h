@@ -83,9 +83,12 @@ class DJetCorrAnalysisParams : public TObject
   TString     GetDPtRangeLabel(Int_t dptBin=-1, const char* lev="part") const;
   TString     GetJetPtRangeLabel(Int_t dptBin=-1, const char* lev="part") const;
   TString     GetzRangeLabel(Int_t dptBin=-1, const char* lev="part") const;
-  TString     GetLabel() const;
-  TString     GetLabelNoJet() const;
+
   Double_t    GetJetRadiusDouble() const;
+
+  TString     GetLabel() const;
+  TString     GetLabelDMeson() const;
+  TString     GetLabelJet() const;
 
   MassFitter* CreateMassFitter(const char* name) const;
   

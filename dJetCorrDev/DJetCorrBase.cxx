@@ -254,6 +254,9 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   
   pad->SetLogx(logX);
   pad->SetLogy(logY);
+
+  pad->SetTicks(1, 1);
+
   pad->cd();
 
   TString blankHistName(Form("%s_blankHist", pad->GetName()));
@@ -264,7 +267,10 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   
   blankHist->GetXaxis()->SetTitle(xTitle);
   blankHist->GetYaxis()->SetTitle(yTitle);
-  
+
+  blankHist->GetXaxis()->SetTitleOffset(1.05);
+  blankHist->GetYaxis()->SetTitleOffset(1.05);
+
   blankHist->Draw("AXIS");
 
   return pad;
@@ -308,7 +314,11 @@ TCanvas* DJetCorrBase::SetUpCanvas(const char* name,
   canvas = new TCanvas(cname, cname, w, h);
   
   if (rows == 1 && cols == 1) {
-    SetUpPad(canvas, xTitle, minX, maxX, logX, yTitle, minY, maxY, logY);    
+    SetUpPad(canvas, xTitle, minX, maxX, logX, yTitle, minY, maxY, logY);
+    canvas->SetLeftMargin(lmar);
+    canvas->SetRightMargin(rmar);
+    canvas->SetBottomMargin(bmar);
+    canvas->SetTopMargin(tmar);
   }
   else {
     canvas->Divide(cols, rows);
