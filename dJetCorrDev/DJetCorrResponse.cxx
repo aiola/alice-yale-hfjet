@@ -798,6 +798,12 @@ Bool_t DJetCorrResponse::PlotResponseJetPtZVsDPt(DJetCorrAnalysisParams* params)
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=1) {
     PlotEfficiencyJetPtZ(canvasEff, params, idpt);
+
+    TPaveText* pave = SetUpPaveText(0.10, 0.86, 0.33, 0.975, 16, "ALICE Simulation, PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+    pave->AddText(params->GetLabel());
+    pave->AddText(params->GetDPtRangeLabel(idpt));
+    pave->Draw();
+
     if (fSavePlots) SavePlot(canvasEff);
     canvasEff = 0;
   }
@@ -817,31 +823,34 @@ Bool_t DJetCorrResponse::PlotResponseZVsDPt(DJetCorrAnalysisParams* params)
                           "#it{z}_{||}^{part}", params->GetMinZ(), params->GetMaxZ(), kFALSE,
                           "Efficiency", 0., 1e-6, kFALSE);
   canvasEff->cd();
-  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  TLegend* leg = SetUpLegend(0.10, 0.83-0.05*params->GetNDPtBins(), 0.50, 0.88, 16);
   leg->Draw();
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=1) {
-    PlotResponseMatrixZ(canvasResp, params, -2, idpt);
+    Bool_t r = PlotResponseMatrixZ(canvasResp, params, -2, idpt);
 
-    canvasResp->cd();
-    TString respLabel = "ALICE Simulation  ";
-    respLabel += params->GetLabel();
-    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
-    respLabel = params->GetJetPtRangeLabel();
-    respLabel += ", ";
-    respLabel += params->GetDPtRangeLabel(idpt);
-    paveResp->AddText(respLabel);
-    paveResp->Draw();
+    if (r) {
+      canvasResp->cd();
+      TPaveText* paveResp = SetUpPaveText(0.10, 0.86, 0.33, 0.975, 16, "ALICE Simulation, PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+      paveResp->AddText(params->GetLabel());
+      TString respLabel = params->GetJetPtRangeLabel();
+      respLabel += ", ";
+      respLabel += params->GetDPtRangeLabel(idpt);
+      paveResp->AddText(respLabel);
+      paveResp->Draw();
 
-    if (fSavePlots) SavePlot(canvasResp);
+      if (fSavePlots) SavePlot(canvasResp);
+    }
     canvasResp = 0;
 
     PlotEfficiencyZ(canvasEff, params, -2, idpt);
   }
 
   canvasEff->cd();
-  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
-  pave->AddText(params->GetLabel());
+  TPaveText* pave = SetUpPaveText(0.45, 0.85, 0.90, 0.58, 18, "ALICE Simulation");
+  pave->AddText("PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+  pave->AddText(params->GetLabelDMeson());
+  pave->AddText(params->GetLabelJet());
   pave->AddText(params->GetJetPtRangeLabel());
   pave->Draw();
 
@@ -863,30 +872,34 @@ Bool_t DJetCorrResponse::PlotResponseZVsJetPt(DJetCorrAnalysisParams* params)
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
-  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  TLegend* leg = SetUpLegend(0.10, 0.82-0.06*params->GetNJetPtBins(), 0.50, 0.86, 16);
   leg->Draw();
 
   for (Int_t ijetpt = -1; ijetpt < params->GetNJetPtBins(); ijetpt++) {
-    PlotResponseMatrixZ(canvasResp, params, ijetpt, -2);
-    canvasResp->cd();
-    TString respLabel("ALICE Simulation  ");
-    respLabel += params->GetLabel();
-    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
-    respLabel = params->GetJetPtRangeLabel(ijetpt);
-    respLabel += ", ";
-    respLabel += params->GetDPtRangeLabel();
-    paveResp->AddText(respLabel);
-    paveResp->Draw();
+    Bool_t r = PlotResponseMatrixZ(canvasResp, params, ijetpt, -2);
 
-    if (fSavePlots) SavePlot(canvasResp);
+    if (r) {
+      canvasResp->cd();
+      TPaveText* paveResp = SetUpPaveText(0.10, 0.86, 0.33, 0.975, 16, "ALICE Simulation, PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+      paveResp->AddText(params->GetLabel());
+      TString respLabel = params->GetJetPtRangeLabel(ijetpt);
+      respLabel += ", ";
+      respLabel += params->GetDPtRangeLabel();
+      paveResp->AddText(respLabel);
+      paveResp->Draw();
+
+      if (fSavePlots) SavePlot(canvasResp);
+    }
     canvasResp = 0;
 
     PlotEfficiencyZ(canvasEff, params, ijetpt, -2);
   }
 
   canvasEff->cd();
-  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
-  pave->AddText(params->GetLabel());
+  TPaveText* pave = SetUpPaveText(0.45, 0.85, 0.90, 0.58, 18, "ALICE Simulation");
+  pave->AddText("PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+  pave->AddText(params->GetLabelDMeson());
+  pave->AddText(params->GetLabelJet());
   pave->AddText(params->GetDPtRangeLabel());
   pave->Draw();
 
@@ -908,31 +921,34 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsDPt(DJetCorrAnalysisParams* params)
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
-  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  TLegend* leg = SetUpLegend(0.10, 0.83-0.05*params->GetNDPtBins(), 0.50, 0.88, 16);
   leg->Draw();
   
   for (Int_t idpt = -1; idpt < params->GetNDPtBins(); idpt+=1) {
-    PlotResponseMatrixJetPt(canvasResp, params, -2, idpt);
+    Bool_t r = PlotResponseMatrixJetPt(canvasResp, params, -2, idpt);
 
-    canvasResp->cd();
-    TString respLabel("ALICE Simulation ");
-    respLabel += params->GetLabel();
-    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
-    respLabel = params->GetzRangeLabel();
-    respLabel += ", ";
-    respLabel += params->GetDPtRangeLabel(idpt);
-    paveResp->AddText(respLabel);
-    paveResp->Draw();
+    if (r) {
+      canvasResp->cd();
+      TPaveText* paveResp = SetUpPaveText(0.10, 0.86, 0.33, 0.975, 16, "ALICE Simulation, PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+      paveResp->AddText(params->GetLabel());
+      TString respLabel = params->GetzRangeLabel();
+      respLabel += ", ";
+      respLabel += params->GetDPtRangeLabel(idpt);
+      paveResp->AddText(respLabel);
+      paveResp->Draw();
 
-    if (fSavePlots) SavePlot(canvasResp);
+      if (fSavePlots) SavePlot(canvasResp);
+    }
     canvasResp = 0;
 
     PlotEfficiencyJetPt(canvasEff, params, -2, idpt);
   }
 
   canvasEff->cd();
-  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
-  pave->AddText(params->GetLabel());
+  TPaveText* pave = SetUpPaveText(0.45, 0.85, 0.90, 0.58, 18, "ALICE Simulation");
+  pave->AddText("PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+  pave->AddText(params->GetLabelDMeson());
+  pave->AddText(params->GetLabelJet());
   pave->AddText(params->GetzRangeLabel());
   pave->Draw();
 
@@ -955,31 +971,34 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsZ(DJetCorrAnalysisParams* params)
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
-  TLegend* leg = SetUpLegend(0.1, 0.63, 0.50, 0.89, 16);
+  TLegend* leg = SetUpLegend(0.10, 0.83-0.06*params->GetNzBins(), 0.50, 0.88, 16);
   leg->Draw();
 
   for (Int_t iz = -1; iz < params->GetNzBins(); iz++) {
-    PlotResponseMatrixJetPt(canvasResp, params, iz, -2);
+    Bool_t r = PlotResponseMatrixJetPt(canvasResp, params, iz, -2);
 
-    canvasResp->cd();
-    TString respLabel("ALICE Simulation  ");
-    respLabel += params->GetLabel();
-    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
-    respLabel = params->GetzRangeLabel(iz);
-    respLabel += ", ";
-    respLabel += params->GetDPtRangeLabel();
-    paveResp->AddText(respLabel);
-    paveResp->Draw();
+    if (r) {
+      canvasResp->cd();
+      TPaveText* paveResp = SetUpPaveText(0.10, 0.86, 0.33, 0.975, 16, "ALICE Simulation, PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+      paveResp->AddText(params->GetLabel());
+      TString respLabel = params->GetzRangeLabel(iz);
+      respLabel += ", ";
+      respLabel += params->GetDPtRangeLabel();
+      paveResp->AddText(respLabel);
+      paveResp->Draw();
 
-    if (fSavePlots) SavePlot(canvasResp);
+      if (fSavePlots) SavePlot(canvasResp);
+    }
     canvasResp = 0;
 
     PlotEfficiencyJetPt(canvasEff, params, iz, -2);
   }
 
   canvasEff->cd();
-  TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 18, "ALICE Simulation");
-  pave->AddText(params->GetLabel());
+  TPaveText* pave = SetUpPaveText(0.45, 0.85, 0.90, 0.58, 18, "ALICE Simulation");
+  pave->AddText("PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+  pave->AddText(params->GetLabelDMeson());
+  pave->AddText(params->GetLabelJet());
   pave->AddText(params->GetDPtRangeLabel());
   pave->Draw();
 
@@ -989,11 +1008,33 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsZ(DJetCorrAnalysisParams* params)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrResponse::PlotResponseMatrixDPt(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrResponse::PlotResponseDPt(DJetCorrAnalysisParams* params)
 {
-  TCanvas *c = 0;
+  TCanvas* canvasEff = 0;
+  TCanvas* canvasResp = 0;
 
-  return PlotResponseMatrixDPt(c, params);
+  Bool_t res1 = PlotResponseMatrixDPt(canvasResp, params);
+  if (res1) {
+    canvasResp->cd();
+    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, "ALICE Simulation, PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+    paveResp->AddText(params->GetLabelDMeson());
+    paveResp->Draw();
+
+    if (fSavePlots) SavePlot(canvasResp);
+  }
+
+  Bool_t res2 = PlotEfficiencyDPt(canvasEff, params);
+  if (res2) {
+    canvasEff->cd();
+    TPaveText* pave = SetUpPaveText(0.35, 0.85, 0.90, 0.66, 20, "ALICE Simulation");
+    pave->AddText("PYTHIA pp #sqrt{#it{s}} = 7 TeV");
+    pave->AddText(params->GetLabelDMeson());
+    pave->Draw();
+
+    if (fSavePlots) SavePlot(canvasEff);
+  }
+
+  return res1 && res2;
 }
 
 //____________________________________________________________________________________
@@ -1021,7 +1062,9 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPtZ(TCanvas*& canvasEff, DJetCorrAnaly
     if (!canvasEff) {
       canvasEff = SetUpCanvas(hname,
                               eff->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                              eff->GetYaxis()->GetTitle(), 0., 1., kFALSE);
+                              eff->GetYaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE,
+                              700, 530, 1, 1,
+                              0.10, 0.10, 0.10, 0.15);
       doPlotting = kTRUE;
     }
   }
@@ -1062,7 +1105,9 @@ Bool_t DJetCorrResponse::PlotResponseMatrixJetPt(TCanvas*& canvasResp, DJetCorrA
     if (!canvasResp) {
       canvasResp = SetUpCanvas(resp->GetName(),
                                resp->GetXaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
-                               resp->GetYaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE);
+                               resp->GetYaxis()->GetTitle(), params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                               700, 530, 1, 1,
+                               0.10, 0.12, 0.10, 0.15);
       doPlotting = kTRUE;
     }
   }
@@ -1073,7 +1118,7 @@ Bool_t DJetCorrResponse::PlotResponseMatrixJetPt(TCanvas*& canvasResp, DJetCorrA
     gPad->SetLogz();
   }
 
-  return kTRUE;
+  return doPlotting;
 }
 
 //____________________________________________________________________________________
@@ -1127,7 +1172,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPt(TCanvas*& canvasEff, DJetCorrAnalys
     }
     else if (dptBin >= -1) {
       icolor = dptBin;
-      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.0f < #it{p}_{T,D}^{part} < %.0f GeV/#it{c}",
                         minDPt, maxDPt);
     }
 
@@ -1183,7 +1228,9 @@ Bool_t DJetCorrResponse::PlotResponseMatrixZ(TCanvas*& canvasResp, DJetCorrAnaly
     if (!canvasResp) {
       canvasResp = SetUpCanvas(resp->GetName(),
                                resp->GetXaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE,
-                               resp->GetYaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE);
+                               resp->GetYaxis()->GetTitle(), params->GetMinZ(), params->GetMaxZ(), kFALSE,
+                               700, 530, 1, 1,
+                               0.10, 0.12, 0.10, 0.15);
       doPlotting = kTRUE;
     }
   }
@@ -1194,7 +1241,7 @@ Bool_t DJetCorrResponse::PlotResponseMatrixZ(TCanvas*& canvasResp, DJetCorrAnaly
     gPad->SetLogz();
   }
 
-  return kTRUE;
+  return doPlotting;
 }
 
 //____________________________________________________________________________________
@@ -1243,12 +1290,12 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
     }
     else if (jetPtBin >= -1) {
       icolor = jetPtBin;
-      hcopyTitle = Form("%.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.0f < #it{p}_{T,ch.jet}^{part} < %.0f GeV/#it{c}",
                         minJetPt, maxJetPt);
     }
     else if (dptBin >= -1) {
       icolor = dptBin;
-      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.0f < #it{p}_{T,D}^{part} < %.0f GeV/#it{c}",
                         minDPt, maxDPt);
     }
 
@@ -1265,7 +1312,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
     styler.SetFillStyle(0);
     styler.Apply(effCopy, icolor, imarker);
 
-    FitObjectInPad(effCopy, canvasEff, "P E", kTRUE);
+    FitObjectInPad(effCopy, canvasEff, "P E", kTRUE, 1.9);
 
     TLegend* leg = GetLegend(canvasEff);
     if (leg) {
@@ -1277,33 +1324,11 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrResponse::PlotResponseDPt(DJetCorrAnalysisParams* params)
+Bool_t DJetCorrResponse::PlotResponseMatrixDPt(DJetCorrAnalysisParams* params)
 {
-  TCanvas* canvasEff = 0;
-  TCanvas* canvasResp = 0;
+  TCanvas *c = 0;
 
-  Bool_t res1 = PlotResponseMatrixDPt(canvasResp, params);
-  if (res1) {
-    canvasResp->cd();
-    TString respLabel("ALICE Simulation  ");
-    respLabel += params->GetLabelNoJet();
-    TPaveText* paveResp = SetUpPaveText(0.10, 0.90, 0.33, 0.97, 16, respLabel);
-    paveResp->Draw();
-
-    if (fSavePlots) SavePlot(canvasResp);
-  }
-
-  Bool_t res2 = PlotEfficiencyDPt(canvasEff, params);
-  if (res2) {
-    canvasEff->cd();
-    TPaveText* pave = SetUpPaveText(0.55, 0.85, 0.90, 0.66, 20, "ALICE Simulation");
-    pave->AddText(params->GetLabelNoJet());
-    pave->Draw();
-
-    if (fSavePlots) SavePlot(canvasEff);
-  }
-
-  return res1 && res2;
+  return PlotResponseMatrixDPt(c, params);
 }
 
 //____________________________________________________________________________________
@@ -1325,7 +1350,9 @@ Bool_t DJetCorrResponse::PlotResponseMatrixDPt(TCanvas*& canvasResp, DJetCorrAna
     if (!canvasResp) {
       canvasResp = SetUpCanvas(resp->GetName(),
                                resp->GetXaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE,
-                               resp->GetYaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE);
+                               resp->GetYaxis()->GetTitle(), params->GetMinDPt(), params->GetMaxDPt(), kFALSE,
+                               700, 500, 1, 1,
+                               0.10, 0.12, 0.10, 0.10);
       doPlotting = kTRUE;
     }
   }
@@ -1336,7 +1363,7 @@ Bool_t DJetCorrResponse::PlotResponseMatrixDPt(TCanvas*& canvasResp, DJetCorrAna
     gPad->SetLogz();
   }
 
-  return kTRUE;
+  return doPlotting;
 }
 
 //____________________________________________________________________________________

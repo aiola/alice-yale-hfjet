@@ -385,7 +385,7 @@ TString DJetCorrAnalysisParams::GetDPtRangeLabel(Int_t dptBin, const char* lev) 
   Double_t max = 0.;
   GetDPtBinRange(min, max, dptBin);
 
-  r = Form("%.1f < #it{p}_{T,D}^{%s} < %.1f GeV/#it{c}", min, lev, max);
+  r = Form("%.0f < #it{p}_{T,D}^{%s} < %.0f GeV/#it{c}", min, lev, max);
 
   return r;
 }
@@ -399,7 +399,7 @@ TString DJetCorrAnalysisParams::GetJetPtRangeLabel(Int_t jetptBin, const char* l
   Double_t max = 0.;
   GetJetPtBinRange(min, max, jetptBin);
 
-  r = Form("%.1f < #it{p}_{T,ch.jet}^{%s} < %.1f GeV/#it{c}", min, lev, max);
+  r = Form("%.0f < #it{p}_{T,ch.jet}^{%s} < %.0f GeV/#it{c}", min, lev, max);
 
   return r;
 }
@@ -419,16 +419,26 @@ TString DJetCorrAnalysisParams::GetzRangeLabel(Int_t zBin, const char* lev) cons
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysisParams::GetLabelNoJet() const
+TString DJetCorrAnalysisParams::GetLabelDMeson() const
 {
   TString r;
 
   if (IsD0()) {
-    r = "D^{0} #rightarrow K^{-} #pi^{+} and c.c.";
+    r = "D^{0} #rightarrow K^{-}#pi^{+} and c.c.";
   }
   else if (IsDStar()) {
-    r = "D^{*+} #rightarrow D^{0} #pi^{+} #rightarrow K^{-} #pi^{+} #pi^{+} and c.c.";
+    r = "D^{*+} #rightarrow D^{0}#pi^{+} #rightarrow K^{-}#pi^{+}#pi^{+} and c.c.";
   }
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysisParams::GetLabelJet() const
+{
+  TString r;
+
+  r = Form("Charged Jets, Anti-#it{k}_{T}, #it{R}=%.1f, |#eta_{jet}|<%.1f", GetJetRadiusDouble(), 0.9-GetJetRadiusDouble());
 
   return r;
 }
@@ -438,12 +448,9 @@ TString DJetCorrAnalysisParams::GetLabel() const
 {
   TString r;
 
-  if (IsD0()) {
-    r = Form("D^{0} #rightarrow K^{-} #pi^{+} and c.c. in #it{R}=%.1f anti-#it{k}_{T} jets", GetJetRadiusDouble());
-  }
-  else if (IsDStar()) {
-    r = Form("D^{*+} #rightarrow D^{0} #pi^{+} #rightarrow K^{-} #pi^{+} #pi^{+} and c.c. in #it{R}=%.1f anti-#it{k}_{T} jets", GetJetRadiusDouble());
-  }
+  r = GetLabelDMeson();
+  r += " in ";
+  r += GetLabelJet();
 
   return r;
 }
