@@ -58,8 +58,8 @@ class HistoStyler : public TAttLine, public TAttFill, public TAttMarker {
   void       ApplyMarker(TAttMarker* obj, Int_t icolor, Int_t imarker) const;
 
   static const Int_t fgkNColors = 10;
-  static const Int_t fgkNOpenMarkerStyles = 6;
-  static const Int_t fgkNFullMarkerStyles = 6;
+  static const Int_t fgkNOpenMarkerStyles = 7;
+  static const Int_t fgkNFullMarkerStyles = 7;
   
  protected:
   EMarkerColor     fVariableMarkerColor;

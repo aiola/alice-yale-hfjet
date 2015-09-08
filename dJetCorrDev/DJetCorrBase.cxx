@@ -268,8 +268,14 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   blankHist->GetXaxis()->SetTitle(xTitle);
   blankHist->GetYaxis()->SetTitle(yTitle);
 
-  blankHist->GetXaxis()->SetTitleOffset(1.05);
-  blankHist->GetYaxis()->SetTitleOffset(1.05);
+  blankHist->GetXaxis()->SetTitleOffset(1.10);
+  blankHist->GetYaxis()->SetTitleOffset(1.10);
+
+  blankHist->GetXaxis()->SetTitleFont(43);
+  blankHist->GetYaxis()->SetTitleFont(43);
+
+  blankHist->GetXaxis()->SetTitleSize(19);
+  blankHist->GetYaxis()->SetTitleSize(19);
 
   blankHist->Draw("AXIS");
 
