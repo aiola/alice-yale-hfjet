@@ -9,8 +9,8 @@
 ClassImp(HistoStyler);
 
 const Color_t HistoStyler::fgkColors[HistoStyler::fgkNColors] = {kBlue+1, kRed+1, kGreen+2, kMagenta+1, kCyan+3, kOrange+2, kViolet, kYellow+3, kPink+2, kTeal+2};
-const Style_t HistoStyler::fgkFullMarkerStyles[HistoStyler::fgkNFullMarkerStyles] = {kFullCircle, kFullSquare, kFullTriangleUp, kFullTriangleDown, kFullDiamond, kFullStar};
-const Style_t HistoStyler::fgkOpenMarkerStyles[HistoStyler::fgkNOpenMarkerStyles] = {kOpenCircle, kOpenSquare, kOpenTriangleUp, kOpenTriangleDown, kOpenDiamond, kOpenStar};
+const Style_t HistoStyler::fgkFullMarkerStyles[HistoStyler::fgkNFullMarkerStyles] = {kFullCircle, kFullSquare, kFullTriangleUp, kFullTriangleDown, kFullDiamond, kFullStar, kFullCross};
+const Style_t HistoStyler::fgkOpenMarkerStyles[HistoStyler::fgkNOpenMarkerStyles] = {kOpenCircle, kOpenSquare, kOpenTriangleUp, kOpenTriangleDown, kOpenDiamond, kOpenStar, kOpenCross};
 
 //____________________________________________________________________________________
 HistoStyler::HistoStyler() :
@@ -74,8 +74,21 @@ void HistoStyler::ApplyMarker(TAttMarker* obj, Int_t icolor, Int_t imarker) cons
   if (!obj) return;
 
   obj->SetMarkerColor(GetMarkerColor(icolor));
-  obj->SetMarkerStyle(GetMarkerStyle(imarker));
-  obj->SetMarkerSize(GetMarkerSize());
+
+  Style_t markerStyle = GetMarkerStyle(imarker);
+  Size_t markerSize = GetMarkerSize();
+
+  if (markerStyle == kFullTriangleUp || markerStyle == kOpenTriangleUp || markerStyle == kFullTriangleDown || markerStyle == kOpenTriangleDown) {
+    markerSize *= 1.5;
+  }
+
+  if (markerStyle == kFullDiamond || markerStyle == kOpenDiamond || markerStyle == kFullStar || markerStyle == kOpenStar
+      || markerStyle == kFullCross || markerStyle == kOpenCross) {
+    markerSize *= 2.0;
+  }
+
+  obj->SetMarkerSize(markerSize);
+  obj->SetMarkerStyle(markerStyle);
 }
 
 //____________________________________________________________________________________
