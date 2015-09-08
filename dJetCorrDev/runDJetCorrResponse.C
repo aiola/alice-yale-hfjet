@@ -26,7 +26,7 @@ DJetCorrResponse* runDJetCorrResponse(const char* options = "plot", const char* 
   projDjet->SetOverwrite(kTRUE);
   projDjet->SetInputPath(inputPath);
 
-  projDjet->SetPlotFormat("pdf");
+  projDjet->SetPlotFormat("eps");
   projDjet->SetSavePlots(kTRUE);
 
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);
