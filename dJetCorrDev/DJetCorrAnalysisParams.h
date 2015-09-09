@@ -87,7 +87,7 @@ class DJetCorrAnalysisParams : public TObject
   Double_t    GetJetRadiusDouble() const;
 
   TString     GetLabel() const;
-  TString     GetLabelDMeson() const;
+  TString     GetLabelDMeson(const char* prefix="") const;
   TString     GetLabelJet() const;
 
   MassFitter* CreateMassFitter(const char* name) const;

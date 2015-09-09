@@ -419,15 +419,16 @@ TString DJetCorrAnalysisParams::GetzRangeLabel(Int_t zBin, const char* lev) cons
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysisParams::GetLabelDMeson() const
+TString DJetCorrAnalysisParams::GetLabelDMeson(const char* prefix) const
 {
-  TString r;
+  TString r(prefix);
+  if (!r.IsNull()) r += " ";
 
   if (IsD0()) {
-    r = "D^{0} #rightarrow K^{-}#pi^{+} and c.c.";
+    r += "D^{0} #rightarrow K^{-}#pi^{+} and c.c.";
   }
   else if (IsDStar()) {
-    r = "D^{*+} #rightarrow D^{0}#pi^{+} #rightarrow K^{-}#pi^{+}#pi^{+} and c.c.";
+    r += "D^{*+} #rightarrow D^{0}#pi^{+} #rightarrow K^{-}#pi^{+}#pi^{+} and c.c.";
   }
 
   return r;
@@ -448,9 +449,9 @@ TString DJetCorrAnalysisParams::GetLabel() const
 {
   TString r;
 
-  r = GetLabelDMeson();
-  r += " in ";
-  r += GetLabelJet();
+  r = GetLabelJet();
+  r += " with ";
+  r += GetLabelDMeson();
 
   return r;
 }
