@@ -71,7 +71,7 @@ class DJetCorrResponse : public DJetCorrBase {
 
   Bool_t PlotEfficiencyJetPtZ(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t dptBin=-1);
   Bool_t PlotEfficiencyJetPt(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);
-  Bool_t PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1);
+  Bool_t PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisParams* params, Int_t jetPtBin, Int_t dptBin=-1, Int_t jetPtBinStep=1, Int_t dptBinStep=1);
   Bool_t PlotEfficiencyDPt(TCanvas*& canvasEff, DJetCorrAnalysisParams* params);
 
   Bool_t PlotResponseMatrixJetPt(TCanvas*& canvasResp, DJetCorrAnalysisParams* params, Int_t zBin, Int_t dptBin=-1);

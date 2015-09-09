@@ -108,15 +108,15 @@ class DJetCorrBase : public TNamed {
   TVirtualPad*    SetUpPad(TVirtualPad* pad,
                            const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
                            const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
-                           Double_t lmar=0.1, Double_t rmar=0.1, Double_t bmar=0.1, Double_t tmar=0.1);
+                           Double_t lmar=0.12, Double_t rmar=0.08, Double_t bmar=0.12, Double_t tmar=0.08);
   TCanvas*        SetUpCanvas(const char* name,
                               const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
                               const char* yTitle, Double_t minY, Double_t maxY, Bool_t logY,
                               Double_t w = 700, Double_t h = 500, Int_t rows=1, Int_t cols=1,
-                              Double_t lmar=0.1, Double_t rmar=0.1, Double_t bmar=0.1, Double_t tmar=0.1);
+                              Double_t lmar=0.12, Double_t rmar=0.08, Double_t bmar=0.12, Double_t tmar=0.08);
   TCanvas*        SetUpCanvas(TH1* histo, Bool_t logX, Bool_t logY,
                               Double_t w = 700, Double_t h = 500, Int_t rows=1, Int_t cols=1,
-                              Double_t lmar=0.1, Double_t rmar=0.1, Double_t bmar=0.1, Double_t tmar=0.1);
+                              Double_t lmar=0.12, Double_t rmar=0.08, Double_t bmar=0.12, Double_t tmar=0.08);
   
   TLegend*        SetUpLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize);
   TPaveText*      SetUpPaveText(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize, const char* text = 0);

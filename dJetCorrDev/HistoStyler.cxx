@@ -9,8 +9,8 @@
 ClassImp(HistoStyler);
 
 const Color_t HistoStyler::fgkColors[HistoStyler::fgkNColors] = {kBlue+1, kRed+1, kGreen+2, kMagenta+1, kCyan+3, kOrange+2, kViolet, kYellow+3, kPink+2, kTeal+2};
-const Style_t HistoStyler::fgkFullMarkerStyles[HistoStyler::fgkNFullMarkerStyles] = {kFullCircle, kFullSquare, kFullTriangleUp, kFullTriangleDown, kFullDiamond, kFullStar, kFullCross};
-const Style_t HistoStyler::fgkOpenMarkerStyles[HistoStyler::fgkNOpenMarkerStyles] = {kOpenCircle, kOpenSquare, kOpenTriangleUp, kOpenTriangleDown, kOpenDiamond, kOpenStar, kOpenCross};
+const Style_t HistoStyler::fgkFullMarkerStyles[HistoStyler::fgkNFullMarkerStyles] = {kFullCircle, kFullSquare, kFullDiamond, kFullStar, kFullCross, kFullTriangleUp, kFullTriangleDown};
+const Style_t HistoStyler::fgkOpenMarkerStyles[HistoStyler::fgkNOpenMarkerStyles] = {kOpenCircle, kOpenSquare, kOpenDiamond, kOpenStar, kOpenCross, kOpenTriangleUp, kOpenTriangleDown};
 
 //____________________________________________________________________________________
 HistoStyler::HistoStyler() :
