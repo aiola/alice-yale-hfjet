@@ -1,0 +1,55 @@
+Executable = "aliroot_new";
+
+Jobtag={"comment:pp, 7 TeV, PYTHIA HF enriched production anchored to pass4 reconstruction of pp 2010, Config_D2H, ALIROOT-5752"};
+
+Packages={
+    "VO_ALICE@AliRoot::v5-05-Rev-22d",
+    "VO_ALICE@GEANT3::v1-15a-1",
+    "VO_ALICE@ROOT::v5-34-08-6",
+    "VO_ALICE@APISCONFIG::V1.1x",
+    "VO_ALICE@boost::v1_43_0",
+    "VO_ALICE@cgal::v3.6",
+    "VO_ALICE@fastjet::v2.4.2",
+    "VO_ALICE@jemalloc::v3.6.0"
+};
+
+
+TTL = "74000";
+Price = 10.0;
+MemorySize = "8GB";
+
+Requirements = member(other.GridPartitions,"PDC08_2");
+
+
+Validationcommand="/alice/validation/validation.sh";
+
+
+InputFile= {
+        "LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/CheckESD.C",
+        "LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/Config.C",
+        "LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/rec.C",
+        "LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/sim.C",
+    	"LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/simrun.sh",
+        "LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/QAtrainsim.C",
+    	"LF:/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/AODtrainsim.C"
+};
+
+
+Output = {
+        "log_archive:stderr.log,stdout.log,tag.log,sim.log,rec.log,qa.log,aod.log@disk=1",
+        "QA_archive.zip:QAresults*.root,event_stat*.root,trending*.root,fileinfo*.log,*.stat.qa*@disk=2",
+        "root_archive.zip:galice.root,Kinematics.root,TrackRefs.root,Trigger.root,AliESDs.root,AliESDfriends.root,ITS.RecPoints.root,Run*.root@disk=2",
+        "aod_archive.zip:pyxsec*.root,AODQA.root,AliAOD*.root,FilterEvents_Trees*.root,*.stat.aod@disk=3",
+        "EventStat_temp*.root@disk=2"
+};
+
+
+OutputDir="/alice/cern.ch/user/a/arossi/prodPP2010pass4SalvatoreSplitPtHard/$1/$2/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+
+#
+splitarguments="--run $1 --pthardbin $2 --aliencounter #alien_counter# --process kPythiaPerugia2011HFbarrelPtHard --energy 7000.";
+split="production:1-100";
+
+Workdirectorysize={"5000MB"};
