@@ -180,7 +180,7 @@ void runJetAna(
     //pMgr->SetDebugLevel(2);
 
     // To have more debug info
-    pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
+    //pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliAnalysisTaskDmesonJetCorrelations", AliLog::kDebug+100);
     //pMgr->AddClassDebug("AliEmcalJetTask", AliLog::kDebug+100);

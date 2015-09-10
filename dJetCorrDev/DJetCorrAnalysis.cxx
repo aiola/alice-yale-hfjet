@@ -1683,6 +1683,10 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     TH1* hdinvmass = fDmesons->Projection(dInvMassAxis, "EA");
     hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
+    if (params->GetInvMassRebinFactor() > 1 && params->IsD0()) {
+      Printf("Rebinning %s by a factor %d", hdinvmass->GetName(), params->GetInvMassRebinFactor());
+      hdinvmass->Rebin(params->GetInvMassRebinFactor());
+    }
     fOutputList->Add(hdinvmass);
     
     fDmesons->GetAxis(dInvMassAxis)->SetRangeUser(params->GetInvMinMass(), params->GetInvMaxMass());
@@ -1701,6 +1705,10 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis, "EA");
     hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
+    if (params->GetInvMassRebinFactor() > 1) {
+      Printf("Rebinning %s by a factor %d", hddeltainvmass->GetName(), params->GetInvMassRebinFactor());
+      hddeltainvmass->Rebin(params->GetInvMassRebinFactor());
+    }
     fOutputList->Add(hddeltainvmass);
 
     if (dSoftPionPtAxis >= 0) {

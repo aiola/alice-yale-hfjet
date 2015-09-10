@@ -39,7 +39,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fMassFitTypeSig(MassFitter::kGaus),
   fMassFitTypeBkg(MassFitter::kExpo),
   fIsMC(kFALSE),
-  fIsBkgSub(kFALSE)
+  fIsBkgSub(kFALSE),
+  fInvMassRebinFactor(1)
 {
 }
 
@@ -72,7 +73,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMassFitTypeSig(MassFitter::kGaus),
   fMassFitTypeBkg(MassFitter::kExpo),
   fIsMC(isMC),
-  fIsBkgSub(isBkgSub)
+  fIsBkgSub(isBkgSub),
+  fInvMassRebinFactor(1)
 {
   if (anaType == kInvMassAna) {
     if (fIsMC) {
@@ -180,7 +182,10 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fMaxDEta(p.fMaxDEta),
   fMinJetConstituents(p.fMinJetConstituents),
   fMassFitTypeSig(p.fMassFitTypeSig),
-  fMassFitTypeBkg(p.fMassFitTypeBkg)
+  fMassFitTypeBkg(p.fMassFitTypeBkg),
+  fIsMC(p.fIsMC),
+  fIsBkgSub(p.fIsBkgSub),
+  fInvMassRebinFactor(p.fInvMassRebinFactor)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
