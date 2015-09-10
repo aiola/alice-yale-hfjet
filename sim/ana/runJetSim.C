@@ -24,8 +24,9 @@ void runJetSim(UInt_t numevents = 10000)
 
   TChain* chain = 0;
   chain = new TChain("TE");
-  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/kPyCharmppMNRwmi/galice.root");
-  chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/Perugia2011/galice.root");
+  chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharmppMNRwmi/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia2011_charm/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia2011/galice.root");
   chain->Print();
   chain->GetListOfFiles()->Print();
   
