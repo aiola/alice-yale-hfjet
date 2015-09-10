@@ -136,11 +136,9 @@ void Config()
   gSystem->Load("liblhapdf");      // Parton density functions
   gSystem->Load("libEGPythia6");   // TGenerator interface
   if (proc == kPythia6 || proc == kPhojet) {
-    Printf("Loading PYTHIA 6.2");
     gSystem->Load("libpythia6");        // Pythia 6.2
   } else {
-    Printf("Loading PYTHIA 6.4.21");
-    gSystem->Load("libpythia6_4_21");   // Pythia 6.4
+    gSystem->Load("libpythia6.4.21");   // Pythia 6.4
   }
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
   gSystem->Load("libgeant321");
@@ -302,7 +300,7 @@ void Config()
   rl->CdGAFile();
 
   
-  /*
+
   Int_t iABSO  = 1;
   Int_t iACORDE= 0;
   Int_t iDIPO  = 1;
@@ -501,7 +499,6 @@ void Config()
 
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
-  */
 }
 
 //
@@ -525,7 +522,7 @@ AliGenerator* MbPythiaTunePerugia2011chadrPtHard()
       pythia->SetYRange(-12.,12.);
       pythia->SetHeavyQuarkYRange(-1.5,1.5);
       pythia->SetPtRange(0,1000.);
-      //pythia->SetProcess(kPyCharmppMNRwmi);
+      pythia->SetProcess(kPyCharmppMNRwmi);
       pythia->SetEnergyCMS(energy);
 //    Tune
 //    350     Perugia 2011
@@ -569,11 +566,8 @@ AliGenerator* MbPythiaTunePerugia2011bchadrPtHard()
       pythia->SetYRange(-12.,12.);
       pythia->SetHeavyQuarkYRange(-1.5,1.5);
       pythia->SetPtRange(0,1000.);
-      pythia->SetEnergyCMS(energy);
-
       pythia->SetProcess(kPyBeautyppMNRwmi);
-      //pythia->SetTriggerParticle(4, 5., -1., 1000);      
-      
+      pythia->SetEnergyCMS(energy);
 //    Tune
 //    350     Perugia 2011
       pythia->SetTune(350);

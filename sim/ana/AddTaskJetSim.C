@@ -32,7 +32,7 @@ void AddTaskJetSim()
   // HF-jet analysis
   if (1) {
     // MC particle selector    
-    AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDMesonname, kFALSE, kTRUE, 0.);
+    AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDMesonname, kFALSE, kTRUE, 1.);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
     if (kDmesonCorrType == AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi) {
       mcPartTask->SelectCharmtoDStartoKpipi();
@@ -49,7 +49,7 @@ void AddTaskJetSim()
     
     AliAnalysisTaskDmesonJetCorrelations* pDMesonJetCorrGen = AddTaskDmesonJetCorr(kDmesonCorrType, "", 
 										   mcTracksDMesonname, "", chMcJetsDMesonName, "",
-										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, "",
+										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, "", kFALSE,
 										   "AliAnalysisTaskDmesonJetCorrelations", "MC");
     pDMesonJetCorrGen->SetMaxR(jetRadius);
     pDMesonJetCorrGen->SetMatchingType(eFlavourJetMatchingType);
