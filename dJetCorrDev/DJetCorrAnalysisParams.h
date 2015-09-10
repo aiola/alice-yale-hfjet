@@ -90,6 +90,9 @@ class DJetCorrAnalysisParams : public TObject
   TString     GetLabelDMeson(const char* prefix="") const;
   TString     GetLabelJet() const;
 
+  void        SetInvMassRebinFactor(Int_t r) { fInvMassRebinFactor = r    ; }
+  Int_t       GetInvMassRebinFactor()  const { return fInvMassRebinFactor ; }
+
   MassFitter* CreateMassFitter(const char* name) const;
   
  protected:
@@ -123,6 +126,7 @@ class DJetCorrAnalysisParams : public TObject
 
   Bool_t          fIsMC                      ;//
   Bool_t          fIsBkgSub                  ;//
+  Int_t           fInvMassRebinFactor        ;//
   
  private:
  

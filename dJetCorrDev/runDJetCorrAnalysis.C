@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_509_510_511_512",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_613_614_615_616",
                                       Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
                                       const char* inputPath = "$JETRESULTS")
 {
@@ -39,11 +39,14 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
+  DJetCorrAnalysisParams* param = 0;
+
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub);
-  projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
+  param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
 
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
-  projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  //param->SetInvMassRebinFactor(2);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");
