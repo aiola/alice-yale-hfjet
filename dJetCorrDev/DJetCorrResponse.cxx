@@ -291,7 +291,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* measured = fHistMatching->Projection(z1Axis, jetPt1Axis);
   measured->SetName(hname);
   measured->SetTitle("Measured");
-  measured->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{det} (GeV/#it{c})");
+  measured->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,det} (GeV/#it{c})");
   measured->GetYaxis()->SetTitle("#it{z}_{||}^{det}");
   measured->GetZaxis()->SetTitle("Counts");
 
@@ -299,7 +299,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* truthReco = fHistMatching->Projection(z2Axis, jetPt2Axis);
   truthReco->SetName(hname);
   truthReco->SetTitle("Truth reconstructed");
-  truthReco->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  truthReco->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   truthReco->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   truthReco->GetZaxis()->SetTitle("Counts");
 
@@ -307,7 +307,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* truth = fHistJets2->Projection(zPartAxis, jetPtPartAxis, "");
   truth->SetName(hname);
   truth->SetTitle("Truth");
-  truth->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  truth->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   truth->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   truth->GetZaxis()->SetTitle("Counts");
 
@@ -320,7 +320,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* truthRecoAll = fHistMatching->Projection(z2Axis, jetPt2Axis);
   truthRecoAll->SetName(hname);
   truthRecoAll->SetTitle("Truth reconstructed (all)");
-  truthRecoAll->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  truthRecoAll->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   truthRecoAll->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   truthRecoAll->GetZaxis()->SetTitle("Counts");
 
@@ -328,15 +328,15 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* eff = static_cast<TH2*>(truthReco->Clone(hname));
   eff->Divide(truth);
   eff->SetTitle("Efficiecny");
-  eff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
-  eff->GetZaxis()->SetTitle("Efficiency");
+  eff->GetZaxis()->SetTitle("Jet Reconstruction Efficiency");
 
   hname = Form("%s_Misses_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
   TH2* misses = static_cast<TH2*>(truth->Clone(hname));
   misses->Add(truthReco, -1);
   misses->SetTitle("Misses = Truth - Truth reconstructed");
-  misses->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  misses->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   misses->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   misses->GetZaxis()->SetTitle("Misses");
 
@@ -344,7 +344,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* kinEff = static_cast<TH2*>(truthReco->Clone(hname));
   kinEff->Divide(truthRecoAll);
   kinEff->SetTitle("Kinematic efficiency");
-  kinEff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  kinEff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   kinEff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   kinEff->GetZaxis()->SetTitle("Efficiency");
 
@@ -352,7 +352,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   TH2* kinMisses = static_cast<TH2*>(truthRecoAll->Clone(hname));
   kinMisses->Add(truthReco, -1);
   kinMisses->SetTitle("Misses = Truth reconstructed (all) - Truth reconstructed");
-  kinMisses->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  kinMisses->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   kinMisses->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   kinMisses->GetZaxis()->SetTitle("Misses");
 
@@ -565,8 +565,8 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
   TH2* respFull = fHistMatching->Projection(jetPt2Axis, jetPt1Axis, "A");
   respFull->SetName(hname);
   respFull->SetTitle(htitle);
-  respFull->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{det} (GeV/#it{c})");
-  respFull->GetYaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
+  respFull->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,det} (GeV/#it{c})");
+  respFull->GetYaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   fOutputList->Add(respFull);
 
   TH1* totalFull = fHistJets2->Projection(jetPtPartAxis, "A");
@@ -603,8 +603,8 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
     TH1* eff = static_cast<TH1*>(pass->Clone(hname));
     eff->Divide(total);
     eff->SetTitle(htitle);
-    eff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
-    eff->GetYaxis()->SetTitle("Efficiency");
+    eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
+    eff->GetYaxis()->SetTitle("Jet Reconstruction Efficiency");
 
     fOutputList->Add(eff);
   }
@@ -613,8 +613,8 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
     TGraphAsymmErrors* eff = new TGraphAsymmErrors(pass, total, fEfficiencyMode);
     eff->SetName(hname);
     eff->SetTitle(htitle);
-    eff->GetXaxis()->SetTitle("#it{p}_{T,ch.jet}^{part} (GeV/#it{c})");
-    eff->GetYaxis()->SetTitle("Efficiency");
+    eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
+    eff->GetYaxis()->SetTitle("Jet Reconstruction Efficiency");
     fOutputList->Add(eff);
   }
 
@@ -670,7 +670,7 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
   fHistJets2->GetAxis(dPtPartAxis)->SetRangeUser(minDPt, maxDPt);
 
   hname = Form("%s_ResponseMatrix_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f_Full", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
-  htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
+  htitle = Form("Response matrix for #it{z}_{||}: %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}", minJetPt, maxJetPt);
   TH2* respFull = fHistMatching->Projection(z2Axis, z1Axis, "A");
   respFull->SetName(hname);
   respFull->SetTitle(htitle);
@@ -697,13 +697,13 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
   TH1* pass = resp->ProjectionY("pass");
 
   hname = Form("%s_Efficiency_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
-  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
+  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
   if (fEfficiencyMode.Contains("TH1")) {
     TH1* eff = static_cast<TH1*>(pass->Clone(hname));
     eff->Divide(total);
     eff->SetTitle(htitle);
     eff->GetXaxis()->SetTitle("#it{z}_{||}^{part}");
-    eff->GetYaxis()->SetTitle("Efficiency");
+    eff->GetYaxis()->SetTitle("Jet Reconstruction Efficiency");
 
     fOutputList->Add(eff);
   }
@@ -713,7 +713,7 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
     eff->SetName(hname);
     eff->SetTitle(htitle);
     eff->GetXaxis()->SetTitle("#it{z}_{||}^{part}");
-    eff->GetYaxis()->SetTitle("Efficiency");
+    eff->GetYaxis()->SetTitle("Jet Reconstruction Efficiency");
 
     fOutputList->Add(eff);
   }
@@ -916,7 +916,7 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsDPt(DJetCorrAnalysisParams* params)
   TString cEffName = Form("%s_Efficiency_JetPt_Vs_DPt", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{p}_{T,ch.jet}^{ch}^{part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                          "#it{p}_{T,jet}^{ch}^{ch,part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
@@ -966,7 +966,7 @@ Bool_t DJetCorrResponse::PlotResponseJetPtVsZ(DJetCorrAnalysisParams* params)
   TString cEffName = Form("%s_Efficiency_JetPt_Vs_Z", params->GetName());
  
   canvasEff = SetUpCanvas(cEffName,
-                          "#it{p}_{T,ch.jet}^{ch}^{part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
+                          "#it{p}_{T,jet}^{ch}^{ch,part} (GeV/#it{c})", params->GetMinJetPt(), params->GetMaxJetPt(), kFALSE,
                           "Efficiency", 0., 1e-6, kFALSE);
 
   canvasEff->cd();
@@ -1295,7 +1295,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
       if (dptBin == -1) imarker = 0;
       else imarker = dptBin/dptBinStep+1;
 
-      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,ch.jet}^{part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}",
                         minDPt, maxDPt, minJetPt, maxJetPt);
     }
     else if (jetPtBin >= -1) {
@@ -1307,7 +1307,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
         icolor = jetPtBin/jetPtBinStep;
         imarker = jetPtBin/jetPtBinStep+1;
       }
-      hcopyTitle = Form("%.0f < #it{p}_{T,ch.jet}^{part} < %.0f GeV/#it{c}",
+      hcopyTitle = Form("%.0f < #it{p}_{T,jet}^{ch,part} < %.0f GeV/#it{c}",
                         minJetPt, maxJetPt);
     }
     else if (dptBin >= -1) {
