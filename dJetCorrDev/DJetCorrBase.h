@@ -58,14 +58,20 @@ class DJetCorrBase : public TNamed {
   TH2* GetDzTruth(Int_t p, Bool_t copy);
   TH2* GetDzMeasured(Int_t p, Bool_t copy);
 
-  TH1* GetDPtTruth(Int_t p, Bool_t copy);
-  TH1* GetDPtMeasured(Int_t p, Bool_t copy);
+  TH1* GetDPtTruth(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
+  TH1* GetDPtMeasured(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
+
+  TH1* GetJetPtTruth(Int_t p, Bool_t copy);
+  TH1* GetJetPtMeasured(Int_t p, Bool_t copy);
 
   virtual TString GetDzTruthName(Int_t /*p*/) { return ""; }
   virtual TString GetDzMeasuredName(Int_t /*p*/) { return ""; }
 
-  virtual TString GetDPtTruthName(Int_t /*p*/) { return ""; }
-  virtual TString GetDPtMeasuredName(Int_t /*p*/) { return ""; }
+  virtual TString GetDPtTruthName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
+  virtual TString GetDPtMeasuredName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
+
+  virtual TString GetJetPtTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetJetPtMeasuredName(Int_t /*p*/) { return ""; }
 
   static void FitObjectInPad(TObject* obj, TVirtualPad* pad, Option_t* opt="", Bool_t copyAxisTitle=kFALSE, Double_t extraFactor=1.8);
   static void FitGraphInPad(TGraph* graph, TVirtualPad* pad, Option_t* opt="", Bool_t copyAxisTitle=kFALSE, Double_t extraFactor=1.8);

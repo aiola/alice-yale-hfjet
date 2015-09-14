@@ -2,9 +2,9 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_613_614_615_616",
-                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
-                                      const char* inputPath = "$JETRESULTS")
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "truth-only", const char* train = "kPyMbDefault",
+                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
+                                      const char* inputPath = "/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/results")
 {
   TGaxis::SetMaxDigits(3); 
 
@@ -45,25 +45,30 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
 
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
-  param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  //param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
   //param->SetInvMassRebinFactor(2);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");
-  
-  if (optList->Contains("run")) {
-    projDjet->GenerateQAHistograms();
-    projDjet->GenerateDJetCorrHistograms();
+
+  if (optList->Contains("truth-only")) {
     projDjet->ProjectTruthSpectrum();
   }
+  else {
+    if (optList->Contains("run")) {
+      projDjet->GenerateQAHistograms();
+      projDjet->GenerateDJetCorrHistograms();
+      projDjet->ProjectTruthSpectrum();
+    }
 
-  if (optList->Contains("refit")) {
-    projDjet->PlotTrackHistograms();
-    projDjet->PlotDJetCorrHistograms(kTRUE);
-  }
-  else if (optList->Contains("plot")) {
-    projDjet->PlotTrackHistograms();
-    projDjet->PlotDJetCorrHistograms(kFALSE);
+    if (optList->Contains("refit")) {
+      projDjet->PlotTrackHistograms();
+      projDjet->PlotDJetCorrHistograms(kTRUE);
+    }
+    else if (optList->Contains("plot")) {
+      projDjet->PlotTrackHistograms();
+      projDjet->PlotDJetCorrHistograms(kFALSE);
+    }
   }
 
   if (!opt.IsNull()) projDjet->SaveOutputFile();
