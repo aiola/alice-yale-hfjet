@@ -93,6 +93,9 @@ class DJetCorrAnalysisParams : public TObject
   void        SetInvMassRebinFactor(Int_t r) { fInvMassRebinFactor = r    ; }
   Int_t       GetInvMassRebinFactor()  const { return fInvMassRebinFactor ; }
 
+  void        SetBackgroundOnly(Bool_t b)    { fBackgroundOnly = b        ; }
+  Bool_t      GetBackgroundOnly()      const { return fBackgroundOnly     ; }
+
   MassFitter* CreateMassFitter(const char* name) const;
   
  protected:
@@ -127,6 +130,7 @@ class DJetCorrAnalysisParams : public TObject
   Bool_t          fIsMC                      ;//
   Bool_t          fIsBkgSub                  ;//
   Int_t           fInvMassRebinFactor        ;//
+  Bool_t          fBackgroundOnly            ;//
   
  private:
  

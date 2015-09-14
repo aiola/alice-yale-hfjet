@@ -40,7 +40,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fMassFitTypeBkg(MassFitter::kExpo),
   fIsMC(kFALSE),
   fIsBkgSub(kFALSE),
-  fInvMassRebinFactor(1)
+  fInvMassRebinFactor(1),
+  fBackgroundOnly(kFALSE)
 {
 }
 
@@ -74,7 +75,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMassFitTypeBkg(MassFitter::kExpo),
   fIsMC(isMC),
   fIsBkgSub(isBkgSub),
-  fInvMassRebinFactor(1)
+  fInvMassRebinFactor(1),
+  fBackgroundOnly(kFALSE)
 {
   if (anaType == kInvMassAna) {
     if (fIsMC) {
@@ -185,7 +187,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fMassFitTypeBkg(p.fMassFitTypeBkg),
   fIsMC(p.fIsMC),
   fIsBkgSub(p.fIsBkgSub),
-  fInvMassRebinFactor(p.fInvMassRebinFactor)
+  fInvMassRebinFactor(p.fInvMassRebinFactor),
+  fBackgroundOnly(p.fBackgroundOnly)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
@@ -300,6 +303,10 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   fitter->GetFitFunction()->SetParameter(1, startingSigmaBkg);
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
   fitter->SetFitRange(minFitRange, maxFitRange);
+
+  if (fBackgroundOnly) {
+    fitter->DisableSig();
+  }
 
   return fitter;
 }

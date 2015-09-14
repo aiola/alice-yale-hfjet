@@ -37,19 +37,19 @@ class MassFitter : public TNamed {
   TFitResultPtr Fit(TH1* histo, Option_t* opt="");
   TFitResultPtr Fit(Option_t* opt="");
 
-  void DisableBkg(Bool_t d = kTRUE) { fDisableBkg = d; }
-  void DisableSig(Bool_t d = kTRUE) { fDisableSig = d; }
+  void DisableBkg(Bool_t d = kTRUE);
+  void DisableSig(Bool_t d = kTRUE);
   void SetMassRange(Double_t min, Double_t max);
   void SetFitRange(Double_t min, Double_t max);
 
-  Double_t GetSignalMean()                       const { return fMean                 ; }
-  Double_t GetSignalMeanError()                  const { return fMeanError            ; }
-  Double_t GetSignalWidth()                      const { return fWidth                ; }
-  Double_t GetSignalWidthError()                 const { return fWidthError           ; }
-  Double_t GetSignal()                           const { return fSignal               ; }
-  Double_t GetSignalError()                      const { return fSignalError          ; }
-  Double_t GetBackground()                       const { return fBackground           ; }
-  Double_t GetBackgroundError()                  const { return fBackgroundError      ; }
+  Double_t GetSignalMean()                       const { return fDisableSig == kFALSE ? fMean : 0.            ; }
+  Double_t GetSignalMeanError()                  const { return fDisableSig == kFALSE ? fMeanError : 0.       ; }
+  Double_t GetSignalWidth()                      const { return fDisableSig == kFALSE ? fWidth : 0.           ; }
+  Double_t GetSignalWidthError()                 const { return fDisableSig == kFALSE ? fWidthError : 0.      ; }
+  Double_t GetSignal()                           const { return fDisableSig == kFALSE ? fSignal : 0.          ; }
+  Double_t GetSignalError()                      const { return fDisableSig == kFALSE ? fSignalError : 0.     ; }
+  Double_t GetBackground()                       const { return fDisableBkg == kFALSE ? fBackground : 0.      ; }
+  Double_t GetBackgroundError()                  const { return fDisableBkg == kFALSE ? fBackgroundError : 0. ; }
   Double_t GetSignalOverBackground()             const { return fBackground > fgkEpsilon ? fSignal/fBackground : 0                              ; }
   Double_t GetSignalOverSqrtSignalBackgorund()   const { return fBackground+fSignal > fgkEpsilon ? fSignal/TMath::Sqrt(fSignal+fBackground) : 0 ; }
 
