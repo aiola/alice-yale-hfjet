@@ -5,9 +5,10 @@ class DJetCorrAnalysisComparer;
 #include "runDJetCorrAnalysis.C"
 #include "runDJetCorrResponse.C"
 
-DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets_EMC_pp_MC_613_614_615_616",
-                                                      const char* train2 = "Jets_EMC_pp_MC_605_606_607_608",
-                                                      Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
+DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "kPyMbDefault",
+                                                      const char* train2 = "kPyMb",
+                                                      const char* train3 = "kPyCharmppMNRwmi",
+                                                      Bool_t loadLibs = kTRUE, const char* inputPath = "/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/results")
 {
   if (loadLibs) {
     gROOT->LoadMacro("HistoStyler.cxx+g");
@@ -20,11 +21,14 @@ DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets
   }
   
   DJetCorrBase* ana1 = runDJetCorrAnalysis("", train1, kFALSE, kTRUE, kFALSE, inputPath);
-  DJetCorrBase* ana2 = runDJetCorrAnalysis("", train2, kFALSE, kTRUE, kTRUE, inputPath);
+  DJetCorrBase* ana2 = runDJetCorrAnalysis("", train2, kFALSE, kTRUE, kFALSE, inputPath);
+
+  DJetCorrBase* ana3 = 0;
+
+  if (train3) ana3 = runDJetCorrAnalysis("", train3, kFALSE, kTRUE, kFALSE, inputPath);
   
-  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth |
-                                                                    DJetCorrAnalysisComparer::kCompareMeasured,
-                                                                    ana1, ana2, 0, 0);
+  DJetCorrAnalysisComparer* comparer = new DJetCorrAnalysisComparer(DJetCorrAnalysisComparer::kCompareTruth,
+                                                                    ana1, ana2, ana3, 0, 0, 0);
   comparer->SetSavePlots(kTRUE);
   comparer->SetOverwrite(kTRUE);
   comparer->SetMakeRatios(kTRUE);

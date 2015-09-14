@@ -15,7 +15,9 @@ class DJetCorrAnalysisComparer : public DJetCorrBase {
 
   DJetCorrAnalysisComparer();
   DJetCorrAnalysisComparer(UInt_t task);
-  DJetCorrAnalysisComparer(UInt_t task, DJetCorrBase* ana1, DJetCorrBase* ana2, Int_t ipar1=0, Int_t ipar2=0);
+  DJetCorrAnalysisComparer(UInt_t task,
+                           DJetCorrBase* ana1, DJetCorrBase* ana2, DJetCorrBase* ana3 = 0,
+                           Int_t ipar1=0, Int_t ipar2=0, Int_t ipar3=0);
 
   void SetCompareTask(UInt_t task)        { fCompareTask       = task; }
   void SetMakeRatios(Bool_t r)            { fMakeRatios        = r   ; }
@@ -27,8 +29,8 @@ class DJetCorrAnalysisComparer : public DJetCorrBase {
 
   void CompareTruth();
   void CompareMeasured();
-  void CompareZvsJetPt(const char* name, TObjArray& array);
-  void CompareDPt(const char* name, TObjArray& array);
+  void Compare2D(const char* name, TObjArray& array, const char* xAxis);
+  void Compare1D(const char* name, TObjArray& array, const char* xAxis);
 
   DJetCorrBase* AddAnalysis(DJetCorrBase* ana, Int_t ipar=0);
   

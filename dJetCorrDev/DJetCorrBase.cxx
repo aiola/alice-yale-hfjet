@@ -1140,9 +1140,26 @@ TH2* DJetCorrBase::GetDzMeasured(Int_t p, Bool_t copy)
 }
 
 //____________________________________________________________________________________
-TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy)
+TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy, const char* matching)
 {
-  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtTruthName(p)));
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtTruthName(p, matching)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH1*>(hist->Clone(hname));
+  }
+
+  if (!hist) Printf("Histogram %s not found!", GetDPtTruthName(p, matching).Data());
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy, const char* matching)
+{
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtMeasuredName(p, matching)));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1155,9 +1172,24 @@ TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy)
 }
 
 //____________________________________________________________________________________
-TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy)
+TH1* DJetCorrBase::GetJetPtTruth(Int_t p, Bool_t copy)
 {
-  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtMeasuredName(p)));
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetJetPtTruthName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH1*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::GetJetPtMeasured(Int_t p, Bool_t copy)
+{
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetJetPtMeasuredName(p)));
 
   if (copy && hist) {
     TString hname = hist->GetName();

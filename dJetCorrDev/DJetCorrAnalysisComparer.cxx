@@ -57,7 +57,9 @@ DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task) :
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task, DJetCorrBase* ana1, DJetCorrBase* ana2, Int_t ipar1, Int_t ipar2) :
+DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task,
+                                                   DJetCorrBase* ana1, DJetCorrBase* ana2, DJetCorrBase* ana3,
+                                                   Int_t ipar1, Int_t ipar2, Int_t ipar3) :
   DJetCorrBase("DJetCorrAnalysisComparer", ""),
   fParamIndexes(10),
   fForceRegeneration(kFALSE),
@@ -72,12 +74,18 @@ DJetCorrAnalysisComparer::DJetCorrAnalysisComparer(UInt_t task, DJetCorrBase* an
 
   TString name = Form("%s_%s", ana1->GetName(), ana2->GetName());
 
+  AddAnalysis(ana1, ipar1);
+  AddAnalysis(ana2, ipar2);
+
+  if (ana3) {
+    name += "_";
+    name += ana3->GetName();
+    AddAnalysis(ana3, ipar3);
+  }
+
   SetInputTrain(name);
   SetName(name);
   SetTitle(name);
-  
-  AddAnalysis(ana1, ipar1);
-  AddAnalysis(ana2, ipar2);
 }
 
 //____________________________________________________________________________________
@@ -183,8 +191,8 @@ void DJetCorrAnalysisComparer::CompareMeasured()
     i++;
   }
 
-  CompareZvsJetPt(compareDzName, arrayDz);
-  CompareDPt(compareDPtName, arrayDPt);
+  Compare2D(compareDzName, arrayDz, "#it{z}_{||}");
+  Compare1D(compareDPtName, arrayDPt, "#it{p}_{T,D}");
 }
 
 //____________________________________________________________________________________
@@ -196,6 +204,12 @@ void DJetCorrAnalysisComparer::CompareTruth()
   TObjArray arrayDPt(fAnalysisArray->GetEntriesFast());
   arrayDPt.SetOwner(kFALSE);
 
+  TObjArray arrayDPtMatched(fAnalysisArray->GetEntriesFast());
+  arrayDPtMatched.SetOwner(kFALSE);
+
+  TObjArray arrayJetPt(fAnalysisArray->GetEntriesFast());
+  arrayJetPt.SetOwner(kFALSE);
+
   TIter next(fAnalysisArray);
 
   DJetCorrBase* ana = 0;
@@ -203,6 +217,8 @@ void DJetCorrAnalysisComparer::CompareTruth()
 
   TString compareDzName("DzSpectraComparisonTruth");
   TString compareDPtName("DPtSpectraComparisonTruth");
+  TString compareDPtMatchedName("DPtMatchedSpectraComparisonTruth");
+  TString compareJetPtName("JetPtSpectraComparisonTruth");
 
   while ((ana = static_cast<DJetCorrBase*>(next()))) {
     compareDzName += "_";
@@ -220,7 +236,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
       arrayDz.Add(truthDz);
     }
 
-    TH1* truthDPt = ana->GetDPtTruth(fParamIndexes[i], kTRUE);
+    TH1* truthDPt = ana->GetDPtTruth(fParamIndexes[i], kTRUE, "AnyMatchingStatus");
     if (truthDPt) {
       NormalizeHistogram(truthDPt, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthDPt->GetName());
@@ -229,19 +245,39 @@ void DJetCorrAnalysisComparer::CompareTruth()
       arrayDPt.Add(truthDPt);
     }
 
+    TH1* truthDPtMatched = ana->GetDPtTruth(fParamIndexes[i], kTRUE, "Matched");
+    if (truthDPtMatched) {
+      NormalizeHistogram(truthDPtMatched, ana);
+      TString hname = Form("%s_%s", ana->GetName(), truthDPtMatched->GetName());
+      truthDPtMatched->SetName(hname);
+      truthDPtMatched->SetTitle(ana->GetName());
+      arrayDPtMatched.Add(truthDPtMatched);
+    }
+
+    TH1* truthJetPt = ana->GetJetPtTruth(fParamIndexes[i], kTRUE);
+    if (truthJetPt) {
+      NormalizeHistogram(truthJetPt, ana);
+      TString hname = Form("%s_%s", ana->GetName(), truthJetPt->GetName());
+      truthJetPt->SetName(hname);
+      truthJetPt->SetTitle(ana->GetName());
+      arrayJetPt.Add(truthJetPt);
+    }
+
     i++;
   }
 
-  CompareZvsJetPt(compareDzName, arrayDz);
-  CompareDPt(compareDPtName, arrayDPt);
+  Compare2D(compareDzName, arrayDz, "#it{z}_{||}");
+  Compare1D(compareDPtName, arrayDPt, "#it{p}_{T,D}");
+  Compare1D(compareDPtMatchedName, arrayDPtMatched, "#it{p}_{T,D}");
+  Compare1D(compareJetPtName, arrayJetPt, "#it{p}_{T,jet}^{ch}");
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& array)
+void DJetCorrAnalysisComparer::Compare2D(const char* name, TObjArray& array, const char* xAxis)
 {
   gStyle->SetOptStat(0);
 
-  Printf("Entering method DJetCorrAnalysisComparer::CompareZvsJetPt: %d histograms to compare", array.GetEntriesFast());
+  Printf("Entering method DJetCorrAnalysisComparer::Compare2D: %d histograms to compare", array.GetEntriesFast());
 
   if (array.GetEntriesFast() == 0) return;
 
@@ -268,7 +304,7 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
       Int_t nrows = 1;
       if (fMakeRatios) nrows = 2;
       canvas = SetUpCanvas(name,
-                           "#it{z}_{||}", 0, 1., kFALSE,
+                           xAxis, 0, 1., kFALSE,
                            "arb. units", 0, 0, kFALSE,
                            400*hist->GetNbinsX(), 400*nrows, nrows, hist->GetNbinsX());
     }
@@ -283,6 +319,10 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
       FitHistogramInPad(proj, canvas->cd(ibin));
       if (ibin == 1) leg->AddEntry(proj, proj->GetTitle(), "pe");
 
+      TString jetPtLabel = Form("%1.f < #it{p}_{T,jet}^{ch} < %1.f GeV/#it{c}", hist->GetXaxis()->GetBinLowEdge(ibin), hist->GetXaxis()->GetBinUpEdge(ibin));
+      TPaveText* pave = SetUpPaveText(0.50, 0.70, 0.75, 0.86, 13, jetPtLabel);
+      pave->Draw();
+      
       if (fMakeRatios) {
         TVirtualPad* pad = canvas->cd(ibin+hist->GetNbinsX());
         pad->SetLogy(kFALSE);
@@ -312,11 +352,11 @@ void DJetCorrAnalysisComparer::CompareZvsJetPt(const char* name, TObjArray& arra
 }
 
 //____________________________________________________________________________________
-void DJetCorrAnalysisComparer::CompareDPt(const char* name, TObjArray& array)
+void DJetCorrAnalysisComparer::Compare1D(const char* name, TObjArray& array, const char* xAxis)
 {
   gStyle->SetOptStat(0);
 
-  Printf("Entering method DJetCorrAnalysisComparer::CompareDPt: %d histograms to compare", array.GetEntriesFast());
+  Printf("Entering method DJetCorrAnalysisComparer::Compare1D: %d histograms to compare", array.GetEntriesFast());
 
   if (array.GetEntriesFast() == 0) return;
 
@@ -342,7 +382,7 @@ void DJetCorrAnalysisComparer::CompareDPt(const char* name, TObjArray& array)
       Int_t nrows = 1;
       if (fMakeRatios) nrows = 2;
       canvas = SetUpCanvas(name,
-                           "#it{p}_{T,D}", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax(), kFALSE,
+                           xAxis, hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax(), kFALSE,
                            "arb. units", 1, 1, kTRUE,
                            500, 500*nrows, nrows, 1);
     }

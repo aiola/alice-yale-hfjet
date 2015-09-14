@@ -404,6 +404,7 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
       if (dPtAxis >=0 && dptBin == -1) {
         TH2* hdzVsDPt = fDmesons->Projection(dzAxis, dPtAxis, "EO");
         hdzVsDPt->SetName(Form("h%s_MesonZvsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        hdzVsDPt->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
         fOutputList->Add(hdzVsDPt);
       }
       
@@ -411,7 +412,7 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
         TH2* hdzVsJetPt = fDmesons->Projection(dzAxis, jetPtAxis, "EO");
         hdzVsJetPt->SetName(Form("h%s_MesonZvsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         hdzVsJetPt->GetXaxis()->SetTitle("#it{p}_{T,jet}^{part}");
-        hdzVsJetPt->GetXaxis()->SetTitle("#it{z}_{||}^{part}");
+        hdzVsJetPt->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
         fOutputList->Add(hdzVsJetPt);
 
         // Rebin to the coarse binning ready for unfolding
@@ -423,6 +424,7 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
       if (deltaRAxis >= 0) {
         TH2* hdzVsDeltaR = fDmesons->Projection(dzAxis, deltaRAxis, "EO");
         hdzVsDeltaR->SetName(Form("h%s_MesonZvsDeltaR_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+        hdzVsDeltaR->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
         fOutputList->Add(hdzVsDeltaR);
       }
     }
@@ -1896,27 +1898,56 @@ TString DJetCorrAnalysis::GetDzMeasuredName(Int_t p)
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysis::GetDPtTruthName(Int_t p)
+TString DJetCorrAnalysis::GetDPtTruthName(Int_t p, const char* matching)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
 
-  TString spectrumCuts(params->GetCutString(kAnyMatchingStatus, -1, -1, -1));
-  TString hname = Form("h%s_MesonPt_%s_AnyMatchingStatus_Truth_Coarse", params->GetName(), spectrumCuts.Data());
+  TString spectrumCuts;
 
-  Printf("%s", hname.Data());
+  if (strcmp("Matched", matching)==0) {
+    spectrumCuts = params->GetCutString(kMatched, -1, -1, -1);
+  }
+  else {
+    spectrumCuts = params->GetCutString(kAnyMatchingStatus, -1, -1, -1);
+  }
+
+  TString hname = Form("h%s_MesonPt_%s_%s_Truth_Coarse", params->GetName(), spectrumCuts.Data(), matching);
 
   return hname;
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysis::GetDPtMeasuredName(Int_t p)
+TString DJetCorrAnalysis::GetDPtMeasuredName(Int_t p, const char* matching)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
 
   TString spectrumCuts(params->GetCutString(kAnyMatchingStatus, -1, -1, -1));
-  TString hname(Form("h%s_DPtSpectrum_%s_AnyMatchingStatus", params->GetName(), spectrumCuts.Data()));
+  TString hname(Form("h%s_DPtSpectrum_%s_%s", params->GetName(), spectrumCuts.Data(), matching));
+
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetJetPtTruthName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString spectrumCuts(params->GetCutString(kMatched, -1, -1, -1));
+  TString hname = Form("h%s_JetPt_%s_Matched_Truth_Coarse", params->GetName(), spectrumCuts.Data());
+
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetJetPtMeasuredName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString hname;
 
   return hname;
 }

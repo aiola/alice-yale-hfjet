@@ -60,8 +60,11 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString GetDzTruthName(Int_t p);
   TString GetDzMeasuredName(Int_t p);
 
-  TString GetDPtTruthName(Int_t p);
-  TString GetDPtMeasuredName(Int_t p);
+  TString GetDPtTruthName(Int_t p, const char* matching="AnyMatchingStatus");
+  TString GetDPtMeasuredName(Int_t p, const char* matching="AnyMatchingStatus");
+
+  TString GetJetPtTruthName(Int_t p);
+  TString GetJetPtMeasuredName(Int_t p);
 
  protected:
   Bool_t          LoadOutputHistograms();
