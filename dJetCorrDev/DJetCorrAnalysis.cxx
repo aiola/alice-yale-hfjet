@@ -1371,9 +1371,11 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
 
         Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass));
         fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
-        fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
-        fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
-        fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
+        if (!params->GetBackgroundOnly()) {
+          fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
+          fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
+          fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
+        }
       
         fitter->Fit(histos[i], "0 E S");
       }

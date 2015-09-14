@@ -2,17 +2,17 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "truth-only", const char* train = "kPyMbDefault",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "refit plot", const char* train = "Jets_EMC_pp_MC_618_619_620_621",
                                       Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
-                                      const char* inputPath = "/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/results")
+                                      const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
 
   TString tracksName = "tracks";
   //TString tracksD0Name = tracksName;
   //TString tracksDStarName = tracksName;
-  TString tracksD0Name = "DcandidatesAndTracksD0";
-  TString tracksDStarName = "DcandidatesAndTracksDStar";
+  TString tracksD0Name = "DSBcandidatesAndTracksD0";
+  TString tracksDStarName = "DSBcandidatesAndTracksDStar";
 
   if (!isMC) {
     tracksD0Name += "rec";
@@ -43,7 +43,7 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "truth-only", const 
 
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub);
   param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
-
+  param->SetBackgroundOnly(kTRUE);
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
   //param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
   //param->SetInvMassRebinFactor(2);
