@@ -139,8 +139,8 @@ void Config()
     Printf("Loading PYTHIA 6.2");
     gSystem->Load("libpythia6");        // Pythia 6.2
   } else {
-    Printf("Loading PYTHIA 6.4.21");
-    gSystem->Load("libpythia6_4_21");   // Pythia 6.4
+    Printf("Loading PYTHIA 6.4.25");
+    gSystem->Load("libpythia6_4_25");   // Pythia 6.4
   }
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
   gSystem->Load("libgeant321");
@@ -234,6 +234,7 @@ void Config()
   //======================//
   // Set External decayer //
   //======================//
+   
   TVirtualMCDecayer* decayer = new AliDecayerPythia();
   if(typeHF==0 || typeHF==1) {// is this really needed??
     decayer->SetForceDecay(kHadronicDWithout4BodiesWithV0);
@@ -244,14 +245,15 @@ void Config()
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
 
-
+   
 
   //=========================//
   // Generator Configuration //
   //=========================//
   AliGenerator* gener = 0x0;
 
-
+gener = MbPythiaTunePerugia2011chadrPtHard();
+/*
 
   if (proc == kPythiaPerugia2011chadrPtHard ||
       (proc == kPythiaPerugia2011HFbarrelPtHard && typeHF==0)) {
@@ -260,7 +262,7 @@ void Config()
 	     (proc == kPythiaPerugia2011HFbarrelPtHard && typeHF==1)) {
     gener = MbPythiaTunePerugia2011bchadrPtHard();
   }
-
+*/
   //
   //
   // Size of the interaction diamond
@@ -523,17 +525,26 @@ AliGenerator* MbPythiaTunePerugia2011chadrPtHard()
       pythia->SetMomentumRange(0, 999999.);
       pythia->SetThetaRange(0., 180.);
       pythia->SetYRange(-12.,12.);
-      pythia->SetHeavyQuarkYRange(-1.5,1.5);
       pythia->SetPtRange(0,1000.);
-      //pythia->SetProcess(kPyCharmppMNRwmi);
       pythia->SetEnergyCMS(energy);
-//    Tune
-//    350     Perugia 2011
+
+      //    Tune
+      //    350     Perugia 2011
       pythia->SetTune(350);
       pythia->UseNewMultipleInteractionsScenario();
+
+      pythia->SetProcess(kPyMbDefault);
+      //pythia->SetProcess(kPyMb);
+      //pythia->SetProcess(kPyCharm);
+      //pythia->SetProcess(kPyJets);
+      //pythia->SetProcess(kPyCharmppMNRwmi);
+      pythia->SetHeavyQuarkYRange(-1.5,1.5);
+      pythia->SetTriggerParticle(4, 5., -1., 1000);      
+    
+      
 //
 //    decays
-      pythia->SetForceDecay(kHadronicDWithout4BodiesWithV0);
+     pythia->SetForceDecay(kHadronicDWithout4BodiesWithV0);
 
       // set pt hard and name
       TString nameHF="pythiaPer2011_ccbarHFhadr";
@@ -550,7 +561,7 @@ AliGenerator* MbPythiaTunePerugia2011chadrPtHard()
 
       return cocktail;
 }
-
+/*
 AliGenerator* MbPythiaTunePerugia2011bchadrPtHard()
 {
       comment = comment.Append(" pp: cocktail with single generator, Pythia (Perugia2011) cchadr (1 bbbar per event, 1 b-quark in |y|<1.5, chadrons decay to hadrons), pt hard bin");
@@ -567,17 +578,19 @@ AliGenerator* MbPythiaTunePerugia2011bchadrPtHard()
       pythia->SetMomentumRange(0, 999999.);
       pythia->SetThetaRange(0., 180.);
       pythia->SetYRange(-12.,12.);
-      pythia->SetHeavyQuarkYRange(-1.5,1.5);
       pythia->SetPtRange(0,1000.);
       pythia->SetEnergyCMS(energy);
 
-      pythia->SetProcess(kPyBeautyppMNRwmi);
-      //pythia->SetTriggerParticle(4, 5., -1., 1000);      
-      
 //    Tune
 //    350     Perugia 2011
       pythia->SetTune(350);
       pythia->UseNewMultipleInteractionsScenario();
+      
+      pythia->SetProcess(kPyMb);
+      //pythia->SetProcess(kPyBeautyppMNRwmi);
+      //pythia->SetHeavyQuarkYRange(-1.5,1.5);
+      //pythia->SetTriggerParticle(4, 5., -1., 1000);      
+
 //
 //    decays
       pythia->SetForceDecay(kHadronicDWithout4BodiesWithV0);
@@ -600,7 +613,7 @@ AliGenerator* MbPythiaTunePerugia2011bchadrPtHard()
 }
 
 
-
+*/
 
 void ProcessEnvironmentVars()
 {

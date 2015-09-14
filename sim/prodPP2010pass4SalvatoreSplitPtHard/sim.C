@@ -1,6 +1,6 @@
-void sim(Int_t nev=10000)
+void sim(Int_t nev=500000)
 {
-  gSystem->Load("libpythia6_4_21");
+  gSystem->Load("libpythia6_4_25");
   AliSimulation simulator;
 
   //simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
