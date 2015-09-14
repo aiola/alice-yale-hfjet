@@ -25,15 +25,18 @@ void runJetSim(UInt_t numevents = 10000)
   TChain* chain = 0;
   chain = new TChain("TE");
   chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharmppMNRwmi/galice.root");
-  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia2011_charm/galice.root");
-  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia2011/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMb/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMb_trigger/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharm/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/Data/LHC12a15a/1/001/root_archive.zip#galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/galice.root");
   chain->Print();
   chain->GetListOfFiles()->Print();
   
   // start analysis
   cout << "Starting Analysis...";
   mgr->SetUseProgressBar(1, 25);
-  //mgr->SetDebugLevel(2);
+  //mgr->SetDebugLevel(1);
 
   //mgr->AddClassDebug("AliJetContainer",100);
   //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);
