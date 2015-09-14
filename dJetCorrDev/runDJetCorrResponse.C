@@ -2,7 +2,7 @@
 
 class DJetCorrResponse;
 
-DJetCorrResponse* runDJetCorrResponse(const char* options = "plot", const char* train = "Jets_EMC_pp_MC_508", Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
+DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_508", Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
   
