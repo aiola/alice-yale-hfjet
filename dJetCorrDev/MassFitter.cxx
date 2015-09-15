@@ -430,8 +430,7 @@ TString MassFitter::GetTotalEntriesString() const
 {
   TString r;
 
-  Double_t nentries = fHistogram->GetEntries();
-  r = Form("Entries = %.1f#pm%.1f", nentries, TMath::Sqrt(nentries));
+  r = Form("Entries = %.1f#pm%.1f", GetTotalEntries(), GetTotalEntriesError());
 
   return r;
 }
@@ -445,6 +444,28 @@ TString MassFitter::GetChisquareString() const
   r = Form("#chi^{2}/NdF=%.2f", v);
 
   return r;
+}
+
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetTotalEntries() const
+{
+  if (!fHistogram) return 0;
+
+  Double_t i = fHistogram->Integral(fHistogram->GetXaxis()->FindBin(fMinMass), fHistogram->GetXaxis()->FindBin(fMaxMass));
+
+  return i;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetTotalEntriesError() const
+{
+  if (!fHistogram) return 0;
+
+  Double_t nentries = GetTotalEntries();
+  if (nentries <= 0.) return 0.;
+
+  return TMath::Sqrt(nentries);
 }
 
 //____________________________________________________________________________________

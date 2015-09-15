@@ -53,6 +53,9 @@ class MassFitter : public TNamed {
   Double_t GetSignalOverBackground()             const { return fBackground > fgkEpsilon ? fSignal/fBackground : 0                              ; }
   Double_t GetSignalOverSqrtSignalBackgorund()   const { return fBackground+fSignal > fgkEpsilon ? fSignal/TMath::Sqrt(fSignal+fBackground) : 0 ; }
 
+  Double_t GetTotalEntries()                     const;
+  Double_t GetTotalEntriesError()                const;
+
   TString  GetSignalString()                     const;
   TString  GetBackgroundString()                 const;
   TString  GetSignalOverBackgroundString()       const;

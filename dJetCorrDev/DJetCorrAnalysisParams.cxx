@@ -41,7 +41,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fIsMC(kFALSE),
   fIsBkgSub(kFALSE),
   fInvMassRebinFactor(1),
-  fBackgroundOnly(kFALSE)
+  fIsBackgroundOnly(kFALSE)
 {
 }
 
@@ -76,7 +76,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fIsMC(isMC),
   fIsBkgSub(isBkgSub),
   fInvMassRebinFactor(1),
-  fBackgroundOnly(kFALSE)
+  fIsBackgroundOnly(kFALSE)
 {
   if (anaType == kInvMassAna) {
     if (fIsMC) {
@@ -116,15 +116,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fDPtBins[ 5] = 15.0;
     fDPtBins[ 6] = 30.0;
 
-    SetDeltaInvMassRange(413, 421, 0.08);
+    SetDeltaInvMassRange(413, 421, 0.07);
     SetInvMassRange(413, 0.60);
 
     f2ProngMinMass = new Double_t[fNzBins];
     f2ProngMaxMass = new Double_t[fNzBins];
-    Set2ProngMassRange(421, 0.16, 0);
-    Set2ProngMassRange(421, 0.19, 1);
-    Set2ProngMassRange(421, 0.22, 2);
-    Set2ProngMassRange(421, 0.24, 3);
+    Set2ProngMassRange(421, 0.20, 0);
+    Set2ProngMassRange(421, 0.25, 1);
+    Set2ProngMassRange(421, 0.30, 2);
+    Set2ProngMassRange(421, 0.40, 3);
 
     fMassFitTypeSig = MassFitter::kGaus;
     fMassFitTypeBkg = MassFitter::kExpoPower;
@@ -188,7 +188,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fIsMC(p.fIsMC),
   fIsBkgSub(p.fIsBkgSub),
   fInvMassRebinFactor(p.fInvMassRebinFactor),
-  fBackgroundOnly(p.fBackgroundOnly)
+  fIsBackgroundOnly(p.fIsBackgroundOnly)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
@@ -304,7 +304,7 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
   fitter->SetFitRange(minFitRange, maxFitRange);
 
-  if (fBackgroundOnly) {
+  if (fIsBackgroundOnly) {
     fitter->DisableSig();
   }
 
