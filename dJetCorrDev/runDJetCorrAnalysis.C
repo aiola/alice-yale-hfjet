@@ -2,8 +2,8 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "refit plot", const char* train = "Jets_EMC_pp_MC_618_619_620_621",
-                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_613_614_615_616",
+                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
                                       const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
@@ -11,8 +11,8 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "refit plot", const 
   TString tracksName = "tracks";
   //TString tracksD0Name = tracksName;
   //TString tracksDStarName = tracksName;
-  TString tracksD0Name = "DSBcandidatesAndTracksD0";
-  TString tracksDStarName = "DSBcandidatesAndTracksDStar";
+  TString tracksD0Name = "DcandidatesAndTracksD0";
+  TString tracksDStarName = "DcandidatesAndTracksDStar";
 
   if (!isMC) {
     tracksD0Name += "rec";
@@ -42,11 +42,14 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "refit plot", const 
   DJetCorrAnalysisParams* param = 0;
 
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub);
-  param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
-  param->SetBackgroundOnly(kTRUE);
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
-  //param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
-  //param->SetInvMassRebinFactor(2);
+
+  param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
+  //param->BackgroundOnly(kTRUE);
+
+  param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  //param->BackgroundOnly(kTRUE);
+  param->SetInvMassRebinFactor(3);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");

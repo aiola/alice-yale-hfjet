@@ -1272,8 +1272,11 @@ Bool_t DJetCorrAnalysis::PlotSpectra(Int_t n, TH1** histSpectra, const char* nam
   styler.SetLineWidth(1);
   styler.Apply(n, histSpectra);
   
-  Double_t min = TMath::Infinity();
-  Double_t max = -TMath::Infinity();
+  Double_t min = histSpectra[0]->GetMinimum();
+  Double_t max = histSpectra[0]->GetMaximum();
+
+  if (logY && min <= 0) min = fgkEpsilon;
+  if (max < min) max = min;
 
   TCanvas* canvas = SetUpCanvas(cname,
                                 histSpectra[0]->GetXaxis()->GetTitle(), histSpectra[0]->GetXaxis()->GetXmin(), histSpectra[0]->GetXaxis()->GetXmax(), kFALSE,
@@ -1370,11 +1373,14 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
         fMassFitters->Add(fitter);
 
         Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass));
-        fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
-        if (!params->GetBackgroundOnly()) {
+        if (!params->IsBackgroundOnly()) {
+          fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
           fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
           fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
           fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
+        }
+        else {
+          fitter->GetFitFunction()->SetParameter(0, integral); // total integral is NOT fixed
         }
       
         fitter->Fit(histos[i], "0 E S");
@@ -1384,9 +1390,9 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Int_t fitStatus = r;
 
       if (histSpectrum) {
-        if (params->IsBkgSub()) {
-          histSpectrum->SetBinContent(i+1, histos[i]->GetEntries());
-          histSpectrum->SetBinError(i+1, TMath::Sqrt(histos[i]->GetEntries()));
+        if (params->IsBkgSub() && !params->IsBackgroundOnly()) {
+          histSpectrum->SetBinContent(i+1, fitter->GetTotalEntries());
+          histSpectrum->SetBinError(i+1, fitter->GetTotalEntriesError());
         }
         else {
           if (fitStatus == 0) {
