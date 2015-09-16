@@ -2,7 +2,7 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_613_614_615_616",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_MC_618_619_620_621",
                                       Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
                                       const char* inputPath = "$JETRESULTS")
 {
@@ -44,11 +44,11 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub);
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
 
-  param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
+  //param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
   //param->BackgroundOnly(kTRUE);
 
   param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
-  //param->BackgroundOnly(kTRUE);
+  param->BackgroundOnly(kTRUE);
   param->SetInvMassRebinFactor(3);
 
   TString opt(options);

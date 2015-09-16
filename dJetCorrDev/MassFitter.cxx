@@ -452,7 +452,7 @@ Double_t MassFitter::GetTotalEntries() const
 {
   if (!fHistogram) return 0;
 
-  Double_t i = fHistogram->Integral(fHistogram->GetXaxis()->FindBin(fMinMass), fHistogram->GetXaxis()->FindBin(fMaxMass));
+  Double_t i = fHistogram->Integral(fHistogram->GetXaxis()->FindBin(fMinMass+fgkEpsilon), fHistogram->GetXaxis()->FindBin(fMaxMass-fgkEpsilon));
 
   return i;
 }
