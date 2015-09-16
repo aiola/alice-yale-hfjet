@@ -175,7 +175,7 @@ void DJetCorrAnalysisComparer::CompareMeasured()
       NormalizeHistogram(measuredDz, ana);
       TString hname = Form("%s_%s", ana->GetName(), measuredDz->GetName());
       measuredDz->SetName(hname);
-      measuredDz->SetTitle(ana->GetName());
+      measuredDz->SetTitle(ana->GetTitle());
       arrayDz.Add(measuredDz);
     }
 
@@ -184,7 +184,7 @@ void DJetCorrAnalysisComparer::CompareMeasured()
       NormalizeHistogram(measuredDPt, ana);
       TString hname = Form("%s_%s", ana->GetName(), measuredDPt->GetName());
       measuredDPt->SetName(hname);
-      measuredDPt->SetTitle(ana->GetName());
+      measuredDPt->SetTitle(ana->GetTitle());
       arrayDPt.Add(measuredDPt);
     }
 
@@ -232,7 +232,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
       NormalizeHistogram(truthDz, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthDz->GetName());
       truthDz->SetName(hname);
-      truthDz->SetTitle(ana->GetName());
+      truthDz->SetTitle(ana->GetTitle());
       arrayDz.Add(truthDz);
     }
 
@@ -241,7 +241,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
       NormalizeHistogram(truthDPt, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthDPt->GetName());
       truthDPt->SetName(hname);
-      truthDPt->SetTitle(ana->GetName());
+      truthDPt->SetTitle(ana->GetTitle());
       arrayDPt.Add(truthDPt);
     }
 
@@ -250,7 +250,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
       NormalizeHistogram(truthDPtMatched, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthDPtMatched->GetName());
       truthDPtMatched->SetName(hname);
-      truthDPtMatched->SetTitle(ana->GetName());
+      truthDPtMatched->SetTitle(ana->GetTitle());
       arrayDPtMatched.Add(truthDPtMatched);
     }
 
@@ -259,7 +259,7 @@ void DJetCorrAnalysisComparer::CompareTruth()
       NormalizeHistogram(truthJetPt, ana);
       TString hname = Form("%s_%s", ana->GetName(), truthJetPt->GetName());
       truthJetPt->SetName(hname);
-      truthJetPt->SetTitle(ana->GetName());
+      truthJetPt->SetTitle(ana->GetTitle());
       arrayJetPt.Add(truthJetPt);
     }
 
