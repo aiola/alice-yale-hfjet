@@ -238,7 +238,7 @@ TString MassFitter::GetSignalString() const
 {
   TString r;
   
-  Double_t sigErrLog10 = TMath::Log10(fSignalError);
+  Double_t sigErrLog10 = fSignalError > 0 ? TMath::Log10(fSignalError) : 0;
   if (sigErrLog10 < 0) {
     Int_t sigPrec = TMath::CeilNint(-sigErrLog10);
     r = Form("S=%%.%df#pm%%.%df", sigPrec, sigPrec);
@@ -256,7 +256,7 @@ TString MassFitter::GetBackgroundString() const
 {
   TString r;
   
-  Double_t bkgErrLog10 = TMath::Log10(fBackgroundError);
+  Double_t bkgErrLog10 = fBackgroundError > 0 ? TMath::Log10(fBackgroundError) : 0;
   if (bkgErrLog10 < 0) {
     Int_t bkgPrec = TMath::CeilNint(-bkgErrLog10);
     r = Form("B=%%.%df#pm%%.%df", bkgPrec, bkgPrec);
@@ -275,7 +275,7 @@ TString MassFitter::GetSignalOverBackgroundString() const
   TString r;
   
   Double_t v = GetSignalOverBackground();
-  Double_t vlog10 = TMath::Log10(v);
+  Double_t vlog10 = v > 0 ? TMath::Log10(v) : 0;
   if (vlog10 > -1) vlog10 = -1;
   
   Int_t prec = TMath::CeilNint(-vlog10);
@@ -291,7 +291,7 @@ TString MassFitter::GetSignalOverSqrtSignalBackgroundString() const
   TString r;
   
   Double_t v = GetSignalOverSqrtSignalBackgorund();
-  Double_t vlog10 = TMath::Log10(v);
+  Double_t vlog10 = v > 0 ? TMath::Log10(v) : 0;
   if (vlog10 > -1) vlog10 = -1;
 
   Int_t prec = TMath::CeilNint(-vlog10);
@@ -308,8 +308,8 @@ TString MassFitter::GetSignalMeanString() const
 
   Double_t v = GetSignalMean();
   Double_t vErr = GetSignalMeanError();
-  Double_t vLog10 = TMath::Log10(v);
-  Double_t vErrLog10 = TMath::Log10(vErr);
+  Double_t vLog10 = v > 0 ? TMath::Log10(v) : 0;
+  Double_t vErrLog10 = vErr > 0 ? TMath::Log10(vErr) : 0;
 
   TString unit("GeV/#it{c}^{2}");
   
@@ -347,8 +347,8 @@ TString MassFitter::GetSignalWidthString() const
 
   Double_t v = GetSignalWidth();
   Double_t vErr = GetSignalWidthError();
-  Double_t vLog10 = TMath::Log10(v);
-  Double_t vErrLog10 = TMath::Log10(vErr);
+  Double_t vLog10 = v > 0 ? TMath::Log10(v) : 0;
+  Double_t vErrLog10 = vErr > 0 ? TMath::Log10(vErr) : 0;
 
   TString unit("GeV/#it{c}^{2}");
   
@@ -388,7 +388,7 @@ TString MassFitter::GetBkgPar1String() const
   
     Double_t v = fFunction->GetParameter(1);
     Double_t vErr = fFunction->GetParError(1);
-    Double_t vErrLog10 = TMath::Log10(vErr);
+    Double_t vErrLog10 = vErr > 0 ? TMath::Log10(vErr) : 0;
     if (vErrLog10 < 0) {
       Int_t vPrec = TMath::CeilNint(-vErrLog10);
       r = Form("b=%%.%df#pm%%.%df", vPrec, vPrec);
@@ -411,7 +411,7 @@ TString MassFitter::GetBkgPar2String() const
   
     Double_t v = fFunction->GetParameter(2);
     Double_t vErr = fFunction->GetParError(2);
-    Double_t vErrLog10 = TMath::Log10(vErr);
+    Double_t vErrLog10 = vErr > 0 ? TMath::Log10(vErr) : 0;
     if (vErrLog10 < 0) {
       Int_t vPrec = TMath::CeilNint(-vErrLog10);
       r = Form("c=%%.%df#pm%%.%df", vPrec, vPrec);

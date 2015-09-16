@@ -3,7 +3,7 @@
 class DJetCorrAnalysis;
 
 DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* train = "Jets_EMC_pp_MC_618_619_620_621",
-                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
+                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
                                       const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
@@ -44,8 +44,8 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "plot", const char* 
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub);
   //projDjet->AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub);
 
-  //param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
-  //param->BackgroundOnly(kTRUE);
+  param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
+  param->BackgroundOnly(kTRUE);
 
   param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
   param->BackgroundOnly(kTRUE);
