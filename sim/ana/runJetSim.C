@@ -1,7 +1,7 @@
 // runJetSim.C
 
 //______________________________________________________________________________
-void runJetSim(UInt_t numevents = 500000)
+void runJetSim(UInt_t numevents = 50000)
 {
   gSystem->Load("libpythia6_4_21");
   

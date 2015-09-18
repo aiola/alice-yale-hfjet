@@ -12,7 +12,7 @@ void AddTaskJetSim()
   Int_t       histoType           = 1;  // 0 = TH2, 1 = THnSparse
   Bool_t      forcePP             = kTRUE;
   Double_t    kGhostArea          = 1;
-  Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching;    // kGeometricalMatching, kConstituentMatching, kJetLoop
+  Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kCandidateConstituentMatching;    // kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop
 
   AliAnalysisTaskDmesonJetCorrelations::ECandidateType kDmesonCorrType = AliAnalysisTaskDmesonJetCorrelations::kD0toKpi; //kDstartoKpipi  
   AliEmcalJet::EFlavourTag kFlavourCut = AliEmcalJet::kD0;

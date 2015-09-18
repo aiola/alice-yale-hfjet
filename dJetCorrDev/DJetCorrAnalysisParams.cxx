@@ -108,7 +108,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   if (fDmesonName == "DStar") {
     fNDPtBins = 6;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  1.6;
+    fDPtBins[ 0] =  1.5;
     fDPtBins[ 1] =  4.0;
     fDPtBins[ 2] =  6.0;
     fDPtBins[ 3] =  8.0;
@@ -397,7 +397,12 @@ TString DJetCorrAnalysisParams::GetDPtRangeLabel(Int_t dptBin, const char* lev) 
   Double_t max = 0.;
   GetDPtBinRange(min, max, dptBin);
 
-  r = Form("%.0f < #it{p}_{T,D}^{%s} < %.0f GeV/#it{c}", min, lev, max);
+  if (lev && !strcmp(lev,"")) {
+    r = Form("%.0f < #it{p}_{T,D}^{%s} < %.0f GeV/#it{c}", min, lev, max);
+  }
+  else {
+    r = Form("%.0f < #it{p}_{T,D} < %.0f GeV/#it{c}", min, max);
+  }
 
   return r;
 }

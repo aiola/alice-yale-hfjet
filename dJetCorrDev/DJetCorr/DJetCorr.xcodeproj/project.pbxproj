@@ -64,7 +64,7 @@
 		11FBC5A61B8F5B4100FCCF44 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0640;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 11FBC5A91B8F5B4100FCCF44 /* Build configuration list for PBXProject "DJetCorr" */;
 			compatibilityVersion = "Xcode 6.3";
@@ -85,6 +85,8 @@
 		11FBC5AA1B8F5B4100FCCF44 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
 		};

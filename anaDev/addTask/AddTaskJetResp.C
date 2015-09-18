@@ -60,7 +60,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
   Float_t     trackingEff         = 1.;
   Bool_t      forcePP             = kTRUE;
   Double_t    kGhostArea          = 0.01;
-  Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching;    // kGeometricalMatching, kConstituentMatching, kJetLoop
+  Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kCandidateConstituentMatching;    // kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop
 
   AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType kDmesonType = AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi;
   AliAnalysisTaskDmesonJetCorrelations::ECandidateType kDmesonCorrType = AliAnalysisTaskDmesonJetCorrelations::kD0toKpi; //kDstartoKpipi  
@@ -104,7 +104,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     mcPartTask->SetOnlyHIJING(kFALSE);
   }
 
-  if (0 && (dType == kEsd || dType == kAod)) {
+  if (0) {
     if (dType == kEsd) {
       // Hybrid tracks maker for ESD
       AliEmcalEsdTrackFilterTask *hybTask = AddTaskEmcalEsdTrackFilter(tracksName, "Hybrid_LHC10f7a");
@@ -288,17 +288,18 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
 
     AliAnalysisTaskDmesonJetCorrelations* pDMesonJetCorrRec = AddTaskDmesonJetCorr(kDmesonCorrType, "", 
 										   sTracksDcandidatesName, "", sChJetsDMesonName, "",
-										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, sDmesonCandName,
+										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, sDmesonCandName, kFALSE,
 										   "AliAnalysisTaskDmesonJetCorrelations", "MCrec");
+    pDMesonJetCorrRec->SetAliEmcalParticleMode(kTRUE);
     pDMesonJetCorrRec->SetMaxR(jetRadius);
     pDMesonJetCorrRec->SetMatchingType(eFlavourJetMatchingType);
-    pDMesonJetCorrRec->SetPlotOnlyAcceptedJets(kTRUE);
+    pDMesonJetCorrRec->SetPlotOnlyAcceptedJets(kFALSE);
     pDMesonJetCorrRec->SetShowDeltaEta(kTRUE);
     pDMesonJetCorrRec->SetShowDeltaPhi(kTRUE);
     if (kDmesonCorrType == AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi) pDMesonJetCorrRec->SetShow2ProngInvMass(kTRUE);
     pDMesonJetCorrRec->SetShowInvMass(kTRUE);
     pDMesonJetCorrRec->SetShowJetConstituents(kTRUE);
-    return;
+
     // MC particle selector    
     AliMCHFParticleSelector *mcPartTask = AddTaskMCHFParticleSelector(mcTracksDMesonname, kFALSE, kTRUE, 0.);
     mcPartTask->SetOnlyPhysPrim(kTRUE);
@@ -325,11 +326,11 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
 
     AliAnalysisTaskDmesonJetCorrelations* pDMesonJetCorrGen = AddTaskDmesonJetCorr(kDmesonCorrType, "", 
 										   mcTracksDMesonname, "", chMcJetsDMesonName, "",
-										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, "Dcandidates",
+										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, "Dcandidates", kFALSE,
 										   "AliAnalysisTaskDmesonJetCorrelations", "MC");
     pDMesonJetCorrGen->SetMaxR(jetRadius);
     pDMesonJetCorrGen->SetMatchingType(eFlavourJetMatchingType);
-    pDMesonJetCorrGen->SetPlotOnlyAcceptedJets(kTRUE);
+    pDMesonJetCorrGen->SetPlotOnlyAcceptedJets(kFALSE);
     pDMesonJetCorrGen->SetShowDeltaEta(kTRUE);
     pDMesonJetCorrGen->SetShowDeltaPhi(kTRUE);
     if (kDmesonCorrType == AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi) pDMesonJetCorrGen->SetShow2ProngInvMass(kTRUE);
