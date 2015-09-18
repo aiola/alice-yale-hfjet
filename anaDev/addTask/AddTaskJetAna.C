@@ -57,10 +57,10 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   const Double_t kEMCtimeMin          = -50e-6;
   const Double_t kEMCtimeMax          = 100e-6;
   const Double_t kEMCtimeCut          =  75e-6;
-  const Int_t eFlavourJetMatchingType = AliAnalysisTaskDmesonJetCorrelations::kGeometricalMatching;    // kGeometricalMatching, kConstituentMatching, kJetLoop
+  const Int_t eFlavourJetMatchingType = AliAnalysisTaskDmesonJetCorrelations::kCandidateConstituentMatching;    // kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop
 
-  TString sTracksName("AODFilterTracks");
-  //TString sTracksName("tracks");
+  //TString sTracksName("AODFilterTracks");
+  TString sTracksName("tracks");
   TString sClusName("EmcCaloClusters");
 
   TString sCellName;
@@ -87,18 +87,20 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     return;
   }
 
-  if (iDataType == kEsd) {
-    // Hybrid tracks maker for ESD
-    AliEmcalEsdTrackFilterTask *pHybTask = AddTaskEmcalEsdTrackFilter(sTracksName, "Hybrid_LHC10b");
-    pHybTask->SetDoPropagation(bDoHadCorr);
-    pHybTask->SetDist(kPropDist);
-    pHybTask->SelectCollisionCandidates(kPhysSel);
-  }
-  else if (iDataType == kAod) { // for the moment disabled
-    // Hybrid tracks maker for AOD
-    AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter(sTracksName, "tracks", "LHC10b");
-    pHybTask->SelectCollisionCandidates(kPhysSel);
-    pHybTask->SetAttemptProp(kFALSE);
+  if (0) {
+    if (iDataType == kEsd) {
+      // Hybrid tracks maker for ESD
+      AliEmcalEsdTrackFilterTask *pHybTask = AddTaskEmcalEsdTrackFilter(sTracksName, "Hybrid_LHC10b");
+      pHybTask->SetDoPropagation(bDoHadCorr);
+      pHybTask->SetDist(kPropDist);
+      pHybTask->SelectCollisionCandidates(kPhysSel);
+    }
+    else if (iDataType == kAod) { // for the moment disabled
+      // Hybrid tracks maker for AOD
+      AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter(sTracksName, "tracks", "LHC10b");
+      pHybTask->SelectCollisionCandidates(kPhysSel);
+      pHybTask->SetAttemptProp(kFALSE);
+    }
   }
 
   if (bDoTrackingQA) {
@@ -200,8 +202,8 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
     // QA task
     AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0.2, 1, 0, kTrackPtCut, 0., "TPC");
     pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
-    //pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
-    //pQATask->SetAODfilterBits(256, 512);
+    pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+    pQATask->SetAODfilterBits(256, 512);
     pQATask->GetClusterContainer(0)->SetClusECut(kClusPtCut);
     pQATask->SelectCollisionCandidates(kPhysSel);
     pQATask->SetHistoBins(200, 0, 30);
@@ -221,7 +223,7 @@ void AddTaskJetAna(const char *cDataType = "AOD", const char *cRunType = "local"
   }
 
   // Full jet analysis
-  if (0 && bDoFullJets) {
+  if (bDoFullJets) {
     AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet(sTracksName, sCorrClusName, 1, kJetRadius, 0, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
     pFuJetTask->SelectCollisionCandidates(kPhysSel);   
     sFuJetsName = pFuJetTask->GetName();

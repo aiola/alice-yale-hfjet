@@ -1102,6 +1102,7 @@ Double_t* DJetCorrBase::GenerateFixedArray(Int_t n, Double_t min, Double_t max)
 {
   Double_t* res = new Double_t[n+1];
   Double_t binWidth = (max-min) / n;
+  Printf("Max = %.1f, min = %.1f, bins = %d, binWidth = %.1f", max, min, n, binWidth);
   res[0] = min;
   for (Int_t i = 1; i <= n; i++) {
     res[i] = res[i-1] + binWidth;

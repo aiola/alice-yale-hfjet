@@ -464,7 +464,8 @@ Bool_t DJetCorrResponse::ProjectResponseDPt(DJetCorrAnalysisParams* params)
   totalFull->Sumw2();
 
   // Rebinning factor
-  Int_t nbins = totalFull->GetXaxis()->FindBin(params->GetMaxDPt()) - totalFull->GetXaxis()->FindBin(params->GetMinDPt());
+  Int_t nbins = totalFull->GetXaxis()->FindBin(params->GetMaxDPt()-fgkEpsilon) - totalFull->GetXaxis()->FindBin(params->GetMinDPt()+fgkEpsilon)+1;
+  Printf("Original number of bins %d", nbins);
   if (nbins % 10 == 0) nbins /= 10;
   else if (nbins % 5 == 0) nbins /= 5;
   else if (nbins % 4 == 0) nbins /= 4;
@@ -472,6 +473,7 @@ Bool_t DJetCorrResponse::ProjectResponseDPt(DJetCorrAnalysisParams* params)
   else if (nbins % 3 == 0) nbins /= 3;
   else if (nbins % 7 == 0) nbins /= 7;
   else if (nbins % 2 == 0) nbins /= 2;
+  Printf("Final number of bins %d", nbins);
 
   hname = Form("%s_ResponseMatrix_DpT", params->GetName());
 
@@ -574,7 +576,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
   totalFull->SetName("totalFull");
 
   // Rebinning factor
-  Int_t nbins = totalFull->GetXaxis()->FindBin(params->GetMaxJetPt()) - totalFull->GetXaxis()->FindBin(params->GetMinJetPt());
+  Int_t nbins = totalFull->GetXaxis()->FindBin(params->GetMaxJetPt()-fgkEpsilon) - totalFull->GetXaxis()->FindBin(params->GetMinJetPt() + fgkEpsilon) + 1;
   if (nbins % 5 == 0) nbins /= 5;
   else if (nbins % 4 == 0) nbins /= 4;
   else if (nbins % 6 == 0) nbins /= 6;
@@ -597,7 +599,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPt(DJetCorrAnalysisParams* params, In
   //pass->Sumw2();
 
   hname = Form("%s_Efficiency_JetPt_Z_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minZ*100), TMath::CeilNint(maxZ*100), minDPt, maxDPt);
-  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{z}_{||}^{part} < %.1f", minDPt, maxDPt, minZ, maxZ);
+  htitle = Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c} and %.1f < #it{z}_{||}^{part} < %.1f", minDPt, maxDPt, minZ, maxZ);
 
   if (fEfficiencyMode.Contains("TH1")) {
     TH1* eff = static_cast<TH1*>(pass->Clone(hname));
@@ -697,7 +699,7 @@ Bool_t DJetCorrResponse::ProjectResponseZ(DJetCorrAnalysisParams* params, Int_t 
   TH1* pass = resp->ProjectionY("pass");
 
   hname = Form("%s_Efficiency_Z_JetPt_%d_%d_DPt_%02.0f_%02.0f", params->GetName(), TMath::CeilNint(minJetPt), TMath::CeilNint(maxJetPt), minDPt, maxDPt);
-  htitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
+  htitle = Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}", minDPt, maxDPt, minJetPt, maxJetPt);
   if (fEfficiencyMode.Contains("TH1")) {
     TH1* eff = static_cast<TH1*>(pass->Clone(hname));
     eff->Divide(total);
@@ -1164,7 +1166,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPt(TCanvas*& canvasEff, DJetCorrAnalys
     if (zBin >= -1 && dptBin >= -1) {
       icolor = zBin;
       imarker = dptBin+1;
-      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{z}_{||}^{part} < %.1f",
+      hcopyTitle = Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c} and %.1f < #it{z}_{||}^{part} < %.1f",
                         minDPt, maxDPt, minZ, maxZ);
     }
     else if (zBin >= -1) {
@@ -1176,7 +1178,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPt(TCanvas*& canvasEff, DJetCorrAnalys
     else if (dptBin >= -1) {
       icolor = dptBin;
       imarker = dptBin+1;
-      hcopyTitle = Form("%.0f < #it{p}_{T,D}^{part} < %.0f GeV/#it{c}",
+      hcopyTitle = Form("%.0f < #it{p}_{T,D} < %.0f GeV/#it{c}",
                         minDPt, maxDPt);
     }
 
@@ -1295,7 +1297,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
       if (dptBin == -1) imarker = 0;
       else imarker = dptBin/dptBinStep+1;
 
-      hcopyTitle = Form("%.1f < #it{p}_{T,D}^{part} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}",
+      hcopyTitle = Form("%.1f < #it{p}_{T,D} < %.1f GeV/#it{c} and %.1f < #it{p}_{T,jet}^{ch,part} < %.1f GeV/#it{c}",
                         minDPt, maxDPt, minJetPt, maxJetPt);
     }
     else if (jetPtBin >= -1) {
@@ -1319,7 +1321,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyZ(TCanvas*& canvasEff, DJetCorrAnalysisPa
         icolor = dptBin/dptBinStep;
         imarker = dptBin/dptBinStep+1;
       }
-      hcopyTitle = Form("%.0f < #it{p}_{T,D}^{part} < %.0f GeV/#it{c}",
+      hcopyTitle = Form("%.0f < #it{p}_{T,D} < %.0f GeV/#it{c}",
                         minDPt, maxDPt);
     }
 
