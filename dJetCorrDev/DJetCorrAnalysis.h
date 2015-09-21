@@ -63,6 +63,9 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString GetDPtTruthName(Int_t p, const char* matching="AnyMatchingStatus");
   TString GetDPtMeasuredName(Int_t p, const char* matching="AnyMatchingStatus");
 
+  TString GetDEtaTruthName(Int_t p, const char* matching="AnyMatchingStatus");
+  TString GetDEtaMeasuredName(Int_t p, const char* matching="AnyMatchingStatus");
+
   TString GetJetPtTruthName(Int_t p);
   TString GetJetPtMeasuredName(Int_t p);
 

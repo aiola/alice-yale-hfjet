@@ -317,7 +317,13 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
 
   TH2* hDpos = fDmesons->Projection(dPhiAxis, dEtaAxis, "EO");
   hDpos->SetName(Form("h%s_MesonPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+  hDpos->Rebin2D(2,2);
   fOutputList->Add(hDpos);
+
+  TH1* hDEta = fDmesons->Projection(dEtaAxis, "EO");
+  hDEta->SetName(Form("h%s_MesonEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
+  hDEta->Rebin(2);
+  fOutputList->Add(hDEta);
 
   if (dSoftPionPtAxis >= 0) {
     TH1* hdsoftpionpt = fDmesons->Projection(dSoftPionPtAxis, "EO");
@@ -1935,6 +1941,32 @@ TString DJetCorrAnalysis::GetDPtMeasuredName(Int_t p, const char* matching)
   TString hname(Form("h%s_DPtSpectrum_%s_%s", params->GetName(), spectrumCuts.Data(), matching));
 
   return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetDEtaTruthName(Int_t p, const char* matching)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString spectrumCuts;
+
+  if (strcmp("Matched", matching)==0) {
+    spectrumCuts = params->GetCutString(kMatched, -1, -1, -1);
+  }
+  else {
+    spectrumCuts = params->GetCutString(kAnyMatchingStatus, -1, -1, -1);
+  }
+
+  TString hname = Form("h%s_MesonEta_%s_%s_Truth", params->GetName(), spectrumCuts.Data(), matching);
+
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetDEtaMeasuredName(Int_t /*p*/, const char* /*matching*/)
+{
+  return "";
 }
 
 //____________________________________________________________________________________

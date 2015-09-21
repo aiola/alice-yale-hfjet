@@ -159,11 +159,12 @@ void runJetResponse(
 
     //mgr->AddClassDebug("AliJetContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSAQA",AliLog::kDebug+1);
-    //mgr->AddClassDebug("AliEmcalJetTask",AliLog::kDebug+1);
+    //mgr->AddClassDebug("AliEmcalJetTask",AliLog::kDebug+100);
     //mgr->AddClassDebug("AliJetResponseMaker",100);
     //mgr->AddClassDebug("AliEmcalContainer",100);
     //mgr->AddClassDebug("AliAnalysisTaskSEDmesonsFilterCJ", AliLog::kDebug+100);
     //mgr->AddClassDebug("AliMCHFParticleSelector", AliLog::kDebug);
+    //mgr->AddClassDebug("AliAnalysisTaskDmesonJetCorrelations", AliLog::kDebug+100);
 
     TFile *pOutFile = new TFile("train.root","RECREATE");
     pOutFile->cd();

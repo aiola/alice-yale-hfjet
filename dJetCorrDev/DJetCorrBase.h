@@ -61,6 +61,9 @@ class DJetCorrBase : public TNamed {
   TH1* GetDPtTruth(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
   TH1* GetDPtMeasured(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
 
+  TH1* GetDEtaTruth(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
+  TH1* GetDEtaMeasured(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
+
   TH1* GetJetPtTruth(Int_t p, Bool_t copy);
   TH1* GetJetPtMeasured(Int_t p, Bool_t copy);
 
@@ -69,6 +72,9 @@ class DJetCorrBase : public TNamed {
 
   virtual TString GetDPtTruthName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
   virtual TString GetDPtMeasuredName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
+
+  virtual TString GetDEtaTruthName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
+  virtual TString GetDEtaMeasuredName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
 
   virtual TString GetJetPtTruthName(Int_t /*p*/) { return ""; }
   virtual TString GetJetPtMeasuredName(Int_t /*p*/) { return ""; }

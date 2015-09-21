@@ -262,6 +262,19 @@ TVirtualPad* DJetCorrBase::SetUpPad(TVirtualPad* pad,
   TString blankHistName(Form("%s_blankHist", pad->GetName()));
   TH1* blankHist = new TH1D(blankHistName, blankHistName, 1000, minX, maxX);
 
+  if (logY) {
+    if (maxY <= 0 && minY > 0) {
+      maxY = minY * 100;
+    }
+    else if (minY <= 0 && maxY > 0) {
+      minY = maxY / 100;
+    }
+    else {
+      minY = 1;
+      maxY = 1;
+    }
+  }
+
   blankHist->SetMinimum(minY);
   blankHist->SetMaximum(maxY);
   
@@ -1113,7 +1126,11 @@ Double_t* DJetCorrBase::GenerateFixedArray(Int_t n, Double_t min, Double_t max)
 //____________________________________________________________________________________
 TH2* DJetCorrBase::GetDzTruth(Int_t p, Bool_t copy)
 {
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetDzTruthName(p)));
+  TString hname = GetDzTruthName(p);
+
+  if (hname.IsNull()) return 0;
+
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(hname));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1121,6 +1138,8 @@ TH2* DJetCorrBase::GetDzTruth(Int_t p, Bool_t copy)
 
     hist = static_cast<TH2*>(hist->Clone(hname));
   }
+
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
 
   return hist;
 }
@@ -1128,7 +1147,11 @@ TH2* DJetCorrBase::GetDzTruth(Int_t p, Bool_t copy)
 //____________________________________________________________________________________
 TH2* DJetCorrBase::GetDzMeasured(Int_t p, Bool_t copy)
 {
-  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetDzMeasuredName(p)));
+  TString hname = GetDzMeasuredName(p);
+
+  if (hname.IsNull()) return 0;
+
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(hname));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1137,13 +1160,19 @@ TH2* DJetCorrBase::GetDzMeasured(Int_t p, Bool_t copy)
     hist = static_cast<TH2*>(hist->Clone(hname));
   }
 
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
+
   return hist;
 }
 
 //____________________________________________________________________________________
 TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy, const char* matching)
 {
-  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtTruthName(p, matching)));
+  TString hname = GetDPtTruthName(p, matching);
+
+  if (hname.IsNull()) return 0;
+
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(hname));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1152,7 +1181,7 @@ TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy, const char* matching)
     hist = static_cast<TH1*>(hist->Clone(hname));
   }
 
-  if (!hist) Printf("Histogram %s not found!", GetDPtTruthName(p, matching).Data());
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
 
   return hist;
 }
@@ -1160,7 +1189,11 @@ TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy, const char* matching)
 //____________________________________________________________________________________
 TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy, const char* matching)
 {
-  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetDPtMeasuredName(p, matching)));
+  TString hname = GetDPtMeasuredName(p, matching);
+
+  if (hname.IsNull()) return 0;
+
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(hname));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1168,6 +1201,50 @@ TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy, const char* matching)
 
     hist = static_cast<TH1*>(hist->Clone(hname));
   }
+
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::GetDEtaTruth(Int_t p, Bool_t copy, const char* matching)
+{
+  TString hname = GetDEtaTruthName(p, matching);
+
+  if (hname.IsNull()) return 0;
+
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(hname));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH1*>(hist->Clone(hname));
+  }
+
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH1* DJetCorrBase::GetDEtaMeasured(Int_t p, Bool_t copy, const char* matching)
+{
+  TString hname = GetDEtaMeasuredName(p, matching);
+
+  if (hname.IsNull()) return 0;
+
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(hname));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH1*>(hist->Clone(hname));
+  }
+
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
 
   return hist;
 }
@@ -1175,7 +1252,11 @@ TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy, const char* matching)
 //____________________________________________________________________________________
 TH1* DJetCorrBase::GetJetPtTruth(Int_t p, Bool_t copy)
 {
-  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetJetPtTruthName(p)));
+  TString hname = GetJetPtTruthName(p);
+
+  if (hname.IsNull()) return 0;
+
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(hname));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1183,6 +1264,8 @@ TH1* DJetCorrBase::GetJetPtTruth(Int_t p, Bool_t copy)
 
     hist = static_cast<TH1*>(hist->Clone(hname));
   }
+
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
 
   return hist;
 }
@@ -1190,7 +1273,11 @@ TH1* DJetCorrBase::GetJetPtTruth(Int_t p, Bool_t copy)
 //____________________________________________________________________________________
 TH1* DJetCorrBase::GetJetPtMeasured(Int_t p, Bool_t copy)
 {
-  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(GetJetPtMeasuredName(p)));
+  TString hname = GetJetPtMeasuredName(p);
+
+  if (hname.IsNull()) return 0;
+
+  TH1* hist = dynamic_cast<TH1*>(GetOutputHistogram(hname));
 
   if (copy && hist) {
     TString hname = hist->GetName();
@@ -1198,6 +1285,8 @@ TH1* DJetCorrBase::GetJetPtMeasured(Int_t p, Bool_t copy)
 
     hist = static_cast<TH1*>(hist->Clone(hname));
   }
+
+  if (!hist) Printf("Histogram %s not found!", hname.Data());
 
   return hist;
 }

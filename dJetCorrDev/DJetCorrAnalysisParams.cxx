@@ -136,15 +136,16 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
     fJetPtBins[ 2] =  30.0;
   }
   else {
-    fNDPtBins = 6;
+    fNDPtBins = 7;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  1.0;
-    fDPtBins[ 1] =  3.0;
-    fDPtBins[ 2] =  5.0;
-    fDPtBins[ 3] =  7.0;
-    fDPtBins[ 4] = 10.0;
-    fDPtBins[ 5] = 15.0;
-    fDPtBins[ 6] = 30.0;
+    fDPtBins[ 0] =  0.0;
+    fDPtBins[ 1] =  1.0;
+    fDPtBins[ 2] =  3.0;
+    fDPtBins[ 3] =  5.0;
+    fDPtBins[ 4] =  7.0;
+    fDPtBins[ 5] = 10.0;
+    fDPtBins[ 6] = 15.0;
+    fDPtBins[ 7] = 30.0;
 
     SetInvMassRange(421, 0.30);
 
