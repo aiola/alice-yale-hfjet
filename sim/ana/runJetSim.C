@@ -24,13 +24,14 @@ void runJetSim(UInt_t numevents = 50000)
 
   TChain* chain = 0;
   chain = new TChain("TE");
-  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharmppMNRwmi/galice.root");
-  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMb/galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMbDefault/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharmppMNRwmi/galice.root");
+  chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyJets/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia0_kPyCharmppMNRwmi/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMb/galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharm/galice.root");
-  chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia0_kPyCharmppMNRwmi/galice.root");
-  //chain->Add("/Users/sa639/Documents/Work/ALICE/Data/LHC12a15a/1/001/root_archive.zip#galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/Data/LHC12a15a/1/001/root_archive.zip#galice.root");
   chain->Print();
   chain->GetListOfFiles()->Print();
   

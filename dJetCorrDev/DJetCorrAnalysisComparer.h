@@ -30,7 +30,7 @@ class DJetCorrAnalysisComparer : public DJetCorrBase {
   void CompareTruth();
   void CompareMeasured();
   void Compare2D(const char* name, TObjArray& array, const char* xAxis);
-  void Compare1D(const char* name, TObjArray& array, const char* xAxis);
+  void Compare1D(const char* name, TObjArray& array, const char* xAxis, Bool_t logY=kTRUE);
 
   DJetCorrBase* AddAnalysis(DJetCorrBase* ana, Int_t ipar=0);
   

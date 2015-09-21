@@ -531,17 +531,19 @@ AliGenerator* MbPythiaTunePerugia2011chadrPtHard()
       //    Tune
       //    350     Perugia 2011
       //    320     Perugia 0
-      pythia->SetTune(320);
+      pythia->SetTune(350);
       pythia->UseNewMultipleInteractionsScenario();
+
+      pythia->SetHeavyQuarkYRange(-1.5,1.5);
+      
+      //pythia->SetProcess(kPyCharmppMNRwmi);
+      //pythia->SetProcess(kPyCharm);
 
       //pythia->SetProcess(kPyMbDefault);
       //pythia->SetProcess(kPyMb);
-      pythia->SetProcess(kPyCharmppMNRwmi);
-      //pythia->SetProcess(kPyCharm);
       //pythia->SetProcess(kPyJets);
-      pythia->SetHeavyQuarkYRange(-1.5,1.5);
-      pythia->SetTriggerParticle(4, 5., -1., 1000);      
-    
+      pythia->SetProcess(kPyJetJet);
+      pythia->SetTriggerParticle(4, 5., -1., 1000);
       
 //
 //    decays
