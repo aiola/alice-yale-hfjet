@@ -17,11 +17,11 @@ class DJetCorrAnalysisParams : public TObject
   DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
   DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
   
-  void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass = min        ; fInvMaxMass = max        ; }
+  void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass      = min  ; fInvMaxMass      = max   ; }
   void        SetInvMassRange(Int_t pdg, Double_t nsigma);
-  void        Set2ProngMassRange(Double_t min, Double_t max, Int_t i)       { f2ProngMinMass[i] = min     ; f2ProngMaxMass[i] = max     ; }
-  void        Set2ProngMassRange(Int_t pdg, Double_t nsigma, Int_t i);
-  void        SetDeltaInvMassRange(Double_t min, Double_t max)     { fDeltaInvMinMass = min   ; fDeltaInvMaxMass = max   ; }
+  void        Set2ProngMassRange(Double_t min, Double_t max)       { f2ProngMinMass   = min  ; f2ProngMaxMass   = max   ; }
+  void        Set2ProngMassRange(Int_t pdg, Double_t nsigma);
+  void        SetDeltaInvMassRange(Double_t min, Double_t max)     { fDeltaInvMinMass = min  ; fDeltaInvMaxMass = max   ; }
   void        SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double_t nsigma);
 
   void        SetIsMC(Bool_t mc)      { fIsMC     = mc   ; }
@@ -39,21 +39,30 @@ class DJetCorrAnalysisParams : public TObject
   const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
   const char* GetInputListName()     const { return fInputListName.Data()                           ; }
   const char* GetTruthInputListName()const { return fTruthInputListName.Data()                      ; }
+
   Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
   const Double_t* GetDPtBins()       const { return fDPtBins                                        ; }
   Double_t    GetDPtBin(Int_t i)     const { return i >= 0 && i <= fNDPtBins ? fDPtBins[i] : -1     ; }
   Double_t    GetMinDPt()            const { return fDPtBins[0]                                     ; }
   Double_t    GetMaxDPt()            const { return fDPtBins[fNDPtBins]                             ; }
+  Double_t    GetMeanDPt(Int_t i)    const;
+
   Int_t       GetNJetPtBins()        const { return fNJetPtBins                                     ; }
   const Double_t* GetJetPtBins()     const { return fJetPtBins                                      ; }
   Double_t    GetJetPtBin(Int_t i)   const { return i >= 0 && i <= fNJetPtBins ? fJetPtBins[i] : -1 ; }
   Double_t    GetMinJetPt()          const { return fJetPtBins[0]                                   ; }
   Double_t    GetMaxJetPt()          const { return fJetPtBins[fNJetPtBins]                         ; }
+  Double_t    GetMeanJetPt(Int_t i)  const;
+
   Int_t       GetNzBins()            const { return fNzBins                                         ; }
   const Double_t* GetzBins()         const { return fzBins                                          ; }
   Double_t    GetzBin(Int_t i)       const { return i >= 0 && i <= fNzBins ? fzBins[i] : -1         ; }
   Double_t    GetMinZ()              const { return fzBins[0]                                       ; }
   Double_t    GetMaxZ()              const { return fzBins[fNzBins]                                 ; }
+  Double_t    GetMeanZ(Int_t i)      const { return (GetzBin(i)+GetzBin(i+1))/2                     ; }
+
+  Double_t    GetMeanDPt(Int_t iz, Int_t ijet) const { return GetMeanZ(iz)*GetMeanJetPt(ijet)       ; }
+
   Bool_t      IsD0()                 const { return (fDmesonName == "D0")                           ; }
   Bool_t      IsDStar()              const { return (fDmesonName == "DStar")                        ; }
   
@@ -61,9 +70,9 @@ class DJetCorrAnalysisParams : public TObject
   Double_t    GetInvMinMass()          const { return fInvMinMass                                   ; }
   Double_t    GetInvMaxMass()          const { return fInvMaxMass                                   ; }
 
-  Bool_t      IsIn2ProngMassRange(Double_t mass, Int_t zBin=-1, Int_t dptBin=-1) const { return (mass < Get2ProngMaxMass(zBin, dptBin) && mass > Get2ProngMinMass(zBin, dptBin)); }
-  Double_t    Get2ProngMinMass(Int_t zBin=-1, Int_t dptBin=-1) const;
-  Double_t    Get2ProngMaxMass(Int_t zBin=-1, Int_t dptBin=-1) const;
+  Bool_t      IsIn2ProngMassRange(Double_t mass, Double_t pt=-1) const { return (mass < Get2ProngMaxMass(pt) && mass > Get2ProngMinMass(pt)); }
+  Double_t    Get2ProngMinMass(Double_t pt=-1) const;
+  Double_t    Get2ProngMaxMass(Double_t pt=-1) const;
       
   Bool_t      IsInDeltaInvMassRange(Double_t dmass)    const { return (dmass < fDeltaInvMaxMass && dmass > fDeltaInvMinMass); }
   Double_t    GetDeltaInvMinMass()     const { return fDeltaInvMinMass                              ; }
@@ -116,10 +125,13 @@ class DJetCorrAnalysisParams : public TObject
 
   Double_t        fInvMinMass                ;//  inv min mass
   Double_t        fInvMaxMass                ;//  inv max mass
-  Double_t       *f2ProngMinMass             ;//[fNzBins] 2-prong min mass (D* -> D0pi)
-  Double_t       *f2ProngMaxMass             ;//[fNzBins] 2-prong max mass (D* -> D0pi)
+  Double_t        f2ProngMinMass             ;//  2-prong min mass (D* -> D0pi)
+  Double_t        f2ProngMaxMass             ;//  2-prong max mass (D* -> D0pi)
   Double_t        fDeltaInvMinMass           ;//  delta inv min mass (D* -> D0pi)
   Double_t        fDeltaInvMaxMass           ;//  delta inv max mass (D* -> D0pi)
+
+  Double_t        f2ProngMass                ;//  PDG mass of the D0 candidate
+  TH1            *f2ProngMassRange           ;//  mass range of the D0 candidate as a function of the D* pT
 
   Double_t        fMinDEta                   ;//  min eta of D meson
   Double_t        fMaxDEta                   ;//  max eta of D meson

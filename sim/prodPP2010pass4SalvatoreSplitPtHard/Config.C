@@ -541,8 +541,7 @@ AliGenerator* MbPythiaTunePerugia2011chadrPtHard()
 
       //pythia->SetProcess(kPyMbDefault);
       //pythia->SetProcess(kPyMb);
-      //pythia->SetProcess(kPyJets);
-      pythia->SetProcess(kPyJetJet);
+      pythia->SetProcess(kPyJets);
       pythia->SetTriggerParticle(4, 5., -1., 1000);
       
 //

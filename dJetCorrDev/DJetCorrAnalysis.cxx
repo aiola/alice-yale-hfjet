@@ -1202,12 +1202,16 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramsVsDz(DJetCorrAnalysisParams* param
   Double_t* minMassSel = new Double_t[params->GetNzBins()];
   Double_t* maxMassSel = new Double_t[params->GetNzBins()];
 
+  Double_t meanJetPt = params->GetMeanJetPt(jetptBin);
+
   Int_t n = 0;
   for (Int_t i = 0; i < params->GetNzBins(); i++) {
     TString cuts(params->GetCutString(kMatched, dptBin, jetptBin, i));
 
-    minMassSel[i] = params->Get2ProngMinMass(i, dptBin);
-    maxMassSel[i] = params->Get2ProngMaxMass(i, dptBin);
+    Double_t meanDPt = meanJetPt * params->GetMeanZ(i);
+
+    minMassSel[i] = params->Get2ProngMinMass(meanDPt);
+    maxMassSel[i] = params->Get2ProngMaxMass(meanDPt);
     
     TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
     TH1* hist = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
@@ -1713,8 +1717,10 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     hd2pronginvmass->SetName(Form("h%s_D0InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
     fOutputList->Add(hd2pronginvmass);
-    
-    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(params->Get2ProngMinMass(dzBin, dptBin), params->Get2ProngMaxMass(dzBin, dptBin));
+
+    Double_t meanDPt = params->GetMeanDPt(dzBin, jetptBin);
+
+    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(params->Get2ProngMinMass(meanDPt), params->Get2ProngMaxMass(meanDPt));
   }
 
   if (dDeltaInvMassAxis >= 0) {
