@@ -1,1 +1,1 @@
-./aliroot_new --run 114798 --pthardbin 0 --process kPythiaPerugia2011HFbarrelPtHard --energy 7000
+./aliroot_new --run 114798 --pthardbin 5 --process kPythiaPerugia2011HFbarrelPtHard --energy 7000
