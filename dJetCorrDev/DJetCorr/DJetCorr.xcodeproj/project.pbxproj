@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		110066E91BB47C8200F1F8D7 /* runDJetCorrAnalysisComparerSim.C */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runDJetCorrAnalysisComparerSim.C; path = ../runDJetCorrAnalysisComparerSim.C; sourceTree = "<group>"; };
+		110066EA1BB47C8200F1F8D7 /* runDJetCorrAnalysisSim.C */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runDJetCorrAnalysisSim.C; path = ../runDJetCorrAnalysisSim.C; sourceTree = "<group>"; };
 		11FBC5AC1B8F5B7E00FCCF44 /* DJetCorrAnalysis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DJetCorrAnalysis.h; path = ../DJetCorrAnalysis.h; sourceTree = "<group>"; };
 		11FBC5AD1B8F5B7E00FCCF44 /* DJetCorrAnalysisComparer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DJetCorrAnalysisComparer.h; path = ../DJetCorrAnalysisComparer.h; sourceTree = "<group>"; };
 		11FBC5AE1B8F5B7E00FCCF44 /* DJetCorrAnalysisParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DJetCorrAnalysisParams.h; path = ../DJetCorrAnalysisParams.h; sourceTree = "<group>"; };
@@ -52,6 +54,8 @@
 				11FBC5B31B8F5B7E00FCCF44 /* MassFitter.h */,
 				11FBC5B41B8F5B7E00FCCF44 /* runDJetCorrAnalysis.C */,
 				11FBC5B51B8F5B7E00FCCF44 /* runDJetCorrAnalysisComparer.C */,
+				110066E91BB47C8200F1F8D7 /* runDJetCorrAnalysisComparerSim.C */,
+				110066EA1BB47C8200F1F8D7 /* runDJetCorrAnalysisSim.C */,
 				11FBC5B61B8F5B7E00FCCF44 /* runDJetCorrResponse.C */,
 				11FBC5B71B8F5B7E00FCCF44 /* runDJetCorrUnfold.C */,
 				11FBC5B81B8F5B7E00FCCF44 /* TestMassFitter.C */,

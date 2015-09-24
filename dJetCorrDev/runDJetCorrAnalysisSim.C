@@ -2,9 +2,9 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "truth-only", const char* train = "kPyJets",
-                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
-                                      const char* inputPath = "/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/results")
+DJetCorrAnalysis* runDJetCorrAnalysisSim(const char* options = "truth-only", const char* train = "kPyMbDefault_5",
+                                         Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
+                                         const char* inputPath = "/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/results")
 {
   TGaxis::SetMaxDigits(3); 
 
