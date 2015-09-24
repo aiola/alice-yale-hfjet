@@ -1,7 +1,7 @@
 // runJetSim.C
 
 //______________________________________________________________________________
-void runJetSim(UInt_t numevents = 50000)
+void runJetSim(UInt_t numevents = 500000)
 {
   gSystem->Load("libpythia6_4_21");
   
@@ -26,7 +26,8 @@ void runJetSim(UInt_t numevents = 50000)
   chain = new TChain("TE");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMbDefault/galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharmppMNRwmi/galice.root");
-  chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyJets/galice.root");
+  chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyJets_5/galice.root");
+  //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMbDefault_5/galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/Perugia0_kPyCharmppMNRwmi/galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyMb/galice.root");
   //chain->Add("/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/data/kPyCharm/galice.root");

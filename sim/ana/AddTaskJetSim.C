@@ -51,6 +51,7 @@ void AddTaskJetSim()
 										   mcTracksDMesonname, "", chMcJetsDMesonName, "",
 										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, "", kFALSE,
 										   "AliAnalysisTaskDmesonJetCorrelations", "MC");
+    pDMesonJetCorrGen->SetIsPythia(kTRUE);
     pDMesonJetCorrGen->SetMaxR(jetRadius);
     pDMesonJetCorrGen->SetMatchingType(eFlavourJetMatchingType);
     pDMesonJetCorrGen->SetPlotOnlyAcceptedJets(kTRUE);

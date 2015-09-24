@@ -262,6 +262,15 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     taskFull->GetParticleContainer(1)->SelectPhysicalPrimaries(kTRUE);
   }
 
+  if (1) {
+    gROOT->LoadMacro("tasks/AliAnalysisTaskEmcalHFtests.cxx+g");
+    gROOT->LoadMacro("addTask/AddTaskHFtests.C");
+
+    AliAnalysisTaskEmcalHFtests* hfTests = AddTaskHFtests();
+    hfTests->SetGenNameMustContain("ccbar");
+    hfTests->AddParticleContainer("mcparticles");
+  }
+
   // HF-jet analysis
   if (dohf) {
 
