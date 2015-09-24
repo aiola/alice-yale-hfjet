@@ -2,9 +2,9 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_637_638_639_640",
+DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "truth-only", const char* train = "kPyJets",
                                       Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kTRUE,
-                                      const char* inputPath = "$JETRESULTS")
+                                      const char* inputPath = "/Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/sim/prodPP2010pass4SalvatoreSplitPtHard/results")
 {
   TGaxis::SetMaxDigits(3); 
 
@@ -47,9 +47,9 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
   param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
   //param->BackgroundOnly(kTRUE);
 
-  param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  //param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
   //param->BackgroundOnly(kTRUE);
-  //param->SetInvMassRebinFactor(2);
+  //param->SetInvMassRebinFactor(3);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");
