@@ -65,8 +65,6 @@ then
 fi
 
 cp ./ScaleResults.C $LocalPath/
-cp ./ScaleResultsWrapper.C $LocalPath/
-cp ./Merge.C $LocalPath/
 
 if [ -e "./${Dataset}.xsec.root" ]
 then
