@@ -18,21 +18,23 @@ TrainNumber="${1}"
 
 StrippedTrainNumber=${TrainNumber:0:3}
 
-Year="${2}"
+Overwrite="${2}"
+
+Year="${3}"
 
 if [ -z "${Year}" ]
 then
     Year="2015"
 fi
 
-Dataset="${3}"
+Dataset="${4}"
 
 if [ -z "${Dataset}" ]
 then
     Dataset="LHC15i2b"
 fi
 
-TrainName="${4}"
+TrainName="${5}"
 
 if [ -z "${TrainName}" ]
 then
@@ -57,6 +59,7 @@ echo "Train n.: ${TrainNumber}"
 echo "Run list: ${RunList[*]}"
 echo "Alien path: ${AlienPath}"
 echo "Local path: ${LocalPath}"
+echo "Overwrite mode: ${Overwrite}"
 
 if [ ! -d "${LocalPath}" ]
 then
@@ -90,6 +93,12 @@ do
 	  mkdir -p ./${PtHardBin}/${Run}
       fi
 
+      if [ -e "./${PtHardBin}/${Run}/AnalysisResults.root" ] && [ "${Overwrite}" -ge "4" ]
+      then
+	  echo "Deleting file: ./${PtHardBin}/${Run}/AnalysisResults.root"
+	  rm "./${PtHardBin}/${Run}/AnalysisResults.root"
+      fi
+
       if [ ! -e "./${PtHardBin}/${Run}/AnalysisResults.root" ]
       then
 	  AlienFile="${AlienPath}/${Run}/${PtHardBin}/PWGJE/${TrainName}/${TrainNumber}/AnalysisResults.root"
@@ -100,12 +109,24 @@ do
       FileList="${FileList} ./${PtHardBin}/${Run}/AnalysisResults.root"
   done
 
+  if [ -e "./${PtHardBin}/AnalysisResults.root" ] && [ "${Overwrite}" -ge "3" ]
+  then
+      echo "Deleting file: ./${PtHardBin}/AnalysisResults.root"
+      rm "./${PtHardBin}/AnalysisResults.root"
+  fi
+
   if [ ! -e "./${PtHardBin}/AnalysisResults.root" ]
   then
       echo "Merging for pT hard bin: ${PtHardBin}"
-      hadd "./${PtHardBin}/AnalysisResults.root" "${FileList}"
+      hadd "./${PtHardBin}/AnalysisResults.root" ${FileList}
   fi
 
+  if [ -e "./${PtHardBin}/ScaledResults.root" ] && [ "${Overwrite}" -ge "2" ]
+  then
+      echo "Deleting file: ./${PtHardBin}/ScaledResults.root"
+      rm "./${PtHardBin}/ScaledResults.root"
+  fi
+  
   if [ ! -e "./${PtHardBin}/ScaledResults.root" ] && [ -e "./${PtHardBin}/AnalysisResults.root" ]
   then
       root -l -b -q ScaleResults.C+g\(${PtHardBin},\"${Dataset}\"\)
@@ -114,10 +135,16 @@ do
   FinalFileList="${FinalFileList} "
 done
 
+if [ -e "./ScaledResults.root" ] && [ "${Overwrite}" -ge "1" ]
+then
+    echo "Deleting file: ./ScaledResults.root"
+    rm "./ScaledResults.root"
+fi
+
 if [ ! -e "./ScaledResults.root" ]
 then
     echo "Final merging..."
-    hadd "./ScaledResults.root" "${FinalFileList}"
+    hadd "./ScaledResults.root" ${FinalFileList}
 fi
 
 echo "Done."
