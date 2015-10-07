@@ -7,7 +7,7 @@ void runJetResponse(
                     const char   *datatype     = "AOD",                                       // set the analysis type, AOD, ESD or sESD
                     const char   *runtype      = "local",                                     // local or grid
                     const char   *gridmode     = "test",                                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
-                    const char   *localfiles   = "fileLists/files_prodPP2010pass4SalvatoreSplitPtHard_bis_5.txt",  // set the local list file
+                    const char   *localfiles   = "fileLists/prodPP2010pass4SalvatoreSplitPtHardPyJets_5.txt",  // set the local list file
                     UInt_t        numfiles     = 500,                                         // number of files analyzed locally
                     UInt_t        numevents    = 1234567890,                                  // number of events to be analyzed
                     const char   *runperiod    = "LHC10f7a",                                  // set the run period
