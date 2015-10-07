@@ -63,11 +63,12 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
   Int_t eFlavourJetMatchingType   = AliAnalysisTaskDmesonJetCorrelations::kCandidateConstituentMatching;    // kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop
 
   AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType kDmesonType = AliAnalysisTaskSEDmesonsFilterCJ::kD0toKpi;
-  AliAnalysisTaskDmesonJetCorrelations::ECandidateType kDmesonCorrType = AliAnalysisTaskDmesonJetCorrelations::kD0toKpi; //kDstartoKpipi  
-  AliEmcalJet::EFlavourTag kFlavourCut = AliEmcalJet::kD0;
+  AliAnalysisTaskDmesonJetCorrelations::ECandidateType kDmesonCorrType = AliAnalysisTaskDmesonJetCorrelations::kD0toKpi; //kDstartoKpipi, kD0toKpi
+  AliAnalysisTaskDmesonJetCorrelations::EBackgroundMode kDmesonCorrBGmode = AliAnalysisTaskDmesonJetCorrelations::kBackgroundAndSignal; //kBackgroundAndSignal, kSignalOnly, kBackgroundOnly  
+  AliEmcalJet::EFlavourTag kFlavourCut = AliEmcalJet::kD0;  // kD0, kDStar
   TString sDmesonCandName = "Dcandidates";
   TString sTracksDcandidatesName(sDmesonCandName);
-  sTracksDcandidatesName += "AndTracksD0MCrec";
+  sTracksDcandidatesName += "AndTracksD0";
   TString mcTracksDMesonname = "mcparticlesD0";
 
   TF1* trackingEff_function = 0;
@@ -267,7 +268,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     gROOT->LoadMacro("addTask/AddTaskHFtests.C");
 
     AliAnalysisTaskEmcalHFtests* hfTests = AddTaskHFtests();
-    hfTests->SetGenNameMustContain("ccbar");
+    hfTests->SetGenNameMustContain("bbbar");
     hfTests->AddParticleContainer("mcparticles");
   }
 
@@ -276,7 +277,7 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
 
     AliAnalysisTaskSEDmesonsFilterCJ* pDMesonFilterRec = AddTaskSEDmesonsFilterCJ(kDmesonType,
 										   "",
-										   kTRUE,  //   Bool_t theMCon
+										   kFALSE,  //   Bool_t theMCon
 										   kTRUE,   //   Bool_t reco
 										   "");
     pDMesonFilterRec->SetCombineDmesons(kTRUE);
@@ -295,16 +296,15 @@ void AddTaskJetResp(const char *datatype = "AOD", const char *runtype = "local",
     Int_t type = 0;
     if (kDmesonCorrType == AliAnalysisTaskDmesonJetCorrelations::kDstartoKpipi) type = 1;
     
-    AliEmcalJetTask *pChJetDMesonTask = AddTaskEmcalJet(sTracksDcandidatesName, "", 1, jetRadius, type, trackPtCut, clusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 1);
+    AliEmcalJetTask *pChJetDMesonTask = AddTaskEmcalJet(sTracksDcandidatesName, "", 1, jetRadius, type, trackPtCut, clusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, 0);
     TString sChJetsDMesonName = pChJetDMesonTask->GetName();
 
     AliAnalysisTaskDmesonJetCorrelations* pDMesonJetCorrRec = AddTaskDmesonJetCorr(kDmesonCorrType, "", 
 										   sTracksDcandidatesName, "", sChJetsDMesonName, "",
 										   jetRadius, jetPtCut, jetAreaCut, "TPC", 0, sDmesonCandName, kFALSE,
-										   "AliAnalysisTaskDmesonJetCorrelations", "MCrec");
-    pDMesonJetCorrRec->SetUseMCInfo(kTRUE);
+										   "AliAnalysisTaskDmesonJetCorrelations", "");
+    pDMesonJetCorrRec->SetBackgroundMode(kDmesonCorrBGmode);
     pDMesonJetCorrRec->AddParticleContainer("mcparticles");
-    pDMesonJetCorrRec->SetAliEmcalParticleMode(kTRUE);
     pDMesonJetCorrRec->SetMaxR(jetRadius);
     pDMesonJetCorrRec->SetMatchingType(eFlavourJetMatchingType);
     pDMesonJetCorrRec->SetPlotOnlyAcceptedJets(kFALSE);
