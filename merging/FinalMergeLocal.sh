@@ -132,7 +132,7 @@ do
       root -l -b -q ScaleResults.C+g\(${PtHardBin},\"${Dataset}\"\)
   fi
 
-  FinalFileList="${FinalFileList} "
+  FinalFileList="${FinalFileList} ./${PtHardBin}/ScaledResults.root"
 done
 
 if [ -e "./ScaledResults.root" ] && [ "${Overwrite}" -ge "1" ]
