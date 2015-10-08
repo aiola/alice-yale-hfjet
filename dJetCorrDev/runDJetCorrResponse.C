@@ -2,15 +2,15 @@
 
 class DJetCorrResponse;
 
-DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_508", Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
+DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_649", Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
   
   TString tracksName = "tracks";
   //TString tracksD0Name = tracksName;
   //TString tracksDStarName = tracksName;
-  TString tracksD0Name = "DcandidatesAndTracksD0MCrec";
-  TString tracksDStarName = "DcandidatesAndTracksDStarMCrec";
+  TString tracksD0Name = "DcandidatesAndTracksD0";
+  TString tracksDStarName = "DcandidatesAndTracksDStar";
 
   if (loadLibs) {
     gROOT->LoadMacro("HistoStyler.cxx+g");

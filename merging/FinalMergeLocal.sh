@@ -135,16 +135,16 @@ do
   FinalFileList="${FinalFileList} ./${PtHardBin}/ScaledResults.root"
 done
 
-if [ -e "./ScaledResults.root" ] && [ "${Overwrite}" -ge "1" ]
+if [ -e "./AnalysisResults.root" ] && [ "${Overwrite}" -ge "1" ]
 then
-    echo "Deleting file: ./ScaledResults.root"
-    rm "./ScaledResults.root"
+    echo "Deleting file: ./AnalysisResults.root"
+    rm "./AnalysisResults.root"
 fi
 
-if [ ! -e "./ScaledResults.root" ]
+if [ ! -e "./AnalysisResults.root" ]
 then
     echo "Final merging..."
-    hadd "./ScaledResults.root" ${FinalFileList}
+    hadd "./AnalysisResults.root" ${FinalFileList}
 fi
 
 echo "Done."
