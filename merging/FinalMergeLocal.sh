@@ -20,6 +20,11 @@ StrippedTrainNumber=${TrainNumber:0:3}
 
 Overwrite="${2}"
 
+if [ -z "${Dataset}" ]
+then
+    Overwrite=0
+fi
+
 Year="${3}"
 
 if [ -z "${Year}" ]
