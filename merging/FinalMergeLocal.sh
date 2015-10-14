@@ -16,11 +16,17 @@ fi
 
 TrainNumber="${1}"
 
+if [ -z "${TrainNumber}" ]
+then
+    echo "${0} [trainNumber] [overwrite=0] [year=2015] [dataset=LHC15i2b]  [trainName=Jets_EMC_pp_MC]"
+    exit 0
+fi
+
 StrippedTrainNumber=${TrainNumber:0:3}
 
 Overwrite="${2}"
 
-if [ -z "${Dataset}" ]
+if [ -z "${Overwrite}" ]
 then
     Overwrite=0
 fi
@@ -49,7 +55,7 @@ fi
 if [ "${Dataset}" = "LHC15i2b" ]
 then
     RunList=( "114786" "114798" "114918" "114920" "114924" "114930" "114931" "115186" "115193" "115310" "115318" "115322" "115328" "115335" "115345" "115393" "115399" "115401" "115414" "115521" "116079" "116081" "116102" "116288" "116402" "116403" "116562" "116571" "116574" "116643" "116645" "117048" "117050" "117052" "117053" "117059" "117060" "117063" "117092" "117099" "117109" "117112" "117116" "117220" "117222" )
-    PtHardBinList=( "1" "2" "3" "4" "5" "6" "7" "8" "9" )
+    PtHardBinList=( "0" "1" "2" "3" "4" "5" "6" "7" "8" )
 else
     echo "Dataset ${Dataset} is not configured for this script!"
     exit 0
@@ -111,7 +117,10 @@ do
 	  alien_cp ${AlienFile} ./${PtHardBin}/${Run}
       fi
 
-      FileList="${FileList} ./${PtHardBin}/${Run}/AnalysisResults.root"
+      if [ -e "./${PtHardBin}/${Run}/AnalysisResults.root" ]
+      then
+	  FileList="${FileList} ./${PtHardBin}/${Run}/AnalysisResults.root"
+      fi
   done
 
   if [ -e "./${PtHardBin}/AnalysisResults.root" ] && [ "${Overwrite}" -ge "3" ]
@@ -137,7 +146,10 @@ do
       root -l -b -q ScaleResults.C+g\(${PtHardBin},\"${Dataset}\"\)
   fi
 
-  FinalFileList="${FinalFileList} ./${PtHardBin}/ScaledResults.root"
+  if [ -e "./${PtHardBin}/ScaledResults.root" ] && [ "${PtHardBin}" -gt "0" ]
+  then
+      FinalFileList="${FinalFileList} ./${PtHardBin}/ScaledResults.root"
+  fi
 done
 
 if [ -e "./AnalysisResults.root" ] && [ "${Overwrite}" -ge "1" ]
