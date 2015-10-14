@@ -4,6 +4,9 @@ class MassFitter;
 
 void TestMassFitter()
 {
+  if (gRandom) delete gRandom;
+  gRandom = new TRandom3(0);
+
   gROOT->LoadMacro("MassFitter.cxx+g");
 
   Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
@@ -17,10 +20,6 @@ void TestMassFitter()
   fitter->GetFitFunction()->SetParameter(4,     0.01);
 
   fitter->DisableSig();
-
-  Double_t v = fitter->GetFitFunction()->Eval(1.8);
-
-  Printf("%.3f",v);
   
   TCanvas *c = new TCanvas();
   TH1* hist = new TH1F("hist", "hist", 100, 1.7, 2);
@@ -36,10 +35,10 @@ void TestMassFitter()
 
   fitter->Draw("same");
 
-  Double_t bkgInt = fitter->GetBkgFunction()->Integral(1.7, 2);
-  Double_t totInt = fitter->GetFitFunction()->Integral(1.7, 2);
+  Double_t histInt = hist->Integral(hist->GetXaxis()->FindBin(1.7), hist->GetXaxis()->FindBin(2));
+  Double_t fitInt = fitter->GetFitFunction()->Integral(1.7,2);
 
-  Printf("bkgInt = %.3f, totInt = %.3f", bkgInt, totInt);
+  Printf("hist integral = %.3f, fit integral = %.3f", histInt, fitInt);
 
   Double_t bkg = fitter->GetBackground();
   Double_t sig = fitter->GetSignal();

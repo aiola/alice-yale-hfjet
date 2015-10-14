@@ -105,6 +105,9 @@ class DJetCorrAnalysisParams : public TObject
   void        BackgroundOnly(Bool_t b)       { fIsBackgroundOnly = b      ; }
   Bool_t      IsBackgroundOnly()      const  { return fIsBackgroundOnly   ; }
 
+  void        SignalOnly(Bool_t b)           { fIsSignalOnly = b          ; }
+  Bool_t      IsSignalOnly()          const  { return fIsSignalOnly       ; }
+
   MassFitter* CreateMassFitter(const char* name) const;
   
  protected:
@@ -143,6 +146,7 @@ class DJetCorrAnalysisParams : public TObject
   Bool_t          fIsBkgSub                  ;//
   Int_t           fInvMassRebinFactor        ;//
   Bool_t          fIsBackgroundOnly          ;//
+  Bool_t          fIsSignalOnly              ;//
   
  private:
  
