@@ -43,7 +43,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fIsMC(kFALSE),
   fIsBkgSub(kFALSE),
   fInvMassRebinFactor(1),
-  fIsBackgroundOnly(kFALSE)
+  fIsBackgroundOnly(kFALSE),
+  fIsSignalOnly(kFALSE)
 {
 }
 
@@ -80,7 +81,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fIsMC(isMC),
   fIsBkgSub(isBkgSub),
   fInvMassRebinFactor(1),
-  fIsBackgroundOnly(kFALSE)
+  fIsBackgroundOnly(kFALSE),
+  fIsSignalOnly(kFALSE)
 {
   if (anaType == kInvMassAna) {
     if (fIsMC) {
@@ -112,7 +114,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   if (fDmesonName == "DStar") {
     fNDPtBins = 6;
     fDPtBins = new Double_t[fNDPtBins+1];
-    fDPtBins[ 0] =  1.6;
+    fDPtBins[ 0] =  1.5;
     fDPtBins[ 1] =  4.0;
     fDPtBins[ 2] =  6.0;
     fDPtBins[ 3] =  8.0;
@@ -194,7 +196,8 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fIsMC(p.fIsMC),
   fIsBkgSub(p.fIsBkgSub),
   fInvMassRebinFactor(p.fInvMassRebinFactor),
-  fIsBackgroundOnly(p.fIsBackgroundOnly)
+  fIsBackgroundOnly(p.fIsBackgroundOnly),
+  fIsSignalOnly(p.fIsSignalOnly)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
@@ -312,6 +315,10 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
 
   if (fIsBackgroundOnly) {
     fitter->DisableSig();
+  }
+
+  if (fIsSignalOnly) {
+    fitter->DisableBkg();
   }
 
   return fitter;

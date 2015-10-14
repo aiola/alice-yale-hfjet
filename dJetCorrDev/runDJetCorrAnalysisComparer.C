@@ -5,7 +5,7 @@ class DJetCorrAnalysisComparer;
 #include "runDJetCorrAnalysis.C"
 #include "runDJetCorrResponse.C"
 
-DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets_EMC_pp_MC_637_638_639_640",
+DJetCorrAnalysisComparer* runDJetCorrAnalysisComparer(const char* train1 = "Jets_EMC_pp_MC_645_646_647_648",
                                                       const char* train2 = "Jets_EMC_pp_MC_631_632_633_634",
                                                       const char* train3 = 0,
                                                       Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
