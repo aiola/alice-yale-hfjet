@@ -1,3 +1,0 @@
-/Users/sa639/Documents/Work/ALICE/Data/prodPP2010pass4SalvatoreSplitPtHard_bis/114786/8/001/aod_archive.zip#AliAOD.root
-/Users/sa639/Documents/Work/ALICE/Data/prodPP2010pass4SalvatoreSplitPtHard_bis/114786/8/003/aod_archive.zip#AliAOD.root
-/Users/sa639/Documents/Work/ALICE/Data/prodPP2010pass4SalvatoreSplitPtHard_bis/114786/8/004/aod_archive.zip#AliAOD.root

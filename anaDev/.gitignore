@@ -6,3 +6,4 @@ AnalysisResults*.root
 EventStat_temp.root
 train.root
 tempChecksum_*
+fileLists

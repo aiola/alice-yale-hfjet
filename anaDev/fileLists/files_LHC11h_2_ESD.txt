@@ -1,3 +1,0 @@
-/Users/saiola/Documents/Work/ALICE/Data/LHC11h_2/000169838/ESDs/pass2/11000169838046.17/AliESDs.root
-/Users/saiola/Documents/Work/ALICE/Data/LHC11h_2/000169838/ESDs/pass2/11000169838020.31/AliESDs.root
-/Users/saiola/Documents/Work/ALICE/Data/LHC11h_2/000169838/ESDs/pass2/11000169838015.16/AliESDs.root
