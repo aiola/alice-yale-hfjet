@@ -2,9 +2,11 @@
 
 class DJetCorrAnalysis;
 
-DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_645_646_647_648",
-                                      Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
-                                      const char* inputPath = "$JETRESULTS")
+DJetCorrAnalysis* runDJetCorrAnalysis(
+    const char* options = "run plot",
+    const char* train = "Jets_EMC_pp_MC_631_632_633_634",
+    Bool_t loadLibs = kTRUE, Bool_t isMC = kTRUE, Bool_t isBkgSub = kFALSE,
+    const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
 
@@ -46,11 +48,11 @@ DJetCorrAnalysis* runDJetCorrAnalysis(const char* options = "run plot", const ch
 
   param = projDjet->AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub);
   //param->BackgroundOnly(kTRUE);
-  param->SignalOnly(kTRUE);
+  //param->SignalOnly(kTRUE);
 
-  //param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
+  param = projDjet->AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub);
   //param->BackgroundOnly(kTRUE);
-  //param->SetInvMassRebinFactor(2);
+  //param->SignalOnly(kTRUE);
 
   TString opt(options);
   TObjArray *optList = opt.Tokenize(" ");

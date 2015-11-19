@@ -119,21 +119,46 @@ Bool_t DJetCorrUnfold::PrepareResponse()
   Bool_t result = kFALSE;
 
   if (!fForceRegeneration) {
+    Printf("Trying to load response matrix...");
     result = fResponse->LoadOutputHistograms();
   }
   
   if (!result) {
+    Printf("Generating response matrix...");
     result = fResponse->Regenerate();
-    if (!result) return kFALSE;
+    if (!result) {
+      Printf("Failed to generate response matrix...");
+      return kFALSE;
+    }
   }
 
   fResponseTruth = fResponse->GetTruth(fRespParamIndex, kTRUE);
+  if (!fResponseTruth) {
+    Printf("Could not load response truth!");
+    result = kFALSE;
+  }
   fResponseMeasured = fResponse->GetMeasured(fRespParamIndex, kTRUE);
+  if (!fResponseMeasured) {
+    Printf("Could not load response measured!");
+    result = kFALSE;
+  }
   fResponseMatrix = fResponse->GetResponse(fRespParamIndex, kTRUE);
+  if (!fResponseMatrix) {
+    Printf("Could not load response matrix!");
+    result = kFALSE;
+  }
   fResponseMisses = fResponse->GetMisses(fRespParamIndex, kTRUE);
+  if (!fResponseMisses) {
+    Printf("Could not load response misses!");
+    result = kFALSE;
+  }
   fResponseKinMisses = fResponse->GetKinMisses(fRespParamIndex, kTRUE);
+  if (!fResponseKinMisses) {
+    Printf("Could not load response kinematic misses!");
+    result = kFALSE;
+  }
 
-  return kTRUE;
+  return result;
 }
 
 //____________________________________________________________________________________
@@ -167,7 +192,7 @@ Bool_t DJetCorrUnfold::Unfold()
   }
   
   RooUnfoldBayes bayes(resp, fMeasured);
-  bayes.SetRegParm(2);
+  bayes.SetRegParm(3);
   fUnfolded = static_cast<TH2*>(bayes.Hreco());
   fUnfolded->GetXaxis()->SetName("xaxis");
   fUnfolded->GetYaxis()->SetName("yaxis");

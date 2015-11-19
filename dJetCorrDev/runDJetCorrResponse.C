@@ -2,7 +2,10 @@
 
 class DJetCorrResponse;
 
-DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const char* train = "Jets_EMC_pp_MC_654", Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
+DJetCorrResponse* runDJetCorrResponse(
+    const char* options = "run plot",
+    const char* train = "Jets_EMC_pp_MC_657",
+    Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
   
@@ -26,7 +29,7 @@ DJetCorrResponse* runDJetCorrResponse(const char* options = "run plot", const ch
   projDjet->SetOverwrite(kTRUE);
   projDjet->SetInputPath(inputPath);
 
-  projDjet->SetPlotFormat("eps");
+  projDjet->SetPlotFormat("pdf");
   projDjet->SetSavePlots(kTRUE);
 
   //projDjet->AddAnalysisParams("D0", "Full", "R040", tracksD0Name);

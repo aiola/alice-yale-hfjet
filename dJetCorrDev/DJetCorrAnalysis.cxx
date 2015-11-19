@@ -1894,7 +1894,7 @@ Bool_t DJetCorrAnalysis::Regenerate()
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysis::GetDzTruthName(Int_t p)
+TString DJetCorrAnalysis::GetTruthName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
@@ -1906,7 +1906,7 @@ TString DJetCorrAnalysis::GetDzTruthName(Int_t p)
 }
 
 //____________________________________________________________________________________
-TString DJetCorrAnalysis::GetDzMeasuredName(Int_t p)
+TString DJetCorrAnalysis::GetMeasuredName(Int_t p)
 {
   DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
   if (!params) return "";
@@ -1915,6 +1915,20 @@ TString DJetCorrAnalysis::GetDzMeasuredName(Int_t p)
   TString hname(Form("h%s_DzSpectrum2D_%s_Matched", params->GetName(), spectrum2Dcuts.Data()));
   
   return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetDzTruthName(Int_t /*p*/)
+{
+  //To do
+  return "";
+}
+
+//____________________________________________________________________________________
+TString DJetCorrAnalysis::GetDzMeasuredName(Int_t /*p*/)
+{
+  //To do
+  return "";
 }
 
 //____________________________________________________________________________________

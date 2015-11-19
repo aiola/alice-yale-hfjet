@@ -5,7 +5,7 @@ class DJetCorrUnfold;
 #include "runDJetCorrAnalysis.C"
 #include "runDJetCorrResponse.C"
 
-DJetCorrUnfold* runDJetCorrUnfold(const char* trainData = "Jets_EMC_pp_MC_509_510_511_512", const char* trainResp = "Jets_EMC_pp_MC_508",
+DJetCorrUnfold* runDJetCorrUnfold(const char* trainData = "Jets_EMC_pp_MC_631_632_633_634", const char* trainResp = "Jets_EMC_pp_MC_657",
 				  Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   if (loadLibs) {    
@@ -18,12 +18,12 @@ DJetCorrUnfold* runDJetCorrUnfold(const char* trainData = "Jets_EMC_pp_MC_509_51
     gROOT->LoadMacro("DJetCorrUnfold.cxx+g");
   }
   
-  DJetCorrAnalysis* ana = runDJetCorrAnalysis("", trainData, kTRUE, kFALSE, inputPath);
+  DJetCorrAnalysis* ana = runDJetCorrAnalysis("", trainData, kFALSE, kTRUE, kFALSE, inputPath);
   DJetCorrResponse* resp = runDJetCorrResponse("", trainResp, kFALSE, inputPath);
   
   DJetCorrUnfold* unfold = new DJetCorrUnfold(ana, resp);
   unfold->SetDataParamIndex(0);
-  unfold->SetRespParamIndex(1);
+  unfold->SetRespParamIndex(0);
   //unfold->SetUseEfficiency(kFALSE);
   //unfold->SetUseKinEfficiency(kFALSE);
   unfold->Start();
