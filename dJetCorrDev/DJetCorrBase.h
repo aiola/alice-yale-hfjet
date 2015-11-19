@@ -55,8 +55,11 @@ class DJetCorrBase : public TNamed {
 
   virtual Bool_t Regenerate() { return kTRUE;}
 
-  TH2* GetDzTruth(Int_t p, Bool_t copy);
-  TH2* GetDzMeasured(Int_t p, Bool_t copy);
+  TH2* GetTruth(Int_t p, Bool_t copy);
+  TH2* GetMeasured(Int_t p, Bool_t copy);
+
+  TH1* GetDzTruth(Int_t p, Bool_t copy);
+  TH1* GetDzMeasured(Int_t p, Bool_t copy);
 
   TH1* GetDPtTruth(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
   TH1* GetDPtMeasured(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
@@ -66,6 +69,9 @@ class DJetCorrBase : public TNamed {
 
   TH1* GetJetPtTruth(Int_t p, Bool_t copy);
   TH1* GetJetPtMeasured(Int_t p, Bool_t copy);
+
+  virtual TString GetTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetMeasuredName(Int_t /*p*/) { return ""; }
 
   virtual TString GetDzTruthName(Int_t /*p*/) { return ""; }
   virtual TString GetDzMeasuredName(Int_t /*p*/) { return ""; }
