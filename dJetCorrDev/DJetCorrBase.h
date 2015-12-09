@@ -20,6 +20,7 @@ class DJetCorrAnalysisParams;
 
 #include <TMap.h>
 #include <THnSparse.h>
+#include <THashList.h>
 
 class DJetCorrBase : public TNamed {
   
@@ -163,7 +164,7 @@ class DJetCorrBase : public TNamed {
   TFile          *fInputFile                 ;//! input file
   TDirectoryFile *fInputDirectoryFile        ;//! input directory file
   TList          *fInputList                 ;//! list contains the input hisograms
-  TList          *fOutputList                ;//! list contains the output histograms
+  THashList      *fOutputList                ;//! list contains the output histograms
   TList          *fCanvases                  ;//! list contains the canvases
   Double_t        fEvents                    ;//! number of events
   

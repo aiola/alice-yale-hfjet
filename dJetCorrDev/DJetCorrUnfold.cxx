@@ -2,6 +2,8 @@
 // Author: Salvatore Aiola, Yale University (salvatore.aiola@cern.ch)
 // Copyright (c) 2015 Salvatore Aiola
 
+#include <vector>
+
 #include <TList.h>
 #include <TString.h>
 #include <TH1D.h>
@@ -31,6 +33,8 @@
 
 #include "DJetCorrUnfold.h"
 
+const TString DJetCorrUnfold::fgkAxisLabels[2] = { "JetPt", "DmesonZ" };
+
 ClassImp(DJetCorrUnfold);
 
 //____________________________________________________________________________________
@@ -41,17 +45,12 @@ DJetCorrUnfold::DJetCorrUnfold() :
   fForceRegeneration(kFALSE),
   fUseEfficiency(kTRUE),
   fUseKinEfficiency(kTRUE),
-  fTruth(0),
-  fMeasured(0),
-  fUnfolded(0),
-  fRefolded(0),
-  fResponseTruth(0),
-  fResponseMeasured(0),
-  fResponseMatrix(0),
-  fResponseMisses(0),
-  fResponseKinMisses(0),
+  fMinRegParam(1),
+  fMaxRegParam(8),
+  fRegParamStep(1),
   fAnalysis(0),
-  fResponse(0)
+  fResponse(0),
+  fOutputList(0)
 {
   // Default constructor.
 }
@@ -64,17 +63,12 @@ DJetCorrUnfold::DJetCorrUnfold(DJetCorrAnalysis* ana, DJetCorrResponse* resp) :
   fForceRegeneration(kFALSE),
   fUseEfficiency(kTRUE),
   fUseKinEfficiency(kTRUE),
-  fTruth(0),
-  fMeasured(0),
-  fUnfolded(0),
-  fRefolded(0),
-  fResponseTruth(0),
-  fResponseMeasured(0),
-  fResponseMatrix(0),
-  fResponseMisses(0),
-  fResponseKinMisses(0),
+  fMinRegParam(1),
+  fMaxRegParam(8),
+  fRegParamStep(1),
   fAnalysis(ana),
-  fResponse(resp)
+  fResponse(resp),
+  fOutputList(0)
 {
   // Constructor.
 
@@ -102,8 +96,15 @@ Bool_t DJetCorrUnfold::PrepareData()
     if (!result) return kFALSE;
   }
   
-  fTruth = fAnalysis->GetTruth(fDataParamIndex, kTRUE);
-  fMeasured = fAnalysis->GetMeasured(fDataParamIndex, kTRUE);
+  TH2* truth = fAnalysis->GetTruth(fDataParamIndex, kTRUE);
+  truth->SetName("histTruth");
+  truth->SetTitle("Truth");
+  fOutputList->Add(truth);
+
+  TH2* measured = fAnalysis->GetMeasured(fDataParamIndex, kTRUE);
+  measured->SetName("histMeasured");
+  measured->SetTitle("Measured");
+  fOutputList->Add(measured);
 
   return kTRUE;
 }
@@ -132,31 +133,50 @@ Bool_t DJetCorrUnfold::PrepareResponse()
     }
   }
 
-  fResponseTruth = fResponse->GetTruth(fRespParamIndex, kTRUE);
-  if (!fResponseTruth) {
+  TH2* responseTruth = fResponse->GetTruth(fRespParamIndex, kTRUE);
+  if (!responseTruth) {
     Printf("Could not load response truth!");
     result = kFALSE;
   }
-  fResponseMeasured = fResponse->GetMeasured(fRespParamIndex, kTRUE);
-  if (!fResponseMeasured) {
+  responseTruth->SetName("histResponseTruth");
+  responseTruth->SetTitle("Response Truth");
+  fOutputList->Add(responseTruth);
+
+  TH2* responseMeasured = fResponse->GetMeasured(fRespParamIndex, kTRUE);
+  if (!responseMeasured) {
     Printf("Could not load response measured!");
     result = kFALSE;
   }
-  fResponseMatrix = fResponse->GetResponse(fRespParamIndex, kTRUE);
-  if (!fResponseMatrix) {
+  responseMeasured->SetName("histResponseMeasured");
+  responseMeasured->SetTitle("Response Measured");
+  fOutputList->Add(responseMeasured);
+
+  TH2* responseMatrix = fResponse->GetResponse(fRespParamIndex, kTRUE);
+  if (!responseMatrix) {
     Printf("Could not load response matrix!");
     result = kFALSE;
   }
-  fResponseMisses = fResponse->GetMisses(fRespParamIndex, kTRUE);
-  if (!fResponseMisses) {
+  responseMatrix->SetName("histResponseMatrix");
+  responseMatrix->SetTitle("Response Matrix");
+  fOutputList->Add(responseMatrix);
+
+  TH2* responseMisses = fResponse->GetMisses(fRespParamIndex, kTRUE);
+  if (!responseMisses) {
     Printf("Could not load response misses!");
     result = kFALSE;
   }
-  fResponseKinMisses = fResponse->GetKinMisses(fRespParamIndex, kTRUE);
-  if (!fResponseKinMisses) {
+  responseMisses->SetName("histResponseMisses");
+  responseMisses->SetTitle("Response Misses");
+  fOutputList->Add(responseMisses);
+
+  TH2* responseKinMisses = fResponse->GetKinMisses(fRespParamIndex, kTRUE);
+  if (!responseKinMisses) {
     Printf("Could not load response kinematic misses!");
     result = kFALSE;
   }
+  responseKinMisses->SetName("histResponseKinMisses");
+  responseKinMisses->SetTitle("Response Kinematic Misses");
+  fOutputList->Add(responseKinMisses);
 
   return result;
 }
@@ -166,80 +186,127 @@ Bool_t DJetCorrUnfold::Start()
 {
   Bool_t result = kFALSE;
 
+  if (fOutputList) {
+    fOutputList->Clear();
+  }
+  else {
+    fOutputList = new TList();
+  }
+
   result = PrepareData();
   if (!result) return kFALSE;
 
   result = PrepareResponse();
   if (!result) return kFALSE;
 
+  result = GenerateRooUnfoldResponse();
+  if (!result) return kFALSE;
+
   result = Unfold();
+  if (!result) return kFALSE;
+
+  result = MakeProjections();
+  if (!result) return kFALSE;
+
   return result;
 }
 
 //____________________________________________________________________________________
 Bool_t DJetCorrUnfold::Unfold()
 {
-  RooUnfoldResponse* resp = GenerateRooUnfoldResponse();
-
-  if (!resp) {
+  if (!fRooUnfoldResponse) {
     Printf("ERROR - Response matrix was not correctly generated!");
     return kFALSE;
   }
 
-  if (!fMeasured) {
+  TH2* measured = GetMeasured();
+
+  if (!measured) {
     Printf("ERROR - Measured histogram was not loaded!");
     return kFALSE;
   }
   
-  RooUnfoldBayes bayes(resp, fMeasured);
-  bayes.SetRegParm(3);
-  fUnfolded = static_cast<TH2*>(bayes.Hreco());
-  fUnfolded->GetXaxis()->SetName("xaxis");
-  fUnfolded->GetYaxis()->SetName("yaxis");
-  fUnfolded->GetZaxis()->SetName("zaxis");
+  TString hname;
 
-  new TCanvas;
-  fMeasured->Draw("colz");
-  
-  new TCanvas;
-  fUnfolded->Draw("colz");
+  hname = GetFoldedName();
 
-  new TCanvas;
-  fTruth->Draw("colz");
+  Fold(measured, hname, hname);
+
+  RooUnfoldBayes bayes(fRooUnfoldResponse, measured);
+
+
+
+  for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
+    bayes.SetRegParm(regParam);
+    TH2* unfolded = static_cast<TH2*>(bayes.Hreco());
+    unfolded->GetXaxis()->SetName("xaxis");
+    unfolded->GetYaxis()->SetName("yaxis");
+    unfolded->GetZaxis()->SetName("zaxis");
+    hname = GetUnfoldedName(regParam);
+    unfolded->SetName(hname);
+    unfolded->SetTitle(hname);
+    fOutputList->Add(unfolded);
+
+    hname = GetRefoldedName(regParam);
+    Fold(unfolded, hname, hname);
+  }
 
   return kTRUE;
 }
 
 //____________________________________________________________________________________
-RooUnfoldResponse* DJetCorrUnfold::GenerateRooUnfoldResponse()
+Bool_t DJetCorrUnfold::Fold(TH2* hist, TString name, TString title)
+{
+  if (!fRooUnfoldResponse) {
+    Printf("ERROR - Response matrix was not correctly generated!");
+    return kFALSE;
+  }
+
+  TH2* folded = static_cast<TH2*>(fRooUnfoldResponse->ApplyToTruth(hist, name));
+  folded->SetTitle(title);
+  fOutputList->Add(folded);
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrUnfold::GenerateRooUnfoldResponse()
 {
   // Preparing the response matrix.
 
-  if (!fResponseMeasured || !fResponseTruth || !fResponseMatrix) return 0;
-  
-  RooUnfoldResponse* resp = new RooUnfoldResponse(fResponseMeasured, fResponseTruth);
+  TH2* responseMeasured = GetResponseMeasured();
+  TH2* responseTruth = GetResponseTruth();
+  THnSparse* responseMatrix = GetResponseMatrix();
+  TH2* responseMisses = GetResponseMisses();
+  TH2* responseKinMisses = GetResponseKinMisses();
 
-  Int_t* coord_ind = new Int_t[fResponseMatrix->GetNdimensions()];
-  Double_t* coord = new Double_t[fResponseMatrix->GetNdimensions()];
+  if (!responseMeasured || !responseTruth || !responseMatrix) return kFALSE;
+  
+  if (fRooUnfoldResponse) delete fRooUnfoldResponse;
+
+  fRooUnfoldResponse = new RooUnfoldResponse(responseMeasured, responseTruth);
+
+  Int_t* coord_ind = new Int_t[responseMatrix->GetNdimensions()];
+  Double_t* coord = new Double_t[responseMatrix->GetNdimensions()];
     
-  for (Int_t ibin = 0; ibin < fResponseMatrix->GetNbins(); ibin++) {
-    Double_t content = fResponseMatrix->GetBinContent(ibin, coord_ind);
-    DJetCorrBase::GetBinCenter(fResponseMatrix, coord_ind, coord);
-    resp->Fill(coord[0], coord[1], coord[2], coord[3], content);
+  for (Int_t ibin = 0; ibin < responseMatrix->GetNbins(); ibin++) {
+    Double_t content = responseMatrix->GetBinContent(ibin, coord_ind);
+    DJetCorrBase::GetBinCenter(responseMatrix, coord_ind, coord);
+    fRooUnfoldResponse->Fill(coord[0], coord[1], coord[2], coord[3], content);
   }
 
   delete[] coord_ind;
   delete[] coord;
 
   if (fUseEfficiency) {
-    AddEfficiency(resp, fResponseMisses);
+    AddEfficiency(fRooUnfoldResponse, responseMisses);
   }
 
   if (fUseKinEfficiency) {
-    AddEfficiency(resp, fResponseKinMisses);
+    AddEfficiency(fRooUnfoldResponse, responseKinMisses);
   }
   
-  return resp;
+  return kTRUE;
 }
 
 //____________________________________________________________________________________
@@ -255,4 +322,159 @@ void DJetCorrUnfold::AddEfficiency(RooUnfoldResponse* resp, TH2* misses)
       resp->Miss(jetpt, z, misses->GetBinContent(jbin, zbin));
     }
   }
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrUnfold::MakeProjections()
+{
+  std::vector<TString> hnames;
+  hnames.push_back("histTruth");
+  hnames.push_back("histMeasured");
+  hnames.push_back("histFolded");
+  for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
+    hnames.push_back(TString::Format("histUnfolded_RegParam%d", regParam));
+    hnames.push_back(TString::Format("histRefolded_RegParam%d", regParam));
+  }
+
+  for (std::vector<TString>::iterator it = hnames.begin() ; it != hnames.end(); ++it) {
+    MakeProjections(*it);
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrUnfold::MakeProjections(TString hname)
+{
+  TH2* hist = static_cast<TH2*>(fOutputList->FindObject(hname));
+
+  // X projection
+  for (Int_t y = 1; y <= hist->GetNbinsY(); y++) {
+    TString pname = TString::Format("%s_Proj%s_Bin%d", hname.Data(), fgkAxisLabels[0].Data(), y);
+    TH1* proj = hist->ProjectionX(pname, y, y);
+    hist->SetTitle(pname);
+    fOutputList->Add(hist);
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseTruthName()
+{
+  TString name;
+
+  name = TString::Format("histResponseTruth");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseMeasuredName()
+{
+  TString name;
+
+  name = TString::Format("histResponseMeasured");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseMatrixName()
+{
+  TString name;
+
+  name = TString::Format("histResponseMatrix");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseMissesName()
+{
+  TString name;
+
+  name = TString::Format("histResponseMisses");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseKinMissesName()
+{
+  TString name;
+
+  name = TString::Format("histResponseKinMisses");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetTruthName()
+{
+  TString name;
+
+  name = TString::Format("histTruth");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetMeasuredName()
+{
+  TString name;
+
+  name = TString::Format("histMeasured");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetUnfoldedName(Int_t regParam)
+{
+  TString name;
+
+  name = TString::Format("histUnfolded_RegParam%d", regParam);
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetRefoldedName(Int_t regParam)
+{
+  TString name;
+
+  name = TString::Format("histRefolded_RegParam%d", regParam);
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetFoldedName()
+{
+  TString name;
+
+  name = TString::Format("histFolded");
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetTruthProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histTruth_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetMeasuredProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histMeasured_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetUnfoldedProjName(Int_t regParam, EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histUnfolded_RegParam%d_Proj%s_Bin%d", regParam, fgkAxisLabels[axis].Data(), bin);
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetRefoldedProjName(Int_t regParam, EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histRefolded_RegParam%d_Proj%s_Bin%d", regParam, fgkAxisLabels[axis].Data(), bin);
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetFoldedProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histolded_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
 }
