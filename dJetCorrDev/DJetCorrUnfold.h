@@ -44,6 +44,13 @@ class DJetCorrUnfold : public TNamed {
   TH2*                     fResponseMisses   ; //
   TH2*                     fResponseKinMisses; //
 
+  // Projections
+
+  TH1**                    fTruthProj        ; //
+  TH1**                    fMeasuredProj     ; //
+  TH1**                    fUnfoldedProj     ; //
+  TH1**                    fRefoldedProj     ; //
+
   DJetCorrAnalysis*        fAnalysis         ; //! analysis results
   DJetCorrResponse*        fResponse         ; //! response
     

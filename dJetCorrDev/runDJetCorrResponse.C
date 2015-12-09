@@ -4,7 +4,7 @@ class DJetCorrResponse;
 
 DJetCorrResponse* runDJetCorrResponse(
     const char* options = "run plot",
-    const char* train = "Jets_EMC_pp_MC_657",
+    const char* train = "Jets_EMC_pp_MC_705",
     Bool_t loadLibs = kTRUE, const char* inputPath = "$JETRESULTS")
 {
   TGaxis::SetMaxDigits(3); 
