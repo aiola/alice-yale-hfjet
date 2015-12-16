@@ -50,7 +50,7 @@ DJetCorrBase::DJetCorrBase() :
   fOutputFileName(),
   fOverwrite(kFALSE),
   fAnalysisParams(0),
-  fPlotFormat(),
+  fPlotFormat("pdf"),
   fSavePlots(kFALSE),
   fAddTrainToCanvasName(kFALSE),
   fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
@@ -161,7 +161,7 @@ Bool_t DJetCorrBase::Init()
     delete fOutputList;
     fOutputList = 0;
   }
-  fOutputList = new TList();
+  fOutputList = new THashList();
 
   if (fCanvases) {
     delete fCanvases;
@@ -207,7 +207,7 @@ Bool_t DJetCorrBase::LoadOutputHistograms()
 
   if (!outputFile) return kFALSE;
 
-  fOutputList = static_cast<TList*>(outputFile->Get("fOutputList"));
+  fOutputList = static_cast<THashList*>(outputFile->Get("fOutputList"));
 
   outputFile->Close();
   delete outputFile;
@@ -446,7 +446,7 @@ Bool_t DJetCorrBase::PlotObservable(DJetCorrAnalysisParams* params, TString obsN
   TString hname(obsName);
   TString prefix(params->GetName());
 
-  TH1** histos = new TH1*[nj*nd*nz];
+  TObjArray histos;
   Int_t ih = 0;
   TString jetTitle;
   TString dTitle;
@@ -486,31 +486,32 @@ Bool_t DJetCorrBase::PlotObservable(DJetCorrAnalysisParams* params, TString obsN
     
         TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
         //Printf("Info-DJetCorrAnalysis::PlotObservable : Retrieving histogram '%s'", objname.Data());
-        TH1* hist = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
-        if (!hist) {
+        TH1* h = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
+        if (!h) {
           Printf("Error-DJetCorrAnalysis::PlotObservable : Histogram '%s' not found!", objname.Data());
           continue;
         }
         TString newName(objname);
         newName += "_copy";
         //Printf("Info-DJetCorrAnalysis::PlotObservable : Cloning histogram '%s'", objname.Data());
-        histos[ih] = static_cast<TH1*>(hist->Clone(newName));
+        TH1* hist = static_cast<TH1*>(h->Clone(newName));
+        histos.Add(hist);
         if (norm == 1) {
-          histos[ih]->Scale(1. / histos[ih]->Integral(), "width");
-          histos[ih]->GetYaxis()->SetTitle("Probability density");
+          hist->Scale(1. / hist->Integral(), "width");
+          hist->GetYaxis()->SetTitle("Probability density");
         }
         else if (norm == 2) {
-          histos[ih]->Scale(1. / histos[ih]->Integral(), "");
-          TF1 f1("f1", "TMath::TwoPi() * x", 0, histos[ih]->GetXaxis()->GetXmax()*1.5);
-          for (Int_t ibin = 1; ibin <= histos[ih]->GetNbinsX(); ibin++) {
-            Double_t integ = f1.Integral(histos[ih]->GetBinLowEdge(ibin), histos[ih]->GetBinLowEdge(ibin+1));
-            histos[ih]->SetBinContent(ibin, histos[ih]->GetBinContent(ibin) / integ);
-            histos[ih]->SetBinError(ibin, histos[ih]->GetBinError(ibin) / integ);
+          hist->Scale(1. / hist->Integral(), "");
+          TF1 f1("f1", "TMath::TwoPi() * x", 0, hist->GetXaxis()->GetXmax()*1.5);
+          for (Int_t ibin = 1; ibin <= hist->GetNbinsX(); ibin++) {
+            Double_t integ = f1.Integral(hist->GetBinLowEdge(ibin), hist->GetBinLowEdge(ibin+1));
+            hist->SetBinContent(ibin, hist->GetBinContent(ibin) / integ);
+            hist->SetBinError(ibin, hist->GetBinError(ibin) / integ);
           }
-          histos[ih]->GetYaxis()->SetTitle("Prob. density / 2#pi#Delta R");
+          hist->GetYaxis()->SetTitle("Prob. density / 2#pi#Delta R");
         }
-        if (rebin > 1) histos[ih]->Rebin(4);
-        histos[ih]->SetTitle(htitle);
+        if (rebin > 1) hist->Rebin(4);
+        hist->SetTitle(htitle);
         ih++;
       }
     }
@@ -518,24 +519,31 @@ Bool_t DJetCorrBase::PlotObservable(DJetCorrAnalysisParams* params, TString obsN
 
   if (ih == 0) return kFALSE;
   
-  return Plot1DHistos(cname, ih, histos, xmin, xmax, plotStats);
+  return Plot1DHistos(cname, histos, xmin, xmax, plotStats);
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrBase::Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax, Int_t plotStats)
+Bool_t DJetCorrBase::Plot1DHistos(TString cname, TObjArray& histos, Double_t xmin, Double_t xmax, Int_t plotStats)
 {
-  if (!histos[0]) return kFALSE;
-  
-  TString xTitle(histos[0]->GetXaxis()->GetTitle());
-  TString yTitle(histos[0]->GetYaxis()->GetTitle());
-  if (xmax - xmin < fgkEpsilon) {
-    xmin = histos[0]->GetXaxis()->GetXmin();
-    xmax = histos[0]->GetXaxis()->GetXmax();
-  }
-  TCanvas *canvas = SetUpCanvas(cname, xTitle, xmin, xmax, kFALSE, yTitle, 0, 1, kFALSE);
-  TH1* hblank = dynamic_cast<TH1*>(canvas->GetListOfPrimitives()->At(0));
   Color_t colors[12] = {kRed+1, kBlue+1, kMagenta, kGreen+2, kOrange+1, kCyan+2, kPink+1, kTeal+1, kViolet, kAzure+1, kYellow+2, kSpring+3};
 
+  Int_t n = histos.GetEntries();
+  if (n == 0) return kFALSE;
+
+  TH1* first = static_cast<TH1*>(histos.At(0));
+  
+  TString xTitle(first->GetXaxis()->GetTitle());
+  TString yTitle(first->GetYaxis()->GetTitle());
+  if (xmax - xmin < fgkEpsilon) {
+    xmin = first->GetXaxis()->GetXmin();
+    xmax = first->GetXaxis()->GetXmax();
+  }
+  TCanvas *canvas = SetUpCanvas(cname, xTitle, xmin, xmax, kFALSE, yTitle, 0, 1, kFALSE);
+
+  Printf("Getting blank histogram");
+  TH1* hblank = dynamic_cast<TH1*>(canvas->GetListOfPrimitives()->At(0));
+
+  Printf("Setting up legend");
   TLegend* leg = 0;
   Int_t neff = n;
   if (plotStats) neff *= 2;
@@ -543,19 +551,26 @@ Bool_t DJetCorrBase::Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t
   else leg = SetUpLegend(0.38, 0.69, 0.88, 0.88, 15);
   leg->SetNColumns(2);
   Double_t maxY = 0;
-  for (Int_t i = 0; i < n; i++) {
-    if (maxY < histos[i]->GetMaximum()) maxY = histos[i]->GetMaximum();
-    histos[i]->SetLineColor(colors[i]);
-    histos[i]->SetMarkerColor(colors[i]);
-    histos[i]->SetMarkerStyle(kFullCircle);
-    histos[i]->SetMarkerSize(0.5);
-    histos[i]->Draw("same");
-    TLegendEntry* legEntry = leg->AddEntry(histos[i], histos[i]->GetTitle(), "pe");
+
+  Printf("Starting loop on histograms");
+  TIter next(&histos);
+  TH1* hist = 0;
+  Int_t i = 0;
+  while ((hist = static_cast<TH1*>(next()))) {
+    Printf("Working on histogram %s", hist->GetName());
+    if (maxY < hist->GetMaximum()) maxY = hist->GetMaximum();
+    hist->SetLineColor(colors[i]);
+    hist->SetMarkerColor(colors[i]);
+    hist->SetMarkerStyle(kFullCircle);
+    hist->SetMarkerSize(0.8);
+    hist->Draw("same");
+    TLegendEntry* legEntry = leg->AddEntry(hist, hist->GetTitle(), "pe");
     legEntry->SetLineColor(colors[i]);
     if (plotStats) {
-      TString statsStr(Form("#mu = %.3f, #sigma = %.3f", histos[i]->GetMean(), histos[i]->GetRMS()));
+      TString statsStr(Form("#mu = %.3f, #sigma = %.3f", hist->GetMean(), hist->GetRMS()));
       leg->AddEntry((TObject*)0, statsStr, "");
     }
+    i++;
   }
 
   if (hblank && maxY > 0) {
@@ -762,13 +777,8 @@ Bool_t DJetCorrBase::SaveOutputFile()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrBase::SaveOutputFile(TObjArray& arr)
+TString DJetCorrBase::GetOutpuFileName() const
 {
-  // Save the content arr in a file.
-
-  TString opt("create");
-  if (fOverwrite) opt = "recreate";
-  
   TString fname(fOutputPath);
 
   if (fTrainName.IsNull()) {
@@ -779,8 +789,21 @@ Bool_t DJetCorrBase::SaveOutputFile(TObjArray& arr)
     fname += fTrainName;
     fname += "/";
   }
-  
+
   fname += fOutputFileName;
+
+  return fname;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrBase::SaveOutputFile(TObjArray& arr)
+{
+  // Save the content arr in a file.
+
+  TString opt("create");
+  if (fOverwrite) opt = "recreate";
+
+  TString fname = GetOutpuFileName();
 
   TString path(fname);
   path.Remove(path.Last('/'));

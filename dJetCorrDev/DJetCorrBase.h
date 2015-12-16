@@ -48,6 +48,7 @@ class DJetCorrBase : public TNamed {
   virtual Bool_t Init();
   
   virtual Bool_t SaveOutputFile();
+  TString GetOutpuFileName() const;
 
   TH1* GetOutputHistogram(const char* name) { return fOutputList == 0 ? 0 : dynamic_cast<TH1*>(fOutputList->FindObject(name)); }
   THnSparse* GetOutputSparseHistogram(const char* name) { return fOutputList == 0 ? 0 : dynamic_cast<THnSparse*>(fOutputList->FindObject(name)); }
@@ -56,8 +57,8 @@ class DJetCorrBase : public TNamed {
 
   virtual Bool_t Regenerate() { return kTRUE;}
 
-  TH2* GetTruth(Int_t p, Bool_t copy);
-  TH2* GetMeasured(Int_t p, Bool_t copy);
+  TH2* GetTruth(Int_t p=0, Bool_t copy=kFALSE);
+  TH2* GetMeasured(Int_t p=0, Bool_t copy=kFALSE);
 
   TH1* GetDzTruth(Int_t p, Bool_t copy);
   TH1* GetDzMeasured(Int_t p, Bool_t copy);
@@ -116,7 +117,7 @@ class DJetCorrBase : public TNamed {
                                  Double_t minDPt, Double_t maxDPt, Double_t minJetPt, Double_t maxJetPt, Double_t minZ, Double_t maxZ,
                                  Int_t step, Int_t rebin, Int_t norm, Int_t plotStats=0);
     
-  Bool_t          Plot1DHistos(TString cname, Int_t n, TH1** histos, Double_t xmin, Double_t xmax, Int_t plotStats=0);
+  Bool_t          Plot1DHistos(TString cname, TObjArray& histos, Double_t xmin, Double_t xmax, Int_t plotStats=0);
   TMap*           GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
   Bool_t          LoadInputList(const char* lname);
@@ -140,7 +141,7 @@ class DJetCorrBase : public TNamed {
   TLegend*        SetUpLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize);
   TPaveText*      SetUpPaveText(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Int_t textSize, const char* text = 0);
   
-  void            SavePlot(TCanvas* canvas);
+  virtual void    SavePlot(TCanvas* canvas);
 
   void            CloseInputFile();
 

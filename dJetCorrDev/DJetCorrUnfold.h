@@ -8,7 +8,9 @@ class RooUnfoldResponse;
 class TH2;
 class THnSparse;
 
-class DJetCorrUnfold : public TNamed {
+#include "DJetCorrBase.h"
+
+class DJetCorrUnfold : public DJetCorrBase {
   
  public:
   enum EAxisType_t {
@@ -32,6 +34,18 @@ class DJetCorrUnfold : public TNamed {
   Bool_t PrepareData();
   Bool_t PrepareResponse();
   Bool_t GenerateRooUnfoldResponse();
+  Bool_t SaveOutputFile();
+  Bool_t MakePlots();
+  void PlotResponse();
+
+  void PlotUnfolded();
+  void PlotRefolded();
+  void PlotFolded();
+
+  void PlotUnfolded(EAxisType_t axis);
+  void PlotRefolded(EAxisType_t axis);
+  void PlotFolded(EAxisType_t axis);
+
   void AddEfficiency(RooUnfoldResponse* resp, TH2* misses);
   
   TH2*       GetResponseTruth()              { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetResponseTruthName())); }
@@ -40,8 +54,6 @@ class DJetCorrUnfold : public TNamed {
   TH2*       GetResponseMisses()             { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetResponseMissesName())); }
   TH2*       GetResponseKinMisses()          { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetResponseKinMissesName())); }
 
-  TH2*       GetTruth()                      { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetTruthName())); }
-  TH2*       GetMeasured()                   { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetMeasuredName())); }
   TH2*       GetUnfolded(Int_t regParam)     { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetUnfoldedName(regParam))); }
   TH2*       GetRefolded(Int_t regParam)     { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetRefoldedName(regParam))); }
   TH2*       GetFolded()                     { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetFoldedName())); }
@@ -58,8 +70,8 @@ class DJetCorrUnfold : public TNamed {
   TString    GetResponseMissesName()             ;
   TString    GetResponseKinMissesName()          ;
 
-  TString    GetTruthName()                      ;
-  TString    GetMeasuredName()                   ;
+  TString    GetTruthName(Int_t=0)               ;
+  TString    GetMeasuredName(Int_t=0)            ;
   TString    GetUnfoldedName(Int_t regParam)     ;
   TString    GetRefoldedName(Int_t regParam)     ;
   TString    GetFoldedName()                     ;
@@ -70,6 +82,11 @@ class DJetCorrUnfold : public TNamed {
   TString    GetRefoldedProjName(Int_t regParam, EAxisType_t axis, Int_t bin) ;
   TString    GetFoldedProjName(EAxisType_t axis, Int_t bin)                   ;
 
+  Int_t      GetNbinsX();
+  Int_t      GetNbinsY();
+  Int_t      GetNbins(Int_t axis);
+
+  void       SavePlot(TCanvas* canvas);
 
  protected:
   Int_t                    fDataParamIndex   ; //
@@ -85,7 +102,6 @@ class DJetCorrUnfold : public TNamed {
   DJetCorrAnalysis*        fAnalysis         ; //! analysis results
   DJetCorrResponse*        fResponse         ; //! response
   RooUnfoldResponse*       fRooUnfoldResponse; //! RooUnfold response matrix
-  THashList*               fOutputList       ; //! output list
     
  private: 
   DJetCorrUnfold(const DJetCorrUnfold &source);
