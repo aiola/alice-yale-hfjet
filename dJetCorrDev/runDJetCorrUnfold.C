@@ -24,6 +24,7 @@ DJetCorrUnfold* runDJetCorrUnfold(const char* trainData = "Jets_EMC_pp_MC_631_63
   DJetCorrUnfold* unfold = new DJetCorrUnfold(ana, resp);
   unfold->SetDataParamIndex(0);
   unfold->SetRespParamIndex(0);
+  unfold->SetSavePlots(kTRUE);
   //unfold->SetUseEfficiency(kFALSE);
   //unfold->SetUseKinEfficiency(kFALSE);
   unfold->Start();

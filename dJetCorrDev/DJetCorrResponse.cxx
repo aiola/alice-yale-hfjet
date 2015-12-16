@@ -327,7 +327,7 @@ Bool_t DJetCorrResponse::ProjectResponseJetPtZ(DJetCorrAnalysisParams* params, I
   hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);  
   TH2* eff = static_cast<TH2*>(truthReco->Clone(hname));
   eff->Divide(truth);
-  eff->SetTitle("Efficiecny");
+  eff->SetTitle("Efficiency");
   eff->GetXaxis()->SetTitle("#it{p}_{T,jet}^{ch,part} (GeV/#it{c})");
   eff->GetYaxis()->SetTitle("#it{z}_{||}^{part}");
   eff->GetZaxis()->SetTitle("Jet Reconstruction Efficiency");
@@ -1483,6 +1483,26 @@ TString DJetCorrResponse::GetKinMissesName(Int_t p)
 }
 
 //____________________________________________________________________________________
+TString DJetCorrResponse::GetEfficiencyName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrResponse::GetKinEfficiencyName(Int_t p)
+{
+  DJetCorrAnalysisParams* params = static_cast<DJetCorrAnalysisParams*>(fAnalysisParams->At(p));
+  if (!params) return "";
+
+  TString  hname = Form("%s_KinEfficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), params->GetMinDPt(), params->GetMaxDPt());
+  return hname;
+}
+
+//____________________________________________________________________________________
 THnSparse* DJetCorrResponse::GetResponse(Int_t p, Bool_t copy)
 {
   THnSparse* hist = dynamic_cast<THnSparse*>(GetOutputSparseHistogram(GetResponseName(p)));
@@ -1516,6 +1536,36 @@ TH2* DJetCorrResponse::GetMisses(Int_t p, Bool_t copy)
 TH2* DJetCorrResponse::GetKinMisses(Int_t p, Bool_t copy)
 {
   TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetKinMissesName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrResponse::GetEfficiency(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetEfficiencyName(p)));
+
+  if (copy && hist) {
+    TString hname = hist->GetName();
+    hname += "_copy";
+
+    hist = static_cast<TH2*>(hist->Clone(hname));
+  }
+
+  return hist;
+}
+
+//____________________________________________________________________________________
+TH2* DJetCorrResponse::GetKinEfficiency(Int_t p, Bool_t copy)
+{
+  TH2* hist = dynamic_cast<TH2*>(GetOutputHistogram(GetKinEfficiencyName(p)));
 
   if (copy && hist) {
     TString hname = hist->GetName();

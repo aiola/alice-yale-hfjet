@@ -668,7 +668,7 @@ Bool_t DJetCorrAnalysis::LoadOutputHistograms()
 
   if (!outputFile) return kFALSE;
 
-  fOutputList = static_cast<TList*>(outputFile->Get("fOutputList"));
+  fOutputList = static_cast<THashList*>(outputFile->Get("fOutputList"));
   fMassFitters = static_cast<TList*>(outputFile->Get("fMassFitters"));
 
   outputFile->Close();
