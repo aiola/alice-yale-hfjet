@@ -30,6 +30,7 @@ class DJetCorrUnfold : public DJetCorrBase {
   Bool_t Unfold();
   Bool_t MakeProjections();
   Bool_t MakeProjections(TString hlabel);
+  Bool_t MakeProjectionsTHnSparse(TString hname);
   Bool_t Fold(TH2* hist, TString name, TString title);
   Bool_t PrepareData();
   Bool_t PrepareResponse();
@@ -45,6 +46,10 @@ class DJetCorrUnfold : public DJetCorrBase {
   void PlotUnfolded(EAxisType_t axis);
   void PlotRefolded(EAxisType_t axis);
   void PlotFolded(EAxisType_t axis);
+
+  void PlotMeasured2D();
+  void PlotFolded2D();
+  void PlotTruth2D();
 
   void AddEfficiency(RooUnfoldResponse* resp, TH2* misses);
   
@@ -64,6 +69,8 @@ class DJetCorrUnfold : public DJetCorrBase {
   TH1*       GetRefoldedProj(Int_t regParam, EAxisType_t axis, Int_t bin) { return fOutputList == 0 ? 0 : static_cast<TH1*>(fOutputList->FindObject(GetRefoldedProjName(regParam, axis, bin))); }
   TH1*       GetFoldedProj(EAxisType_t axis, Int_t bin)                   { return fOutputList == 0 ? 0 : static_cast<TH1*>(fOutputList->FindObject(GetFoldedProjName(axis, bin))); }
 
+  TH2*       GetResponseMatrixProj(EAxisType_t axis, Int_t bin)           { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetResponseMatrixProjName(axis, bin))); }
+
   TString    GetResponseTruthName()              ;
   TString    GetResponseMeasuredName()           ;
   TString    GetResponseMatrixName()             ;
@@ -81,6 +88,8 @@ class DJetCorrUnfold : public DJetCorrBase {
   TString    GetUnfoldedProjName(Int_t regParam, EAxisType_t axis, Int_t bin) ;
   TString    GetRefoldedProjName(Int_t regParam, EAxisType_t axis, Int_t bin) ;
   TString    GetFoldedProjName(EAxisType_t axis, Int_t bin)                   ;
+
+  TString    GetResponseMatrixProjName(EAxisType_t axis, Int_t bin)           ;
 
   Int_t      GetNbinsX();
   Int_t      GetNbinsY();

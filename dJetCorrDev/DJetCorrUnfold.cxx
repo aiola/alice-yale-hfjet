@@ -22,6 +22,7 @@
 #include <TLine.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TPaletteAxis.h>
 
 #include "/opt/alicesw/RooUnfold/src/RooUnfold.h"
 #include "/opt/alicesw/RooUnfold/src/RooUnfoldBayes.h"
@@ -225,6 +226,10 @@ Bool_t DJetCorrUnfold::MakePlots()
   PlotRefolded();
   PlotFolded();
 
+  PlotMeasured2D();
+  PlotFolded2D();
+  PlotTruth2D();
+
   return kTRUE;
 }
 
@@ -255,9 +260,6 @@ Bool_t DJetCorrUnfold::Unfold()
   hname = GetFoldedName();
   Fold(truth, hname, hname);
 
-  //TH2* efficiency = fResponse->GetEfficiency(fRespParamIndex, kTRUE);
-  //TH2* kinEfficiency = fResponse->GetKinEfficiency(fRespParamIndex, kTRUE);
-
   RooUnfoldBayes bayes(fRooUnfoldResponse, measured);
 
   for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
@@ -272,9 +274,6 @@ Bool_t DJetCorrUnfold::Unfold()
     unfolded->SetName(hname);
     unfolded->SetTitle(hname);
 
-    //unfolded->Divide(efficiency);
-    //unfolded->Divide(kinEfficiency);
-
     fOutputList->Add(unfolded);
 
     hname = GetRefoldedName(regParam);
@@ -283,9 +282,6 @@ Bool_t DJetCorrUnfold::Unfold()
     delete unf;
     unf = 0;
   }
-
-  //delete efficiency;
-  //delete kinEfficiency;
 
   return kTRUE;
 }
@@ -346,20 +342,12 @@ Bool_t DJetCorrUnfold::Fold(TH2* hist, TString name, TString title)
     return kFALSE;
   }
 
-  //TH2* efficiency = fResponse->GetEfficiency(fRespParamIndex, kTRUE);
-  //TH2* kinEfficiency = fResponse->GetKinEfficiency(fRespParamIndex, kTRUE);
-
   TH2* histCopy = static_cast<TH2*>(hist->Clone("temp"));
-
-  //histCopy->Multiply(efficiency);
-  //histCopy->Multiply(kinEfficiency);
 
   TH2* folded = static_cast<TH2*>(fRooUnfoldResponse->ApplyToTruth(histCopy, name));
   folded->SetTitle(title);
   fOutputList->Add(folded);
 
-  //delete efficiency;
-  //delete kinEfficiency;
   delete histCopy;
 
   return kTRUE;
@@ -436,6 +424,38 @@ Bool_t DJetCorrUnfold::MakeProjections()
     MakeProjections(*it);
   }
 
+  MakeProjectionsTHnSparse(GetResponseMatrixName());
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrUnfold::MakeProjectionsTHnSparse(TString hname)
+{
+  THnSparse* hnsparse = static_cast<THnSparse*>(fOutputList->FindObject(hname));
+
+  for (Int_t i = 0; i < 2; i++) {
+    for (Int_t x = 0; x <= hnsparse->GetAxis((i+1)%2)->GetNbins(); x++) {
+      TString pname;
+
+      for (Int_t j = 0; j < 4; j++) {
+        hnsparse->GetAxis(j)->SetRange(0, 0);
+      }
+
+      if (x == 0) {
+        pname = TString::Format("%s_Proj%s_BinAll", hnsparse->GetName(), fgkAxisLabels[i].Data());
+      }
+      else {
+        pname = TString::Format("%s_Proj%s_Bin%d", hnsparse->GetName(), fgkAxisLabels[i].Data(), x);
+        hnsparse->GetAxis((i+1)%2)->SetRange(x, x);
+      }
+      TH2* h2d = hnsparse->Projection(i+2, i);
+      h2d->SetName(pname);
+      h2d->SetTitle(pname);
+      fOutputList->Add(h2d);
+    }
+  }
+
   return kTRUE;
 }
 
@@ -497,6 +517,26 @@ Int_t DJetCorrUnfold::GetNbins(Int_t axis)
 //____________________________________________________________________________________
 void DJetCorrUnfold::PlotResponse()
 {
+  for (Int_t i = 0; i < 2; i++){
+    TH2* resp = GetResponseMatrixProj((EAxisType_t)i, 2);
+    if (!resp) return;
+
+    TCanvas *canvas = SetUpCanvas(resp, kFALSE, kFALSE);
+    canvas->SetLogz();
+    resp->Draw("colz");
+
+    //resp->SetMinimum(5e1);
+    //resp->SetMaximum(1e4);
+
+    canvas->Update();
+
+    TPaletteAxis* palette = static_cast<TPaletteAxis*>(resp->GetListOfFunctions()->FindObject("palette"));
+    if (palette) {
+      palette->SetX2NDC(0.95);
+    }
+
+    SavePlot(canvas);
+  }
 }
 
 //____________________________________________________________________________________
@@ -662,6 +702,75 @@ void DJetCorrUnfold::PlotFolded(EAxisType_t axis)
 }
 
 //____________________________________________________________________________________
+void DJetCorrUnfold::PlotMeasured2D()
+{
+  TH2* measured = GetMeasured();
+  if (!measured) return;
+
+  TCanvas *canvas = SetUpCanvas(measured, kFALSE, kFALSE);
+  canvas->SetLogz();
+  measured->Draw("colz");
+
+  measured->SetMinimum(5e1);
+  measured->SetMaximum(1e4);
+
+  canvas->Update();
+
+  TPaletteAxis* palette = static_cast<TPaletteAxis*>(measured->GetListOfFunctions()->FindObject("palette"));
+  if (palette) {
+    palette->SetX2NDC(0.95);
+  }
+
+  SavePlot(canvas);
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::PlotFolded2D()
+{
+  TH2* folded = GetFolded();
+  if (!folded) return;
+
+  TCanvas *canvas = SetUpCanvas(folded, kFALSE, kFALSE);
+  canvas->SetLogz();
+  folded->Draw("colz");
+
+  folded->SetMinimum(5e1);
+  folded->SetMaximum(1e4);
+
+  canvas->Update();
+
+  TPaletteAxis* palette = static_cast<TPaletteAxis*>(folded->GetListOfFunctions()->FindObject("palette"));
+  if (palette) {
+    palette->SetX2NDC(0.95);
+  }
+
+  SavePlot(canvas);
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::PlotTruth2D()
+{
+  TH2* truth = GetTruth();
+  if (!truth) return;
+
+  TCanvas *canvas = SetUpCanvas(truth, kFALSE, kFALSE);
+  canvas->SetLogz();
+  truth->Draw("colz");
+
+  truth->SetMinimum(5e1);
+  truth->SetMaximum(1e4);
+
+  canvas->Update();
+
+  TPaletteAxis* palette = static_cast<TPaletteAxis*>(truth->GetListOfFunctions()->FindObject("palette"));
+  if (palette) {
+    palette->SetX2NDC(0.95);
+  }
+
+  SavePlot(canvas);
+}
+
+//____________________________________________________________________________________
 TString DJetCorrUnfold::GetResponseTruthName()
 {
   TString name;
@@ -807,6 +916,21 @@ TString DJetCorrUnfold::GetFoldedProjName(EAxisType_t axis, Int_t bin)
   TString name;
 
   name = TString::Format("histFolded_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+
+  return name;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseMatrixProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  if (bin == 0) {
+    name = TString::Format("histResponseMatrix_Proj%s_BinAll", fgkAxisLabels[axis].Data());
+  }
+  else {
+    name = TString::Format("histResponseMatrix_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+  }
 
   return name;
 }
