@@ -26,6 +26,8 @@ class DJetCorrUnfold : public DJetCorrBase {
   void   SetUseEfficiency(Bool_t b)    { fUseEfficiency     = b; }
   void   SetUseKinEfficiency(Bool_t b) { fUseKinEfficiency  = b; }
 
+  void   SetRegParam(Int_t min, Int_t max, Int_t step) { fMinRegParam = min; fMaxRegParam = max; fRegParamStep = step; }
+
   Bool_t Start();
   Bool_t Unfold();
   Bool_t MakeProjections();
@@ -63,6 +65,8 @@ class DJetCorrUnfold : public DJetCorrBase {
   TH2*       GetRefolded(Int_t regParam)     { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetRefoldedName(regParam))); }
   TH2*       GetFolded()                     { return fOutputList == 0 ? 0 : static_cast<TH2*>(fOutputList->FindObject(GetFoldedName())); }
 
+  TH1*       GetResponseTruthProj(EAxisType_t axis, Int_t bin)            { return fOutputList == 0 ? 0 : static_cast<TH1*>(fOutputList->FindObject(GetResponseTruthProjName(axis, bin))); }
+
   TH1*       GetTruthProj(EAxisType_t axis, Int_t bin)                    { return fOutputList == 0 ? 0 : static_cast<TH1*>(fOutputList->FindObject(GetTruthProjName(axis, bin))); }
   TH1*       GetMeasuredProj(EAxisType_t axis, Int_t bin)                 { return fOutputList == 0 ? 0 : static_cast<TH1*>(fOutputList->FindObject(GetMeasuredProjName(axis, bin))); }
   TH1*       GetUnfoldedProj(Int_t regParam, EAxisType_t axis, Int_t bin) { return fOutputList == 0 ? 0 : static_cast<TH1*>(fOutputList->FindObject(GetUnfoldedProjName(regParam, axis, bin))); }
@@ -82,6 +86,8 @@ class DJetCorrUnfold : public DJetCorrBase {
   TString    GetUnfoldedName(Int_t regParam)     ;
   TString    GetRefoldedName(Int_t regParam)     ;
   TString    GetFoldedName()                     ;
+
+  TString    GetResponseTruthProjName(EAxisType_t axis, Int_t bin)            ;
 
   TString    GetTruthProjName(EAxisType_t axis, Int_t bin)                    ;
   TString    GetMeasuredProjName(EAxisType_t axis, Int_t bin)                 ;

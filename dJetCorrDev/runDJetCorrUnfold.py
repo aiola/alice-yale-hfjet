@@ -27,6 +27,7 @@ def runDJetCorrUnfold(trainData, trainResp, loadLibs = True, inputPath = "$JETRE
    	unfold.SetDataParamIndex(0)
    	unfold.SetRespParamIndex(0)
    	unfold.SetSavePlots(True)
+   	unfold.SetRegParam(2, 8, 2)
     #unfold.SetUseEfficiency(False)
     #unfold.SetUseKinEfficiency(False)
 	unfold.Start()
