@@ -14,13 +14,13 @@ TString xsecHistName;
 TString scalingHistName;
 TString trialsHistName;
 
-TFile* OpenFile(Int_t pt);
+TFile* OpenFile(const char* localPath, Int_t pt);
 Double_t GetTotalXsec(const char* dataset);
 TH1* CreateTH1F(const char* name, const char* title);
 void ProcessDir(TDirectoryFile *file, Double_t scaling, TDirectoryFile *outfile, const char* type, const char* exclude);
 Bool_t ProcessObject(TObject *obj, Double_t scaling);
 
-void ScaleResults(Int_t ptHard, const char* dataset, const char* type="", const char* exclude="")
+void ScaleResults(const char* localPath, Int_t ptHard, const char* dataset, const char* type="", const char* exclude="")
 {
   TH1::AddDirectory(kFALSE);
 
@@ -34,7 +34,7 @@ void ScaleResults(Int_t ptHard, const char* dataset, const char* type="", const 
   TH1 *newxsec = 0;
   TH1 *newscalingFactors = 0;
   TH1 *newtrials = 0;
-  TString newxsecFileName(Form("%s.newxsec.root",dataset));
+  TString newxsecFileName(Form("%s/%s.newxsec.root", localPath, dataset));
   if (!gSystem->AccessPathName(newxsecFileName)) {
     xsec_file = TFile::Open(newxsecFileName);
     if (xsec_file && !xsec_file->IsZombie()) {    
@@ -56,7 +56,7 @@ void ScaleResults(Int_t ptHard, const char* dataset, const char* type="", const 
   }
   xsec_file = 0;
 
-  TFile *file = OpenFile(ptHard);
+  TFile *file = OpenFile(localPath, ptHard);
 
   TList *keys = dynamic_cast<TList*>(file->GetListOfKeys()->Clone("mykeys"));
   if (!keys) {
@@ -153,7 +153,7 @@ void ScaleResults(Int_t ptHard, const char* dataset, const char* type="", const 
   }
   xsec_file = 0;
 
-  TString fileoutName = Form("./%d/ScaledResults.root",ptHard);
+  TString fileoutName = Form("%s/%d/ScaledResults.root", localPath, ptHard);
     
   TFile *outfile = TFile::Open(fileoutName, "RECREATE");
 
@@ -275,7 +275,7 @@ Bool_t ProcessObject(TObject *obj, Double_t scaling)
 
 
     
-TFile* OpenFile(Int_t pt)
+TFile* OpenFile(const char* localPath, Int_t pt)
 {
   static TFile file;
   static Int_t ptopen  = -1;
@@ -284,7 +284,7 @@ TFile* OpenFile(Int_t pt)
 
   if (file.IsOpen()) file.Close("R");
 
-  TString fullpath = Form("./%d/AnalysisResults.root",pt);
+  TString fullpath = Form("%s/%d/AnalysisResults.root", localPath, pt);
 
   new (&file) TFile(fullpath);
 
