@@ -1412,3 +1412,15 @@ TH2* DJetCorrBase::Normalize(TH2* orig, const char* name)
 
   return res;
 }
+
+//____________________________________________________________________________________
+void DJetCorrBase::UpdateAllCanvases()
+{
+  TIter next(fCanvases);
+  TVirtualPad* pad = 0;
+
+  while ((pad = static_cast<TVirtualPad*>(next()))) {
+    pad->Update();
+    gSystem->ProcessEvents();
+  }
+}

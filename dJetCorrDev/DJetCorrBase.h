@@ -55,6 +55,8 @@ class DJetCorrBase : public TNamed {
   TCanvas* GetCanvas(const char* name)      { return fCanvases == 0 ? 0 : static_cast<TCanvas*>(fCanvases->FindObject(name)); }
   Double_t GetEvents(Bool_t recalculate=kFALSE);
 
+  void UpdateAllCanvases();
+
   virtual Bool_t Regenerate() { return kTRUE;}
 
   TH2* GetTruth(Int_t p=0, Bool_t copy=kFALSE);
