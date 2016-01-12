@@ -412,6 +412,7 @@ void DJetCorrUnfold::AddEfficiency(RooUnfoldResponse* resp, TH2* misses)
 Bool_t DJetCorrUnfold::MakeProjections()
 {
   std::vector<TString> hnames;
+  hnames.push_back("histResponseTruth");
   hnames.push_back("histTruth");
   hnames.push_back("histMeasured");
   hnames.push_back("histFolded");
@@ -562,6 +563,17 @@ void DJetCorrUnfold::PlotUnfolded(EAxisType_t axis)
     title = "Truth";
     truth->SetTitle(title);
     histos.Add(truth);
+
+    TH1* prior = GetResponseTruthProj(axis, x);
+    if (!prior) {
+      Printf("Could not get prior for axis %s and bin %d!", fgkAxisLabels[axis].Data(), x);
+      continue;
+    }
+    title = "Prior";
+    prior->SetTitle(title);
+    prior->Scale(truth->Integral() / prior->Integral());
+    histos.Add(prior);
+
     for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
       TH1* unfolded = GetUnfoldedProj(regParam, axis, x);
       if (!unfolded) {
@@ -866,6 +878,16 @@ TString DJetCorrUnfold::GetFoldedName()
   TString name;
 
   name = TString::Format("histFolded");
+
+  return name;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseTruthProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histResponseTruth_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
 
   return name;
 }
