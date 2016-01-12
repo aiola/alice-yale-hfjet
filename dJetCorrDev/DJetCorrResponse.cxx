@@ -1047,7 +1047,7 @@ Bool_t DJetCorrResponse::PlotEfficiencyJetPtZ(TCanvas*& canvasEff, DJetCorrAnaly
   Double_t maxDPt = 0;
   params->GetDPtBinRange(minDPt, maxDPt, dptBin);
 
-  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f", params->GetName(), minDPt, maxDPt);
+  hname = Form("%s_Efficiency_JetPt_Z_DPt_%02.0f_%02.0f_Coarse", params->GetName(), minDPt, maxDPt);
   TH2* eff = dynamic_cast<TH2*>(fOutputList->FindObject(hname));
   if (!eff) {
     Printf("Error-DJetCorrResponse::PlotResponseMatrix : Could not find histogram '%s'!", hname.Data());
