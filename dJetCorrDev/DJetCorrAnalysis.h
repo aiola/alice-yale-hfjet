@@ -30,6 +30,7 @@ class DJetCorrAnalysis : public DJetCorrBase {
   
   Bool_t Init();
   Bool_t SaveOutputFile();
+  Bool_t LoadOutputHistograms();
   
   Bool_t GenerateQAHistograms();
   Bool_t GenerateDJetCorrHistograms(DJetCorrAnalysisParams* params);
@@ -73,7 +74,6 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString GetJetPtMeasuredName(Int_t p);
 
  protected:
-  Bool_t          LoadOutputHistograms();
   Bool_t          ClearInputData();
   Int_t           GetAxisIndex(TString title) { return DJetCorrBase::GetAxisIndex(title, fDmesons); }
   

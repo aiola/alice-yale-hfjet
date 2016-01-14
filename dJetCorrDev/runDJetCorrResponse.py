@@ -1,4 +1,4 @@
-#!/usr/bin/env ipython -i
+#!/usr/bin/env python
 #python script to use the class DJetCorrResponse
 
 import ROOT
@@ -10,7 +10,9 @@ import IPython
 
 import commonFunctions
 
-def runDJetCorrResponse(train, run=True, plot=True, loadLibs=True, inputPath="$JETRESULTS"):
+def main(train, run=True, plot=True, loadLibs=True, inputPath="$JETRESULTS"):
+    
+    ROOT.TH1.AddDirectory(False)
     
     TGaxis.SetMaxDigits(3)
   
@@ -67,4 +69,6 @@ if __name__ == '__main__':
                         help='Input path')
     args = parser.parse_args()
     
-    runDJetCorrResponse(args.train, args.run, args.plot, not args.no_Libs, args.inputPath)
+    main(args.train, args.run, args.plot, not args.no_Libs, args.inputPath)
+    
+    IPython.embed()

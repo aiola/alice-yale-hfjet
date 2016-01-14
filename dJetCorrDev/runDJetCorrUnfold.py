@@ -1,4 +1,4 @@
-#!/usr/bin/env ipython -i
+#!/usr/bin/env python
 #python script to use the class DJetCorrUnfold
 
 import ROOT
@@ -12,7 +12,10 @@ import commonFunctions
 import runDJetCorrAnalysis
 import runDJetCorrResponse
 
-def runDJetCorrUnfold(trainData, trainResp, loadLibs = True, inputPath = "$JETRESULTS"):	
+def main(trainData, trainResp, loadLibs = True, inputPath = "$JETRESULTS"):
+	
+	ROOT.TH1.AddDirectory(False)
+	
 	if loadLibs:
 		commonFunctions.LoadDJetCorrClasses()
 
@@ -20,8 +23,8 @@ def runDJetCorrUnfold(trainData, trainResp, loadLibs = True, inputPath = "$JETRE
 	from ROOT import DJetCorrResponse
 	from ROOT import DJetCorrUnfold
   
-  	ana = runDJetCorrAnalysis.runDJetCorrAnalysis(trainData, False, False, False, False, True, False, False, inputPath)
-   	resp = runDJetCorrResponse.runDJetCorrResponse(trainResp, False, False, False, inputPath)
+  	ana = runDJetCorrAnalysis.main(trainData, False, False, False, False, True, False, False, inputPath)
+   	resp = runDJetCorrResponse.main(trainResp, False, False, False, inputPath)
   
   	unfold = DJetCorrUnfold(ana, resp)
    	unfold.SetDataParamIndex(0)
@@ -50,4 +53,6 @@ if __name__ == '__main__':
                         help='Input path')
     args = parser.parse_args()
     
-    runDJetCorrUnfold(args.trainData, args.trainResp, not args.no_Libs, args.inputPath)
+    main(args.trainData, args.trainResp, not args.no_Libs, args.inputPath)
+    
+    IPython.embed()

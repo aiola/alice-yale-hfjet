@@ -36,9 +36,11 @@
 
 #include "DJetCorrUnfold.h"
 
+//TString DJetCorrUnfold::UnfoldingParams::fgkUnfoldingMethodNames[4] = { "NoUnfolding", "Bayesian", "SVD", "Chi2" };
 const TString DJetCorrUnfold::fgkAxisLabels[2] = { "JetPt", "DmesonZ" };
 
 ClassImp(DJetCorrUnfold);
+ClassImp(DJetCorrUnfold::UnfoldingParams);
 
 //____________________________________________________________________________________
 DJetCorrUnfold::DJetCorrUnfold() :
@@ -48,14 +50,15 @@ DJetCorrUnfold::DJetCorrUnfold() :
   fForceRegeneration(kFALSE),
   fUseEfficiency(kTRUE),
   fUseKinEfficiency(kTRUE),
-  fMinRegParam(3),
-  fMaxRegParam(13),
-  fRegParamStep(2),
+  fUnfoldingParams(UnfoldingParams::kBayesian),
   fAnalysis(0),
   fResponse(0),
   fRooUnfoldResponse(0)
 {
   // Default constructor.
+
+  fRooUnfoldResponse1D[kJetPtAxis] = 0;
+  fRooUnfoldResponse1D[kDmesonZAxis] = 0;
 }
 
 //____________________________________________________________________________________
@@ -66,9 +69,7 @@ DJetCorrUnfold::DJetCorrUnfold(DJetCorrAnalysis* ana, DJetCorrResponse* resp) :
   fForceRegeneration(kFALSE),
   fUseEfficiency(kTRUE),
   fUseKinEfficiency(kTRUE),
-  fMinRegParam(3),
-  fMaxRegParam(13),
-  fRegParamStep(2),
+  fUnfoldingParams(UnfoldingParams::kBayesian, 2, 10, 2),
   fAnalysis(ana),
   fResponse(resp),
   fRooUnfoldResponse(0)
@@ -78,6 +79,12 @@ DJetCorrUnfold::DJetCorrUnfold(DJetCorrAnalysis* ana, DJetCorrResponse* resp) :
   TString name(Form("%s_%s", ana->GetName(), resp->GetName()));
   SetName(name);
   SetTitle(name);
+
+  fRooUnfoldResponse1D[kJetPtAxis] = 0;
+  fRooUnfoldResponse1D[kDmesonZAxis] = 0;
+
+  fUnfoldingParams1D[kJetPtAxis].Set(UnfoldingParams::kBayesian, 2, 10, 2);
+  fUnfoldingParams1D[kDmesonZAxis].Set(UnfoldingParams::kBayesian, 2, 10, 2);
 }
 
 //____________________________________________________________________________________
@@ -127,7 +134,10 @@ Bool_t DJetCorrUnfold::PrepareResponse()
     result = fResponse->LoadOutputHistograms();
   }
   
-  if (!result) {
+  if (result) {
+    Printf("Response matrix successfully loaded!");
+  }
+  else {
     Printf("Generating response matrix...");
     result = fResponse->Regenerate();
     if (!result) {
@@ -181,6 +191,10 @@ Bool_t DJetCorrUnfold::PrepareResponse()
   responseKinMisses->SetTitle("Response Kinematic Misses");
   fOutputList->Add(responseKinMisses);
 
+  if (result) {
+    Printf("Prepare response successful!");
+  }
+
   return result;
 }
 
@@ -198,13 +212,28 @@ Bool_t DJetCorrUnfold::Start()
   result = PrepareResponse();
   if (!result) return kFALSE;
 
+  result = MakeProjectionsBeforeUnfolding();
+  if (!result) return kFALSE;
+
   result = GenerateRooUnfoldResponse();
+  if (!result) return kFALSE;
+
+  result = GenerateRooUnfoldResponse1D(kJetPtAxis);
+  if (!result) return kFALSE;
+
+  result = GenerateRooUnfoldResponse1D(kDmesonZAxis);
   if (!result) return kFALSE;
 
   result = Unfold();
   if (!result) return kFALSE;
 
-  result = MakeProjections();
+  result = Unfold1D(kJetPtAxis);
+  if (!result) return kFALSE;
+
+  result = Unfold1D(kDmesonZAxis);
+  if (!result) return kFALSE;
+
+  result = MakeProjectionsAfterUnfolding();
   if (!result) return kFALSE;
 
   result = MakePlots();
@@ -258,11 +287,13 @@ Bool_t DJetCorrUnfold::Unfold()
   TString hname;
 
   hname = GetFoldedName();
-  Fold(truth, hname, hname);
+  Fold(truth, fRooUnfoldResponse, hname, hname);
 
   RooUnfoldBayes bayes(fRooUnfoldResponse, measured);
 
-  for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
+  Int_t regParam = 0;
+  fUnfoldingParams.ResetCurrentRegIndex();
+  while ((regParam = fUnfoldingParams.NextRegParam()) > 0) {
     TString name = Form("Unfold_RegParam%d", regParam);
     RooUnfold* unf = bayes.Clone(name);
     unf->SetRegParm(regParam);
@@ -277,13 +308,71 @@ Bool_t DJetCorrUnfold::Unfold()
     fOutputList->Add(unfolded);
 
     hname = GetRefoldedName(regParam);
-    Fold(unfolded, hname, hname);
+    Fold(unfolded, fRooUnfoldResponse, hname, hname);
 
     delete unf;
     unf = 0;
   }
 
   return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrUnfold::Unfold1D(EAxisType_t axis)
+{
+  if (!fRooUnfoldResponse1D[axis]) {
+    Printf("ERROR - 1D Response matrix for axis %d was not correctly generated!", axis);
+    return kFALSE;
+  }
+
+  TH1* measured = GetMeasuredProj(axis, 0);
+
+  if (!measured) {
+    Printf("ERROR - Measured histogram for axis %d was not loaded!", axis);
+    return kFALSE;
+  }
+
+  switch (fUnfoldingParams1D[axis].GetUnfoldingMethod()) {
+  case UnfoldingParams::kBayesian:
+    Unfold1DBayes(measured, fRooUnfoldResponse1D[axis], fUnfoldingParams1D[axis]);
+    break;
+  default:
+    Printf("Unfolding method %d not implemented.", fUnfoldingParams1D[axis].GetUnfoldingMethod());
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::Unfold1DBayes(TH1* measured, RooUnfoldResponse* resp, UnfoldingParams params)
+{
+  RooUnfoldBayes bayes(resp, measured);
+
+  TString hname;
+
+  Int_t regParam = 0;
+  params.ResetCurrentRegIndex();
+  while ((regParam = params.NextRegParam()) > 0) {
+    TString name = Form("Unfold_RegParam%d", regParam);
+    RooUnfold* unf = bayes.Clone(name);
+    unf->SetRegParm(regParam);
+    TH2* unfolded = static_cast<TH2*>(unf->Hreco());
+    unfolded->GetXaxis()->SetName("xaxis");
+    unfolded->GetYaxis()->SetName("yaxis");
+    unfolded->GetZaxis()->SetName("zaxis");
+    hname = GetUnfoldedName(regParam);
+    unfolded->SetName(hname);
+    unfolded->SetTitle(hname);
+
+    fOutputList->Add(unfolded);
+
+    hname = GetRefoldedName(regParam);
+    Fold(unfolded, resp, hname, hname);
+
+    delete unf;
+    unf = 0;
+  }
 }
 
 //____________________________________________________________________________________
@@ -335,16 +424,16 @@ Bool_t DJetCorrUnfold::SaveOutputFile()
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrUnfold::Fold(TH2* hist, TString name, TString title)
+Bool_t DJetCorrUnfold::Fold(TH1* hist, RooUnfoldResponse* resp, TString name, TString title)
 {
-  if (!fRooUnfoldResponse) {
+  if (!resp) {
     Printf("ERROR - Response matrix was not correctly generated!");
     return kFALSE;
   }
 
-  TH2* histCopy = static_cast<TH2*>(hist->Clone("temp"));
+  TH1* histCopy = static_cast<TH2*>(hist->Clone("temp"));
 
-  TH2* folded = static_cast<TH2*>(fRooUnfoldResponse->ApplyToTruth(histCopy, name));
+  TH1* folded = static_cast<TH1*>(resp->ApplyToTruth(histCopy, name));
   folded->SetTitle(title);
   fOutputList->Add(folded);
 
@@ -394,6 +483,67 @@ Bool_t DJetCorrUnfold::GenerateRooUnfoldResponse()
 }
 
 //____________________________________________________________________________________
+Bool_t DJetCorrUnfold::GenerateRooUnfoldResponse1D(EAxisType_t axis)
+{
+  // Preparing the response matrix.
+
+  TH1* responseMeasured = GetResponseMeasuredProj(axis, 0);
+  TH1* responseTruth = GetResponseTruthProj(axis, 0);
+  TH2* responseMatrix = GetResponseMatrixProj(axis, 0);
+  TH1* responseMisses = GetResponseMissesProj(axis, 0);
+  TH1* responseKinMisses = GetResponseKinMissesProj(axis, 0);
+
+  if (!responseMeasured) {
+    Printf("Could not get response matrix measured projection for axis %d!", axis);
+    return kFALSE;
+  }
+
+  if (!responseTruth) {
+    Printf("Could not get response matrix truth projection for axis %d!", axis);
+    return kFALSE;
+  }
+
+  if (!responseMatrix) {
+    Printf("Could not get response matrix for axis %d!", axis);
+    return kFALSE;
+  }
+
+  if (fRooUnfoldResponse1D[axis]) delete fRooUnfoldResponse1D[axis];
+
+  fRooUnfoldResponse1D[axis] = new RooUnfoldResponse(responseMeasured, responseTruth);
+
+  for (Int_t xbin = 0; xbin < responseMatrix->GetXaxis()->GetNbins(); xbin++) {
+    Double_t x = responseMatrix->GetXaxis()->GetBinCenter(xbin);
+    for (Int_t ybin = 0; ybin < responseMatrix->GetYaxis()->GetNbins(); ybin++) {
+      Double_t y = responseMatrix->GetYaxis()->GetBinCenter(ybin);
+      Double_t content = responseMatrix->GetBinContent(xbin, ybin);
+      fRooUnfoldResponse1D[axis]->Fill(x, y, content);
+    }
+  }
+
+  if (fUseEfficiency) {
+    AddEfficiency1D(fRooUnfoldResponse1D[axis], responseMisses);
+  }
+
+  if (fUseKinEfficiency) {
+    AddEfficiency1D(fRooUnfoldResponse1D[axis], responseKinMisses);
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::AddEfficiency1D(RooUnfoldResponse* resp, TH1* misses)
+{
+  if (!misses || !resp) return;
+
+  for (Int_t xbin = 1; xbin <= misses->GetNbinsX(); xbin++) {
+    Double_t x = misses->GetXaxis()->GetBinCenter(xbin);
+    resp->Miss(x, misses->GetBinContent(xbin));
+  }
+}
+
+//____________________________________________________________________________________
 void DJetCorrUnfold::AddEfficiency(RooUnfoldResponse* resp, TH2* misses)
 {
   if (!misses || !resp) return;
@@ -409,14 +559,33 @@ void DJetCorrUnfold::AddEfficiency(RooUnfoldResponse* resp, TH2* misses)
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrUnfold::MakeProjections()
+Bool_t DJetCorrUnfold::MakeProjectionsBeforeUnfolding()
 {
   std::vector<TString> hnames;
   hnames.push_back("histResponseTruth");
+  hnames.push_back("histResponseMeasured");
+  hnames.push_back("histResponseMisses");
+  hnames.push_back("histResponseKinMisses");
   hnames.push_back("histTruth");
   hnames.push_back("histMeasured");
+
+  for (std::vector<TString>::iterator it = hnames.begin() ; it != hnames.end(); ++it) {
+    MakeProjections(*it);
+  }
+
+  MakeProjectionsTHnSparse(GetResponseMatrixName());
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrUnfold::MakeProjectionsAfterUnfolding()
+{
+  std::vector<TString> hnames;
   hnames.push_back("histFolded");
-  for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
+  Int_t regParam = 0;
+  fUnfoldingParams.ResetCurrentRegIndex();
+  while ((regParam = fUnfoldingParams.NextRegParam()) > 0) {
     hnames.push_back(TString::Format("histUnfolded_RegParam%d", regParam));
     hnames.push_back(TString::Format("histRefolded_RegParam%d", regParam));
   }
@@ -424,8 +593,6 @@ Bool_t DJetCorrUnfold::MakeProjections()
   for (std::vector<TString>::iterator it = hnames.begin() ; it != hnames.end(); ++it) {
     MakeProjections(*it);
   }
-
-  MakeProjectionsTHnSparse(GetResponseMatrixName());
 
   return kTRUE;
 }
@@ -443,13 +610,9 @@ Bool_t DJetCorrUnfold::MakeProjectionsTHnSparse(TString hname)
         hnsparse->GetAxis(j)->SetRange(0, 0);
       }
 
-      if (x == 0) {
-        pname = TString::Format("%s_Proj%s_BinAll", hnsparse->GetName(), fgkAxisLabels[i].Data());
-      }
-      else {
-        pname = TString::Format("%s_Proj%s_Bin%d", hnsparse->GetName(), fgkAxisLabels[i].Data(), x);
-        hnsparse->GetAxis((i+1)%2)->SetRange(x, x);
-      }
+      pname = TString::Format("%s_Proj%s_Bin%d", hnsparse->GetName(), fgkAxisLabels[i].Data(), x);
+      if (x > 0)  hnsparse->GetAxis((i+1)%2)->SetRange(x, x);
+
       TH2* h2d = hnsparse->Projection(i+2, i);
       h2d->SetName(pname);
       h2d->SetTitle(pname);
@@ -466,19 +629,36 @@ Bool_t DJetCorrUnfold::MakeProjections(TString hname)
   TH2* hist = static_cast<TH2*>(fOutputList->FindObject(hname));
 
   // X projection
-  for (Int_t y = 1; y <= hist->GetNbinsY(); y++) {
+  for (Int_t y = 0; y <= hist->GetNbinsY(); y++) {
     TString pname = TString::Format("%s_Proj%s_Bin%d", hist->GetName(), fgkAxisLabels[0].Data(), y);
     TString ptitle = TString::Format("Bin = %d", y);
-    TH1* proj = hist->ProjectionX(pname, y, y);
+    TH1* proj = 0;
+
+    if (y > 0) {
+      proj = hist->ProjectionX(pname, y, y);
+    }
+    else {
+      proj = hist->ProjectionX(pname);
+    }
+
     proj->SetTitle(ptitle);
     fOutputList->Add(proj);
   }
 
   // Y projection
-  for (Int_t x = 1; x <= hist->GetNbinsX(); x++) {
+  for (Int_t x = 0; x <= hist->GetNbinsX(); x++) {
     TString pname = TString::Format("%s_Proj%s_Bin%d", hname.Data(), fgkAxisLabels[1].Data(), x);
     TString ptitle = TString::Format("Bin = %d", x);
-    TH1* proj = hist->ProjectionY(pname, x, x);
+
+    TH1* proj = 0;
+
+    if (x > 0) {
+      proj = hist->ProjectionY(pname, x, x);
+    }
+    else {
+      proj = hist->ProjectionY(pname);
+    }
+
     proj->SetTitle(ptitle);
     fOutputList->Add(proj);
   }
@@ -526,9 +706,6 @@ void DJetCorrUnfold::PlotResponse()
     canvas->SetLogz();
     resp->Draw("colz");
 
-    //resp->SetMinimum(5e1);
-    //resp->SetMaximum(1e4);
-
     canvas->Update();
 
     TPaletteAxis* palette = static_cast<TPaletteAxis*>(resp->GetListOfFunctions()->FindObject("palette"));
@@ -552,7 +729,7 @@ void DJetCorrUnfold::PlotUnfolded(EAxisType_t axis)
 
   TString title;
 
-  for (Int_t x = 1; x <= nbins; x++) {
+  for (Int_t x = 0; x <= nbins; x++) {
     histos.Clear();
 
     TH1* truth = GetTruthProj(axis, x);
@@ -574,7 +751,9 @@ void DJetCorrUnfold::PlotUnfolded(EAxisType_t axis)
     prior->Scale(truth->Integral() / prior->Integral());
     histos.Add(prior);
 
-    for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
+    Int_t regParam = 0;
+    fUnfoldingParams.ResetCurrentRegIndex();
+    while ((regParam = fUnfoldingParams.NextRegParam()) > 0) {
       TH1* unfolded = GetUnfoldedProj(regParam, axis, x);
       if (!unfolded) {
         Printf("Could not get unfolded for axis %s, bin %d, reg param %d!", fgkAxisLabels[axis].Data(), x, regParam);
@@ -647,7 +826,7 @@ void DJetCorrUnfold::PlotRefolded(EAxisType_t axis)
 
   TString title;
 
-  for (Int_t x = 1; x <= nbins; x++) {
+  for (Int_t x = 0; x <= nbins; x++) {
     histos.Clear();
 
     TH1* meas = GetMeasuredProj(axis, x);
@@ -658,7 +837,9 @@ void DJetCorrUnfold::PlotRefolded(EAxisType_t axis)
     title = "Measured";
     meas->SetTitle(title);
     histos.Add(meas);
-    for (Int_t regParam = fMinRegParam; regParam <= fMaxRegParam; regParam += fRegParamStep) {
+    Int_t regParam = 0;
+    fUnfoldingParams.ResetCurrentRegIndex();
+    while ((regParam = fUnfoldingParams.NextRegParam()) > 0) {
       TH1* refolded = GetRefoldedProj(regParam, axis, x);
       if (!refolded) {
         Printf("Could not get refolded for axis %s, bin %d, reg param %d!", fgkAxisLabels[axis].Data(), x, regParam);
@@ -686,7 +867,7 @@ void DJetCorrUnfold::PlotFolded(EAxisType_t axis)
 
   TString title;
 
-  for (Int_t x = 1; x <= nbins; x++) {
+  for (Int_t x = 0; x <= nbins; x++) {
     histos.Clear();
 
     TH1* meas = GetMeasuredProj(axis, x);
@@ -883,16 +1064,6 @@ TString DJetCorrUnfold::GetFoldedName()
 }
 
 //____________________________________________________________________________________
-TString DJetCorrUnfold::GetResponseTruthProjName(EAxisType_t axis, Int_t bin)
-{
-  TString name;
-
-  name = TString::Format("histResponseTruth_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
-
-  return name;
-}
-
-//____________________________________________________________________________________
 TString DJetCorrUnfold::GetTruthProjName(EAxisType_t axis, Int_t bin)
 {
   TString name;
@@ -943,16 +1114,141 @@ TString DJetCorrUnfold::GetFoldedProjName(EAxisType_t axis, Int_t bin)
 }
 
 //____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseTruthProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histResponseTruth_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+
+  return name;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseMeasuredProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histResponseMeasured_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+
+  return name;
+}
+
+//____________________________________________________________________________________
 TString DJetCorrUnfold::GetResponseMatrixProjName(EAxisType_t axis, Int_t bin)
 {
   TString name;
 
-  if (bin == 0) {
-    name = TString::Format("histResponseMatrix_Proj%s_BinAll", fgkAxisLabels[axis].Data());
-  }
-  else {
-    name = TString::Format("histResponseMatrix_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
-  }
+  name = TString::Format("histResponseMatrix_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
 
   return name;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseMissesProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histResponseMisses_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+
+  return name;
+}
+
+//____________________________________________________________________________________
+TString DJetCorrUnfold::GetResponseKinMissesProjName(EAxisType_t axis, Int_t bin)
+{
+  TString name;
+
+  name = TString::Format("histResponseKinMisses_Proj%s_Bin%d", fgkAxisLabels[axis].Data(), bin);
+
+  return name;
+}
+
+//____________________________________________________________________________________
+DJetCorrUnfold::UnfoldingParams::UnfoldingParams() :
+  TNamed(),
+  fUnfoldingMethod(kNoUnfolding),
+  fMinRegParam(0),
+  fRegParamStep(0),
+  fNRegParams(0),
+  fCurrentRegIndex(0)
+{
+  fgkUnfoldingMethodNames[kNoUnfolding] = "NoUnfolding";
+  fgkUnfoldingMethodNames[kBayesian] = "Bayesian";
+  fgkUnfoldingMethodNames[kSVD] = "SVD";
+  fgkUnfoldingMethodNames[kChi2] = "Chi2";
+
+  SetName(fgkUnfoldingMethodNames[fUnfoldingMethod]);
+  SetTitle(fgkUnfoldingMethodNames[fUnfoldingMethod]);
+}
+
+//____________________________________________________________________________________
+DJetCorrUnfold::UnfoldingParams::UnfoldingParams(EUnfoldingMethod_t m, Int_t min, Int_t max, Int_t step) :
+  TNamed(),
+  fUnfoldingMethod(m),
+  fMinRegParam(0),
+  fRegParamStep(0),
+  fNRegParams(0),
+  fCurrentRegIndex(0)
+{
+  fgkUnfoldingMethodNames[kNoUnfolding] = "NoUnfolding";
+  fgkUnfoldingMethodNames[kBayesian] = "Bayesian";
+  fgkUnfoldingMethodNames[kSVD] = "SVD";
+  fgkUnfoldingMethodNames[kChi2] = "Chi2";
+
+  SetRegParam(min, max, step);
+  SetName(fgkUnfoldingMethodNames[fUnfoldingMethod]);
+  SetTitle(fgkUnfoldingMethodNames[fUnfoldingMethod]);
+}
+
+
+//____________________________________________________________________________________
+DJetCorrUnfold::UnfoldingParams::UnfoldingParams(const UnfoldingParams &source) :
+  TNamed(source),
+  fUnfoldingMethod(source.fUnfoldingMethod),
+  fMinRegParam(source.fMinRegParam),
+  fRegParamStep(source.fRegParamStep),
+  fNRegParams(source.fNRegParams),
+  fCurrentRegIndex(source.fCurrentRegIndex)
+{
+  fgkUnfoldingMethodNames[kNoUnfolding] = "NoUnfolding";
+  fgkUnfoldingMethodNames[kBayesian] = "Bayesian";
+  fgkUnfoldingMethodNames[kSVD] = "SVD";
+  fgkUnfoldingMethodNames[kChi2] = "Chi2";
+}
+
+//____________________________________________________________________________________
+DJetCorrUnfold::UnfoldingParams& DJetCorrUnfold::UnfoldingParams::operator=(const UnfoldingParams& source)
+{
+  fUnfoldingMethod = source.fUnfoldingMethod;
+  fMinRegParam = source.fMinRegParam;
+  fRegParamStep = source.fRegParamStep;
+  fNRegParams = source.fNRegParams;
+  fCurrentRegIndex = source.fCurrentRegIndex;
+
+  return *this;
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::UnfoldingParams::Set(EUnfoldingMethod_t m, Int_t min, Int_t max, Int_t step)
+{
+  fUnfoldingMethod = m;
+  SetRegParam(min, max, step);
+  SetName(fgkUnfoldingMethodNames[fUnfoldingMethod]);
+  SetTitle(fgkUnfoldingMethodNames[fUnfoldingMethod]);
+}
+
+//____________________________________________________________________________________
+void DJetCorrUnfold::UnfoldingParams::SetRegParam(Int_t min, Int_t max, Int_t step)
+{
+  fMinRegParam = min;
+  fRegParamStep = step;
+  fNRegParams = TMath::CeilNint(Double_t(max - min) / step) + 1;
+}
+
+//____________________________________________________________________________________
+Int_t DJetCorrUnfold::UnfoldingParams::NextRegParam()
+{
+  Int_t reg = RegParam(fCurrentRegIndex);
+  if (reg >= 0) fCurrentRegIndex++;
+  return reg;
 }

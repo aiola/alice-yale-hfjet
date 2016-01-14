@@ -1,4 +1,4 @@
-#!/usr/bin/env ipython -i
+#!/usr/bin/env python
 #python script to use the class DJetCorrAnalysis
 
 import ROOT
@@ -10,7 +10,10 @@ import IPython
 
 import commonFunctions
 
-def runDJetCorrAnalysis(train, run=True, refit=False, plot=True, truthOnly=False, isMC=False, isBkgSub=False, loadLibs=True, inputPath="$JETRESULTS"):
+def main(train, run=True, refit=False, plot=True, truthOnly=False, isMC=False, isBkgSub=False, loadLibs=True, inputPath="$JETRESULTS"):
+    
+    ROOT.TH1.AddDirectory(False)
+    
     TGaxis.SetMaxDigits(3) 
 
     tracksName = "tracks"
@@ -102,4 +105,6 @@ if __name__ == '__main__':
                         help='Input path')
     args = parser.parse_args()
     
-    runDJetCorrAnalysis(args.train, args.run, args.refit, args.plot, args.truth_only, args.MC, args.bkg_sub, not args.no_Libs, args.inputPath)
+    main(args.train, args.run, args.refit, args.plot, args.truth_only, args.MC, args.bkg_sub, not args.no_Libs, args.inputPath)
+    
+    IPython.embed()

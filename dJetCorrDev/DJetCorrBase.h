@@ -55,6 +55,7 @@ class DJetCorrBase : public TNamed {
   TCanvas* GetCanvas(const char* name)      { return fCanvases == 0 ? 0 : static_cast<TCanvas*>(fCanvases->FindObject(name)); }
   Double_t GetEvents(Bool_t recalculate=kFALSE);
 
+  virtual Bool_t LoadOutputHistograms();
   void UpdateAllCanvases();
 
   virtual Bool_t Regenerate() { return kTRUE;}
@@ -125,7 +126,6 @@ class DJetCorrBase : public TNamed {
   Bool_t          LoadInputList(const char* lname);
   TFile*          OpenOutputFile();
   virtual Bool_t  LoadTHnSparse() {return kTRUE;}
-  virtual Bool_t  LoadOutputHistograms();
 
   TVirtualPad*    SetUpPad(TVirtualPad* pad,
                            const char* xTitle, Double_t minX, Double_t maxX, Bool_t logX,
