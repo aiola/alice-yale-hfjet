@@ -239,8 +239,10 @@ Bool_t DJetCorrUnfold::Start()
   result = MakePlots();
   if (!result) return kFALSE;
 
-  result = SaveOutputFile();
-  if (!result) return kFALSE;
+  if (fSaveOutputFile) {
+    result = SaveOutputFile();
+    if (!result) return kFALSE;
+  }
 
   return result;
 }
@@ -713,7 +715,7 @@ void DJetCorrUnfold::PlotResponse()
       palette->SetX2NDC(0.95);
     }
 
-    SavePlot(canvas);
+    if (fSavePlots) SavePlot(canvas);
   }
 }
 
@@ -739,6 +741,8 @@ void DJetCorrUnfold::PlotUnfolded(EAxisType_t axis)
     }
     title = "Truth";
     truth->SetTitle(title);
+    truth->SetOption("hist");
+    truth->SetLineWidth(2);
     histos.Add(truth);
 
     TH1* prior = GetResponseTruthProj(axis, x);
@@ -748,6 +752,9 @@ void DJetCorrUnfold::PlotUnfolded(EAxisType_t axis)
     }
     title = "Prior";
     prior->SetTitle(title);
+    prior->SetOption("hist");
+    prior->SetLineWidth(2);
+    prior->SetLineStyle(2);
     prior->Scale(truth->Integral() / prior->Integral());
     histos.Add(prior);
 
@@ -878,7 +885,17 @@ void DJetCorrUnfold::PlotFolded(EAxisType_t axis)
     title = "Measured";
     meas->SetTitle(title);
     histos.Add(meas);
-
+/*
+    TH1* respMeas = GetResponseMeasuredProj(axis, x);
+    if (!respMeas) {
+      Printf("Could not get measured for axis %s and bin %d!", fgkAxisLabels[axis].Data(), x);
+      continue;
+    }
+    title = "MC measured";
+    respMeas->SetTitle(title);
+    respMeas->Scale(meas->Integral() / respMeas->Integral());
+    histos.Add(respMeas);
+*/
     TH1* folded = GetFoldedProj(axis, x);
     if (!folded) {
       Printf("Could not get folded for axis %s and bin %d!", fgkAxisLabels[axis].Data(), x);
@@ -914,7 +931,7 @@ void DJetCorrUnfold::PlotMeasured2D()
     palette->SetX2NDC(0.95);
   }
 
-  SavePlot(canvas);
+  if (fSavePlots) SavePlot(canvas);
 }
 
 //____________________________________________________________________________________
@@ -937,7 +954,7 @@ void DJetCorrUnfold::PlotFolded2D()
     palette->SetX2NDC(0.95);
   }
 
-  SavePlot(canvas);
+  if (fSavePlots) SavePlot(canvas);
 }
 
 //____________________________________________________________________________________
@@ -960,7 +977,7 @@ void DJetCorrUnfold::PlotTruth2D()
     palette->SetX2NDC(0.95);
   }
 
-  SavePlot(canvas);
+  if (fSavePlots) SavePlot(canvas);
 }
 
 //____________________________________________________________________________________

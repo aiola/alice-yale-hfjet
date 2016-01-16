@@ -563,7 +563,9 @@ Bool_t DJetCorrBase::Plot1DHistos(TString cname, TObjArray& histos, Double_t xmi
     hist->SetMarkerColor(colors[i]);
     hist->SetMarkerStyle(kFullCircle);
     hist->SetMarkerSize(0.8);
-    hist->Draw("same");
+    TString opt(hist->GetOption());
+    opt += " same";
+    hist->Draw(opt);
     TLegendEntry* legEntry = leg->AddEntry(hist, hist->GetTitle(), "pe");
     legEntry->SetLineColor(colors[i]);
     if (plotStats) {

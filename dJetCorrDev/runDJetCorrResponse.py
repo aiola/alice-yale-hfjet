@@ -45,8 +45,7 @@ def main(train, run=True, plot=True, loadLibs=True, inputPath="$JETRESULTS"):
         
     if plot:
         projDjet.PlotResponseMatrices()
-
-    projDjet.UpdateAllCanvases()
+        
     return projDjet;
 
 if __name__ == '__main__':

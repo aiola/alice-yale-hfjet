@@ -72,6 +72,7 @@ public:
   void   SetRespParamIndex(Int_t i)    { fRespParamIndex    = i; }
   void   SetUseEfficiency(Bool_t b)    { fUseEfficiency     = b; }
   void   SetUseKinEfficiency(Bool_t b) { fUseKinEfficiency  = b; }
+  void   SetSaveOutputFile(Bool_t b)   { fSaveOutputFile    = b; }
 
   void   SetRegParam(Int_t min, Int_t max, Int_t step)                                 { fUnfoldingParams.SetRegParam(min, max, step)         ; }
   void   SetRegParam1D(EAxisType_t axis, Int_t min, Int_t max, Int_t step)             { fUnfoldingParams1D[axis].SetRegParam(min, max, step) ; }
@@ -167,6 +168,7 @@ public:
   void       SavePlot(TCanvas* canvas);
 
  protected:
+  Bool_t                   fSaveOutputFile          ; //
   Int_t                    fDataParamIndex          ; //
   Int_t                    fRespParamIndex          ; //
   Bool_t                   fForceRegeneration       ; //

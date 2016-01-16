@@ -46,11 +46,11 @@ def main(train, run=True, refit=False, plot=True, truthOnly=False, isMC=False, i
 
     param = projDjet.AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub)
     #param.BackgroundOnly(True);
-    #param.SignalOnly(True);
+    param.SignalOnly(True);
 
     param = projDjet.AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub)
     #param.BackgroundOnly(True);
-    #param.SignalOnly(True);
+    param.SignalOnly(True);
 
     if truthOnly:
          projDjet.ProjectTruthSpectrum()
