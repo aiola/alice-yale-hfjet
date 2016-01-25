@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import shutil
+import argparse
 
 import MergeFiles
 import ScaleResults
@@ -16,169 +17,169 @@ def CreateRunLists():
     
     return RunLists
 
-try:
-    rootPath=subprocess.check_output(["which", "root"]).rstrip()
-    alirootPath=subprocess.check_output(["which", "aliroot"]).rstrip()
-    alienPath=subprocess.check_output(["which", "alien-token-info"]).rstrip()
-except subprocess.CalledProcessError:
-    print "Environment is not configured correctly!"
-    exit()
-    
-print "Root: "+rootPath
-print "AliRoot: "+alirootPath
-print "Alien: "+alienPath
-
-if "JETRESULTS" in os.environ:
-    JetResults=os.environ["JETRESULTS"]
-else:
-    JetResults="."
-
-try:
-    print "Token info disabled"
-    #tokenInfo=subprocess.check_output(["alien-token-info"])
-except subprocess.CalledProcessError:
-    print "Alien token not available. Creating a token for you..."
+def StartMerging(TrainNumbers, Overwrite=0, Year="2015", UserDataset="LHC15i2b", TrainName="Jets_EMC_pp_MC"):
     try:
-        #tokenInit=subprocess.check_output(["alien-token-init", "saiola"], shell=True)
-        print "Token init disabled"
+        rootPath=subprocess.check_output(["which", "root"]).rstrip()
+        alirootPath=subprocess.check_output(["which", "aliroot"]).rstrip()
+        alienPath=subprocess.check_output(["which", "alien-token-info"]).rstrip()
     except subprocess.CalledProcessError:
-        print "Error: could not create the token!"
+        print "Environment is not configured correctly!"
         exit()
 
-if len(sys.argv)>1:
-    TrainNumbers=sys.argv[1].split(":")
-else:
-    print sys.argv[0]+" [trainNumber1:trainNumber2:...] [overwrite=0] [year=2015] [dataset=LHC15i2b]  [trainName=Jets_EMC_pp_MC]"
-    exit()
+    print "Root: "+rootPath
+    print "AliRoot: "+alirootPath
+    print "Alien: "+alienPath
 
-StrippedTrainNumbers=[]
-    
-for i in range(len(TrainNumbers)):
-    StrippedTrainNumbers[i:]=[TrainNumbers[i][:3]]
-
-if len(sys.argv) > 2:
-    Overwrite = int(sys.argv[2])
-else:
-    Overwrite = 0
-
-if len(sys.argv)>3:
-    Year = sys.argv[3]
-else:
-    Year = "2015"
-
-if len(sys.argv)>4:
-    UserDataset=sys.argv[4]
-else:
-    UserDataset="LHC15i2b"
-
-if len(sys.argv)>5:
-    TrainName=sys.argv[5]
-else:
-    TrainName="Jets_EMC_pp_MC"
-
-RunLists=CreateRunLists()
-
-Datasets=[]
-
-if UserDataset=="LHC15i2x":
-    print "Will work on LHC15i2{b,c,d,e}."
-    Datasets[0:]=["LHC15i2b"]
-    Datasets[1:]=["LHC15i2c"]
-    Datasets[2:]=["LHC15i2d"]
-    Datasets[3:]=["LHC15i2e"]
-else:
-    if UserDataset in RunLists:
-        print "Dataset "+UserDataset+" was chosen."
-        Datasets[0:]=[UserDataset]
-        print RunLists[UserDataset]
+    if "JETRESULTS" in os.environ:
+        JetResults=os.environ["JETRESULTS"]
     else:
-        print "Dataset "+UserDataset+" is not defined."
+        JetResults="."
+
+    try:
+        print "Token info disabled"
+        #tokenInfo=subprocess.check_output(["alien-token-info"])
+    except subprocess.CalledProcessError:
+        print "Alien token not available. Creating a token for you..."
+        try:
+            #tokenInit=subprocess.check_output(["alien-token-init", "saiola"], shell=True)
+            print "Token init disabled"
+        except subprocess.CalledProcessError:
+            print "Error: could not create the token!"
+            exit()
+
+    StrippedTrainNumbers=[]
+            
+    for i in range(len(TrainNumbers)):
+        StrippedTrainNumbers[i:]=[TrainNumbers[i][:3]]
+
+    RunLists=CreateRunLists()
+
+    Datasets=[]
+
+    if UserDataset=="LHC15i2x":
+        print "Will work on LHC15i2{b,c,d,e}."
+        Datasets[0:]=["LHC15i2b"]
+        Datasets[1:]=["LHC15i2c"]
+        Datasets[2:]=["LHC15i2d"]
+        Datasets[3:]=["LHC15i2e"]
+    else:
+        if UserDataset in RunLists:
+            print "Dataset "+UserDataset+" was chosen."
+            Datasets[0:]=[UserDataset]
+            print RunLists[UserDataset]
+        else:
+            print "Dataset "+UserDataset+" is not defined."
+            exit()
+
+    MinPtHardBin=0
+    MaxPtHardBin=8
+
+    if (len(Datasets)!=len(TrainNumbers)):
+        print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets),len(TrainNumbers))
+        print "Datasets are"
+        print Datasets
+        print "Trains are"
+        print TrainNumbers
         exit()
 
-MinPtHardBin=0
-MaxPtHardBin=8
+    LocalPath="{0}/{1}".format(JetResults, TrainName)
 
-if (len(Datasets)!=len(TrainNumbers)):
-    print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets),len(TrainNumbers))
-    print "Datasets are"
-    print Datasets
-    print "Trains are"
+    for StrippedTrainNumber in StrippedTrainNumbers:
+        LocalPath+="_"+StrippedTrainNumber
+
+    print "Train: "+TrainName
+    print "Local path: "+LocalPath
+    print "Overwrite mode: {0}".format(Overwrite)
+    print "Train numbers are: "
     print TrainNumbers
-    exit()
-
-LocalPath="{0}/{1}".format(JetResults, TrainName)
-
-for StrippedTrainNumber in StrippedTrainNumbers:
-    LocalPath+="_"+StrippedTrainNumber
-
-print "Train: "+TrainName
-print "Local path: "+LocalPath
-print "Overwrite mode: {0}".format(Overwrite)
-print "Train numbers are: "
-print TrainNumbers
-
-if not os.path.isdir(LocalPath):
-    print "Creating directory "+LocalPath
-    os.makedirs(LocalPath)
-
-if os.path.exists("./"+UserDataset+".xsec.root"):
-    shutil.copy("./"+UserDataset+".xsec.root", LocalPath+"/"+UserDataset+".xsec.root")
-
-FileList = []
-FinalFileList = []
     
-for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
-    FileList[:] = []
-    for Dataset,TrainNumber in zip(Datasets,TrainNumbers):
-        AlienPath="alien:///alice/sim/"+Year+"/"+Dataset
-        for Run in RunLists[Dataset]:
-            dest="{0}/{1}/{2}".format(LocalPath, PtHardBin, Run)
-            if not os.path.isdir(dest):
-                print "Creating directory "+dest
-                os.makedirs(dest)
-                
-            dest+="/AnalysisResults.root"
-            if os.path.exists(dest) and Overwrite > 4:
-                print "Deleting file: "+dest
-                os.remove(dest)
+    if not os.path.isdir(LocalPath):
+        print "Creating directory "+LocalPath
+        os.makedirs(LocalPath)
 
-            if not os.path.exists(dest):
-                AlienFile="{0}/{1}/{2}/PWGJE/{3}/{4}/AnalysisResults.root".format(AlienPath, Run, PtHardBin, TrainName, TrainNumber)
-                print "Copying from alien location '"+AlienFile+"' to local location '"+dest+"'"
-                #subprocess.call(["alien_cp", AlienFile, dest])
+    if os.path.exists("./"+UserDataset+".xsec.root"):
+        shutil.copy("./"+UserDataset+".xsec.root", LocalPath+"/"+UserDataset+".xsec.root")
 
-            if os.path.exists(dest):
-                FileList.append(dest)
+    FileList = []
+    FinalFileList = []
 
-    dest="{0}/{1}/AnalysisResults.root".format(LocalPath, PtHardBin)
-    if os.path.exists(dest) and Overwrite>3:
+    for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
+        FileList[:] = []
+        for Dataset,TrainNumber in zip(Datasets,TrainNumbers):
+            AlienPath="alien:///alice/sim/"+Year+"/"+Dataset
+            for Run in RunLists[Dataset]:
+                dest="{0}/{1}/{2}".format(LocalPath, PtHardBin, Run)
+                if not os.path.isdir(dest):
+                    print "Creating directory "+dest
+                    os.makedirs(dest)
+
+                dest+="/AnalysisResults.root"
+                if os.path.exists(dest) and Overwrite > 4:
+                    print "Deleting file: "+dest
+                    os.remove(dest)
+
+                if not os.path.exists(dest):
+                    AlienFile="{0}/{1}/{2}/PWGJE/{3}/{4}/AnalysisResults.root".format(AlienPath, Run, PtHardBin, TrainName, TrainNumber)
+                    print "Copying from alien location '"+AlienFile+"' to local location '"+dest+"'"
+                    subprocess.call(["alien_cp", AlienFile, dest])
+
+                if os.path.exists(dest):
+                    FileList.append(dest)
+
+        dest="{0}/{1}/AnalysisResults.root".format(LocalPath, PtHardBin)
+        if os.path.exists(dest) and Overwrite>3:
+            print "Deleting file "+dest
+            os.remove(dest)
+
+        if not os.path.exists(dest):
+          print "Merging for pT hard bin: {0}. Total number of files is {1}".format(PtHardBin, len(FileList))
+          MergeFiles.MergeFiles(dest, FileList)
+
+        dest="{0}/{1}/ScaledResults.root".format(LocalPath, PtHardBin)
+        if os.path.exists(dest) and Overwrite > 2:
+            print "Removing file "+dest
+            os.remove(dest)
+
+        if not os.path.exists(dest):
+          print "Scaling for pT hard bin: {0}".format(PtHardBin)
+          ScaleResults.ScaleResults(LocalPath, PtHardBin, Dataset)
+
+        if os.path.exists(dest) and PtHardBin > 0:
+          FinalFileList.append(dest)
+
+    dest="{0}/AnalysisResults.root".format(LocalPath)
+    if os.path.exists(dest) and Overwrite > 1:
         print "Deleting file "+dest
         os.remove(dest)
- 
+
     if not os.path.exists(dest):
-      print "Merging for pT hard bin: {0}. Total number of files is {1}".format(PtHardBin, len(FileList))
-      MergeFiles.MergeFiles(dest, FileList)
+        MergeFiles.MergeFiles(dest, FinalFileList, 2)
 
-    dest="{0}/{1}/ScaledResults.root".format(LocalPath, PtHardBin)
-    if os.path.exists(dest) and Overwrite > 2:
-        print "Removing file "+dest
-        os.remove(dest)
- 
-    if not os.path.exists(dest):
-      print "Scaling for pT hard bin: {0}".format(PtHardBin)
-      ScaleResults.ScaleResults(LocalPath, PtHardBin, Dataset)
-  
-    if os.path.exists(dest) and PtHardBin > 0:
-      FinalFileList.append(dest)
+    print "Done."
 
-dest="{0}/AnalysisResults.root".format(LocalPath)
-if os.path.exists(dest) and Overwrite > 1:
-    print "Deleting file "+dest
-    os.remove(dest)
+    subprocess.call(["ls", LocalPath])
 
-if not os.path.exists(dest):
-    MergeFiles.MergeFiles(dest, FinalFileList, 2)
-     
-print "Done."
 
-subprocess.call(["ls", LocalPath])
+if __name__ == '__main__':
+    # FinalMergeLocal.py executed as script
+    
+    parser = argparse.ArgumentParser(description='Local final merging for MC production in pT hard bins.')
+    parser.add_argument('trainNumber', metavar='trainNumber',
+                        help='Train numbers to be downloaded and merged')
+    parser.add_argument('--overwrite', metavar='overwrite',
+                        default=0,
+                        help='Overwrite level [0-4]. 0 = no overwrite')
+    parser.add_argument('--year', metavar='year',
+                        default='2015',
+                        help='MC production year')
+    parser.add_argument('--dataset', metavar='dataset',
+                        default='LHC15i2b',
+                        help='MC production name')
+    parser.add_argument('--trainName', metavar='trainName',
+                        default='Jets_EMC_pp_MC',
+                        help='Train name')
+    args = parser.parse_args()
+
+    TrainNumbers=args.trainNumber.split(":")
+
+    StartMerging(TrainNumbers, args.overwrite, args.year, args.dataset, args.trainName)
