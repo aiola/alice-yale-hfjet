@@ -9,3 +9,4 @@ tempChecksum_*
 fileLists
 event_stat.root
 std*
+*.pyc

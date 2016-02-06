@@ -3,85 +3,8 @@
 
 import argparse
 import IPython
-from enum import Enum
 import ROOT
-
-class AnaMode(Enum):
-    ESD = 1
-    AOD = 2
-
-def LoadMacros():
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetQA.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSpectraQA.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDmesonJetCorr.C")
-
-def AddAODHandler():
-    mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
-    
-    if mgr == None:
-        ROOT.Error("AddTaskPIDResponse", "No analysis manager to connect to.")
-        return None
-
-    inputHandler = mgr.GetInputEventHandler()
-
-    handler = ROOT.AliAODInputHandler()
-  
-    if inputHandler == None:
-        mgr.SetInputEventHandler(handler);
-    else:
-      ROOT.Error("AddAODHandler", "inputHandler is NOT null. AOD handler was NOT added !!!")
-      
-    return handler
-
-def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, cachePID=False, detResponse="",
-                       useTPCEtaCorrection=True,             #Please use default value! Otherwise splines can be off
-                       useTPCMultiplicityCorrection=True,    #Please use default value! Otherwise splines can be off
-                       recoDataPass=-1):
-    
-    # Macro to connect a centrality selection task to an existing analysis manager.
-    mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
-    
-    if mgr == None:
-        ROOT.Error("AddTaskPIDResponse", "No analysis manager to connect to.")
-        return None
-
-    inputHandler = mgr.GetInputEventHandler()
-    
-    print "========================================================================================"
-    print "PIDResponse: Initialising AliAnalysisTaskPIDResponse"
-
-    pidTask = ROOT.AliAnalysisTaskPIDResponse("PIDResponseTask")
-    pidTask.SetIsMC(isMC)
-    if isMC:
-        if tuneOnData:
-            print "             Using MC with tune on data."
-            print "             !!! ATTENTION ATTENTION ATTENTION !!!"
-            print("             You MUST make sure the reco pass set (", recoPass, ") corresponds to the one this MC was produced for!")
-            pidTask.SetTuneOnData(kTRUE,recoPass)
-            # tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
-            # pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);
-            # pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);
-        else:
-            print "             !!! ATTENTION ATTENTION ATTENTION !!!"
-            print "             You are using MC without the tune on data option."
-            print "             NOTE that this is not supported any longer!."
-            print "             !!! ATTENTION ATTENTION ATTENTION !!!"
-
-    pidTask.SetCachePID(cachePID)
-    pidTask.SetSpecialDetectorResponse(detResponse)
-    pidTask.SetUseTPCEtaCorrection(useTPCEtaCorrection)
-    pidTask.SetUseTPCMultiplicityCorrection(useTPCMultiplicityCorrection)
-    pidTask.SetUserDataRecoPass(recoDataPass)
-    mgr.AddTask(pidTask)
-
-    mgr.ConnectInput(pidTask, 0, mgr.GetCommonInputContainer())
-      
-    print "========================================================================================"
-
-    return pidTask
+import helperFunctions
 
 def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doHF=True, doChargedJets=True, physSel=ROOT.AliVEvent.kMB, taskName="JetDmesonAna", debugLevel=0):
 
@@ -91,14 +14,14 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
     
     mode = None
     if strmode == "AOD":
-        mode = AnaMode.AOD
+        mode = helperFunctions.AnaMode.AOD
     elif strmode == "ESD":
-        mode = AnaMode.ESD
+        mode = helperFunctions.AnaMode.ESD
     else:
         print "Error: mode has to be either ESD or AOD!"
         exit(1)
 
-    print mode, "analysis chosen."
+    print strmode, "analysis chosen."
     print "Setting local analysis for", nFiles, "files from list", fileList, "max events =", nEvents
 
     #AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
@@ -107,20 +30,20 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
     #Analysis manager
     mgr = ROOT.AliAnalysisManager(taskName)
 
-    LoadMacros()
+    helperFunctions.LoadMacros()
 
-    if mode is AnaMode.AOD:
-        AddAODHandler()
+    if mode is helperFunctions.AnaMode.AOD:
+        helperFunctions.AddAODHandler()
     elif mode is AnaMode.ESD:
-        ROOT.AddESDHandler()
+        helperFunctions.AddESDHandler()
 
     #Physics selection task
-    if mode is AnaMode.ESD:
+    if mode is helperFunctions.AnaMode.ESD:
         ROOT.AddTaskPhysicsSelection()
 
     #PID response
     if doHF:
-        PIDtask = AddTaskPIDResponse(False)
+        PIDtask = helperFunctions.AddTaskPIDResponse(False)
   
     #Charged jet analysis
     if doChargedJets:
@@ -147,7 +70,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
 
         sTracksDStarName = "DcandidatesAndTracksDStarrec"
     
-        pChJetDStarTask = ROOT.AddTaskEmcalJet(sTracksDStarName, "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, 1)
+        pChJetDStarTask = ROOT.AddTaskEmcalJet(sTracksDStarName, "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, 0)
         pChJetDStarTask.SelectCollisionCandidates(physSel)
 
         sChJetsDStarName = pChJetDStarTask.GetName()
@@ -169,7 +92,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
         # D0
 
         pD0mesonFilterTask = ROOT.AddTaskSEDmesonsFilterCJ(ROOT.AliAnalysisTaskSEDmesonsFilterCJ.kD0toKpi,
-                                                           "DStartoKpipiCuts.root", False, True, "rec")
+                                                           "D0toKpiCuts.root", False, True, "rec")
         pD0mesonFilterTask.SelectCollisionCandidates(physSel)
         pD0mesonFilterTask.SetCombineDmesons(True)
         trackContD0 = pD0mesonFilterTask.AddParticleContainer("tracks")
@@ -177,7 +100,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
     
         sTracksD0Name = "DcandidatesAndTracksD0rec";
     
-        pChJetD0Task = ROOT.AddTaskEmcalJet(sTracksD0Name, "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, 1);
+        pChJetD0Task = ROOT.AddTaskEmcalJet(sTracksD0Name, "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, 0);
         pChJetD0Task.SelectCollisionCandidates(physSel)
         
         sChJetsD0Name = pChJetD0Task.GetName()
@@ -208,10 +131,10 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
     mgr.PrintStatus()
 
     chain = None
-    if mode is AnaMode.AOD:
+    if mode is helperFunctions.AnaMode.AOD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
         chain = ROOT.CreateAODChain(fileList, nFiles, 0, False, "AliAOD.VertexingHF.root")
-    elif mode is AnaMode.ESD:
+    elif mode is helperFunctions.AnaMode.ESD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
         chain = ROOT.CreateESDChain(fileList, nFiles, 0, False)
         
