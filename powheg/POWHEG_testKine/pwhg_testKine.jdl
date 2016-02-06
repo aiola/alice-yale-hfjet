@@ -1,0 +1,28 @@
+Executable = "/alice/cern.ch/user/e/ebruna/MC/POWHEG_testKine/simrecGridNew.sh";
+
+Packages = { "VO_ALICE@AliPhysics::vAN-20150601" };
+
+TTL = "86400";
+splitarguments = "$1 $2";
+split="production:1-1000";
+
+InputFile= {"LF:/alice/cern.ch/user/g/guernane/MC/POWHEG/4Elena/OCDB.tgz",
+            "LF:/alice/cern.ch/user/g/guernane/MC/POWHEG/4Elena/pwhg_main_$1",
+            "LF:/alice/cern.ch/user/g/guernane/MC/POWHEG/4Elena/powheg$1.input",
+            "LF:/alice/cern.ch/user/g/guernane/MC/POWHEG/4Elena/lhapdf6.tgz",
+            "LF:/alice/cern.ch/user/e/ebruna/MC/POWHEG_testKine/simSimpleGrid.C",
+   	    "LF:/alice/cern.ch/user/e/ebruna/MC/POWHEG_testKine/ConfigSimpleGrid.C"         
+};
+
+OutputArchive={"log_archive.zip:stderr,stdout,*.log@disk=1","root_archive.zip:*.root@disk=2"};
+
+OutputDir="/alice/cern.ch/user/e/ebruna/MC/POWHEG_testKine/$1/#alien_counter_03i#";
+
+Requirements = ( other.Type == "machine" ) && ( member(other.Packages,"VO_ALICE@AliPhysics::vAN-20150601") ) && ( member(other.Packages,"VO_ALICE@AliRoot::v5-06-19") ) && ( member(other.Packages,"VO_ALICE@GEANT3::v1-15a-1") ) && ( member(other.Packages,"VO_ALICE@ROOT::v5-34-08-7") ) && ( member(other.Packages,"VO_ALICE@APISCONFIG::V1.1x") ) && ( member(other.GridPartitions,"PDC08_2") ) && ( other.TTL > 72000 ) && ( other.Price <= 1 );
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+Workdirectorysize={"6000MB"};
+
+Type = "Job";
