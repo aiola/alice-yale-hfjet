@@ -2,7 +2,6 @@
 #python script to test Jet D meson analysis
 
 import argparse
-import IPython
 import ROOT
 import helperFunctions
 
@@ -10,7 +9,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
 
     ROOT.gSystem.Load("libCGAL")
 
-    ROOT.AliParticleContainer.SetDefTrackCutsPeriod(runPeriod);
+    ROOT.AliParticleContainer.SetDefTrackCutsPeriod(runPeriod)
     
     mode = None
     if strmode == "AOD":
