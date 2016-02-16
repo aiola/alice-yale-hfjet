@@ -44,7 +44,7 @@ void runEMCalJetAnalysisNew_AP(
   }
     
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/runEMCalJetAnalysisNew.C");
-  AliAnalysisManager* pMgr = runEMCalJetAnalysisNew(cDataType, cLocalFiles, iNumFiles, iNumEvents, cRunPeriod, kPhysSel, cTaskName, kTRUE, kTRUE, OCDBpath, anaType, "terminate");
+  AliAnalysisManager* pMgr = runEMCalJetAnalysisNew(cDataType, cLocalFiles, iNumFiles, iNumEvents, cRunPeriod, kPhysSel, cTaskName, kTRUE, kFALSE, OCDBpath, anaType, "terminate");
 
   if (anaType == kLocal) {
     //pMgr->SetUseProgressBar(kFALSE, 10);

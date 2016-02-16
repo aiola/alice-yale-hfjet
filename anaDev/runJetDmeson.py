@@ -5,7 +5,7 @@ import argparse
 import ROOT
 import helperFunctions
 
-def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doHF=True, doChargedJets=True, physSel=ROOT.AliVEvent.kMB, taskName="JetDmesonAna", debugLevel=0):
+def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doHF=True, doChargedJets=True, doTrackQA=True, physSel=ROOT.AliVEvent.kMB, taskName="JetDmesonAna", debugLevel=0):
 
     ROOT.gSystem.Load("libCGAL")
 
@@ -43,78 +43,47 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
     #PID response
     if doHF:
         PIDtask = helperFunctions.AddTaskPIDResponse(False)
-  
+
+    if doTrackQA:
+        pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "", "")
+        pSpectraTask.GetParticleContainer(0).SetFilterHybridTracks(True)
+        pSpectraTask.SetNeedEmcalGeom(False)
+        pSpectraTask.SelectCollisionCandidates(physSel)
+        pSpectraTask.SetHistoBins(150, 0, 150)
+        
     #Charged jet analysis
     if doChargedJets:
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, False)
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
         pChJetTask.GetParticleContainer(0).SetFilterHybridTracks(True)
 
-        sChJetsName = pChJetTask.GetName()
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, False)
+        pChJetTask.SelectCollisionCandidates(physSel)
+        pChJetTask.GetParticleContainer(0).SetFilterHybridTracks(True)
 
-        pSpectraChTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "", sChJetsName, "",  jetRadius, 1., 0., "TPC")
-        pSpectraChTask.SetNLeadingJets(1)
-        pSpectraChTask.SelectCollisionCandidates(physSel)
-        pSpectraChTask.SetHistoBins(200, 0, 200)
+        pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "")
+        pSpectraTask.SelectCollisionCandidates(physSel)
+        pSpectraTask.SetHistoBins(200, 0, 200)
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
 
     if doHF:
+        pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "");
+        pDMesonJetsTask.GetParticleContainer(0).SetFilterHybridTracks(True)
+        pDMesonJetsTask.SetShowJetConstituents(True)
+        pDMesonJetsTask.SetShowPositionD(True)
+        pDMesonJetsTask.SetShowDeltaR(True)
+        pDMesonJetsTask.SetShowLeadingPt(True)
+        pDMesonJetsTask.SetShowPositionJet(True)
+        pDMesonJetsTask.SelectCollisionCandidates(physSel)
+
         # D*
+        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.4)
+        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.6)
         
-        pDStarMesonFilterTask = ROOT.AddTaskSEDmesonsFilterCJ(ROOT.AliAnalysisTaskSEDmesonsFilterCJ.kDstartoKpipi,
-                                                              "DStartoKpipiCuts.root", False, True, "rec")
-        pDStarMesonFilterTask.SelectCollisionCandidates(physSel)
-        pDStarMesonFilterTask.SetCombineDmesons(True)
-        trackContDStar = pDStarMesonFilterTask.AddParticleContainer("tracks")
-        trackContDStar.SetFilterHybridTracks(False)
-
-        sTracksDStarName = "DcandidatesAndTracksDStarrec"
-    
-        pChJetDStarTask = ROOT.AddTaskEmcalJet(sTracksDStarName, "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, 0)
-        pChJetDStarTask.SelectCollisionCandidates(physSel)
-
-        sChJetsDStarName = pChJetDStarTask.GetName()
-
-        pDStarMesonJetCorr = ROOT.AddTaskDmesonJetCorr(ROOT.AliAnalysisTaskDmesonJetCorrelations.kDstartoKpipi, "",
-                                                       sTracksDStarName, "", sChJetsDStarName, "",
-                                                       jetRadius, 1, 0., "TPC", 0, "Dcandidates", False,
-                                                       "AliAnalysisTaskDmesonJetCorrelations", "rec")
-        pDStarMesonJetCorr.SetMaxR(jetRadius)
-        pDStarMesonJetCorr.SetMatchingType(ROOT.AliAnalysisTaskDmesonJetCorrelations.kCandidateConstituentMatching)
-        pDStarMesonJetCorr.SetPlotOnlyAcceptedJets(True)
-        pDStarMesonJetCorr.SetShowDeltaEta(True)
-        pDStarMesonJetCorr.SetShowDeltaPhi(True)
-        pDStarMesonJetCorr.SetShow2ProngInvMass(True)
-        pDStarMesonJetCorr.SetShowInvMass(True)
-        pDStarMesonJetCorr.SetShowJetConstituents(True)
-        pDStarMesonJetCorr.SelectCollisionCandidates(physSel)
-
         # D0
-
-        pD0mesonFilterTask = ROOT.AddTaskSEDmesonsFilterCJ(ROOT.AliAnalysisTaskSEDmesonsFilterCJ.kD0toKpi,
-                                                           "D0toKpiCuts.root", False, True, "rec")
-        pD0mesonFilterTask.SelectCollisionCandidates(physSel)
-        pD0mesonFilterTask.SetCombineDmesons(True)
-        trackContD0 = pD0mesonFilterTask.AddParticleContainer("tracks")
-        trackContD0.SetFilterHybridTracks(False)
-    
-        sTracksD0Name = "DcandidatesAndTracksD0rec";
-    
-        pChJetD0Task = ROOT.AddTaskEmcalJet(sTracksD0Name, "", 1, jetRadius, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, 0);
-        pChJetD0Task.SelectCollisionCandidates(physSel)
-        
-        sChJetsD0Name = pChJetD0Task.GetName()
-
-        pD0MesonJetCorr = ROOT.AddTaskDmesonJetCorr(ROOT.AliAnalysisTaskDmesonJetCorrelations.kD0toKpi, "",
-                                                    sTracksD0Name, "", sChJetsD0Name, "",
-                                                    jetRadius, 1, 0., "TPC", 0, "Dcandidates", False,
-                                                    "AliAnalysisTaskDmesonJetCorrelations", "rec")
-        pD0MesonJetCorr.SetMaxR(jetRadius)
-        pD0MesonJetCorr.SetMatchingType(ROOT.AliAnalysisTaskDmesonJetCorrelations.kCandidateConstituentMatching);
-        pD0MesonJetCorr.SetPlotOnlyAcceptedJets(True)
-        pD0MesonJetCorr.SetShowDeltaEta(True)
-        pD0MesonJetCorr.SetShowDeltaPhi(True)
-        pD0MesonJetCorr.SetShowJetConstituents(True)
-        pD0MesonJetCorr.SelectCollisionCandidates(physSel)
+        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.4)
+        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.6)
         
     tasks = mgr.GetTasks()
     for task in tasks:
@@ -129,6 +98,11 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
     
     mgr.PrintStatus()
 
+    outFile = ROOT.TFile("train.root","RECREATE")
+    outFile.cd()
+    mgr.Write()
+    outFile.Close()
+    
     chain = None
     if mode is helperFunctions.AnaMode.AOD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
@@ -137,7 +111,6 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
         chain = ROOT.CreateESDChain(fileList, nFiles, 0, False)
         
-
     if debugLevel == 0:
         mgr.SetUseProgressBar(1, 250)
         
@@ -145,12 +118,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
 
     #To have more debug info
     #pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
-
-    outFile = ROOT.TFile("train.root","RECREATE")
-    outFile.cd()
-    mgr.Write()
-    outFile.Close()
-
+    
     #start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, nEvents)
@@ -184,12 +152,19 @@ if __name__ == '__main__':
     parser.add_argument('--no-charged-jets', action='store_const',
                         default=False, const=True,
                         help='No charged jet analysis')
+    parser.add_argument('--no-track-qa', action='store_const',
+                        default=False, const=True,
+                        help='No track QA')
     parser.add_argument('--phys-sel',
                         default=ROOT.AliVEvent.kMB, 
                         help='Physics selection')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
+    parser.add_argument('-d', '--debug-level', 
+                        default=0,
+                        type=int,
+                        help='Debug level')
     args = parser.parse_args()
     
-    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, args.jet_radius, not args.no_hf, not args.no_charged_jets, not args.phys_sel, args.task_name)
+    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, args.jet_radius, not args.no_hf, not args.no_charged_jets, not args.no_track_qa, not args.phys_sel, args.task_name, args.debug_level)
