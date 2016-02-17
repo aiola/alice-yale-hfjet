@@ -5,11 +5,11 @@ import argparse
 import ROOT
 import helperFunctions
 
-def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doHF=True, doChargedJets=True, doTrackQA=True, physSel=ROOT.AliVEvent.kMB, taskName="JetDmesonAna", debugLevel=0):
+def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doChargedJets=False, doFullJets=False, doTrackQA=True, physSel=ROOT.AliVEvent.kMB, taskName="JetDmesonAna", debugLevel=0):
 
     ROOT.gSystem.Load("libCGAL")
 
-    ROOT.AliParticleContainer.SetDefTrackCutsPeriod(runPeriod)
+    ROOT.AliTrackContainer.SetDefTrackCutsPeriod(runPeriod)
     
     mode = None
     if strmode == "AOD":
@@ -35,55 +35,90 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", jetRadius=0.6, doH
         helperFunctions.AddAODHandler()
     elif mode is AnaMode.ESD:
         helperFunctions.AddESDHandler()
-
+        
     #Physics selection task
     if mode is helperFunctions.AnaMode.ESD:
         ROOT.AddTaskPhysicsSelection()
+
+    #Setup task
+    if doFullJets or mode is helperFunctions.AnaMode.ESD:
+        OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2010";
+        pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask");
+        pSetupTask.SetNoOCDB(0)
+        mgr.AddTask(pSetupTask)
+        cinput = mgr.GetCommonInputContainer()
+        mgr.ConnectInput(pSetupTask, 0,  cinput)
+        pSetupTask.SetOcdbPath(OCDBpath)
+        helperFunctions.PrepareEMCAL(physSel)
 
     #PID response
     if doHF:
         PIDtask = helperFunctions.AddTaskPIDResponse(False)
 
     if doTrackQA:
-        pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "", "")
-        pSpectraTask.GetParticleContainer(0).SetFilterHybridTracks(True)
-        pSpectraTask.SetNeedEmcalGeom(False)
+        if doChargedJets and not doFullJets:
+            pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "", "")
+            pSpectraTask.SetNeedEmcalGeom(False)
+        if doFullJets:
+            pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
+            pSpectraTask.SetNeedEmcalGeom(True)
         pSpectraTask.SelectCollisionCandidates(physSel)
         pSpectraTask.SetHistoBins(150, 0, 150)
-        
+
     #Charged jet analysis
     if doChargedJets:
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, False)
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
-        pChJetTask.GetParticleContainer(0).SetFilterHybridTracks(True)
 
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, 1, 0.15, 0., 0.1, 1, "Jet", 0., False, False, False)
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
-        pChJetTask.GetParticleContainer(0).SetFilterHybridTracks(True)
 
-        pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "")
-        pSpectraTask.SelectCollisionCandidates(physSel)
-        pSpectraTask.SetHistoBins(200, 0, 200)
+    #Full jet analysis
+    if doFullJets:
+        pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+        pJetTask.SelectCollisionCandidates(physSel)
+
+        pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+        pJetTask.SelectCollisionCandidates(physSel)
+
+    pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault")
+    pSpectraTask.SelectCollisionCandidates(physSel)
+    pSpectraTask.SetHistoBins(200, 0, 200)
+
+    if doChargedJets:
         pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
         pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
 
+    if doFullJets:
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
+
     if doHF:
-        pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "");
-        pDMesonJetsTask.GetParticleContainer(0).SetFilterHybridTracks(True)
+        pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault");
         pDMesonJetsTask.SetShowJetConstituents(True)
         pDMesonJetsTask.SetShowPositionD(True)
         pDMesonJetsTask.SetShowDeltaR(True)
         pDMesonJetsTask.SetShowLeadingPt(True)
         pDMesonJetsTask.SetShowPositionJet(True)
         pDMesonJetsTask.SelectCollisionCandidates(physSel)
-
-        # D*
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.4)
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.6)
         
         # D0
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.4)
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, 0.6)
+        if doChargedJets:
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
+
+        if doFullJets:
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
+
+        # D*
+        if doChargedJets:
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
+
+        if doFullJets:
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
         
     tasks = mgr.GetTasks()
     for task in tasks:
@@ -142,14 +177,13 @@ if __name__ == '__main__':
                         help='Number of events to be analyzed')
     parser.add_argument('-r', '--run-period',
                         help='Run period (e.g. LHC10b)')
-    parser.add_argument('--jet-radius',
-                        default=0.6,
-                        type=float,
-                        help='Jet radius')
     parser.add_argument('--no-hf', action='store_const',
                         default=False, const=True,
                         help='No HF analysis')
-    parser.add_argument('--no-charged-jets', action='store_const',
+    parser.add_argument('--charged-jets', action='store_const',
+                        default=False, const=True,
+                        help='No charged jet analysis')
+    parser.add_argument('--full-jets', action='store_const',
                         default=False, const=True,
                         help='No charged jet analysis')
     parser.add_argument('--no-track-qa', action='store_const',
@@ -167,4 +201,4 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
     
-    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, args.jet_radius, not args.no_hf, not args.no_charged_jets, not args.no_track_qa, not args.phys_sel, args.task_name, args.debug_level)
+    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, not args.no_hf, args.charged_jets, args.full_jets, not args.no_track_qa, not args.phys_sel, args.task_name, args.debug_level)
