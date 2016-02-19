@@ -182,10 +182,10 @@ if __name__ == '__main__':
                         help='No HF analysis')
     parser.add_argument('--charged-jets', action='store_const',
                         default=False, const=True,
-                        help='No charged jet analysis')
+                        help='Charged jet analysis')
     parser.add_argument('--full-jets', action='store_const',
                         default=False, const=True,
-                        help='No charged jet analysis')
+                        help='Full jet analysis')
     parser.add_argument('--no-track-qa', action='store_const',
                         default=False, const=True,
                         help='No track QA')
@@ -201,4 +201,4 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
     
-    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, not args.no_hf, args.charged_jets, args.full_jets, not args.no_track_qa, not args.phys_sel, args.task_name, args.debug_level)
+    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, not args.no_hf, args.charged_jets, args.full_jets, not args.no_track_qa, args.phys_sel, args.task_name, args.debug_level)
