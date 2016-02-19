@@ -1,9 +1,9 @@
 void runEMCalJetAnalysisOld_AP(
 			       const char   *cDataType      = "AOD",                                   // set the analysis type, AOD or ESD
-			       const char   *cLocalFiles    = "fileLists/files_LHC12c_pass2_AOD.txt",   // set the local list file
+			       const char   *cLocalFiles    = "fileLists/files_LHC13b4_plus_AOD152_5.txt",   // set the local list file
 			       UInt_t        iNumFiles      = 100,                                     // number of files analyzed locally
 			       UInt_t        iNumEvents     = 20000,                                    // number of events to be analyzed
-			       const char   *cRunPeriod     = "LHC12c",                                // set the run period
+			       const char   *cRunPeriod     = "LHC13b4",                                // set the run period
 			       const char   *cTaskName      = "JetAna"
 			       )
 {
@@ -31,7 +31,7 @@ void runEMCalJetAnalysisOld_AP(
   TString OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2012";
     
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/runEMCalJetAnalysisOld.C");
-  AliAnalysisManager* pMgr = runEMCalJetAnalysisOld(cDataType, cLocalFiles, iNumFiles, iNumEvents, cRunPeriod, kPhysSel, cTaskName, kTRUE, kTRUE, OCDBpath, doNotStart);
+  AliAnalysisManager* pMgr = runEMCalJetAnalysisOld(cDataType, cLocalFiles, iNumFiles, iNumEvents, cRunPeriod, kPhysSel, cTaskName, kTRUE, kFALSE, OCDBpath, doNotStart);
 
   if (doNotStart) {
     //pMgr->SetUseProgressBar(kFALSE, 10);

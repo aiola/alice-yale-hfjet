@@ -5,7 +5,7 @@ import argparse
 import ROOT
 import helperFunctions
 
-def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doChargedJets=False, doFullJets=False, doTrackQA=True, physSel=ROOT.AliVEvent.kMB, taskName="JetDmesonAna", debugLevel=0):
+def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doChargedJets=False, doFullJets=False, doTrackQA=True, physSel=ROOT.AliVEvent.kAnyINT, taskName="JetDmesonAna", debugLevel=0):
 
     ROOT.gSystem.Load("libCGAL")
 
@@ -190,7 +190,7 @@ if __name__ == '__main__':
                         default=False, const=True,
                         help='No track QA')
     parser.add_argument('--phys-sel',
-                        default=ROOT.AliVEvent.kMB, 
+                        default=ROOT.AliVEvent.kAnyINT, 
                         help='Physics selection')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
