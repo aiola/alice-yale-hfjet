@@ -13,6 +13,8 @@ def LoadMacros():
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetQA.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDmesonJets.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C")
+    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerQAPP.C")
+    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMakerNew.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C")
@@ -101,59 +103,64 @@ def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, 
 
     return pidTask
 
-def PrepareEMCAL(kPhysSel=ROOT.AliVEvent.kMB) :
+def PrepareEMCAL(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True, doClusterMaker=True, doClusTrackMatcher=True, doHadCorr=True) :
     # Tender
-    bDistBC         = False #switch for recalculation cluster position from bad channel
-    bRecalibClus    = False
-    bRecalcClusPos  = False
-    bNonLinearCorr  = False
-    bRemExoticCell  = False
-    bRemExoticClus  = False
-    bFidRegion      = False
-    bCalibEnergy    = True
-    bCalibTime      = True
-    bRemBC          = True
-    iNonLinFunct    = ROOT.AliEMCALRecoUtils.kNoCorrection
-    bReclusterize   = False
-    fSeedThresh     = 0.1      # 100 MeV
-    fCellThresh     = 0.05     # 50 MeV
-    iClusterizer    = ROOT.AliEMCALRecParam.kClusterizerv2
-    bTrackMatch     = False
-    bUpdateCellOnly = True
-    fEMCtimeMin     = -50e-6
-    fEMCtimeMax     =  50e-6
-    fEMCtimeCut     =  1e6
+    if doTender:
+        bDistBC         = False #switch for recalculation cluster position from bad channel
+        bRecalibClus    = False
+        bRecalcClusPos  = False
+        bNonLinearCorr  = False
+        bRemExoticCell  = False
+        bRemExoticClus  = False
+        bFidRegion      = False
+        bCalibEnergy    = True
+        bCalibTime      = True
+        bRemBC          = True
+        iNonLinFunct    = ROOT.AliEMCALRecoUtils.kNoCorrection
+        bReclusterize   = False
+        fSeedThresh     = 0.1      # 100 MeV
+        fCellThresh     = 0.05     # 50 MeV
+        iClusterizer    = ROOT.AliEMCALRecParam.kClusterizerv2
+        bTrackMatch     = False
+        bUpdateCellOnly = True
+        fEMCtimeMin     = -50e-6
+        fEMCtimeMax     =  50e-6
+        fEMCtimeCut     =  1e6
 
-    pTenderTask = ROOT.AddTaskEMCALTender(bDistBC, bRecalibClus, bRecalcClusPos, bNonLinearCorr, bRemExoticCell, bRemExoticClus,
-                                          bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
-                                          fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut)
-    pTenderTask.SelectCollisionCandidates(kPhysSel)
+        pTenderTask = ROOT.AddTaskEMCALTender(bDistBC, bRecalibClus, bRecalcClusPos, bNonLinearCorr, bRemExoticCell, bRemExoticClus,
+                                              bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
+                                              fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut)
+        pTenderTask.SelectCollisionCandidates(kPhysSel)
 
-    # Clusterizer
-    pClusterizerTask = ROOT.AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer, 0.05, 0.1,
-                                                   fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, False, False)
-    pClusterizerTask.SelectCollisionCandidates(kPhysSel)
+    if doClusterizer:
+        # Clusterizer
+        pClusterizerTask = ROOT.AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer, 0.05, 0.1,
+                                                       fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, False, False)
+        pClusterizerTask.SelectCollisionCandidates(kPhysSel)
 
-    bRemExoticClus  = True
-    iNonLinFunct    = ROOT.AliEMCALRecoUtils.kBeamTestCorrected
+    if doClusterMaker:
+        bRemExoticClus  = True
+        iNonLinFunct    = ROOT.AliEMCALRecoUtils.kBeamTestCorrected
 
-    # Cluster maker
-    pClusterMakerTask = ROOT.AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, "usedefault", "", 0., False)
-    pClusterMakerTask.GetClusterContainer(0).SetClusPtCut(0.)
-    pClusterMakerTask.GetClusterContainer(0).SetClusECut(0.)
-    pClusterMakerTask.SelectCollisionCandidates(kPhysSel)
+        # Cluster maker
+        pClusterMakerTask = ROOT.AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, "usedefault", "", 0., False)
+        pClusterMakerTask.GetClusterContainer(0).SetClusPtCut(0.)
+        pClusterMakerTask.GetClusterContainer(0).SetClusECut(0.)
+        pClusterMakerTask.SelectCollisionCandidates(kPhysSel)
 
-    # Cluster-track matcher task
-    pMatcherTask = ROOT.AddTaskEmcalClusTrackMatcher("usedefault", "usedefault", 0.1, False, True, True, False)
-    pMatcherTask.SelectCollisionCandidates(kPhysSel)
-    pMatcherTask.GetParticleContainer(0).SetParticlePtCut(0.15)
-    pMatcherTask.GetClusterContainer(0).SetClusNonLinCorrEnergyCut(0.15)
-    pMatcherTask.GetClusterContainer(0).SetClusECut(0.)
-    pMatcherTask.GetClusterContainer(0).SetClusPtCut(0.)
+    if doClusTrackMatcher:
+        # Cluster-track matcher task
+        pMatcherTask = ROOT.AddTaskEmcalClusTrackMatcher("usedefault", "usedefault", 0.1, False, True, True, False)
+        pMatcherTask.SelectCollisionCandidates(kPhysSel)
+        pMatcherTask.GetParticleContainer(0).SetParticlePtCut(0.15)
+        pMatcherTask.GetClusterContainer(0).SetClusNonLinCorrEnergyCut(0.15)
+        pMatcherTask.GetClusterContainer(0).SetClusECut(0.)
+        pMatcherTask.GetClusterContainer(0).SetClusPtCut(0.)
 
-    # Hadronic correction task
-    pHadCorrTask = ROOT.AddTaskHadCorr("usedefault", "usedefault", "", 2.0, 0.15, 0.030, 0.015, 0, True, False)
-    pHadCorrTask.SelectCollisionCandidates(kPhysSel)
-    pHadCorrTask.GetClusterContainer(0).SetClusNonLinCorrEnergyCut(0.15)
-    pHadCorrTask.GetClusterContainer(0).SetClusECut(0)
-    pHadCorrTask.GetClusterContainer(0).SetClusPtCut(0.)
+    if doHadCorr:
+        # Hadronic correction task
+        pHadCorrTask = ROOT.AddTaskHadCorr("usedefault", "usedefault", "", 2.0, 0.15, 0.030, 0.015, 0, True, False)
+        pHadCorrTask.SelectCollisionCandidates(kPhysSel)
+        pHadCorrTask.GetClusterContainer(0).SetClusNonLinCorrEnergyCut(0.15)
+        pHadCorrTask.GetClusterContainer(0).SetClusECut(0)
+        pHadCorrTask.GetClusterContainer(0).SetClusPtCut(0.)
