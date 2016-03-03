@@ -6,7 +6,7 @@ import ROOT
 import helperFunctions
 
 def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
-         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doTriggerQA=False,
+         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False,
          physSel=0, taskName="EmcalTriggerQA", debugLevel=0):
 
     ROOT.gSystem.Load("libCGAL")
@@ -43,33 +43,59 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         ROOT.AddTaskPhysicsSelection()
 
     #Setup task
-    #OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2010";
-    OCDBpath = "raw://";
-    pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask");
+    #OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2010"
+    OCDBpath = "raw://"
+    pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask")
     pSetupTask.SetNoOCDB(1)
     mgr.AddTask(pSetupTask)
     cinput = mgr.GetCommonInputContainer()
     mgr.ConnectInput(pSetupTask, 0,  cinput)
     pSetupTask.SetOcdbPath(OCDBpath)
-    helperFunctions.PrepareEMCAL(physSel, True, True, False, False, False)
 
-    if doTrackQA:
+    # EMCal prep
+    if doClusterQA:
+        helperFunctions.PrepareEMCAL(physSel, True, True, False, False, False)
+
+    if doTrackQA and doClusterQA:
         pJetQATask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
-    else:
+        pJetQATask.SetNeedEmcalGeom(True)
+    elif doClusterQA:
         pJetQATask = ROOT.AddTaskEmcalJetQA("", "usedefault", "usedefault")
-    pJetQATask.SetNeedEmcalGeom(True)
-    pJetQATask.SelectCollisionCandidates(physSel)
-    pJetQATask.SetHistoBins(150, 0, 150)
+        pJetQATask.SetNeedEmcalGeom(True)
+    elif doTrackQA:
+        pJetQATask = ROOT.AddTaskEmcalJetQA("", "usedefault", "usedefault")
+
+    if doTrackQA or doClusterQA:
+        pJetQATask.SelectCollisionCandidates(physSel)
+        pJetQATask.SetHistoBins(150, 0, 150)
     
     #Trigger QA
     if doTriggerQA:
-        pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew()
+        pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
         pTriggerMakerTask.SetUseL0Amplitudes(True)
-        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP()
+        pTriggerMakerTask.GetTriggerMaker().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        pTriggerMakerTask.SetJetPatchsize(16)
+        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
+        pTriggerMakerTask.GetTriggerMaker().SetL0FastORPedestal(0)
+        
+        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "EMC7")
+        pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, False)
-        pTriggerQATask.SetADCperBin(5)
-        pTriggerQATask.SetMinAmplitude(25)
+        #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, False)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(0, False)
+        pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        pTriggerQATask.SetADCperBin(4)
+        pTriggerQATask.SetMinAmplitude(0)
+        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
+        pTriggerQATask.GetTriggerQA().SetL0FastORPedestal(0)
+
+        #pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "DMC7")
+        #pTriggerQATask.SetTrigClass("CDMC7-B-NOPF-CENTNOTRD");
+        #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
+        #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, False)
+        #pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        #pTriggerQATask.SetADCperBin(4)
+        #pTriggerQATask.SetMinAmplitude(-1)
 
     #Charged jet analysis
     if doChargedJets:
@@ -95,9 +121,10 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pJetTask = ROOT.AddTaskEmcalJet("", "usedefault", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kNeutralJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
 
-    pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault")
-    pSpectraTask.SelectCollisionCandidates(physSel)
-    pSpectraTask.SetHistoBins(200, 0, 200)
+    if doChargedJets or doFullJets or doNeutralJets:
+        pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault")
+        pSpectraTask.SelectCollisionCandidates(physSel)
+        pSpectraTask.SetHistoBins(200, 0, 200)
 
     if doChargedJets:
         pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
@@ -183,6 +210,9 @@ if __name__ == '__main__':
     parser.add_argument('--track-qa', action='store_const',
                         default=False, const=True,
                         help='Track QA')
+    parser.add_argument('--cluster-qa', action='store_const',
+                        default=False, const=True,
+                        help='Cluster QA')
     parser.add_argument('--trigger-qa', action='store_const',
                         default=False, const=True,
                         help='Track QA')
@@ -199,5 +229,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode,
-         args.charged_jets, args.full_jets, args.neutral_jets, args.track_qa, args.trigger_qa,
+         args.charged_jets, args.full_jets, args.neutral_jets, args.track_qa, args.cluster_qa, args.trigger_qa,
          args.phys_sel, args.task_name, args.debug_level)
