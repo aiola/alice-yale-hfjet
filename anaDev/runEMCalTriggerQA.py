@@ -74,9 +74,10 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
         pTriggerMakerTask.SetUseL0Amplitudes(True)
         pTriggerMakerTask.GetTriggerMaker().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("badchannels.txt")
+        #pTriggerMakerTask.GetTriggerMaker().ReadFastORPedestalFromFile("pedestal.txt")
         pTriggerMakerTask.SetJetPatchsize(16)
         pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
-        pTriggerMakerTask.GetTriggerMaker().SetL0FastORPedestal(0)
         
         pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "EMC7")
         pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
@@ -84,10 +85,11 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, False)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(0, False)
         pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("badchannels.txt")
+        #pTriggerQATask.GetTriggerQA().ReadFastORPedestalFromFile("pedestal.txt")
         pTriggerQATask.SetADCperBin(4)
         pTriggerQATask.SetMinAmplitude(0)
         pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
-        pTriggerQATask.GetTriggerQA().SetL0FastORPedestal(0)
 
         #pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "DMC7")
         #pTriggerQATask.SetTrigClass("CDMC7-B-NOPF-CENTNOTRD");
