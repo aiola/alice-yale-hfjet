@@ -4,12 +4,18 @@
 import argparse
 import ROOT
 import helperFunctions
+import os
 
 def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
-         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False,
-         physSel=0, taskName="EmcalTriggerQA", debugLevel=0):
+         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False, 
+         taskName="EmcalTriggerQA", oldBitConfig=False, debugLevel=0):
+
+    physSel = ROOT.AliVEvent.kEMCEJE
 
     ROOT.gSystem.Load("libCGAL")
+    #ROOT.gSystem.AddIncludePath("$ALICE_ROOT/include")
+    
+    ROOT.gInterpreter.ProcessLine(os.path.expandvars('.L $ALICE_ROOT/include/AliEMCALTriggerConstants.h'))
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(runPeriod)
     
@@ -35,7 +41,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
 
     if mode is helperFunctions.AnaMode.AOD:
         helperFunctions.AddAODHandler()
-    elif mode is AnaMode.ESD:
+    elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
         
     #Physics selection task
@@ -72,24 +78,34 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
     #Trigger QA
     if doTriggerQA:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
-        pTriggerMakerTask.SetUseL0Amplitudes(True)
-        pTriggerMakerTask.GetTriggerMaker().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
-        pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("badchannels.txt")
+        #pTriggerMakerTask.SetUseL0Amplitudes(True)
+        #pTriggerMakerTask.GetTriggerMaker().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        #pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("badchannels.txt")
         #pTriggerMakerTask.GetTriggerMaker().ReadFastORPedestalFromFile("pedestal.txt")
         pTriggerMakerTask.SetJetPatchsize(16)
-        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
+        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 2, 0)
+        pTriggerMakerTask.SelectCollisionCandidates(physSel)
+        if oldBitConfig:
+            pTriggerMakerTask.SetUseTriggerBitConfig(ROOT.AliEmcalTriggerMakerTask.kOldConfig)
         
-        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "EMC7")
-        pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
-        #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, False)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(0, False)
-        pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
-        pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("badchannels.txt")
+        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "")
+        #pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
+        #pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
+        #pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("badchannels.txt")
         #pTriggerQATask.GetTriggerQA().ReadFastORPedestalFromFile("pedestal.txt")
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, True)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, True)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kRecalcPatch, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalLevel0, False)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetL, False)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetH, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaL, False)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaH, False)
+        pTriggerQATask.EnableDCal(False)
         pTriggerQATask.SetADCperBin(4)
         pTriggerQATask.SetMinAmplitude(0)
-        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
+        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 2, 0)
+        pTriggerQATask.SelectCollisionCandidates(physSel)
 
         #pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "DMC7")
         #pTriggerQATask.SetTrigClass("CDMC7-B-NOPF-CENTNOTRD");
@@ -218,9 +234,9 @@ if __name__ == '__main__':
     parser.add_argument('--trigger-qa', action='store_const',
                         default=False, const=True,
                         help='Track QA')
-    parser.add_argument('--phys-sel',
-                        default=0, 
-                        help='Physics selection')
+    parser.add_argument('--old-bit', action='store_const',
+                        default=False, const=True,
+                        help='Old trigger bit configuration (before 2013)')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
@@ -232,4 +248,4 @@ if __name__ == '__main__':
     
     main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode,
          args.charged_jets, args.full_jets, args.neutral_jets, args.track_qa, args.cluster_qa, args.trigger_qa,
-         args.phys_sel, args.task_name, args.debug_level)
+         args.task_name, args.old_bit, args.debug_level)

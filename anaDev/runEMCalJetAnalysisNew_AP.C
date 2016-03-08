@@ -1,16 +1,17 @@
 void runEMCalJetAnalysisNew_AP(
 			       const char   *cDataType      = "AOD",                                   // set the analysis type, AOD or ESD
-			       const char   *cLocalFiles    = "fileLists/files_LHC13b4_plus_AOD152_5.txt",   // set the local list file
+			       const char   *cLocalFiles    = "fileLists/files_LHC11h_2_AOD145.txt",   // set the local list file
 			       UInt_t        iNumFiles      = 100,                                     // number of files analyzed locally
-			       UInt_t        iNumEvents     = 20000,                                    // number of events to be analyzed
-			       const char   *cRunPeriod     = "LHC13b4",                                // set the run period
+			       UInt_t        iNumEvents     = 200,                                    // number of events to be analyzed
+			       const char   *cRunPeriod     = "LHC11h",                                // set the run period
 			       const char   *cTaskName      = "JetAna"
 			       )
 {
   // AliEmcalPhysicsSelection::kEmcalOk, AliEmcalPhysicsSelection::kEmcalH,
   // AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral,
   // AliVEvent::kEMCEGA, AliVEvent::kEMCEJE
-  UInt_t kPhysSel = AliVEvent::kAnyINT;
+  // AliVEvent::kAnyINT
+  UInt_t kPhysSel =  AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   
   enum eDataType { kAod, kEsd };
 
@@ -37,17 +38,17 @@ void runEMCalJetAnalysisNew_AP(
   TString OCDBpath;
   
   if (anaType == kLocal) {
-    OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2012";
+    OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2011";
   }
   else {
     OCDBpath = "raw://";
   }
     
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/runEMCalJetAnalysisNew.C");
-  AliAnalysisManager* pMgr = runEMCalJetAnalysisNew(cDataType, cLocalFiles, iNumFiles, iNumEvents, cRunPeriod, kPhysSel, cTaskName, kTRUE, kFALSE, OCDBpath, anaType, "terminate");
+  AliAnalysisManager* pMgr = runEMCalJetAnalysisNew(cDataType, cLocalFiles, iNumFiles, iNumEvents, cRunPeriod, kPhysSel, cTaskName, kTRUE, kTRUE, kFALSE, OCDBpath, anaType, "terminate");
 
   if (anaType == kLocal) {
-    //pMgr->SetUseProgressBar(kFALSE, 10);
+    pMgr->SetUseProgressBar(kTRUE, 10);
     //pMgr->SetDebugLevel(2);
   
     //pMgr->AddClassDebug("AliEmcalJetTask", AliLog::kDebug+100);

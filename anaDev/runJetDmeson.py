@@ -33,7 +33,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     if mode is helperFunctions.AnaMode.AOD:
         helperFunctions.AddAODHandler()
-    elif mode is AnaMode.ESD:
+    elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
         
     #Physics selection task
@@ -53,7 +53,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     #PID response
     if doHF:
-        PIDtask = helperFunctions.AddTaskPIDResponse(False)
+        helperFunctions.AddTaskPIDResponse(False)
 
     if doTrackQA:
         if doChargedJets and not doFullJets:
@@ -124,7 +124,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
     for task in tasks:
         if isinstance(task, ROOT.AliAnalysisTaskEmcal):
             task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
-	
+
     res = mgr.InitAnalysis()
 
     if not res:
