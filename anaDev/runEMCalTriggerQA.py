@@ -10,10 +10,9 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
          doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False, 
          taskName="EmcalTriggerQA", oldBitConfig=False, debugLevel=0):
 
-    physSel = ROOT.AliVEvent.kEMCEJE
+    physSel = 0
 
     ROOT.gSystem.Load("libCGAL")
-    #ROOT.gSystem.AddIncludePath("$ALICE_ROOT/include")
     
     ROOT.gInterpreter.ProcessLine(os.path.expandvars('.L $ALICE_ROOT/include/AliEMCALTriggerConstants.h'))
 
@@ -60,7 +59,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
 
     # EMCal prep
     if doClusterQA:
-        helperFunctions.PrepareEMCAL(physSel, True, True, False, False, False)
+        helperFunctions.PrepareEMCAL(physSel, True, True, True, doFullJets or doNeutralJets, doFullJets or doNeutralJets)
 
     if doTrackQA and doClusterQA:
         pJetQATask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
@@ -73,38 +72,39 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
 
     if doTrackQA or doClusterQA:
         pJetQATask.SelectCollisionCandidates(physSel)
+        pJetQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
         pJetQATask.SetHistoBins(150, 0, 150)
     
     #Trigger QA
     if doTriggerQA:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
-        #pTriggerMakerTask.SetUseL0Amplitudes(True)
+        pTriggerMakerTask.SetUseL0Amplitudes(True)
         #pTriggerMakerTask.GetTriggerMaker().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
         #pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("badchannels.txt")
         #pTriggerMakerTask.GetTriggerMaker().ReadFastORPedestalFromFile("pedestal.txt")
         pTriggerMakerTask.SetJetPatchsize(16)
-        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 2, 0)
+        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
         pTriggerMakerTask.SelectCollisionCandidates(physSel)
         if oldBitConfig:
             pTriggerMakerTask.SetUseTriggerBitConfig(ROOT.AliEmcalTriggerMakerTask.kOldConfig)
         
         pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "")
-        #pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
+        pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
         #pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
         #pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("badchannels.txt")
         #pTriggerQATask.GetTriggerQA().ReadFastORPedestalFromFile("pedestal.txt")
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, True)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, True)
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kRecalcPatch, True)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalLevel0, False)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalLevel0, True)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetL, False)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetH, True)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaL, False)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaH, False)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaH, True)
         pTriggerQATask.EnableDCal(False)
         pTriggerQATask.SetADCperBin(4)
         pTriggerQATask.SetMinAmplitude(0)
-        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 2, 0)
+        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
         pTriggerQATask.SelectCollisionCandidates(physSel)
 
         #pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "DMC7")

@@ -34,7 +34,7 @@ def AddESDHandler():
     if inputHandler == None:
         mgr.SetInputEventHandler(handler);
     else:
-      ROOT.Error("AddESDHandler", "inputHandler is NOT null. ESD handler was NOT added !!!")
+        ROOT.Error("AddESDHandler", "inputHandler is NOT null. ESD handler was NOT added !!!")
       
     return handler
     
@@ -52,7 +52,7 @@ def AddAODHandler():
     if inputHandler == None:
         mgr.SetInputEventHandler(handler);
     else:
-      ROOT.Error("AddAODHandler", "inputHandler is NOT null. AOD handler was NOT added !!!")
+        ROOT.Error("AddAODHandler", "inputHandler is NOT null. AOD handler was NOT added !!!")
       
     return handler
 
@@ -67,8 +67,6 @@ def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, 
     if mgr == None:
         ROOT.Error("AddTaskPIDResponse", "No analysis manager to connect to.")
         return None
-
-    inputHandler = mgr.GetInputEventHandler()
     
     print "========================================================================================"
     print "PIDResponse: Initialising AliAnalysisTaskPIDResponse"
@@ -80,7 +78,7 @@ def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, 
             print "             Using MC with tune on data."
             print "             !!! ATTENTION ATTENTION ATTENTION !!!"
             print("             You MUST make sure the reco pass set (", recoPass, ") corresponds to the one this MC was produced for!")
-            pidTask.SetTuneOnData(kTRUE,recoPass)
+            pidTask.SetTuneOnData(True,recoPass)
             # tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
             # pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);
             # pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);
