@@ -82,7 +82,7 @@ def GetFullTrainNumber(SearchPath, TrainNumber):
     FullTrainNumber = output[i:j]
     return FullTrainNumber
 
-def RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, TrainName, Overwrite, Year, MC, Pass):
+def RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, TrainName, Overwrite, Year, MC, Pass, NoDownload):
     
     jetTypes = ["Charged", "Full"]
     triggers = ["AnyINT", "EMC", "EMCEGA", "EMCEJE"]
@@ -91,26 +91,29 @@ def RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, Tra
     for trigger in triggers:
         skipList.append("AliEmcalTriggerQATaskPP_{0}_histos".format(trigger))
             
-    for jetType in jetTypes:
-        for trigger in triggers:
-            skipList.append("AliAnalysisTaskDmesonJets_{0}_{1}_histos".format(jetType,trigger))
+    #for jetType in jetTypes:
+     #   for trigger in triggers:
+      #      skipList.append("AliAnalysisTaskDmesonJets_{0}_{1}_histos".format(jetType,trigger))
     
     FileList = []
     FinalFileList = []
+    
+    FileName = "AnalysisResults_TriggerQA.root"
 
     for Dataset,TrainNumber in zip(Datasets,TrainNumbers):    
         FileList[:] = []
-        if MC:
-            FirtRun = RunLists[Dataset][0]
-            AlienPath="/alice/sim/"+Year+"/"+Dataset
-        else:
-            FirtRun = "000" + RunLists[Dataset][0]
-            AlienPath="/alice/data/"+Year+"/"+Dataset
-            
-        SearchPath = "{0}/{1}/{2}/PWGJE/{3}/".format(AlienPath, FirtRun, Pass, TrainName)
-        FullTrainNumber = GetFullTrainNumber(SearchPath, TrainNumber)
         
-        AlienPath = "alien://" + AlienPath
+        if not NoDownload:
+            if MC:
+                FirtRun = RunLists[Dataset][0]
+                AlienPath="/alice/sim/"+Year+"/"+Dataset
+            else:
+                FirtRun = "000" + RunLists[Dataset][0]
+                AlienPath="/alice/data/"+Year+"/"+Dataset
+                
+            SearchPath = "{0}/{1}/{2}/PWGJE/{3}/".format(AlienPath, FirtRun, Pass, TrainName)
+            FullTrainNumber = GetFullTrainNumber(SearchPath, TrainNumber)
+            AlienPath = "alien://" + AlienPath
             
         for Run in RunLists[Dataset]:
             if not MC:
@@ -121,19 +124,21 @@ def RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, Tra
                 os.makedirs(dest)
 
             dest+="/AnalysisResults.root"
-            if os.path.exists(dest) and Overwrite > 4:
-                print "Deleting file: "+dest
-                os.remove(dest)
-
-            if not os.path.exists(dest):
-                AlienFile="{0}/{1}/{2}/PWGJE/{3}/{4}/AnalysisResults.root".format(AlienPath, Run, Pass, TrainName, FullTrainNumber)
-                print "Copying from alien location '"+AlienFile+"' to local location '"+dest+"'"
-                subprocess.call(["alien_cp", AlienFile, dest])
+            
+            if not NoDownload:
+                if os.path.exists(dest) and Overwrite > 4:
+                    print "Deleting file: "+dest
+                    os.remove(dest)
+    
+                if not os.path.exists(dest):
+                    AlienFile="{0}/{1}/{2}/PWGJE/{3}/{4}/AnalysisResults.root".format(AlienPath, Run, Pass, TrainName, FullTrainNumber)
+                    print "Copying from alien location '"+AlienFile+"' to local location '"+dest+"'"
+                    subprocess.call(["alien_cp", AlienFile, dest])
 
             if os.path.exists(dest):
                 FileList.append(dest)
 
-        dest="{0}/{1}/AnalysisResults.root".format(LocalPath, Dataset)
+        dest="{0}/{1}/{2}".format(LocalPath, Dataset, FileName)
         if os.path.exists(dest) and Overwrite > 3:
             print "Deleting file "+dest
             os.remove(dest)
@@ -142,9 +147,9 @@ def RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, Tra
             print "Merging for dataset: {0}. Total number of files is {1}".format(Dataset, len(FileList))
             MergeFiles.MergeFiles(dest, FileList, skipList)
 
-    FinalFileList.append(dest)
+        FinalFileList.append(dest)
 
-    dest="{0}/AnalysisResults.root".format(LocalPath)
+    dest="{0}/{1}".format(LocalPath, FileName)
     if os.path.exists(dest) and Overwrite > 1:
         print "Deleting file "+dest
         os.remove(dest)
@@ -222,7 +227,7 @@ def PtHardBinMerging(UserDataset, LocalPath, Datasets, TrainNumbers, Overwrite, 
 
     subprocess.call(["ls", LocalPath])
 
-def StartMerging(TrainNumbers, Overwrite=0, Year="2015", UserDataset="LHC15i2b", TrainName="Jets_EMC_pp_MC", PtHardMerging=False, MC=False):
+def StartMerging(TrainNumbers, Overwrite=0, Year="2015", UserDataset="LHC15i2b", TrainName="Jets_EMC_pp_MC", PtHardMerging=False, MC=False, NoDownload=False):
     try:
         rootPath=subprocess.check_output(["which", "root"]).rstrip()
         alirootPath=subprocess.check_output(["which", "aliroot"]).rstrip()
@@ -313,7 +318,7 @@ def StartMerging(TrainNumbers, Overwrite=0, Year="2015", UserDataset="LHC15i2b",
     if PtHardMerging:
         PtHardBinMerging(UserDataset, LocalPath, Datasets, TrainNumbers, Overwrite, Year)
     else:
-        RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, TrainName, Overwrite, Year, MC, "pass2")
+        RegularMerging(UserDataset, LocalPath, Datasets, RunLists, TrainNumbers, TrainName, Overwrite, Year, MC, "pass2", NoDownload)
 
 if __name__ == '__main__':
     # FinalMergeLocal.py executed as script
@@ -339,8 +344,11 @@ if __name__ == '__main__':
     parser.add_argument('--MC', action='store_const',
                         default=False, const=True,
                         help='MC mode')
+    parser.add_argument('--no-download', action='store_const',
+                        default=False, const=True,
+                        help='Do not download')
     args = parser.parse_args()
 
     TrainNumbers=args.trainNumber.split(":")
 
-    StartMerging(TrainNumbers, args.overwrite, args.year, args.dataset, args.trainName, args.pthard, args.MC)
+    StartMerging(TrainNumbers, args.overwrite, args.year, args.dataset, args.trainName, args.pthard, args.MC, args.no_download)
