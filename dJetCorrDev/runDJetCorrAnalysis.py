@@ -38,30 +38,30 @@ def main(train, run=True, refit=False, plot=True,
     if cellName:
         collName += cellName + "_"
 
-    qaListName = "AliAnalysisTaskEmcalJetQA{0}histos".format(collName)
+    qaListName = "AliAnalysisTaskEmcalJetQA{0}_AnyINT_histos".format(collName)
   
-    projDjet.SetQAListName(qaListName)
+    #projDjet.SetQAListName(qaListName)
 
     projDjet.SetPlotFormat("pdf")
     projDjet.SetSavePlots(True)
+    projDjet.SetInputFileName("AnalysisResults_DJets.root")
 
 
     if D0Ana:
         if FullAna:
-            param = projDjet.AddAnalysisParams("D0", "Full", radius)
+            param = projDjet.AddAnalysisParams("D0", "Full", radius, "AnyINT")
         if ChargedAna:
-            param = projDjet.AddAnalysisParams("D0", "Charged", radius)
+            param = projDjet.AddAnalysisParams("D0", "Charged", radius, "AnyINT")
      
     if DstarAna:
         if FullAna:
-            param = projDjet.AddAnalysisParams("DStar", "Full", radius)
+            param = projDjet.AddAnalysisParams("DStar", "Full", radius, "AnyINT")
         if ChargedAna:
-            param = projDjet.AddAnalysisParams("DStar", "Charged", radius)   
+            param = projDjet.AddAnalysisParams("DStar", "Charged", radius, "AnyINT")   
 
     if run:
         projDjet.GenerateQAHistograms()
         projDjet.GenerateDJetCorrHistograms()
-        projDjet.ProjectTruthSpectrum()
 
     if refit:
         projDjet.PlotTrackHistograms()

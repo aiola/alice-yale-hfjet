@@ -9,7 +9,7 @@ LIBRARY=DJetCorr.so
 $(LIBRARY): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(OBJECTS:.o=_Dict.o) -o $@
 
-%.o:
+%.o: %.cxx
 	rootcint -f $(@:.o=_Dict.cxx) -c -I`root-config --incdir` $(@:.o=.h)
 	$(CC) $(CFLAGS) $(@:.o=_Dict.cxx) $(@:.o=.cxx)
 	

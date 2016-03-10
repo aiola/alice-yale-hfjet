@@ -31,6 +31,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fJetRadius(),
   fDmesonName(),
   fTaskName(),
+  fTriggerName(),
   fInvMinMass(0),
   fInvMaxMass(0),
   f2ProngMinMass(0),
@@ -57,7 +58,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius) :
+DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* trigger) :
   TObject(),
   fName(),
   fNDPtBins(0),
@@ -70,6 +71,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fJetRadius(jetRadius),
   fDmesonName(dmeson),
   fTaskName("AliAnalysisTaskDmesonJets"),
+  fTriggerName(trigger),
   fInvMinMass(0),
   fInvMaxMass(0),
   f2ProngMinMass(0),
@@ -172,6 +174,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fJetRadius(p.fJetRadius),
   fDmesonName(p.fDmesonName),
   fTaskName(p.fTaskName),
+  fTriggerName(p.fTriggerName),
   fInvMinMass(p.fInvMinMass),
   fInvMaxMass(p.fInvMaxMass),
   f2ProngMinMass(p.f2ProngMinMass),
@@ -574,19 +577,21 @@ Bool_t DJetCorrAnalysisParams::LoadInputList(TFile* inputFile)
 
   delete fInputList;
 
-  TString taskListName = TString::Format("%s_%s_histos", fTaskName.Data(), fJetType.Data());
+  TString taskListName = TString::Format("%s_%s_%s_histos", fTaskName.Data(), fJetType.Data(), fTriggerName.Data());
   Printf("Info-DJetCorrBase::OpenInputFile : Getting list '%s' from file '%s'", taskListName.Data(), inputFile->GetName());
   TList* taskList = dynamic_cast<TList*>(inputFile->Get(taskListName));
   if (!taskList) {
     Printf("Error-DJetCorrBase::OpenInputFile : Could not get list '%s' from file '%s'", taskListName.Data(), inputFile->GetName());
+    inputFile->ls();
     return kFALSE;
   }
 
-  TString hashListName = TString::Format("histos%s_%s", fTaskName.Data(), fJetType.Data());
+  TString hashListName = TString::Format("histos%s_%s_%s", fTaskName.Data(), fJetType.Data(), fTriggerName.Data());
   Printf("Info-DJetCorrBase::OpenInputFile : Getting hash list '%s' from list '%s' of file '%s'", hashListName.Data(), taskListName.Data(), inputFile->GetName());
   THashList* hashList = dynamic_cast<THashList*>(taskList->FindObject(hashListName));
   if (!hashList) {
     Printf("Error-DJetCorrBase::OpenInputFile : Could not get hash list '%s' from list '%s' of file '%s'", hashListName.Data(), taskListName.Data(), inputFile->GetName());
+    taskList->Print();
     return kFALSE;
   }
 
@@ -594,6 +599,7 @@ Bool_t DJetCorrAnalysisParams::LoadInputList(TFile* inputFile)
   THashList* mesonList = dynamic_cast<THashList*>(hashList->FindObject(fDmesonName));
   if (!mesonList) {
     Printf("Error-DJetCorrBase::OpenInputFile : Could not get hash list '%s' from hash list '%s' from list '%s' of file '%s'", fDmesonName.Data(), hashListName.Data(), taskListName.Data(), inputFile->GetName());
+    hashList->Print();
     return kFALSE;
   }
 
@@ -602,6 +608,7 @@ Bool_t DJetCorrAnalysisParams::LoadInputList(TFile* inputFile)
   fInputList = dynamic_cast<THashList*>(mesonList->FindObject(jetListName));
   if (!fInputList) {
     Printf("Error-DJetCorrBase::OpenInputFile : Could not get hash list '%s' from hash list '%s' from hash list '%s' from list '%s' of file '%s'", jetListName.Data(), fDmesonName.Data(), hashListName.Data(), taskListName.Data(), inputFile->GetName());
+    mesonList->Print();
     return kFALSE;
   }
 
