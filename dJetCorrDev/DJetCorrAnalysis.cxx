@@ -1843,12 +1843,13 @@ Bool_t DJetCorrAnalysis::LoadQAList()
   
   if (!fInputQAList || fQAListName != fInputQAList->GetName()) {
     delete fInputQAList;
-    Printf("Info-DJetCorrAnalysis::OpenInputFile : Getting list '%s' from file '%s'", fQAListName.Data(), fInputFile->GetName()); 
+    Printf("Info-DJetCorrAnalysis::OpenInputFile : Getting list '%s' from file '%s'", fQAListName.Data(), fInputFile->GetName());
     fInputQAList = dynamic_cast<TList*>(fInputFile->Get(fQAListName));
   }
   
   if (!fInputQAList) {
     Printf("Error-DJetCorrAnalysis::OpenInputFile : Could not get list '%s' from file '%s'", fQAListName.Data(), fInputFile->GetName());
+    fInputFile->ls();
     return kFALSE;
   }
     

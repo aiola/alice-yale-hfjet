@@ -86,13 +86,13 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius)
+DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* trigger)
 {
   // Add the analysis params for the D meson type, jet type and jet radius provided.
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius);
+  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, trigger);
 
   fAnalysisParams->Add(params);
 

@@ -21,7 +21,7 @@ class DJetCorrAnalysisParams : public TObject
   enum DJetCorrAnalysisType {KUndefinedAna=0, kInvMassAna, kResponseMatrixAna};
 
   DJetCorrAnalysisParams();
-  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
+  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* trigger);
   DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
   
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass      = min  ; fInvMaxMass      = max   ; }
@@ -138,6 +138,7 @@ class DJetCorrAnalysisParams : public TObject
   TString         fJetRadius                 ;//  jet radius R020, R030, etc.
   TString         fDmesonName                ;//  "D0" or "DStar" etc.
   TString         fTaskName                  ;//  task name
+  TString         fTriggerName               ;//  trigger name
   //TString         fTruthInputListName        ;//  truth input list name
 
   Double_t        fInvMinMass                ;//  inv min mass
