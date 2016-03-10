@@ -2,3 +2,5 @@
 *.d
 data
 .DS_Store
+.project
+.pydevproject
