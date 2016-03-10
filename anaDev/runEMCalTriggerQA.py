@@ -79,9 +79,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
     if doTriggerQA:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
         pTriggerMakerTask.SetUseL0Amplitudes(True)
-        #pTriggerMakerTask.GetTriggerMaker().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
-        #pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("badchannels.txt")
-        #pTriggerMakerTask.GetTriggerMaker().ReadFastORPedestalFromFile("pedestal.txt")
+        pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("LHC15j_BadFastORs.txt")
         pTriggerMakerTask.SetJetPatchsize(16)
         pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
         pTriggerMakerTask.SelectCollisionCandidates(physSel)
@@ -90,9 +88,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         
         pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "")
         pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
-        #pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
-        #pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("badchannels.txt")
-        #pTriggerQATask.GetTriggerQA().ReadFastORPedestalFromFile("pedestal.txt")
+        pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("LHC15j_BadFastORs.txt")
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, True)
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kRecalcPatch, True)
@@ -106,14 +102,6 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pTriggerQATask.SetMinAmplitude(0)
         pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
         pTriggerQATask.SelectCollisionCandidates(physSel)
-
-        #pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "DMC7")
-        #pTriggerQATask.SetTrigClass("CDMC7-B-NOPF-CENTNOTRD");
-        #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
-        #pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, False)
-        #pTriggerQATask.GetTriggerQA().ReadOfflineBadChannelFromFile("LHC15j_bad.txt")
-        #pTriggerQATask.SetADCperBin(4)
-        #pTriggerQATask.SetMinAmplitude(-1)
 
     #Charged jet analysis
     if doChargedJets:
