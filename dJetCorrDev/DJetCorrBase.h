@@ -15,12 +15,18 @@ class TPaveText;
 class TObject;
 class TList;
 class TDirectoryFile;
-class TH1;
 class DJetCorrAnalysisParams;
 
+#include <TH1.h>
+#include <TH2.h>
 #include <TMap.h>
 #include <THnSparse.h>
 #include <THashList.h>
+#include <TGraph.h>
+#include <TPad.h>
+#include <TCanvas.h>
+
+#include "DJetCorrAnalysisParams.h"
 
 class DJetCorrBase : public TNamed {
   
@@ -40,7 +46,8 @@ class DJetCorrBase : public TNamed {
   void   SetSavePlots(Bool_t s)                { fSavePlots        = s      ; }
   void   SetAddTrainToCanvasName(Bool_t s)     { fAddTrainToCanvasName= s   ; }
 
-  DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
+  //DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
+  DJetCorrAnalysisParams* AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
   DJetCorrAnalysisParams* AddAnalysisParams(DJetCorrAnalysisParams* params);
 
   const char* GetParamName(Int_t i) const;
@@ -53,7 +60,6 @@ class DJetCorrBase : public TNamed {
   TH1* GetOutputHistogram(const char* name) { return fOutputList == 0 ? 0 : dynamic_cast<TH1*>(fOutputList->FindObject(name)); }
   THnSparse* GetOutputSparseHistogram(const char* name) { return fOutputList == 0 ? 0 : dynamic_cast<THnSparse*>(fOutputList->FindObject(name)); }
   TCanvas* GetCanvas(const char* name)      { return fCanvases == 0 ? 0 : static_cast<TCanvas*>(fCanvases->FindObject(name)); }
-  Double_t GetEvents(Bool_t recalculate=kFALSE);
 
   virtual Bool_t LoadOutputHistograms();
   void UpdateAllCanvases();
@@ -107,12 +113,11 @@ class DJetCorrBase : public TNamed {
   static void MakeBinomialConsistent(TH1* pass, TH1* total);
   static Double_t* GenerateFixedArray(Int_t n, Double_t min, Double_t max);
   static TH2* Normalize(TH2* orig, const char* name);
+  static TMap* GenerateAxisMap(THnSparse* hn);
 
  protected:
 
   virtual Bool_t  SaveOutputFile(TObjArray& arr);
-  virtual Bool_t  ClearInputData();
-  Int_t           GetAxisIndex(TString title, THnSparse* hn, Bool_t messageOnFail=kFALSE);
 
   Bool_t          GenerateRatios(const char* nname, const char* dname);
 
@@ -121,9 +126,7 @@ class DJetCorrBase : public TNamed {
                                  Int_t step, Int_t rebin, Int_t norm, Int_t plotStats=0);
     
   Bool_t          Plot1DHistos(TString cname, TObjArray& histos, Double_t xmin, Double_t xmax, Int_t plotStats=0);
-  TMap*           GenerateAxisMap(THnSparse* hn);
   Bool_t          OpenInputFile();
-  Bool_t          LoadInputList(const char* lname);
   TFile*          OpenOutputFile();
   virtual Bool_t  LoadTHnSparse() {return kTRUE;}
 
@@ -163,13 +166,9 @@ class DJetCorrBase : public TNamed {
 
   DJetCorrAnalysisParams::DJetCorrAnalysisType fAnaType;//  analysis type
   
-  TList           fTHnSparseAxisMaps         ;//! axis maps for THnSparse
   TFile          *fInputFile                 ;//! input file
-  TDirectoryFile *fInputDirectoryFile        ;//! input directory file
-  TList          *fInputList                 ;//! list contains the input hisograms
   THashList      *fOutputList                ;//! list contains the output histograms
   TList          *fCanvases                  ;//! list contains the canvases
-  Double_t        fEvents                    ;//! number of events
   
   static const Double_t fgkEpsilon;
 

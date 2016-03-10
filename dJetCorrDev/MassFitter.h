@@ -9,8 +9,7 @@
 #include <TMath.h>
 #include <TFitResultPtr.h>
 #include <TH1.h>
-
-class TF1;
+#include <TF1.h>
 
 class MassFitter : public TNamed {
   

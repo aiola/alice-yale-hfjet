@@ -2,6 +2,9 @@
 // Author: Salvatore Aiola, Yale University (salvatore.aiola@cern.ch)
 // Copyright (c) 2015 Salvatore Aiola
 
+#ifndef DJETCORRANALYSIS_H
+#define DJETCORRANALYSIS_H
+
 class TString;
 class TFile;
 class TList;
@@ -51,11 +54,12 @@ class DJetCorrAnalysis : public DJetCorrBase {
 
   Bool_t Regenerate();
 
+  /*
   Bool_t LoadTruthList(DJetCorrAnalysisParams* params);
   Bool_t ProjectTruthSpectrum();
   Bool_t ProjectTruthSpectrum(DJetCorrAnalysisParams* params);
   Bool_t ProjectTruthSpectrum(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1, Int_t minJetConst=0);
-
+*/
   void GenerateMeaduredSpectrum(DJetCorrAnalysisParams* params);
 
   TString GetTruthName(Int_t p);
@@ -74,9 +78,6 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString GetJetPtMeasuredName(Int_t p);
 
  protected:
-  Bool_t          ClearInputData();
-  Int_t           GetAxisIndex(TString title) { return DJetCorrBase::GetAxisIndex(title, fDmesons); }
-  
   Bool_t          ProjectQA();
   Bool_t          ProjectCorrD(DJetCorrAnalysisParams* params);
   Bool_t          ProjectDJetCorr(TString prefix, TString suffix, DJetCorrAnalysisParams* params, EMatchingStatus st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1, Int_t minJetConst=0);
@@ -90,7 +91,6 @@ class DJetCorrAnalysis : public DJetCorrBase {
   Bool_t          PlotSpectra(Int_t n, TH1** histSpectra, const char* name, Bool_t logY);
     
   Bool_t          LoadQAList();
-  Bool_t          LoadTHnSparse();
   
   TString           fQAListName              ;//  QA list name
   EInvMassPlotNorm  fInvMassPlotNorm         ;//  type of normalization used in invariant mass plots
@@ -116,7 +116,6 @@ class DJetCorrAnalysis : public DJetCorrBase {
   TString         fJetConstAxisTitle         ;//  jet constituents axis title
   TString         fMatchingStatusAxisTitle   ;//  matching status
 
-  THnSparse      *fDmesons                   ;//! THnSparse contains the results
   TList          *fInputQAList               ;//! list contains the QA histograms
   TList          *fMassFitters               ;//! list containing the mass fitter objects
 
@@ -127,3 +126,5 @@ class DJetCorrAnalysis : public DJetCorrBase {
 
   ClassDef(DJetCorrAnalysis, 1);
 };
+
+#endif

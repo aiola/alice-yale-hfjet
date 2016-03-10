@@ -54,13 +54,9 @@ DJetCorrBase::DJetCorrBase() :
   fSavePlots(kFALSE),
   fAddTrainToCanvasName(kFALSE),
   fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
-  fTHnSparseAxisMaps(),
   fInputFile(0),
-  fInputDirectoryFile(0),
-  fInputList(0),
   fOutputList(0),
-  fCanvases(0),
-  fEvents(0.)
+  fCanvases(0)
 {
   // Default ctr.
   
@@ -81,36 +77,22 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
   fSavePlots(kFALSE),
   fAddTrainToCanvasName(kFALSE),
   fAnaType(DJetCorrAnalysisParams::KUndefinedAna),
-  fTHnSparseAxisMaps(),
   fInputFile(0),
-  fInputDirectoryFile(0),
-  fInputList(0),
   fOutputList(0),
-  fCanvases(0),
-  fEvents(0.)
+  fCanvases(0)
 {
   // Standard ctr.
 
 }
 
 //____________________________________________________________________________________
-Bool_t DJetCorrBase::ClearInputData()
-{
-  // Clear the input data.
-
-  fTHnSparseAxisMaps.Clear();
-
-  return kTRUE;
-}
-
-//____________________________________________________________________________________
-DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, Bool_t isMC, Bool_t isBkgSub)
+DJetCorrAnalysisParams* DJetCorrBase::AddAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius)
 {
   // Add the analysis params for the D meson type, jet type and jet radius provided.
 
   if (!fAnalysisParams) fAnalysisParams = new TList();
 
-  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius, tracksName, fAnaType, isMC, isBkgSub);
+  DJetCorrAnalysisParams* params = new DJetCorrAnalysisParams(dmeson, jetType, jetRadius);
 
   fAnalysisParams->Add(params);
 
@@ -145,8 +127,6 @@ TMap* DJetCorrBase::GenerateAxisMap(THnSparse* hn)
     axisMap->Add(key, value);
   }
 
-  fTHnSparseAxisMaps.Add(axisMap);
-  
   return axisMap;
 }
 
@@ -589,24 +569,6 @@ Bool_t DJetCorrBase::Plot1DHistos(TString cname, TObjArray& histos, Double_t xmi
 }
 
 //____________________________________________________________________________________
-Int_t DJetCorrBase::GetAxisIndex(TString title, THnSparse* hn, Bool_t messageOnFail)
-{
-  TMap* axisMap = static_cast<TMap*>(fTHnSparseAxisMaps.FindObject(hn->GetName()));
-  if (!axisMap) {
-    axisMap = GenerateAxisMap(hn);
-    if (!axisMap) return -1;
-  }
-
-  TParameter<Int_t>* par = static_cast<TParameter<Int_t>*>(axisMap->GetValue(title));
-  if (!par) {
-    if (messageOnFail) Printf("Warning-DJetCorrBase::GetAxisIndex : Could not find axis with title '%s' in histogram '%s'.", title.Data(), hn->GetName());
-    return -1;
-  }
-  
-  return par->GetVal();
-}
-
-//____________________________________________________________________________________
 Bool_t DJetCorrBase::GenerateRatios(const char* nname, const char* dname)
 {
   TIter next(fOutputList);
@@ -666,10 +628,6 @@ Bool_t DJetCorrBase::OpenInputFile()
   fname += "/";
   fname += fInputFileName;
 
-  if (fInputDirectoryFile == fInputFile) {
-    fInputDirectoryFile = 0; // to avoid double delete
-  }
-
   if (!fInputFile) {
     Printf("Info-DJetCorrBase::OpenInputFile : Opening file '%s'", fname.Data()); 
     fInputFile = TFile::Open(fname);
@@ -684,57 +642,7 @@ Bool_t DJetCorrBase::OpenInputFile()
     return kFALSE;
   }
 
-  if (!fInputDirectoryFile || fInputDirFileName != fInputDirectoryFile->GetName()) {
-    if (fInputDirFileName.IsNull()) {
-      fInputDirectoryFile = fInputFile;
-    }
-    else {
-      ClearInputData();
-    
-      delete fInputDirectoryFile;
-      Printf("Info-DJetCorrBase::OpenInputFile : Getting directory '%s' from file '%s'", fInputDirFileName.Data(), fInputFile->GetName()); 
-      fInputDirectoryFile = dynamic_cast<TDirectoryFile*>(fInputFile->Get(fInputDirFileName));
-
-      delete fInputList;
-      fInputList = 0;
-
-      if (!fInputDirectoryFile) {
-        Printf("Error-DJetCorrBase::OpenInputFile : Could not get directory '%s' from file '%s'", fInputDirFileName.Data(), fInputFile->GetName()); 
-        return kFALSE;
-      }
-    }
-  }
-
   Printf("Info-DJetCorrBase::OpenInputFile : Success.");
-
-  return kTRUE;
-}
-
-//____________________________________________________________________________________
-Bool_t DJetCorrBase::LoadInputList(const char* inputListName)
-{
-  // Load the input list.
-
-  if (!OpenInputFile()) return kFALSE;
-  
-  if (!fInputList || strcmp(inputListName, fInputList->GetName()) != 0) {
-    ClearInputData();
-    
-    delete fInputList;
-    Printf("Info-DJetCorrBase::OpenInputFile : Getting list '%s' from directory '%s' of file '%s'", inputListName, fInputDirectoryFile->GetName(), fInputFile->GetName()); 
-    fInputList = dynamic_cast<TList*>(fInputDirectoryFile->Get(inputListName));
-  }
-  
-  if (!fInputList) {
-    Printf("Error-DJetCorrBase::OpenInputFile : Could not get list '%s' from directory '%s' of file '%s'", inputListName, fInputDirectoryFile->GetName(), fInputFile->GetName());
-    return kFALSE;
-  }
-
-  Printf("Info-DJetCorrBase::LoadInputList : Success.");
-
-  GetEvents();
-
-  Printf("Info-DJetCorrBase::LoadInputList : Total number of events: %.0f.", fEvents);
 
   return kTRUE;
 }
@@ -743,23 +651,11 @@ Bool_t DJetCorrBase::LoadInputList(const char* inputListName)
 void DJetCorrBase::CloseInputFile()
 {
   // Close the input file.
-
-  ClearInputData();
   
   if (fInputFile) {
     fInputFile->Close();
     delete fInputFile;
     fInputFile = 0;
-  }
-
-  if (fInputDirectoryFile) {
-    delete fInputDirectoryFile;
-    fInputDirectoryFile = 0;
-  }
-
-  if (fInputList) {
-    delete fInputList;
-    fInputList = 0;
   }
 }
 
@@ -843,34 +739,6 @@ Bool_t DJetCorrBase::SaveOutputFile(TObjArray& arr)
   outputFile = 0;
   
   return kTRUE;
-}
-
-//____________________________________________________________________________________
-Double_t DJetCorrBase::GetEvents(Bool_t recalculate)
-{
-  if (fEvents == 0 || recalculate) {
-    fEvents = 0;
-
-    if (fOutputList) {
-
-      TH1* hevents = dynamic_cast<TH1*>(fOutputList->FindObject("hEvents"));
-
-      if (!hevents && fInputList) {
-        TH1* hevents_temp = static_cast<TH1*>(fInputList->FindObject("fHistEventCount"));
-        if (hevents_temp) {
-          hevents = static_cast<TH1*>(hevents_temp->Clone("hEvents"));
-          hevents->SetTitle("hEvents");
-          fOutputList->Add(hevents);
-        }
-      }
-      
-      if (hevents) {
-        fEvents = hevents->GetBinContent(1);
-      }
-    }
-  }
-
-  return fEvents;
 }
 
 //____________________________________________________________________________________
