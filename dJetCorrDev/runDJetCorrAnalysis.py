@@ -10,19 +10,14 @@ import IPython
 
 import commonFunctions
 
-def main(train, run=True, refit=False, plot=True, truthOnly=False, isMC=False, isBkgSub=False, loadLibs=True, inputPath="$JETRESULTS"):
+def main(train, run=True, refit=False, plot=True,
+         D0Ana=True, DstarAna=True, ChargedAna=True, FullAna=True, radius="R040",
+         tracksName = "tracks", caloName = "caloClusters", cellName = "emcalCells", 
+         loadLibs=True, inputPath="$JETRESULTS"):
     
     ROOT.TH1.AddDirectory(False)
     
     TGaxis.SetMaxDigits(3) 
-
-    tracksName = "tracks"
-    tracksD0Name = "DcandidatesAndTracksD0"
-    tracksDStarName = "DcandidatesAndTracksDStar"
-
-    if not isMC:
-        tracksD0Name += "rec"
-        tracksDStarName += "rec"
 
     if loadLibs:
         commonFunctions.LoadDJetCorrClasses()
@@ -33,42 +28,49 @@ def main(train, run=True, refit=False, plot=True, truthOnly=False, isMC=False, i
   
     projDjet.SetOverwrite(True)
     projDjet.SetInputPath(inputPath)
+    
+    collName = "_"
+    
+    if tracksName:
+        collName += tracksName + "_"
+    if caloName:
+        collName += caloName + "_"
+    if cellName:
+        collName += cellName + "_"
 
-    qaListName = "AliAnalysisTaskSAQA_{0}_TPC_histos".format(tracksName)
+    qaListName = "AliAnalysisTaskEmcalJetQA{0}histos".format(collName)
   
     projDjet.SetQAListName(qaListName)
 
     projDjet.SetPlotFormat("pdf")
     projDjet.SetSavePlots(True)
 
-    #projDjet.AddAnalysisParams("D0", "Full", "R040", tracksD0Name, isMC, isBkgSub)
-    #projDjet.AddAnalysisParams("DStar", "Charged", "R040", tracksDStarName, isMC, isBkgSub)
 
-    param = projDjet.AddAnalysisParams("D0", "Full", "R060", tracksD0Name, isMC, isBkgSub)
-    #param.BackgroundOnly(True);
-    param.SignalOnly(True);
+    if D0Ana:
+        if FullAna:
+            param = projDjet.AddAnalysisParams("D0", "Full", radius)
+        if ChargedAna:
+            param = projDjet.AddAnalysisParams("D0", "Charged", radius)
+     
+    if DstarAna:
+        if FullAna:
+            param = projDjet.AddAnalysisParams("DStar", "Full", radius)
+        if ChargedAna:
+            param = projDjet.AddAnalysisParams("DStar", "Charged", radius)   
 
-    param = projDjet.AddAnalysisParams("DStar", "Charged", "R060", tracksDStarName, isMC, isBkgSub)
-    #param.BackgroundOnly(True);
-    param.SignalOnly(True);
+    if run:
+        projDjet.GenerateQAHistograms()
+        projDjet.GenerateDJetCorrHistograms()
+        projDjet.ProjectTruthSpectrum()
 
-    if truthOnly:
-         projDjet.ProjectTruthSpectrum()
-  
-    else:
-        if run:
-            projDjet.GenerateQAHistograms()
-            projDjet.GenerateDJetCorrHistograms()
-            projDjet.ProjectTruthSpectrum()
+    if refit:
+        projDjet.PlotTrackHistograms()
+        projDjet.PlotDJetCorrHistograms(True)
+    elif plot:
+        projDjet.PlotTrackHistograms()
+        projDjet.PlotDJetCorrHistograms(False)
 
-        if refit:
-            projDjet.PlotTrackHistograms()
-            projDjet.PlotDJetCorrHistograms(True)
-        elif plot:
-            projDjet.PlotTrackHistograms()
-            projDjet.PlotDJetCorrHistograms(False)
-
-    if truthOnly or run or refit or plot: 
+    if run or refit or plot: 
         projDjet.SaveOutputFile()
 
     return projDjet
@@ -79,32 +81,50 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='D meson jet correlation response matrix.')
     parser.add_argument('train', metavar='train',
                         help='Train to be analyzed')
-    parser.add_argument('-r', '--run', action='store_const',
+    parser.add_argument('--run', action='store_const',
                         default=False, const=True,
                         help='Run the analysis')
     parser.add_argument('--refit', action='store_const',
                         default=False, const=True,
                         help='Refit using previously projected his')
-    parser.add_argument('-p', '--plot', action='store_const',
+    parser.add_argument('--plot', action='store_const',
                         default=False, const=True,
                         help='Plot the results')
-    parser.add_argument('--truth-only', action='store_const',
+    parser.add_argument('--charged', action='store_const',
                         default=False, const=True,
-                        help='Only work on truth histograms')
-    parser.add_argument('--MC', action='store_const',
+                        help='Charged jet analysis')
+    parser.add_argument('--full', action='store_const',
                         default=False, const=True,
-                        help='Monte Carlo train')
-    parser.add_argument('--bkg-sub', action='store_const',
+                        help='Full jet analysis')
+    parser.add_argument('--D0', action='store_const',
                         default=False, const=True,
-                        help='Monte Carlo background subtracted')
+                        help='D0 analysis')
+    parser.add_argument('--DStar', action='store_const',
+                        default=False, const=True,
+                        help='D* analysis')
+    parser.add_argument('--radius', metavar='radius',
+                        default="R040",
+                        help='Jet radius (e.g. R040)')
     parser.add_argument('--no-Libs', action='store_const',
                         default=False, const=True,
                         help='Load the DJetCorr libraries')
     parser.add_argument('--inputPath', metavar='inputPath',
                         default="$JETRESULTS",
                         help='Input path')
+    parser.add_argument('--tracks', metavar='tracks',
+                        default="tracks",
+                        help='Track collection name')
+    parser.add_argument('--calo', metavar='calo',
+                        default="caloClusters",
+                        help='Calorimeter cluster collection name')
+    parser.add_argument('--cells', metavar='cells',
+                        default="emcalCells",
+                        help='Calorimeter cell collection name')
     args = parser.parse_args()
     
-    main(args.train, args.run, args.refit, args.plot, args.truth_only, args.MC, args.bkg_sub, not args.no_Libs, args.inputPath)
+    main(args.train, args.run, args.refit, args.plot,
+         args.D0, args.DStar, args.charged, args.full, args.radius,
+         args.tracks, args.calo, args.cells, 
+         not args.no_Libs, args.inputPath)
     
     IPython.embed()

@@ -58,7 +58,6 @@ DJetCorrAnalysis::DJetCorrAnalysis() :
   fJetAreaAxisTitle(),
   fJetConstAxisTitle(),
   fMatchingStatusAxisTitle(),
-  fDmesons(0),
   fInputQAList(0),
   fMassFitters(0)
 {
@@ -91,7 +90,6 @@ DJetCorrAnalysis::DJetCorrAnalysis(const char* train, const char* path) :
   fJetAreaAxisTitle("#it{A}_{jet}"),
   fJetConstAxisTitle("No. of constituents"),
   fMatchingStatusAxisTitle("Matching status"),
-  fDmesons(0),
   fInputQAList(0),
   fMassFitters(0)
 {
@@ -127,34 +125,7 @@ Bool_t DJetCorrAnalysis::Init()
   return kTRUE;
 }
 
-//____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::ClearInputData()
-{
-  // Clear the input data.
-
-  if (!DJetCorrBase::ClearInputData()) return kFALSE;
-  
-  fDmesons = 0;
-
-  return kTRUE;
-}
-
-//____________________________________________________________________________________
-Bool_t DJetCorrAnalysis::LoadTHnSparse()
-{
-  // Loads the THnSparse histograms.
-  
-  if (!fDmesons) {
-    fDmesons = static_cast<THnSparse*>(fInputList->FindObject("fDmesons"));
-  }
-  if (!fDmesons) {
-    Printf("Error-DJetCorrAnalysis::LoadTHnSparse : could not open find THnSparse 'fDmesons'"); 
-    return kFALSE;
-  }
-
-  return kTRUE;
-}
-
+/*
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::LoadTruthList(DJetCorrAnalysisParams* params)
 {
@@ -165,7 +136,7 @@ Bool_t DJetCorrAnalysis::LoadTruthList(DJetCorrAnalysisParams* params)
     if (!result) return kFALSE;
   }
   
-  result = LoadInputList(params->GetTruthInputListName());
+  result = params->LoadInputList(params->GetTruthInputListName());
   if (!result) return kFALSE;
 
   return kTRUE;
@@ -462,7 +433,7 @@ Bool_t DJetCorrAnalysis::ProjectTruthSpectrum(TString prefix, TString suffix, DJ
 
   return kTRUE;
 }
-
+*/
 //____________________________________________________________________________________
 Bool_t DJetCorrAnalysis::GenerateQAHistograms()
 {
@@ -541,7 +512,10 @@ Bool_t DJetCorrAnalysis::GenerateDJetCorrHistograms(DJetCorrAnalysisParams* para
     if (!result) return kFALSE;
   }
   
-  result = LoadInputList(params->GetInputListName());
+  result = OpenInputFile();
+  if (!result) return kFALSE;
+
+  result = params->LoadInputList(fInputFile);
   if (!result) return kFALSE;
 
   result = ProjectCorrD(params);
@@ -810,8 +784,8 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsJetPt(DJetCorrAnalysisParams* params, B
     spectrumName += "_copy";
     histos[i] = static_cast<TH1*>(hs->Clone(spectrumName));
 
-    if (eventScaling && GetEvents() > 0) {
-      histos[i]->Scale(1. / GetEvents(), "width");
+    if (eventScaling && params->GetEvents() > 0) {
+      histos[i]->Scale(1. / params->GetEvents(), "width");
       histos[i]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
@@ -841,8 +815,8 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsDz(DJetCorrAnalysisParams* params, Bool
     }
     spectrumName += "_copy";
     histos[i] = static_cast<TH1*>(hs->Clone(spectrumName));
-    if (eventScaling && GetEvents() > 0) {
-      histos[i]->Scale(1. / GetEvents(), "width");
+    if (eventScaling && params->GetEvents() > 0) {
+      histos[i]->Scale(1. / params->GetEvents(), "width");
       histos[i]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
@@ -868,8 +842,8 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
     spectrumNameMatched += "_copy";
     histos[0] = static_cast<TH1*>(hs0->Clone(spectrumNameMatched));
 
-    if (eventScaling && GetEvents() > 0) {
-      histos[0]->Scale(1. / GetEvents(), "width");
+    if (eventScaling && params->GetEvents() > 0) {
+      histos[0]->Scale(1. / params->GetEvents(), "width");
       histos[0]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
 
@@ -887,8 +861,8 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
     spectrumNameNotMatched += "_copy";
     histos[1] = static_cast<TH1*>(hs1->Clone(spectrumNameNotMatched));
 
-    if (eventScaling && GetEvents() > 0) {
-      histos[1]->Scale(1. / GetEvents(), "width");
+    if (eventScaling && params->GetEvents() > 0) {
+      histos[1]->Scale(1. / params->GetEvents(), "width");
       histos[1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
 
@@ -906,8 +880,8 @@ Bool_t DJetCorrAnalysis::PlotDPtSpectraVsMatchingStatus(DJetCorrAnalysisParams* 
     spectrumNameAnyMatchingStatus += "_copy";
     histos[2] = static_cast<TH1*>(hs2->Clone(spectrumNameAnyMatchingStatus));
 
-    if (eventScaling && GetEvents() > 0) {
-      histos[2]->Scale(1. / GetEvents(), "width");
+    if (eventScaling && params->GetEvents() > 0) {
+      histos[2]->Scale(1. / params->GetEvents(), "width");
       histos[2]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
 
@@ -938,8 +912,8 @@ Bool_t DJetCorrAnalysis::PlotDzSpectraVsJetPt(DJetCorrAnalysisParams* params, Bo
     }
     spectrumName += "_copy";
     histos[i] = static_cast<TH1*>(hs->Clone(spectrumName));
-    if (eventScaling && GetEvents() > 0) {
-      histos[i]->Scale(1. / GetEvents(), "width");
+    if (eventScaling && params->GetEvents() > 0) {
+      histos[i]->Scale(1. / params->GetEvents(), "width");
       histos[i]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{evt}} #frac{d#it{N}}{d#it{z}_{D}}");
     }
   }
@@ -1383,16 +1357,16 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
         fMassFitters->Add(fitter);
 
         Double_t integral = histos[i]->Integral(histos[i]->GetXaxis()->FindBin(minMass), histos[i]->GetXaxis()->FindBin(maxMass));
-        if (!params->IsBackgroundOnly()) {
-          fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
-          fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
-          fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
-          fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
-        }
-        else {
-          fitter->GetFitFunction()->SetParameter(0, integral); // total integral is NOT fixed
-        }
-      
+        //if (!params->IsBackgroundOnly()) {
+        fitter->GetFitFunction()->FixParameter(0, integral); // total integral is fixed
+        fitter->GetFitFunction()->SetParameter(2, integral / 100); // signal integral (start with very small signal)
+        fitter->GetFitFunction()->SetParLimits(2, 0, integral); // signal integral has to be contained in the total integral
+        fitter->GetFitFunction()->SetParameter(3, pdgMass); // start fitting using PDG mass
+        //}
+        //else {
+        //  fitter->GetFitFunction()->SetParameter(0, integral); // total integral is NOT fixed
+        // }
+
         fitter->Fit(histos[i], "0 E S");
       }
 
@@ -1400,16 +1374,16 @@ Bool_t DJetCorrAnalysis::PlotInvMassHistogramArray(Int_t n, TH1** histos,
       Int_t fitStatus = r;
 
       if (histSpectrum) {
-        if (params->IsBkgSub() && !params->IsBackgroundOnly()) {
-          histSpectrum->SetBinContent(i+1, fitter->GetTotalEntries());
-          histSpectrum->SetBinError(i+1, fitter->GetTotalEntriesError());
+        //if (params->IsBkgSub() && !params->IsBackgroundOnly()) {
+        //histSpectrum->SetBinContent(i+1, fitter->GetTotalEntries());
+        // histSpectrum->SetBinError(i+1, fitter->GetTotalEntriesError());
+        //}
+        // else {
+        if (fitStatus == 0) {
+          histSpectrum->SetBinContent(i+1, fitter->GetSignal());
+          histSpectrum->SetBinError(i+1, fitter->GetSignalError());
         }
-        else {
-          if (fitStatus == 0) {
-            histSpectrum->SetBinContent(i+1, fitter->GetSignal());
-            histSpectrum->SetBinError(i+1, fitter->GetSignalError());
-          }
-        }
+        //}
       }
 
       fitter->Draw("same");
@@ -1629,78 +1603,80 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
 
   if (!suffix.IsNull()) suffix.Prepend("_");
 
-  Int_t dPtAxis = GetAxisIndex(fDPtAxisTitle);
+  Int_t dPtAxis = params->GetAxisIndex(fDPtAxisTitle);
   if (dPtAxis < 0) return kFALSE;
   
-  Int_t dEtaAxis = GetAxisIndex(fDEtaAxisTitle);
+  Int_t dEtaAxis = params->GetAxisIndex(fDEtaAxisTitle);
   if (dEtaAxis < 0) return kFALSE;
   
-  Int_t dPhiAxis = GetAxisIndex(fDPhiAxisTitle);
+  Int_t dPhiAxis = params->GetAxisIndex(fDPhiAxisTitle);
   if (dPhiAxis < 0) return kFALSE;
   
-  Int_t jetPtAxis = GetAxisIndex(fJetPtAxisTitle);
+  Int_t jetPtAxis = params->GetAxisIndex(fJetPtAxisTitle);
   if (jetPtAxis < 0) return kFALSE;
     
-  Int_t jetEtaAxis = GetAxisIndex(fJetEtaAxisTitle);
+  Int_t jetEtaAxis = params->GetAxisIndex(fJetEtaAxisTitle);
   if (jetEtaAxis < 0) return kFALSE;
   
-  Int_t jetPhiAxis = GetAxisIndex(fJetPhiAxisTitle);
+  Int_t jetPhiAxis = params->GetAxisIndex(fJetPhiAxisTitle);
   if (jetPhiAxis < 0) return kFALSE;
 
-  Int_t dInvMassAxis = GetAxisIndex(fDInvMassAxisTitle);
-  Int_t d2ProngInvMassAxis = GetAxisIndex(fD2prongInvMassAxisTitle);
-  Int_t dDeltaInvMassAxis = GetAxisIndex(fDDeltaInvMassAxisTitle);
-  Int_t dSoftPionPtAxis = GetAxisIndex(fDSoftPionPtAxisTitle);
+  Int_t dInvMassAxis = params->GetAxisIndex(fDInvMassAxisTitle);
+  Int_t d2ProngInvMassAxis = params->GetAxisIndex(fD2prongInvMassAxisTitle);
+  Int_t dDeltaInvMassAxis = params->GetAxisIndex(fDDeltaInvMassAxisTitle);
+  Int_t dSoftPionPtAxis = params->GetAxisIndex(fDSoftPionPtAxisTitle);
+
+  Int_t deltaRAxis = params->GetAxisIndex(fDeltaRAxisTitle);
+  Int_t deltaEtaAxis = params->GetAxisIndex(fDeltaEtaAxisTitle);
+  Int_t deltaPhiAxis = params->GetAxisIndex(fDeltaPhiAxisTitle);
+  Int_t dzAxis = params->GetAxisIndex(fDzAxisTitle);
+  Int_t jetConstAxis = params->GetAxisIndex(fJetConstAxisTitle);
   
-  Int_t deltaRAxis = GetAxisIndex(fDeltaRAxisTitle);
-  Int_t deltaEtaAxis = GetAxisIndex(fDeltaEtaAxisTitle);
-  Int_t deltaPhiAxis = GetAxisIndex(fDeltaPhiAxisTitle);
-  Int_t dzAxis = GetAxisIndex(fDzAxisTitle);
-  Int_t jetConstAxis = GetAxisIndex(fJetConstAxisTitle);
+  Int_t matchingStatusAxis = params->GetAxisIndex(fMatchingStatusAxisTitle);
   
-  Int_t matchingStatusAxis = GetAxisIndex(fMatchingStatusAxisTitle);
+  THnSparse* Dmesons = params->GetTHnSparse();
   
   if (matchingStatusAxis >= 0) {
     if (st == kMatched) {
-      fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,2);
+      Dmesons->GetAxis(matchingStatusAxis)->SetRange(1,2);
     }
     else if (st == kNotMatched) {
-      fDmesons->GetAxis(matchingStatusAxis)->SetRange(3,4);
+      Dmesons->GetAxis(matchingStatusAxis)->SetRange(3,4);
     }
     else {
-      fDmesons->GetAxis(matchingStatusAxis)->SetRange(1,4);
+      Dmesons->GetAxis(matchingStatusAxis)->SetRange(1,4);
     }
   }
 
-  fDmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt, maxDPt);
+  Dmesons->GetAxis(dPtAxis)->SetRangeUser(minDPt, maxDPt);
 
   if (st == kMatched) { // apply cuts on z and jet pt only if matched requested
-    fDmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
+    Dmesons->GetAxis(jetPtAxis)->SetRangeUser(minJetPt, maxJetPt);
 
-    if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);
+    if (dzAxis >= 0) Dmesons->GetAxis(dzAxis)->SetRangeUser(minz, maxz);
     
     if (jetConstAxis >= 0) {
       if (minJetConst > 0) {
-        fDmesons->GetAxis(jetConstAxis)->SetRangeUser(params->GetMinJetConstituents(), fDmesons->GetAxis(jetConstAxis)->GetXmax()+fgkEpsilon);
+        Dmesons->GetAxis(jetConstAxis)->SetRangeUser(params->GetMinJetConstituents(), Dmesons->GetAxis(jetConstAxis)->GetXmax()+fgkEpsilon);
       }
       else if (minJetConst < 0) {
-        fDmesons->GetAxis(jetConstAxis)->SetRangeUser(0, params->GetMinJetConstituents());
+        Dmesons->GetAxis(jetConstAxis)->SetRangeUser(0, params->GetMinJetConstituents());
       }
       else {
-        fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
+        Dmesons->GetAxis(jetConstAxis)->SetRange(0, Dmesons->GetAxis(jetConstAxis)->GetNbins()+1);
       }
     }
   }
   else {
-    fDmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons in a defined eta region (usually the eta region is defined by the jet axis)
+    Dmesons->GetAxis(dEtaAxis)->SetRangeUser(params->GetMinDEta(), params->GetMaxDEta()); // this is for non-matched D mesons: look only for D mesons in a defined eta region (usually the eta region is defined by the jet axis)
     
-    if (jetPtAxis >= 0) fDmesons->GetAxis(jetPtAxis)->SetRange(0, fDmesons->GetAxis(jetPtAxis)->GetNbins()+1);
-    if (dzAxis >= 0) fDmesons->GetAxis(dzAxis)->SetRange(0, fDmesons->GetAxis(dzAxis)->GetNbins()+1);
-    if (jetConstAxis >= 0) fDmesons->GetAxis(jetConstAxis)->SetRange(0, fDmesons->GetAxis(jetConstAxis)->GetNbins()+1);
+    if (jetPtAxis >= 0) Dmesons->GetAxis(jetPtAxis)->SetRange(0, Dmesons->GetAxis(jetPtAxis)->GetNbins()+1);
+    if (dzAxis >= 0) Dmesons->GetAxis(dzAxis)->SetRange(0, Dmesons->GetAxis(dzAxis)->GetNbins()+1);
+    if (jetConstAxis >= 0) Dmesons->GetAxis(jetConstAxis)->SetRange(0, Dmesons->GetAxis(jetConstAxis)->GetNbins()+1);
   }
 
   if (dInvMassAxis >= 0) {
-    TH1* hdinvmass = fDmesons->Projection(dInvMassAxis, "EA");
+    TH1* hdinvmass = Dmesons->Projection(dInvMassAxis, "EA");
     hdinvmass->SetName(Form("h%s_InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hdinvmass->GetName());
     if (params->GetInvMassRebinFactor() > 1 && params->IsD0()) {
@@ -1709,22 +1685,22 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     }
     fOutputList->Add(hdinvmass);
     
-    fDmesons->GetAxis(dInvMassAxis)->SetRangeUser(params->GetInvMinMass(), params->GetInvMaxMass());
+    Dmesons->GetAxis(dInvMassAxis)->SetRangeUser(params->GetInvMinMass(), params->GetInvMaxMass());
   }
 
   if (d2ProngInvMassAxis >= 0) {
-    TH1* hd2pronginvmass = fDmesons->Projection(d2ProngInvMassAxis, "EA");
+    TH1* hd2pronginvmass = Dmesons->Projection(d2ProngInvMassAxis, "EA");
     hd2pronginvmass->SetName(Form("h%s_D0InvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hd2pronginvmass->GetName());
     fOutputList->Add(hd2pronginvmass);
 
     Double_t meanDPt = params->GetMeanDPt(dzBin, jetptBin);
 
-    fDmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(params->Get2ProngMinMass(meanDPt), params->Get2ProngMaxMass(meanDPt));
+    Dmesons->GetAxis(d2ProngInvMassAxis)->SetRangeUser(params->Get2ProngMinMass(meanDPt), params->Get2ProngMaxMass(meanDPt));
   }
 
   if (dDeltaInvMassAxis >= 0) {
-    TH1* hddeltainvmass = fDmesons->Projection(dDeltaInvMassAxis, "EA");
+    TH1* hddeltainvmass = Dmesons->Projection(dDeltaInvMassAxis, "EA");
     hddeltainvmass->SetName(Form("h%s_DeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     Printf("Info-DJetCorrAnalysis::ProjectDJetCorr : Adding histogram '%s'", hddeltainvmass->GetName());
     if (params->GetInvMassRebinFactor() > 1) {
@@ -1734,20 +1710,20 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
     fOutputList->Add(hddeltainvmass);
 
     if (dSoftPionPtAxis >= 0) {
-      TH2* hdsoftpionptVsDeltaInvMass = fDmesons->Projection(dSoftPionPtAxis, dDeltaInvMassAxis, "EO");
+      TH2* hdsoftpionptVsDeltaInvMass = Dmesons->Projection(dSoftPionPtAxis, dDeltaInvMassAxis, "EO");
       hdsoftpionptVsDeltaInvMass->SetName(Form("h%s_SoftPionVsDeltaInvMass_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hdsoftpionptVsDeltaInvMass);
     }
     
-    fDmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(params->GetDeltaInvMinMass(), params->GetDeltaInvMaxMass());
+    Dmesons->GetAxis(dDeltaInvMassAxis)->SetRangeUser(params->GetDeltaInvMinMass(), params->GetDeltaInvMaxMass());
   }
 
-  TH2* hDpos = fDmesons->Projection(dPhiAxis, dEtaAxis, "EO");
+  TH2* hDpos = Dmesons->Projection(dPhiAxis, dEtaAxis, "EO");
   hDpos->SetName(Form("h%s_MesonPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
   fOutputList->Add(hDpos);
 
   if (dSoftPionPtAxis >= 0) {
-    TH1* hdsoftpionpt = fDmesons->Projection(dSoftPionPtAxis, "EO");
+    TH1* hdsoftpionpt = Dmesons->Projection(dSoftPionPtAxis, "EO");
     hdsoftpionpt->SetName(Form("h%s_SoftPion_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
     fOutputList->Add(hdsoftpionpt);
   }
@@ -1757,12 +1733,12 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
   if (dPtAxis >=0 && dptBin == -1) {
     hname = Form("h%s_MesonPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data());
     if (!fOutputList->Contains(hname)) {
-      TH1* hDpt = fDmesons->Projection(dPtAxis, "EO");
+      TH1* hDpt = Dmesons->Projection(dPtAxis, "EO");
       hDpt->SetName(hname);
       fOutputList->Add(hDpt);
 
       if (dSoftPionPtAxis >= 0) {
-        TH2* hdsoftpionptVsDpt = fDmesons->Projection(dSoftPionPtAxis, dPtAxis, "EO");
+        TH2* hdsoftpionptVsDpt = Dmesons->Projection(dSoftPionPtAxis, dPtAxis, "EO");
         hdsoftpionptVsDpt->SetName(Form("h%s_SoftPionVsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hdsoftpionptVsDpt);
       }
@@ -1771,85 +1747,85 @@ Bool_t DJetCorrAnalysis::ProjectDJetCorr(TString prefix, TString suffix,
   
   if (st == kMatched) {
     if (deltaRAxis >= 0) {
-      TH1* hDeltaR = fDmesons->Projection(deltaRAxis, "EO");
+      TH1* hDeltaR = Dmesons->Projection(deltaRAxis, "EO");
       hDeltaR->SetName(Form("h%s_DeltaR_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hDeltaR);
 
       if (dPtAxis >=0 && dptBin == -1) {
-        TH2* hDeltaRVsDpt = fDmesons->Projection(deltaRAxis, dPtAxis, "EO");
+        TH2* hDeltaRVsDpt = Dmesons->Projection(deltaRAxis, dPtAxis, "EO");
         hDeltaRVsDpt->SetName(Form("h%s_DeltaRvsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hDeltaRVsDpt);
       }
     }
 
     if (jetConstAxis >= 0) {
-      TH1* hJetConst = fDmesons->Projection(jetConstAxis, "EO");
+      TH1* hJetConst = Dmesons->Projection(jetConstAxis, "EO");
       hJetConst->SetName(Form("h%s_JetConstituents_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hJetConst);
 
       if (dzAxis >= 0 && dzBin == -1) {
-        TH2* hJetConstVsDz = fDmesons->Projection(jetConstAxis, dzAxis, "EO");
+        TH2* hJetConstVsDz = Dmesons->Projection(jetConstAxis, dzAxis, "EO");
         hJetConstVsDz->SetName(Form("h%s_JetConstituentsVsDz_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hJetConstVsDz);
       }
 
       if (jetPtAxis >= 0 && jetptBin == -1) {
-        TH2* hJetConstVsJetPt = fDmesons->Projection(jetConstAxis, jetPtAxis, "EO");
+        TH2* hJetConstVsJetPt = Dmesons->Projection(jetConstAxis, jetPtAxis, "EO");
         hJetConstVsJetPt->SetName(Form("h%s_JetConstituentsVsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hJetConstVsJetPt);
       }
     }
 
     if (deltaEtaAxis >= 0) {
-      TH1* hDeltaEta = fDmesons->Projection(deltaEtaAxis, "EO");
+      TH1* hDeltaEta = Dmesons->Projection(deltaEtaAxis, "EO");
       hDeltaEta->SetName(Form("h%s_DeltaEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hDeltaEta);
     }
 
     if (deltaPhiAxis >= 0) {
-      TH1* hDeltaPhi = fDmesons->Projection(deltaPhiAxis, "EO");
+      TH1* hDeltaPhi = Dmesons->Projection(deltaPhiAxis, "EO");
       hDeltaPhi->SetName(Form("h%s_DeltaPhi_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hDeltaPhi);
     }
     
     if (dzAxis >= 0 && dzBin == -1) {
-      TH1* hdz = fDmesons->Projection(dzAxis, "EO");
+      TH1* hdz = Dmesons->Projection(dzAxis, "EO");
       hdz->SetName(Form("h%s_MesonZ_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hdz);
 
       if (dPtAxis >=0 && dptBin == -1) {
-        TH2* hdzVsDPt = fDmesons->Projection(dzAxis, dPtAxis, "EO");
+        TH2* hdzVsDPt = Dmesons->Projection(dzAxis, dPtAxis, "EO");
         hdzVsDPt->SetName(Form("h%s_MesonZvsDPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hdzVsDPt);
       }
       
       if (jetPtAxis >= 0 && jetptBin == -1) {
-        TH2* hdzVsJetPt = fDmesons->Projection(dzAxis, jetPtAxis, "EO");
+        TH2* hdzVsJetPt = Dmesons->Projection(dzAxis, jetPtAxis, "EO");
         hdzVsJetPt->SetName(Form("h%s_MesonZvsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hdzVsJetPt);
       }
       
       if (deltaRAxis >= 0) {
-        TH2* hdzVsDeltaR = fDmesons->Projection(dzAxis, deltaRAxis, "EO");
+        TH2* hdzVsDeltaR = Dmesons->Projection(dzAxis, deltaRAxis, "EO");
         hdzVsDeltaR->SetName(Form("h%s_MesonZvsDeltaR_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hdzVsDeltaR);
       }
     }
 
     if (jetPtAxis >= 0 && jetptBin == -1) {
-      TH1* hJetPt = fDmesons->Projection(jetPtAxis, "EO");
+      TH1* hJetPt = Dmesons->Projection(jetPtAxis, "EO");
       hJetPt->SetName(Form("h%s_JetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hJetPt);
 
       if (dPtAxis >=0 && dptBin == -1) {
-        TH2* hDPtVsJetPt = fDmesons->Projection(dPtAxis, jetPtAxis, "EO");
+        TH2* hDPtVsJetPt = Dmesons->Projection(dPtAxis, jetPtAxis, "EO");
         hDPtVsJetPt->SetName(Form("h%s_MesonPtvsJetPt_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
         fOutputList->Add(hDPtVsJetPt);
       }
     }
 
     if (jetEtaAxis >= 0 && jetPhiAxis >= 0) {
-      TH2* hJetpos = fDmesons->Projection(jetPhiAxis, jetEtaAxis, "EO");
+      TH2* hJetpos = Dmesons->Projection(jetPhiAxis, jetEtaAxis, "EO");
       hJetpos->SetName(Form("h%s_JetPhiVsEta_%s%s", prefix.Data(), cuts.Data(), suffix.Data()));
       fOutputList->Add(hJetpos);
     }

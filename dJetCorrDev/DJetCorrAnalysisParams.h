@@ -2,10 +2,17 @@
 // Author: Salvatore Aiola, Yale University (salvatore.aiola@cern.ch)
 // Copyright (c) 2015 Salvatore Aiola
 
+#ifndef DJETCORRANALYSISPARAMS_H
+#define DJETCORRANALYSISPARAMS_H
+
 class TString;
+class THashList;
+class TFile;
+class THnSparse;
+class TMap;
 
 #include <TObject.h>
-#include <MassFitter.h>
+#include "MassFitter.h"
 
 class DJetCorrAnalysisParams : public TObject
 {
@@ -14,7 +21,7 @@ class DJetCorrAnalysisParams : public TObject
   enum DJetCorrAnalysisType {KUndefinedAna=0, kInvMassAna, kResponseMatrixAna};
 
   DJetCorrAnalysisParams();
-  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius, const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC=kFALSE, Bool_t isBkgSub=kFALSE);
+  DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius);
   DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p);
   
   void        SetInvMassRange(Double_t min, Double_t max)          { fInvMinMass      = min  ; fInvMaxMass      = max   ; }
@@ -24,21 +31,23 @@ class DJetCorrAnalysisParams : public TObject
   void        SetDeltaInvMassRange(Double_t min, Double_t max)     { fDeltaInvMinMass = min  ; fDeltaInvMaxMass = max   ; }
   void        SetDeltaInvMassRange(Int_t pdg1, Int_t pdg2, Double_t nsigma);
 
-  void        SetIsMC(Bool_t mc)      { fIsMC     = mc   ; }
-  void        SetIsBkgSub(Bool_t bkg) { fIsBkgSub = bkg  ; }
+  //void        SetIsMC(Bool_t mc)      { fIsMC     = mc   ; }
+  //void        SetIsBkgSub(Bool_t bkg) { fIsBkgSub = bkg  ; }
 
-  Bool_t      IsBkgSub()        const { return fIsBkgSub ; }
-  Bool_t      IsMC()            const { return fIsMC     ; }
+ // Bool_t      IsBkgSub()        const { return fIsBkgSub ; }
+ // Bool_t      IsMC()            const { return fIsMC     ; }
 
   void        SetJetType(const char* type) { fJetType = type; }
+  Bool_t      LoadInputList(TFile* inputFile);
+  THashList*  GetInputList() { return fInputList; }
   
   const char* GetName()              const { return fName.Data()                                    ; }
   const char* GetTitle()             const { return GetName()                                       ; }
   const char* GetJetType()           const { return fJetType.Data()                                 ; }
   const char* GetJetRadius()         const { return fJetRadius.Data()                               ; }
   const char* GetDmesonName()        const { return fDmesonName.Data()                              ; }
-  const char* GetInputListName()     const { return fInputListName.Data()                           ; }
-  const char* GetTruthInputListName()const { return fTruthInputListName.Data()                      ; }
+  const char* GetTaskName()          const { return fTaskName.Data()                                ; }
+ // const char* GetTruthInputListName()const { return fTruthInputListName.Data()                      ; }
 
   Int_t       GetNDPtBins()          const { return fNDPtBins                                       ; }
   const Double_t* GetDPtBins()       const { return fDPtBins                                        ; }
@@ -102,13 +111,19 @@ class DJetCorrAnalysisParams : public TObject
   void        SetInvMassRebinFactor(Int_t r) { fInvMassRebinFactor = r    ; }
   Int_t       GetInvMassRebinFactor()  const { return fInvMassRebinFactor ; }
 
-  void        BackgroundOnly(Bool_t b)       { fIsBackgroundOnly = b      ; }
-  Bool_t      IsBackgroundOnly()      const  { return fIsBackgroundOnly   ; }
+  //void        BackgroundOnly(Bool_t b)       { fIsBackgroundOnly = b      ; }
+  //Bool_t      IsBackgroundOnly()      const  { return fIsBackgroundOnly   ; }
 
-  void        SignalOnly(Bool_t b)           { fIsSignalOnly = b          ; }
-  Bool_t      IsSignalOnly()          const  { return fIsSignalOnly       ; }
+  //void        SignalOnly(Bool_t b)           { fIsSignalOnly = b          ; }
+  //Bool_t      IsSignalOnly()          const  { return fIsSignalOnly       ; }
 
-  MassFitter* CreateMassFitter(const char* name) const;
+  THnSparse*      GetTHnSparse() const { return fDmesons; }
+
+  MassFitter*     CreateMassFitter(const char* name) const;
+  Double_t        GetEvents(Bool_t recalculate=kFALSE, THashList* outputList=0);
+  Bool_t          ClearInputData();
+  Int_t           GetAxisIndex(TString title, Bool_t messageOnFail=kFALSE);
+  Bool_t          LoadTHnSparse();
   
  protected:
   TString         fName                      ;//  object name
@@ -122,9 +137,8 @@ class DJetCorrAnalysisParams : public TObject
   TString         fJetType                   ;//  jet type "Charged" or "Full"
   TString         fJetRadius                 ;//  jet radius R020, R030, etc.
   TString         fDmesonName                ;//  "D0" or "DStar" etc.
-  TString         fTracksName                ;//  usually "tracks" or "AODFilterTracks"
-  TString         fInputListName             ;//  input list name
-  TString         fTruthInputListName        ;//  truth input list name
+  TString         fTaskName                  ;//  task name
+  //TString         fTruthInputListName        ;//  truth input list name
 
   Double_t        fInvMinMass                ;//  inv min mass
   Double_t        fInvMaxMass                ;//  inv max mass
@@ -142,15 +156,22 @@ class DJetCorrAnalysisParams : public TObject
   MassFitter::EMassFitTypeSig fMassFitTypeSig;//
   MassFitter::EMassFitTypeBkg fMassFitTypeBkg;//
 
-  Bool_t          fIsMC                      ;//
-  Bool_t          fIsBkgSub                  ;//
+  //Bool_t          fIsMC                      ;//
+  //Bool_t          fIsBkgSub                  ;//
   Int_t           fInvMassRebinFactor        ;//
-  Bool_t          fIsBackgroundOnly          ;//
-  Bool_t          fIsSignalOnly              ;//
+  //Bool_t          fIsBackgroundOnly          ;//
+  //Bool_t          fIsSignalOnly              ;//
   
+  Double_t        fEvents                    ;//! number of events
+  THashList      *fInputList                 ;//! list contains the input hisograms
+  THnSparse      *fDmesons                   ;//! THnSparse contains the results
+  TMap           *fAxisMap                   ;//! Axis map of THnSparse fDmeson
+
  private:
  
   DJetCorrAnalysisParams& operator=(const DJetCorrAnalysisParams& source); 
 
   ClassDef(DJetCorrAnalysisParams, 1);
 };
+
+#endif

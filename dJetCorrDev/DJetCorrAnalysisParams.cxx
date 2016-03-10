@@ -6,7 +6,13 @@
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 #include <TF1.h>
+#include <TFile.h>
+#include <THnSparse.h>
+#include <TMap.h>
+#include <THashList.h>
+#include <TParameter.h>
 
+#include "DJetCorrBase.h"
 #include "DJetCorrAnalysisParams.h"
 
 ClassImp(DJetCorrAnalysisParams);
@@ -24,9 +30,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fJetType(),
   fJetRadius(),
   fDmesonName(),
-  fTracksName(),
-  fInputListName(),
-  fTruthInputListName(),
+  fTaskName(),
   fInvMinMass(0),
   fInvMaxMass(0),
   f2ProngMinMass(0),
@@ -40,17 +44,20 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams() :
   fMinJetConstituents(2),
   fMassFitTypeSig(MassFitter::kGaus),
   fMassFitTypeBkg(MassFitter::kExpo),
-  fIsMC(kFALSE),
-  fIsBkgSub(kFALSE),
+  //fIsMC(kFALSE),
+  //fIsBkgSub(kFALSE),
   fInvMassRebinFactor(1),
-  fIsBackgroundOnly(kFALSE),
-  fIsSignalOnly(kFALSE)
+  fEvents(0),
+  fInputList(0),
+  fDmesons(0),
+  fAxisMap(0)
+  //fIsBackgroundOnly(kFALSE),
+  //fIsSignalOnly(kFALSE)
 {
 }
 
 //____________________________________________________________________________________
-DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius,
-                                               const char* tracksName, DJetCorrAnalysisType anaType, Bool_t isMC, Bool_t isBkgSub) :
+DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* jetType, const char* jetRadius) :
   TObject(),
   fName(),
   fNDPtBins(0),
@@ -62,9 +69,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fJetType(jetType),
   fJetRadius(jetRadius),
   fDmesonName(dmeson),
-  fTracksName(tracksName),
-  fInputListName(),
-  fTruthInputListName(),
+  fTaskName("AliAnalysisTaskDmesonJets"),
   fInvMinMass(0),
   fInvMaxMass(0),
   f2ProngMinMass(0),
@@ -78,29 +83,16 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
   fMinJetConstituents(2),
   fMassFitTypeSig(MassFitter::kGaus),
   fMassFitTypeBkg(MassFitter::kExpo),
-  fIsMC(isMC),
-  fIsBkgSub(isBkgSub),
+  //fIsMC(isMC),
+ // fIsBkgSub(isBkgSub),
   fInvMassRebinFactor(1),
-  fIsBackgroundOnly(kFALSE),
-  fIsSignalOnly(kFALSE)
+  fEvents(0),
+  fInputList(0),
+  fDmesons(0),
+  fAxisMap(0)
+  //fIsBackgroundOnly(kFALSE),
+  //fIsSignalOnly(kFALSE)
 {
-  if (anaType == kInvMassAna) {
-    if (fIsMC) {
-      //if (fIsBkgSub) {
-      //fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_MCrec_Jet_AKT%s%s_%sMCrec_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
-      //}
-      //else {
-      fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
-      //}
-      fTruthInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_MC_Jet_AKT%s%s_mcparticles%s_pT0000_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fDmesonName.Data());
-    }
-    else {
-      fInputListName = Form("AliAnalysisTaskDmesonJetCorrelations_%s_rec_Jet_AKT%s%s_%s_pT0150_pt_scheme_TPC_histos", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data(), fTracksName.Data());
-    }
-  }
-  else if (anaType == kResponseMatrixAna) {
-    fInputListName = Form("AliJetResponseMaker_Jet_AKT%s%s_%s_pT0150_pt_scheme_Jet_AKT%s%s_mcparticles%s_pT0000_pt_scheme_Bias0_BiasType0_TPC_histos", fJetType.Data(), fJetRadius.Data(), fTracksName.Data(), fJetType.Data(), fJetRadius.Data(), fDmesonName.Data());
-  }
   fName = Form("%s_%s_%s", fDmesonName.Data(), fJetType.Data(), fJetRadius.Data());
 
   fNzBins = 4;
@@ -168,7 +160,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const char* dmeson, const char* j
 
 //____________________________________________________________________________________
 DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) :
-  TObject(p),
+  TObject(),
   fName(p.fName),
   fNDPtBins(p.fNDPtBins),
   fDPtBins(0),
@@ -179,7 +171,7 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fJetType(p.fJetType),
   fJetRadius(p.fJetRadius),
   fDmesonName(p.fDmesonName),
-  fInputListName(p.fInputListName),
+  fTaskName(p.fTaskName),
   fInvMinMass(p.fInvMinMass),
   fInvMaxMass(p.fInvMaxMass),
   f2ProngMinMass(p.f2ProngMinMass),
@@ -193,11 +185,15 @@ DJetCorrAnalysisParams::DJetCorrAnalysisParams(const DJetCorrAnalysisParams& p) 
   fMinJetConstituents(p.fMinJetConstituents),
   fMassFitTypeSig(p.fMassFitTypeSig),
   fMassFitTypeBkg(p.fMassFitTypeBkg),
-  fIsMC(p.fIsMC),
-  fIsBkgSub(p.fIsBkgSub),
+  //fIsMC(p.fIsMC),
+  //fIsBkgSub(p.fIsBkgSub),
   fInvMassRebinFactor(p.fInvMassRebinFactor),
-  fIsBackgroundOnly(p.fIsBackgroundOnly),
-  fIsSignalOnly(p.fIsSignalOnly)
+  fEvents(0),
+  fInputList(0),
+  fDmesons(0),
+  fAxisMap(0)
+  //fIsBackgroundOnly(p.fIsBackgroundOnly),
+  //fIsSignalOnly(p.fIsSignalOnly)
 {
   fDPtBins = new Double_t[fNDPtBins+1];
   for (Int_t i = 0; i<= fNDPtBins; i++) fDPtBins[i] = p.fDPtBins[i];
@@ -313,6 +309,7 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   fitter->GetFitFunction()->SetParameter(4, startingSigma);
   fitter->SetFitRange(minFitRange, maxFitRange);
 
+  /*
   if (fIsBackgroundOnly) {
     fitter->DisableSig();
   }
@@ -320,7 +317,7 @@ MassFitter* DJetCorrAnalysisParams::CreateMassFitter(const char* name) const
   if (fIsSignalOnly) {
     fitter->DisableBkg();
   }
-
+*/
   return fitter;
 }
 
@@ -567,3 +564,126 @@ Double_t DJetCorrAnalysisParams::GetMeanJetPt(Int_t i) const
 
   return res;
 }
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysisParams::LoadInputList(TFile* inputFile)
+{
+  // Load the input list.
+
+  if (!inputFile) return kFALSE;
+
+  delete fInputList;
+
+  TString taskListName = TString::Format("%s_%s_histos", fTaskName.Data(), fJetType.Data());
+  Printf("Info-DJetCorrBase::OpenInputFile : Getting list '%s' from file '%s'", taskListName.Data(), inputFile->GetName());
+  TList* taskList = dynamic_cast<TList*>(inputFile->Get(taskListName));
+  if (!taskList) {
+    Printf("Error-DJetCorrBase::OpenInputFile : Could not get list '%s' from file '%s'", taskListName.Data(), inputFile->GetName());
+    return kFALSE;
+  }
+
+  TString hashListName = TString::Format("histos%s_%s", fTaskName.Data(), fJetType.Data());
+  Printf("Info-DJetCorrBase::OpenInputFile : Getting hash list '%s' from list '%s' of file '%s'", hashListName.Data(), taskListName.Data(), inputFile->GetName());
+  THashList* hashList = dynamic_cast<THashList*>(taskList->FindObject(hashListName));
+  if (!hashList) {
+    Printf("Error-DJetCorrBase::OpenInputFile : Could not get hash list '%s' from list '%s' of file '%s'", hashListName.Data(), taskListName.Data(), inputFile->GetName());
+    return kFALSE;
+  }
+
+  Printf("Info-DJetCorrBase::OpenInputFile : Getting hash list '%s' from hash list '%s' from list '%s' of file '%s'", fDmesonName.Data(), hashListName.Data(), taskListName.Data(), inputFile->GetName());
+  THashList* mesonList = dynamic_cast<THashList*>(hashList->FindObject(fDmesonName));
+  if (!mesonList) {
+    Printf("Error-DJetCorrBase::OpenInputFile : Could not get hash list '%s' from hash list '%s' from list '%s' of file '%s'", fDmesonName.Data(), hashListName.Data(), taskListName.Data(), inputFile->GetName());
+    return kFALSE;
+  }
+
+  TString jetListName = TString::Format("Jet_AKT%s%s_pt_scheme", fJetType.Data(), fJetRadius.Data());
+  Printf("Info-DJetCorrBase::OpenInputFile : Getting hash list '%s' from hash list '%s' from hash list '%s' from list '%s' of file '%s'", jetListName.Data(), fDmesonName.Data(), hashListName.Data(), taskListName.Data(), inputFile->GetName());
+  fInputList = dynamic_cast<THashList*>(mesonList->FindObject(jetListName));
+  if (!fInputList) {
+    Printf("Error-DJetCorrBase::OpenInputFile : Could not get hash list '%s' from hash list '%s' from hash list '%s' from list '%s' of file '%s'", jetListName.Data(), fDmesonName.Data(), hashListName.Data(), taskListName.Data(), inputFile->GetName());
+    return kFALSE;
+  }
+
+  Printf("Info-DJetCorrBase::LoadInputList : Success.");
+
+  //GetEvents();
+
+  //Printf("Info-DJetCorrBase::LoadInputList : Total number of events: %.0f.", fEvents);
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Double_t DJetCorrAnalysisParams::GetEvents(Bool_t recalculate, THashList* outputList)
+{
+  if (fEvents == 0 || recalculate) {
+    fEvents = 0;
+
+    if (outputList) {
+
+      TH1* hevents = dynamic_cast<TH1*>(outputList->FindObject("hEvents"));
+
+      if (!hevents && fInputList) {
+        TH1* hevents_temp = static_cast<TH1*>(fInputList->FindObject("fHistEventCount"));
+        if (hevents_temp) {
+          hevents = static_cast<TH1*>(hevents_temp->Clone("hEvents"));
+          hevents->SetTitle("hEvents");
+          outputList->Add(hevents);
+        }
+      }
+
+      if (hevents) {
+        fEvents = hevents->GetBinContent(1);
+      }
+    }
+  }
+
+  return fEvents;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysisParams::ClearInputData()
+{
+  // Clear the input data.
+
+  delete fAxisMap;
+  fAxisMap = 0;
+  fDmesons = 0;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Bool_t DJetCorrAnalysisParams::LoadTHnSparse()
+{
+  // Loads the THnSparse histograms.
+
+  if (!fDmesons) {
+    fDmesons = static_cast<THnSparse*>(fInputList->FindObject("fDmesons"));
+  }
+  if (!fDmesons) {
+    Printf("Error-DJetCorrAnalysis::LoadTHnSparse : could not open find THnSparse 'fDmesons'");
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________________
+Int_t DJetCorrAnalysisParams::GetAxisIndex(TString title, Bool_t messageOnFail)
+{
+  if (!fAxisMap) {
+    fAxisMap = DJetCorrBase::GenerateAxisMap(fDmesons);
+    if (!fAxisMap) return -1;
+  }
+
+  TParameter<Int_t>* par = static_cast<TParameter<Int_t>*>(fAxisMap->GetValue(title));
+  if (!par) {
+    if (messageOnFail) Printf("Warning-DJetCorrBase::GetAxisIndex : Could not find axis with title '%s' in histogram '%s'.", title.Data(), fDmesons->GetName());
+    return -1;
+  }
+
+  return par->GetVal();
+}
+
