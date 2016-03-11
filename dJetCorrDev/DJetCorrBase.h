@@ -34,8 +34,6 @@ class DJetCorrBase : public TNamed {
   DJetCorrBase();
   DJetCorrBase(const char* train, const char* path = "$JETRESULTS");
 
-  enum EMatchingStatus {kAnyMatchingStatus, kNotMatched, kMatched};
-
   void   SetInputTrain(const char* train)      { fTrainName        = train  ; CloseInputFile(); }
   void   SetInputPath(const char* path)        { fInputPath        = path   ; CloseInputFile(); }
   void   SetInputFileName(const char* fname)   { fInputFileName    = fname  ; CloseInputFile(); }
@@ -72,11 +70,11 @@ class DJetCorrBase : public TNamed {
   TH1* GetDzTruth(Int_t p, Bool_t copy);
   TH1* GetDzMeasured(Int_t p, Bool_t copy);
 
-  TH1* GetDPtTruth(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
-  TH1* GetDPtMeasured(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
+  TH1* GetDPtTruth(Int_t p, Bool_t copy);
+  TH1* GetDPtMeasured(Int_t p, Bool_t copy);
 
-  TH1* GetDEtaTruth(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
-  TH1* GetDEtaMeasured(Int_t p, Bool_t copy, const char* matching="AnyMatchingStatus");
+  TH1* GetDEtaTruth(Int_t p, Bool_t copy);
+  TH1* GetDEtaMeasured(Int_t p, Bool_t copy);
 
   TH1* GetJetPtTruth(Int_t p, Bool_t copy);
   TH1* GetJetPtMeasured(Int_t p, Bool_t copy);
@@ -87,11 +85,11 @@ class DJetCorrBase : public TNamed {
   virtual TString GetDzTruthName(Int_t /*p*/) { return ""; }
   virtual TString GetDzMeasuredName(Int_t /*p*/) { return ""; }
 
-  virtual TString GetDPtTruthName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
-  virtual TString GetDPtMeasuredName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
+  virtual TString GetDPtTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetDPtMeasuredName(Int_t /*p*/) { return ""; }
 
-  virtual TString GetDEtaTruthName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
-  virtual TString GetDEtaMeasuredName(Int_t /*p*/, const char* /*matching*/="AnyMatchingStatus") { return ""; }
+  virtual TString GetDEtaTruthName(Int_t /*p*/) { return ""; }
+  virtual TString GetDEtaMeasuredName(Int_t /*p*/) { return ""; }
 
   virtual TString GetJetPtTruthName(Int_t /*p*/) { return ""; }
   virtual TString GetJetPtMeasuredName(Int_t /*p*/) { return ""; }
@@ -153,7 +151,6 @@ class DJetCorrBase : public TNamed {
   TString         fTrainName                 ;//  train name
   TString         fInputPath                 ;//  train path
   TString         fInputFileName             ;//  input file name
-  TString         fInputDirFileName          ;//  input dir file name
   TString         fOutputPath                ;//  output path
   TString         fOutputFileName            ;//  output file name
   Bool_t          fOverwrite                 ;//  whether the output file should be overwritten

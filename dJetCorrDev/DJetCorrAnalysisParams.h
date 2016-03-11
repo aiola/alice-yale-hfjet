@@ -17,7 +17,6 @@ class TMap;
 class DJetCorrAnalysisParams : public TObject
 {
  public:
-  enum {kAnyMatchingStatus, kNotMatched, kMatched};
   enum DJetCorrAnalysisType {KUndefinedAna=0, kInvMassAna, kResponseMatrixAna};
 
   DJetCorrAnalysisParams();
@@ -92,7 +91,7 @@ class DJetCorrAnalysisParams : public TObject
 
   Int_t       GetMinJetConstituents()  const { return fMinJetConstituents                           ; }
 
-  TString     GetCutString(Int_t st, Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
+  TString     GetCutString(Int_t dptBin=-1, Int_t jetptBin=-1, Int_t dzBin=-1);
 
   void GetDPtBinRange(Double_t& minDPt, Double_t& maxDPt, Int_t dptBin=-1) const;
   void GetzBinRange(Double_t& minZ, Double_t& maxZ, Int_t zBin=-1) const;
@@ -118,6 +117,12 @@ class DJetCorrAnalysisParams : public TObject
   //Bool_t      IsSignalOnly()          const  { return fIsSignalOnly       ; }
 
   THnSparse*      GetTHnSparse() const { return fDmesons; }
+  TMap*           GetAxisMap() const   { return fAxisMap; }
+
+  Bool_t          GetDeltaPhiPresent() const   { return fDeltaPhiPresent ; }
+  void            SetDeltaPhiPresent(Bool_t p) { fDeltaPhiPresent     = p; }
+  Bool_t          GetDeltaEtaPresent() const   { return fDeltaEtaPresent ; }
+  void            SetDeltaEtaPresent(Bool_t p) { fDeltaEtaPresent     = p; }
 
   MassFitter*     CreateMassFitter(const char* name) const;
   Double_t        GetEvents(Bool_t recalculate=kFALSE, THashList* outputList=0);
@@ -163,6 +168,8 @@ class DJetCorrAnalysisParams : public TObject
   //Bool_t          fIsBackgroundOnly          ;//
   //Bool_t          fIsSignalOnly              ;//
   
+  Bool_t          fDeltaPhiPresent           ;//! whether delta phi observable is present
+  Bool_t          fDeltaEtaPresent           ;//! whether delta phi observable is present
   Double_t        fEvents                    ;//! number of events
   THashList      *fInputList                 ;//! list contains the input hisograms
   THnSparse      *fDmesons                   ;//! THnSparse contains the results

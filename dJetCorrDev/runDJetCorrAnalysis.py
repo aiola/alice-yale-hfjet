@@ -13,6 +13,7 @@ import commonFunctions
 def main(train, run=True, refit=False, plot=True,
          D0Ana=True, DstarAna=True, ChargedAna=True, FullAna=True, radius="R040",
          tracksName = "tracks", caloName = "caloClusters", cellName = "emcalCells", 
+         trigger = "AnyINT",
          loadLibs=True, inputPath="$JETRESULTS"):
     
     ROOT.TH1.AddDirectory(False)
@@ -38,7 +39,11 @@ def main(train, run=True, refit=False, plot=True,
     if cellName:
         collName += cellName + "_"
 
-    qaListName = "AliAnalysisTaskEmcalJetQA{0}_AnyINT_histos".format(collName)
+    qaListName = "AliAnalysisTaskEmcalJetQA{0}".format(collName)
+    if trigger:
+        qaListName += "_{0}_histos".format(trigger)
+    else:
+        qaListName += "_histos"
   
     #projDjet.SetQAListName(qaListName)
 
@@ -49,26 +54,28 @@ def main(train, run=True, refit=False, plot=True,
 
     if D0Ana:
         if FullAna:
-            param = projDjet.AddAnalysisParams("D0", "Full", radius, "AnyINT")
+            param = projDjet.AddAnalysisParams("D0", "Full", radius, trigger)
         if ChargedAna:
-            param = projDjet.AddAnalysisParams("D0", "Charged", radius, "AnyINT")
+            param = projDjet.AddAnalysisParams("D0", "Charged", radius, trigger)
      
     if DstarAna:
         if FullAna:
-            param = projDjet.AddAnalysisParams("DStar", "Full", radius, "AnyINT")
+            param = projDjet.AddAnalysisParams("DStar", "Full", radius, trigger)
         if ChargedAna:
-            param = projDjet.AddAnalysisParams("DStar", "Charged", radius, "AnyINT")   
+            param = projDjet.AddAnalysisParams("DStar", "Charged", radius, trigger)   
 
     if run:
         projDjet.GenerateQAHistograms()
         projDjet.GenerateDJetCorrHistograms()
 
     if refit:
+        projDjet.SetForceRefit(True)
+    else:
+        projDjet.SetForceRefit(False)
+        
+    if refit or plot:
         projDjet.PlotTrackHistograms()
-        projDjet.PlotDJetCorrHistograms(True)
-    elif plot:
-        projDjet.PlotTrackHistograms()
-        projDjet.PlotDJetCorrHistograms(False)
+        projDjet.PlotDJetCorrHistograms()
 
     if run or refit or plot: 
         projDjet.SaveOutputFile()
@@ -120,11 +127,15 @@ if __name__ == '__main__':
     parser.add_argument('--cells', metavar='cells',
                         default="emcalCells",
                         help='Calorimeter cell collection name')
+    parser.add_argument('--trigger', metavar='trigger',
+                        default="AnyINT",
+                        help='Trigger (e.g. AnyINT, EMCEJE, etc.)')
     args = parser.parse_args()
     
     main(args.train, args.run, args.refit, args.plot,
          args.D0, args.DStar, args.charged, args.full, args.radius,
          args.tracks, args.calo, args.cells, 
+         args.trigger,
          not args.no_Libs, args.inputPath)
     
     IPython.embed()
