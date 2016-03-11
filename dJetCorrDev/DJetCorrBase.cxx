@@ -45,7 +45,6 @@ DJetCorrBase::DJetCorrBase() :
   fTrainName(),
   fInputPath(),
   fInputFileName(),
-  fInputDirFileName(),
   fOutputPath(),
   fOutputFileName(),
   fOverwrite(kFALSE),
@@ -68,7 +67,6 @@ DJetCorrBase::DJetCorrBase(const char* train, const char* path) :
   fTrainName(train),
   fInputPath(path),
   fInputFileName(),
-  fInputDirFileName(),
   fOutputPath("../data/"),
   fOutputFileName("DJetCorr.root"),
   fOverwrite(kFALSE),
@@ -118,12 +116,15 @@ TMap* DJetCorrBase::GenerateAxisMap(THnSparse* hn)
 {
   if (!hn) return 0;
   
+  Printf("DJetCorrBase::GenerateAxisMap : Generating axis map for histogram '%s'", hn->GetName());
+
   TMap* axisMap = new TMap();
   axisMap->SetOwnerKeyValue();
   
   for (Int_t i = 0; i < hn->GetNdimensions(); i++) {
     TObjString* key = new TObjString(hn->GetAxis(i)->GetTitle());
     TParameter<Int_t>* value = new TParameter<Int_t>(hn->GetAxis(i)->GetTitle(), i);
+    Printf("DJetCorrBase::GenerateAxisMap : Adding new map entry '%s', %d", hn->GetAxis(i)->GetTitle(), i);
     axisMap->Add(key, value);
   }
 
@@ -464,7 +465,7 @@ Bool_t DJetCorrBase::PlotObservable(DJetCorrAnalysisParams* params, TString obsN
           htitle += zTitle;
         }
     
-        TString objname(Form("h%s_%s_%s_Matched", prefix.Data(), hname.Data(), cuts.Data()));
+        TString objname(Form("h%s_%s_%s", prefix.Data(), hname.Data(), cuts.Data()));
         //Printf("Info-DJetCorrAnalysis::PlotObservable : Retrieving histogram '%s'", objname.Data());
         TH1* h = dynamic_cast<TH1*>(fOutputList->FindObject(objname));
         if (!h) {
@@ -842,8 +843,6 @@ void DJetCorrBase::FitHistogramInPad(TH1* hist, TVirtualPad* pad, Option_t* opt,
 //____________________________________________________________________________________
 void DJetCorrBase::GetMinMax(TGraph* graph, Double_t& miny, Double_t& maxy)
 {
-  Double_t* array = graph->GetY();
-
   for (Int_t i = 0; i < graph->GetN(); i++) {
     if (miny > graph->GetY()[i] - graph->GetEYlow()[i]) miny = graph->GetY()[i] - graph->GetEYlow()[i];
     if (maxy < graph->GetY()[i] + graph->GetEYhigh()[i]) maxy = graph->GetY()[i] + graph->GetEYhigh()[i];
@@ -1101,9 +1100,9 @@ TH2* DJetCorrBase::GetMeasured(Int_t p, Bool_t copy)
 }
 
 //____________________________________________________________________________________
-TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy, const char* matching)
+TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy)
 {
-  TString hname = GetDPtTruthName(p, matching);
+  TString hname = GetDPtTruthName(p);
 
   if (hname.IsNull()) return 0;
 
@@ -1122,9 +1121,9 @@ TH1* DJetCorrBase::GetDPtTruth(Int_t p, Bool_t copy, const char* matching)
 }
 
 //____________________________________________________________________________________
-TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy, const char* matching)
+TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy)
 {
-  TString hname = GetDPtMeasuredName(p, matching);
+  TString hname = GetDPtMeasuredName(p);
 
   if (hname.IsNull()) return 0;
 
@@ -1143,9 +1142,9 @@ TH1* DJetCorrBase::GetDPtMeasured(Int_t p, Bool_t copy, const char* matching)
 }
 
 //____________________________________________________________________________________
-TH1* DJetCorrBase::GetDEtaTruth(Int_t p, Bool_t copy, const char* matching)
+TH1* DJetCorrBase::GetDEtaTruth(Int_t p, Bool_t copy)
 {
-  TString hname = GetDEtaTruthName(p, matching);
+  TString hname = GetDEtaTruthName(p);
 
   if (hname.IsNull()) return 0;
 
@@ -1164,9 +1163,9 @@ TH1* DJetCorrBase::GetDEtaTruth(Int_t p, Bool_t copy, const char* matching)
 }
 
 //____________________________________________________________________________________
-TH1* DJetCorrBase::GetDEtaMeasured(Int_t p, Bool_t copy, const char* matching)
+TH1* DJetCorrBase::GetDEtaMeasured(Int_t p, Bool_t copy)
 {
-  TString hname = GetDEtaMeasuredName(p, matching);
+  TString hname = GetDEtaMeasuredName(p);
 
   if (hname.IsNull()) return 0;
 
