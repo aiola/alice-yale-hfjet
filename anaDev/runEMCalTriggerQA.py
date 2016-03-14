@@ -58,8 +58,8 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
     pSetupTask.SetOcdbPath(OCDBpath)
 
     # EMCal prep
-    if doClusterQA:
-        helperFunctions.PrepareEMCAL(physSel, True, True, True, doFullJets or doNeutralJets, doFullJets or doNeutralJets)
+    if doClusterQA or doTriggerQA:
+        helperFunctions.PrepareEMCAL(physSel, True, True, doClusterQA or doFullJets or doNeutralJets, doFullJets or doNeutralJets, doFullJets or doNeutralJets)
 
     if doTrackQA and doClusterQA:
         pJetQATask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
@@ -175,6 +175,8 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         
     if debugLevel == 0:
         mgr.SetUseProgressBar(1, 250)
+    else:
+        mgr.SetUseProgressBar(0, 0)
         
     mgr.SetDebugLevel(debugLevel)
 
@@ -184,7 +186,6 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
     #start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, nEvents)
-
 
 if __name__ == '__main__':
     # runDJetCorrAnalysis.py executed as script

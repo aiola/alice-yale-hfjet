@@ -5,8 +5,10 @@ import argparse
 import ROOT
 import helperFunctions
 
-def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doChargedJets=False, doFullJets=False, doTrackQA=True, physSel=ROOT.AliVEvent.kAnyINT, taskName="JetDmesonAna", debugLevel=0):
+def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doChargedJets=False, doFullJets=False, doTrackQA=True, 
+         taskName="JetDmesonAna", debugLevel=0):
 
+    physSel = 0
     ROOT.gSystem.Load("libCGAL")
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(runPeriod)
@@ -49,6 +51,8 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         cinput = mgr.GetCommonInputContainer()
         mgr.ConnectInput(pSetupTask, 0,  cinput)
         pSetupTask.SetOcdbPath(OCDBpath)
+        
+    if doFullJets:
         helperFunctions.PrepareEMCAL(physSel)
 
     #PID response
@@ -152,7 +156,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
     mgr.SetDebugLevel(debugLevel)
 
     #To have more debug info
-    #pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
+    mgr.AddClassDebug("AliEmcalJetTask", ROOT.AliLog.kDebug+100)
     
     #start analysis
     print "Starting Analysis..."
@@ -189,9 +193,6 @@ if __name__ == '__main__':
     parser.add_argument('--no-track-qa', action='store_const',
                         default=False, const=True,
                         help='No track QA')
-    parser.add_argument('--phys-sel',
-                        default=ROOT.AliVEvent.kAnyINT, 
-                        help='Physics selection')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
@@ -201,4 +202,6 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
     
-    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, not args.no_hf, args.charged_jets, args.full_jets, not args.no_track_qa, args.phys_sel, args.task_name, args.debug_level)
+    main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode, 
+         not args.no_hf, args.charged_jets, args.full_jets, not args.no_track_qa, 
+         args.task_name, args.debug_level)
