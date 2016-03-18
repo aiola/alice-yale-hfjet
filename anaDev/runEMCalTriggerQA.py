@@ -7,8 +7,8 @@ import helperFunctions
 import os
 
 def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
-         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False, 
-         taskName="EmcalTriggerQA", oldBitConfig=False, debugLevel=0):
+         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False, badFastORlist="", trigger="",
+         taskName="EmcalTriggerQA", debugLevel=0):
 
     physSel = 0
 
@@ -78,17 +78,12 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
     #Trigger QA
     if doTriggerQA:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
-        pTriggerMakerTask.SetUseL0Amplitudes(True)
-        pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile("LHC15j_BadFastORs.txt")
-        pTriggerMakerTask.SetJetPatchsize(16)
-        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
         pTriggerMakerTask.SelectCollisionCandidates(physSel)
-        if oldBitConfig:
-            pTriggerMakerTask.SetUseTriggerBitConfig(ROOT.AliEmcalTriggerMakerTask.kOldConfig)
+        pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
         
-        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", "")
-        pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
-        pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile("LHC15j_BadFastORs.txt")
+        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+        if trigger == "EMC7":
+            pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, True)
         pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kRecalcPatch, True)
@@ -97,12 +92,35 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetH, True)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaL, False)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaH, True)
-        pTriggerQATask.EnableDCal(False)
         pTriggerQATask.SetADCperBin(4)
         pTriggerQATask.SetMinAmplitude(0)
         pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
         pTriggerQATask.SelectCollisionCandidates(physSel)
-
+        
+        if badFastORlist:
+            pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(badFastORlist)
+            pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(badFastORlist)
+            
+        if runPeriod == "LHC15o":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2015()
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC15j":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
+            pTriggerMakerTask.SetUseL0Amplitudes(True)
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC13"):
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2013()
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC12"):
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2012()
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod == "LHC11h":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2011()
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC11") and runPeriod != "LHC11h":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2011()
+            pTriggerQATask.EnableDCal(False)
+            
     #Charged jet analysis
     if doChargedJets:
         pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
@@ -223,12 +241,15 @@ if __name__ == '__main__':
     parser.add_argument('--trigger-qa', action='store_const',
                         default=False, const=True,
                         help='Track QA')
-    parser.add_argument('--old-bit', action='store_const',
-                        default=False, const=True,
-                        help='Old trigger bit configuration (before 2013)')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
+    parser.add_argument('--trigger',
+                        default="",
+                        help='Trigger name')
+    parser.add_argument('--bad-fastor',
+                        default="",
+                        help='Name of the file containing a bad FastOR list')
     parser.add_argument('-d', '--debug-level', 
                         default=0,
                         type=int,
@@ -236,5 +257,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args.fileList, args.n_files, args.n_events, args.run_period, args.mode,
-         args.charged_jets, args.full_jets, args.neutral_jets, args.track_qa, args.cluster_qa, args.trigger_qa,
-         args.task_name, args.old_bit, args.debug_level)
+         args.charged_jets, args.full_jets, args.neutral_jets, args.track_qa, args.cluster_qa, args.trigger_qa, args.bad_fastor, args.trigger,
+         args.task_name, args.debug_level)

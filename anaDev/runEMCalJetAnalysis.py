@@ -15,7 +15,7 @@ def runEMCalJetAnalysisNew(fileList, nFiles, nEvents, runPeriod, strmode="AOD", 
 	#AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral,
 	#AliVEvent::kEMCEGA, AliVEvent::kEMCEJE
 	#AliVEvent::kAnyINT
-	physSel = 0
+	physSel = ROOT.AliVEvent.kMB
 
 	if strmode == "ESD":
 		dataType = helperFunctions.AnaMode.ESD
@@ -28,7 +28,7 @@ def runEMCalJetAnalysisNew(fileList, nFiles, nEvents, runPeriod, strmode="AOD", 
   
 	if local:
 		anaType = 0
-		OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2013"
+		OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2011"
 	else:
 		anaType = 2
 		OCDBpath = "raw://"

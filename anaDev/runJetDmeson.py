@@ -44,7 +44,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     #Setup task
     if doFullJets or mode is helperFunctions.AnaMode.ESD:
-        OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2010";
+        OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2012";
         pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask");
         pSetupTask.SetNoOCDB(0)
         mgr.AddTask(pSetupTask)
@@ -102,9 +102,9 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         pDMesonJetsTask.SetShowJetConstituents(True)
         pDMesonJetsTask.SetShowPositionD(True)
         pDMesonJetsTask.SetShowDeltaR(True)
-        pDMesonJetsTask.SetShowLeadingPt(True)
         pDMesonJetsTask.SetShowPositionJet(True)
         pDMesonJetsTask.SelectCollisionCandidates(physSel)
+        pDMesonJetsTask.SetTreeOutput(True)
         
         # D0
         if doChargedJets:
@@ -156,7 +156,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
     mgr.SetDebugLevel(debugLevel)
 
     #To have more debug info
-    mgr.AddClassDebug("AliEmcalJetTask", ROOT.AliLog.kDebug+100)
+    #mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug+100)
     
     #start analysis
     print "Starting Analysis..."
@@ -178,6 +178,7 @@ if __name__ == '__main__':
                         help='Number of files to be analyzed')
     parser.add_argument('-e', '--n-events',
                         type=int,
+                        default=2000,
                         help='Number of events to be analyzed')
     parser.add_argument('-r', '--run-period',
                         help='Run period (e.g. LHC10b)')
