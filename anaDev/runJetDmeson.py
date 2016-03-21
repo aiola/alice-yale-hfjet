@@ -87,7 +87,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault")
     pSpectraTask.SelectCollisionCandidates(physSel)
-    pSpectraTask.SetHistoBins(200, 0, 200)
+    pSpectraTask.SetHistoType(ROOT.AliAnalysisTaskEmcalJetSpectraQA.kTTree)
 
     if doChargedJets:
         pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
