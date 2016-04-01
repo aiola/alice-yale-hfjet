@@ -17,7 +17,7 @@ def MergeFiles(output, fileList, skipList=[], n=20):
          merger.AddObjectNames(skipObject)
   
     merger.PrintFiles("");
-    r = merger.PartialMerge(TFileMerger.kAllIncremental | TFileMerger.kOnlyListed);
+    r = merger.PartialMerge(TFileMerger.kAllIncremental | TFileMerger.kSkipListed);
 
     if not r:
         print "Merge error!"
