@@ -72,11 +72,12 @@ def DrawFEEBadChannels(FEEbcList, geom):
             eta += 16
         h.SetBinContent(eta, phi, 1)
     
-    canvas = ROOT.TCanvas("FEEBadChannels","FEEBadChannels")
+    canvas = ROOT.TCanvas("FEEBadChannels","FEEBadChannels", 600, 1000)
     canvas.cd()
     h.Draw("colz")
     globalList.append(h)
     globalList.append(canvas)
+    return canvas
     
 def DrawTRUBadChannels(TRUbcList, geom):
     h = ROOT.TH2C("TRUBadChannels", "TRUBadChannels;eta;phi", 48, 0, 48, 120, 0, 120)
@@ -86,11 +87,12 @@ def DrawTRUBadChannels(TRUbcList, geom):
         geom.GetPositionInEMCALFromAbsFastORIndex(absId, eta, phi)
         h.SetBinContent(eta, phi, 1)
     
-    canvas = ROOT.TCanvas("TRUBadChannels","TRUBadChannels")
+    canvas = ROOT.TCanvas("TRUBadChannels","TRUBadChannels", 600, 1000)
     canvas.cd()
     h.Draw("colz")
     globalList.append(h)
     globalList.append(canvas)
+    return canvas
         
 def CheckBadChannels(TRUbadChannelsFile, run):
     ROOT.gStyle.SetOptTitle(False)
@@ -100,8 +102,10 @@ def CheckBadChannels(TRUbadChannelsFile, run):
     FEEbc = GetFEEBadChannels(run, geom)
     FEEbcList = GetListOfFEEBadChannels(FEEbc, geom)
     TRUbcList = GetListOfTRUBadChannels(TRUbadChannelsFile)
-    DrawFEEBadChannels(FEEbcList, geom)
-    DrawTRUBadChannels(TRUbcList, geom)
+    canvas = DrawFEEBadChannels(FEEbcList, geom)
+    canvas.SaveAs("FEEBadChannels_{0}.pdf".format(run))
+    canvas = DrawTRUBadChannels(TRUbcList, geom)
+    canvas.SaveAs("TRUBadChannels_{0}.pdf".format(run))
     
 if __name__ == '__main__':
     # CheckBadChannels.py executed as script
