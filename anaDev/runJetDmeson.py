@@ -71,10 +71,10 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     #Charged jet analysis
     if doChargedJets:
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.2, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
 
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
 
     #Full jet analysis
@@ -85,13 +85,13 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
 
-    pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault")
+    pSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "usedefault")
     pSpectraTask.SelectCollisionCandidates(physSel)
     pSpectraTask.SetHistoType(ROOT.AliAnalysisTaskEmcalJetSpectraQA.kTTree)
 
     if doChargedJets:
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kTPCfid)
         pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
 
     if doFullJets:
         pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
@@ -108,8 +108,8 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         
         # D0
         if doChargedJets:
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.2)
             pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
 
         if doFullJets:
             pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
@@ -117,8 +117,8 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
         # D*
         if doChargedJets:
+            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.2)
             pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
 
         if doFullJets:
             pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
