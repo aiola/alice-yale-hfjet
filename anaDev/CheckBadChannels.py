@@ -101,11 +101,11 @@ def CheckBadChannels(TRUbadChannelsFile, run):
     geom = ROOT.AliEMCALGeometry.GetInstanceFromRunNumber(run)
     FEEbc = GetFEEBadChannels(run, geom)
     FEEbcList = GetListOfFEEBadChannels(FEEbc, geom)
-    TRUbcList = GetListOfTRUBadChannels(TRUbadChannelsFile)
+    #TRUbcList = GetListOfTRUBadChannels(TRUbadChannelsFile)
     canvas = DrawFEEBadChannels(FEEbcList, geom)
     canvas.SaveAs("FEEBadChannels_{0}.pdf".format(run))
-    canvas = DrawTRUBadChannels(TRUbcList, geom)
-    canvas.SaveAs("TRUBadChannels_{0}.pdf".format(run))
+    #canvas = DrawTRUBadChannels(TRUbcList, geom)
+    #canvas.SaveAs("TRUBadChannels_{0}.pdf".format(run))
     
 if __name__ == '__main__':
     # CheckBadChannels.py executed as script

@@ -72,7 +72,8 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
 
     if doTrackQA or doClusterQA:
         pJetQATask.SelectCollisionCandidates(physSel)
-        pJetQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
+        if trigger == "EMC7":
+            pJetQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
         pJetQATask.SetHistoBins(150, 0, 150)
     
     #Trigger QA
@@ -81,12 +82,46 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pTriggerMakerTask.SelectCollisionCandidates(physSel)
         pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
         
-        pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+        if badFastORlist:
+            pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(badFastORlist)
+            pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(badFastORlist)
+
+        if runPeriod == "LHC16b":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC15o":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2015()
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC15j":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
+            pTriggerMakerTask.SetUseL0Amplitudes(True)
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod.startswith("LHC13"):
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2013()
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC12"):
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2012()
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod == "LHC11h":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2011()
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC11") and runPeriod != "LHC11h":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2011()
+            pTriggerQATask.EnableDCal(False)
+            
         if trigger == "EMC7":
             pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOnlinePatch, False)
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kOfflinePatch, True)
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEmcalTriggerQAPP.kRecalcPatch, True)
+        pTriggerQATask.EnableHistogramsByTimeStamp(120)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kOnlinePatch, False)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kOfflinePatch, True)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kRecalcPatch, True)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalLevel0, True)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetL, False)
         pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetH, True)
@@ -96,30 +131,6 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pTriggerQATask.SetMinAmplitude(0)
         pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
         pTriggerQATask.SelectCollisionCandidates(physSel)
-        
-        if badFastORlist:
-            pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(badFastORlist)
-            pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(badFastORlist)
-            
-        if runPeriod == "LHC15o":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2015()
-            pTriggerQATask.EnableDCal(True)
-        elif runPeriod == "LHC15j":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
-            pTriggerMakerTask.SetUseL0Amplitudes(True)
-            pTriggerQATask.EnableDCal(False)
-        elif runPeriod.startswith("LHC13"):
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2013()
-            pTriggerQATask.EnableDCal(False)
-        elif runPeriod.startswith("LHC12"):
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2012()
-            pTriggerQATask.EnableDCal(False)
-        elif runPeriod == "LHC11h":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2011()
-            pTriggerQATask.EnableDCal(False)
-        elif runPeriod.startswith("LHC11") and runPeriod != "LHC11h":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2011()
-            pTriggerQATask.EnableDCal(False)
             
     #Charged jet analysis
     if doChargedJets:
