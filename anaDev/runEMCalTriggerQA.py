@@ -85,34 +85,34 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         if badFastORlist:
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(badFastORlist)
             pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(badFastORlist)
-
+        
         if runPeriod == "LHC16b":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
             pTriggerQATask.EnableDCal(True)
         elif runPeriod == "LHC15o":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 5, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2015()
             pTriggerQATask.EnableDCal(True)
         elif runPeriod == "LHC15j":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
             pTriggerMakerTask.SetUseL0Amplitudes(True)
             pTriggerQATask.EnableDCal(True)
         elif runPeriod.startswith("LHC13"):
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2013()
             pTriggerQATask.EnableDCal(False)
         elif runPeriod.startswith("LHC12"):
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2012()
             pTriggerQATask.EnableDCal(False)
         elif runPeriod == "LHC11h":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 4, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2011()
             pTriggerQATask.EnableDCal(False)
         elif runPeriod.startswith("LHC11") and runPeriod != "LHC11h":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQAPP("EmcalTriggers", "", "", trigger)
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2011()
             pTriggerQATask.EnableDCal(False)
             
