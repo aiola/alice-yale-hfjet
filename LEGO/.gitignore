@@ -1,9 +1,0 @@
-MLTrainDefinition.cfg
-*.root
-lego_train*
-*.log
-outputs_valid
-gdb*
-fileinfo.log
-stderr
-stdout
