@@ -10,12 +10,26 @@ import MergeFiles
 import ScaleResults
 
 def GetFullTrainNumber(SearchPath, TrainNumber):
-    output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, "{0}_20*".format(TrainNumber)], universal_newlines=True)
+    output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, "{0}_20".format(TrainNumber)], universal_newlines=True)
     #print(output)
     i = output.rfind("{0}_".format(TrainNumber))
     j = len(str(TrainNumber)) + 14 + i
     FullTrainNumber = output[i:j]
     return FullTrainNumber
+
+def GetMergeLists(SearchPath):
+    output = subprocess.check_output(["alien_find", "-d", SearchPath, "merge"], universal_newlines=True)
+    print output
+    mergeLists = output.splitlines()
+    resList = []
+    for mergeList in mergeLists:
+        start = mergeList.rfind("merge")
+        stop = mergeList.rfind("/")
+        if stop <= start:
+            continue
+        resList.append(mergeList[start:stop])
+        
+    return set(resList)
 
 def StartDownload(UserDataset, LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
     FileName = "AnalysisResults.root"
@@ -23,12 +37,14 @@ def StartDownload(UserDataset, LocalPath, Datasets, TrainNumbers, TrainName, Ove
     for Dataset,TrainNumber in zip(Datasets,TrainNumbers):
         SearchPath="/alice/cern.ch/user/a/alitrain/PWGJE/"+TrainName
         FullTrainNumber = GetFullTrainNumber(SearchPath, TrainNumber)
-        AlienPath = "alien://{0}/{1}/merge/{2}".format(SearchPath, FullTrainNumber, FileName)
-        DestPath = "{0}/{1}".format(LocalPath, Dataset)
-        os.makedirs(DestPath)
-        DestPath += "/{0}".format(FileName)
-        print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
-        subprocess.call(["alien_cp", AlienPath, DestPath])
+        mergeLists = GetMergeLists("{0}/{1}".format(SearchPath,FullTrainNumber))
+        for mergeList in mergeLists:
+            AlienPath = "alien://{0}/{1}/{2}/{3}".format(SearchPath, FullTrainNumber, mergeList, FileName)
+            DestPath = "{0}/{1}/{2}".format(LocalPath, Dataset, mergeList)
+            os.makedirs(DestPath)
+            DestPath += "/{0}".format(FileName)
+            print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
+            subprocess.call(["alien_cp", AlienPath, DestPath])
 
 def main(TrainNumbers, Overwrite=0, Year="2012", UserDataset="LHC12x", TrainName="Jets_EMC_pp"):
     try:
