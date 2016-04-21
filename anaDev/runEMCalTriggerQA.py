@@ -6,8 +6,102 @@ import ROOT
 import helperFunctions
 import os
 
+def AddTriggerQATasks(runPeriod,
+                      doChargedJets=False, doFullJets=False, doNeutralJets=False, 
+                      doTrackQA=False, doClusterQA=False, doTriggerQA=False, 
+                      badFastORlist="", trigger="", physSel=0):
+    
+    if trigger:
+        triggerSimple = trigger.split("-")[0]
+    else:
+        triggerSimple = ""
+    
+    if doTrackQA and doClusterQA:
+        pJetQATask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault", triggerSimple)
+        pJetQATask.SetNeedEmcalGeom(True)
+    elif doClusterQA:
+        pJetQATask = ROOT.AddTaskEmcalJetQA("", "usedefault", "usedefault", triggerSimple)
+        pJetQATask.SetNeedEmcalGeom(True)
+    elif doTrackQA:
+        pJetQATask = ROOT.AddTaskEmcalJetQA("", "usedefault", "usedefault", triggerSimple)
+
+    if doTrackQA or doClusterQA:
+        pJetQATask.SelectCollisionCandidates(physSel)
+        if trigger:
+            pJetQATask.SetTrigClass(trigger);
+        pJetQATask.SetHistoBins(150, 0, 150)
+    
+    #Trigger QA
+    if doTriggerQA:
+        if runPeriod == "LHC16c":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, triggerSimple)
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC16b":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, triggerSimple)
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC15o":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 5, True, triggerSimple)
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC15j":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, triggerSimple)
+            pTriggerQATask.EnableDCal(True)
+        elif runPeriod.startswith("LHC13"):
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, triggerSimple)
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC12"):
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, triggerSimple)
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod == "LHC11h":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 4, True, triggerSimple)
+            pTriggerQATask.EnableDCal(False)
+        elif runPeriod.startswith("LHC11") and runPeriod != "LHC11h":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, triggerSimple)
+            pTriggerQATask.EnableDCal(False)
+            
+        if trigger:
+            pTriggerQATask.SetTrigClass(trigger)
+            pTriggerQATask.SetEMCalTriggerMode(ROOT.AliAnalysisTaskEmcal.kNoSpecialTreatment)
+            
+        if badFastORlist:
+            pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(badFastORlist)
+        #pTriggerQATask.EnableHistogramsByTimeStamp(120)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kOnlinePatch, True)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kOfflinePatch, True)
+        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kRecalcPatch, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalLevel0, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetL, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetH, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaL, True)
+        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaH, True)
+        pTriggerQATask.SetADCperBin(4)
+        pTriggerQATask.SetMinAmplitude(0)
+        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
+        pTriggerQATask.SelectCollisionCandidates(physSel)
+
+    if doChargedJets or doFullJets or doNeutralJets:
+        pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault", 0.15, 0.30, triggerSimple)
+        pSpectraTask.SelectCollisionCandidates(physSel)
+        pSpectraTask.SetHistoBins(200, 0, 200)
+
+    if doChargedJets:
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
+
+    if doFullJets:
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
+        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
+
+    if doNeutralJets:
+        jetCont = pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kNeutralJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
+        jetCont.SetLeadingHadronType(1)
+        jetCont = pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kNeutralJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
+        jetCont.SetLeadingHadronType(1)
+
+
 def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
-         doChargedJets=False, doFullJets=False, doNeutralJets=False, doTrackQA=False, doClusterQA=False, doTriggerQA=False, badFastORlist="", trigger="",
+         doChargedJets=False, doFullJets=False, doNeutralJets=False, 
+         doTrackQA=False, doClusterQA=False, doTriggerQA=False, 
+         badFastORlist="", triggers="",
          taskName="EmcalTriggerQA", debugLevel=0):
 
     physSel = 0
@@ -44,7 +138,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         helperFunctions.AddESDHandler()
         
     #Physics selection task
-    if mode is helperFunctions.AnaMode.ESD:
+    if mode is helperFunctions.AnaMode.ESD and physSel:
         ROOT.AddTaskPhysicsSelection()
 
     #Setup task
@@ -61,21 +155,6 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
     if doClusterQA or doTriggerQA:
         helperFunctions.PrepareEMCAL(physSel, True, True, doClusterQA or doFullJets or doNeutralJets, doFullJets or doNeutralJets, doFullJets or doNeutralJets)
 
-    if doTrackQA and doClusterQA:
-        pJetQATask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
-        pJetQATask.SetNeedEmcalGeom(True)
-    elif doClusterQA:
-        pJetQATask = ROOT.AddTaskEmcalJetQA("", "usedefault", "usedefault")
-        pJetQATask.SetNeedEmcalGeom(True)
-    elif doTrackQA:
-        pJetQATask = ROOT.AddTaskEmcalJetQA("", "usedefault", "usedefault")
-
-    if doTrackQA or doClusterQA:
-        pJetQATask.SelectCollisionCandidates(physSel)
-        if trigger == "EMC7":
-            pJetQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
-        pJetQATask.SetHistoBins(150, 0, 150)
-    
     #Trigger QA
     if doTriggerQA:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
@@ -84,54 +163,25 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         
         if badFastORlist:
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(badFastORlist)
-            pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(badFastORlist)
         
-        if runPeriod == "LHC16b":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, True, trigger)
+        if runPeriod == "LHC16c":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
-            pTriggerQATask.EnableDCal(True)
+        elif runPeriod == "LHC16b":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif runPeriod == "LHC15o":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 5, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2015()
-            pTriggerQATask.EnableDCal(True)
         elif runPeriod == "LHC15j":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
             pTriggerMakerTask.SetUseL0Amplitudes(True)
-            pTriggerQATask.EnableDCal(True)
         elif runPeriod.startswith("LHC13"):
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2013()
-            pTriggerQATask.EnableDCal(False)
         elif runPeriod.startswith("LHC12"):
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2012()
-            pTriggerQATask.EnableDCal(False)
         elif runPeriod == "LHC11h":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 4, True, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2011()
-            pTriggerQATask.EnableDCal(False)
         elif runPeriod.startswith("LHC11") and runPeriod != "LHC11h":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger)
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2011()
-            pTriggerQATask.EnableDCal(False)
-            
-        if trigger == "EMC7":
-            pTriggerQATask.SetTrigClass("CEMC7-B-NOPF-CENTNOTRD");
-        pTriggerQATask.EnableHistogramsByTimeStamp(120)
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kOnlinePatch, False)
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kOfflinePatch, True)
-        pTriggerQATask.GetTriggerQA().EnablePatchType(ROOT.AliEMCALTriggerQA.kRecalcPatch, True)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalLevel0, True)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetL, False)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalJetH, True)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaL, False)
-        pTriggerQATask.GetTriggerQA().EnableTriggerType(ROOT.EMCALTrigger.kTMEMCalGammaH, True)
-        pTriggerQATask.SetADCperBin(4)
-        pTriggerQATask.SetMinAmplitude(0)
-        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
-        pTriggerQATask.SelectCollisionCandidates(physSel)
-            
+
     #Charged jet analysis
     if doChargedJets:
         pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
@@ -156,29 +206,24 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD",
         pJetTask = ROOT.AddTaskEmcalJet("", "usedefault", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kNeutralJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
 
-    if doChargedJets or doFullJets or doNeutralJets:
-        pSpectraTask = ROOT.AddTaskEmcalJetSpectraQA("usedefault", "usedefault")
-        pSpectraTask.SelectCollisionCandidates(physSel)
-        pSpectraTask.SetHistoBins(200, 0, 200)
+    triggerList = triggers.split(",")
 
-    if doChargedJets:
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
+    for trigger in triggerList:
+        AddTriggerQATasks(runPeriod,
+                          doChargedJets, doFullJets, doNeutralJets, 
+                          doTrackQA, doClusterQA, doTriggerQA, 
+                          badFastORlist, trigger, physSel)
 
-    if doFullJets:
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
-
-    if doNeutralJets:
-        jetCont = pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kNeutralJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
-        jetCont.SetLeadingHadronType(1)
-        jetCont = pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kNeutralJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
-        jetCont.SetLeadingHadronType(1)
-
+    if runPeriod == "LHC11h" or runPeriod.startswith("LHC13") or runPeriod == "LHC15o":
+        isPP = False
+    else:
+        isPP = True
+    
     tasks = mgr.GetTasks()
     for task in tasks:
         if isinstance(task, ROOT.AliAnalysisTaskEmcal):
-            task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
+            if isPP:
+                task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
             task.SetVzRange(-999, -999)
 	
     res = mgr.InitAnalysis()
