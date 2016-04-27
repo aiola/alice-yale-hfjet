@@ -63,7 +63,10 @@ def AddTriggerQATasks(config, trigger, physSel):
     
     #Trigger QA
     if config["trigger_qa"]:
-        if config["run_period"] == "LHC16c":
+        if config["run_period"] == "LHC16d":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask.EnableDCal(True)
+        elif config["run_period"] == "LHC16c":
             pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC16b":
@@ -198,8 +201,10 @@ def main(config):
         
         if config.has_key("bad_fastor"):
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(config["bad_fastor"])
-        
-        if config["run_period"] == "LHC16c":
+            
+        if config["run_period"] == "LHC16d":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
+        elif config["run_period"] == "LHC16c":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif config["run_period"] == "LHC16b":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
