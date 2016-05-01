@@ -131,7 +131,6 @@ def AddTriggerQATasks(config, trigger, physSel):
         jetCont = pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kNeutralJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
         jetCont.SetLeadingHadronType(1)
 
-
 def main(config):
 
     ROOT.gSystem.Load("libCGAL")
@@ -248,7 +247,7 @@ def main(config):
     
     tasks = mgr.GetTasks()
     for task in tasks:
-        if isinstance(task, ROOT.AliAnalysisTaskEmcal):
+        if isinstance(task, ROOT.AliAnalysisTaskEmcal) or isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
             if isPP:
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
             task.SetVzRange(-999, -999)
