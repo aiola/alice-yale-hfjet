@@ -7,6 +7,13 @@ triggers:
   label: CEMC7
   accept: [CEMC7-B-NOPF-CENTNOTRD]
 - 
+  label: CEMC8
+  accept: [CEMC8-B-NOPF-CENTNOTRD]
+- 
+  label: CEMC7NOCEMC7EG1
+  accept: [CEMC7-B-NOPF-CENTNOTRD]
+  reject: [CEMC7EG1-B-NOPF-CENTNOTRD]
+- 
   label: CDMC7
   accept: [CDMC7-B-NOPF-CENTNOTRD]
 - 
