@@ -1,0 +1,10 @@
+task_name: EMCalTriggerQA
+run_period: LHC16e
+mode: AOD
+triggers:
+- 
+  label: CEMC7
+  accept: [CEMC7-B-NOPF-CENTNOTRD]
+- 
+  label: CDMC7
+  accept: [CDMC7-B-NOPF-CENTNOTRD]
