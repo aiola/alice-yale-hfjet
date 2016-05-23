@@ -67,7 +67,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
             pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
             pSpectraTask.SetNeedEmcalGeom(True)
         pSpectraTask.SelectCollisionCandidates(physSel)
-        pSpectraTask.SetHistoBins(150, 0, 150)
+        pSpectraTask.SetPtBin(1, 150)
 
     #Charged jet analysis
     if doChargedJets:
