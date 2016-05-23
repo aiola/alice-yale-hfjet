@@ -74,6 +74,7 @@ def AddTriggerQATasks(config, trigger, physSel):
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC15o":
             pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 5, True, trigger["label"])
+            pTriggerQATask.SetUseNewCentralityEstimation(True)
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC15j":
             pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
@@ -103,7 +104,6 @@ def AddTriggerQATasks(config, trigger, physSel):
         #pTriggerQATask.EnableHistogramsByTimeStamp(120)
         pTriggerQATask.SetADCperBin(4)
         pTriggerQATask.SetMinAmplitude(0)
-        pTriggerQATask.GetTriggerQA().SetFastORandCellThresholds(0, 0, 0)
         pTriggerQATask.SelectCollisionCandidates(physSel)
 
     if config["charged_jets"] or config["full_jets"] or config["neutral_jets"]:
@@ -179,6 +179,9 @@ def main(config):
     cinput = mgr.GetCommonInputContainer()
     mgr.ConnectInput(pSetupTask, 0,  cinput)
     pSetupTask.SetOcdbPath(OCDBpath)
+    
+    if config["run_period"] == "LHC15o":
+        ROOT.AddTaskMultSelection(False)
 
     # EMCal prep
     if config["cluster_qa"] or config["trigger_qa"]:
