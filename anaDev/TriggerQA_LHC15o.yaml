@@ -1,0 +1,29 @@
+task_name: EMCalTriggerQA
+run_period: LHC15o
+mode: AOD
+file_list: fileLists/files_LHC15o_lowint_AOD.txt
+triggers:
+- 
+  label: CEMC7EG1
+  accept: [CEMC7EG1-B-NOPF-CENTNOTRD]
+- 
+  label: CEMC7EG2
+  accept: [CEMC7EG2-B-NOPF-CENTNOTRD]
+- 
+  label: CEMC7EJ1
+  accept: [CEMC7EJ1-B-NOPF-CENTNOTRD]
+- 
+  label: CEMC7EJ2
+  accept: [CEMC7EJ2-B-NOPF-CENTNOTRD]
+- 
+  label: CDMC7DG1
+  accept: [CDMC7DG1-B-NOPF-CENTNOTRD]
+- 
+  label: CDMC7DG2
+  accept: [CDMC7DG2-B-NOPF-CENTNOTRD]
+- 
+  label: CDMC7DJ1
+  accept: [CDMC7DJ1-B-NOPF-CENTNOTRD]
+- 
+  label: CDMC7DJ2
+  accept: [CDMC7DJ2-B-NOPF-CENTNOTRD]
