@@ -171,8 +171,8 @@ def main(config):
         ROOT.AddTaskPhysicsSelection()
 
     #Setup task
-    #OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2010"
-    OCDBpath = "raw://"
+    OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2016"
+    #OCDBpath = "raw://"
     pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask")
     pSetupTask.SetNoOCDB(1)
     mgr.AddTask(pSetupTask)
