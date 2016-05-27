@@ -1,0 +1,3 @@
+/Volumes/DATA/ALICE/Data/sim/2013/LHC13b4_plus/195568/5/AOD152/0010/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2013/LHC13b4_plus/195568/5/AOD152/0011/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2013/LHC13b4_plus/195568/5/AOD152/0012/root_archive.zip

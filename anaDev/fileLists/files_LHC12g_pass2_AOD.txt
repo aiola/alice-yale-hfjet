@@ -1,0 +1,8 @@
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/001/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/002/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/003/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/004/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/005/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/006/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/007/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2012/LHC12g/000188499/pass2/AOD/008/aod_archive.zip

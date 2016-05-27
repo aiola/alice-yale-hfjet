@@ -1,0 +1,5 @@
+/Users/sa639/Documents/Work/ALICE/Data/sim/2015/LHC15i2c/119841/4/001/aod_archive.zip
+/Users/sa639/Documents/Work/ALICE/Data/sim/2015/LHC15i2c/119841/4/002/aod_archive.zip
+/Users/sa639/Documents/Work/ALICE/Data/sim/2015/LHC15i2c/119841/4/003/aod_archive.zip
+/Users/sa639/Documents/Work/ALICE/Data/sim/2015/LHC15i2c/119841/4/004/aod_archive.zip
+/Users/sa639/Documents/Work/ALICE/Data/sim/2015/LHC15i2c/119841/4/005/aod_archive.zip
