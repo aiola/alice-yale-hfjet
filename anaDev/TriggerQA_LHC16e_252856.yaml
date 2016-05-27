@@ -1,7 +1,7 @@
 task_name: EMCalTriggerQA
 run_period: LHC16e
 mode: AOD
-file_list: fileLists/files_LHC16d_emcal_trigger_252856.txt
+file_list: fileLists/files_LHC16e_muon_calo_pass1_252856_AOD.txt
 triggers:
 - 
   label: CEMC7
