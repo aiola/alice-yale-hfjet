@@ -1,0 +1,9 @@
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/001/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/002/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/003/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/004/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/005/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/006/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/007/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/008/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15j/000237030/muon_calo_pass1/AOD/009/aod_archive.zip

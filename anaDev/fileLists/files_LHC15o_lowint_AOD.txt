@@ -1,0 +1,9 @@
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/001/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/002/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/003/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/004/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/005/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/006/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/007/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/008/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000245064/pass_lowint_firstphys/AOD/009/aod_archive.zip
