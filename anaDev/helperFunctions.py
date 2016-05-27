@@ -140,10 +140,10 @@ def PrepareEMCAL(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True,
 
     if doClusterMaker:
         bRemExoticClus  = True
-        iNonLinFunct    = ROOT.AliEMCALRecoUtils.kBeamTestCorrected
+        iNonLinFunct    = ROOT.AliEMCALRecoUtils.kBeamTestCorrectedv3
 
         # Cluster maker
-        pClusterMakerTask = ROOT.AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, "usedefault", "", 0., False)
+        pClusterMakerTask = ROOT.AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, "usedefault", "", 0., True)
         pClusterMakerTask.GetClusterContainer(0).SetClusPtCut(0.)
         pClusterMakerTask.GetClusterContainer(0).SetClusECut(0.)
         pClusterMakerTask.SelectCollisionCandidates(kPhysSel)
