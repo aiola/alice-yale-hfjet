@@ -120,7 +120,7 @@ def PrepareEMCAL(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True,
         bReclusterize   = False
         fSeedThresh     = 0.1      # 100 MeV
         fCellThresh     = 0.05     # 50 MeV
-        iClusterizer    = ROOT.AliEMCALRecParam.kClusterizerv2
+        iClusterizer    = 0
         bTrackMatch     = False
         bUpdateCellOnly = True
         fEMCtimeMin     = -50e-6
@@ -134,6 +134,10 @@ def PrepareEMCAL(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True,
 
     if doClusterizer:
         # Clusterizer
+        fEMCtimeMin     = -50e-6
+        fEMCtimeMax     =  50e-6
+        fEMCtimeCut     =  1e6
+        iClusterizer    = ROOT.AliEMCALRecParam.kClusterizerv2
         pClusterizerTask = ROOT.AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer, 0.05, 0.1,
                                                        fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, False, False)
         pClusterizerTask.SelectCollisionCandidates(kPhysSel)
