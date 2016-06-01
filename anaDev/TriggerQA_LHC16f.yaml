@@ -1,0 +1,38 @@
+task_name: EMCalTriggerQA
+run_period: LHC16f
+mode: AOD
+file_list: fileLists/files_LHC16f_muon_calo_pass1_253961_AOD.txt
+triggers:
+- 
+  label: CEMC7
+  accept: [CEMC7-B-NOPF-CENT]
+- 
+  label: CDMC7
+  accept: [CDMC7-B-NOPF-CENT]
+- 
+  label: CEMC7EG1
+  accept: [CEMC7EG1-B-NOPF-CENT]
+- 
+  label: CEMC7EG2
+  accept: [CEMC7EG2-B-NOPF-CENT]
+- 
+  label: CEMC7EJ1
+  accept: [CEMC7EJ1-B-NOPF-CENT]
+- 
+  label: CEMC7EJ2
+  accept: [CEMC7EJ2-B-NOPF-CENT]
+- 
+  label: CDMC7DG1
+  accept: [CDMC7DG1-B-NOPF-CENT]
+- 
+  label: CDMC7DG2
+  accept: [CDMC7DG2-B-NOPF-CENT]
+- 
+  label: CDMC7DJ1
+  accept: [CDMC7DJ1-B-NOPF-CENT]
+- 
+  label: CDMC7DJ2
+  accept: [CDMC7DJ2-B-NOPF-CENT]
+- 
+  label: CINT7
+  accept: [CINT7-B-NOPF-CENT]

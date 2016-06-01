@@ -63,7 +63,7 @@ def AddTriggerQATasks(config, trigger, physSel):
     
     #Trigger QA
     if config["trigger_qa"]:
-        if config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e":
+        if config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
             pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC16c":
@@ -102,7 +102,7 @@ def AddTriggerQATasks(config, trigger, physSel):
         if config.has_key("bad_fastor"):
             pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(config["bad_fastor"])
         #pTriggerQATask.EnableHistogramsByTimeStamp(120)
-        pTriggerQATask.SetADCperBin(4)
+        pTriggerQATask.SetADCperBin(8)
         pTriggerQATask.SetMinAmplitude(0)
         pTriggerQATask.SelectCollisionCandidates(physSel)
 
@@ -196,7 +196,7 @@ def main(config):
         if config.has_key("bad_fastor"):
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(config["bad_fastor"])
             
-        if config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e":
+        if config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif config["run_period"] == "LHC16c":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
