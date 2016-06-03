@@ -44,7 +44,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     #Setup task
     if doFullJets or mode is helperFunctions.AnaMode.ESD:
-        OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2012";
+        OCDBpath = "raw://";
         pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask");
         pSetupTask.SetNoOCDB(0)
         mgr.AddTask(pSetupTask)
@@ -60,12 +60,13 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         helperFunctions.AddTaskPIDResponse(False)
 
     if doTrackQA:
-        if doChargedJets and not doFullJets:
-            pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "", "")
-            pSpectraTask.SetNeedEmcalGeom(False)
         if doFullJets:
             pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
             pSpectraTask.SetNeedEmcalGeom(True)
+        else:
+            pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "", "")
+            pSpectraTask.SetNeedEmcalGeom(False)
+
         pSpectraTask.SelectCollisionCandidates(physSel)
         pSpectraTask.SetPtBin(1, 150)
 
@@ -85,20 +86,30 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
 
-    pSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "usedefault")
-    pSpectraTask.SelectCollisionCandidates(physSel)
-    pSpectraTask.SetHistoType(ROOT.AliAnalysisTaskEmcalJetSpectraQA.kTTree)
+    if doFullJets:
+        pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "usedefault")
+        pJetSpectraTask.SetNeedEmcalGeom(True)
+    else:
+        pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "")
+        pJetSpectraTask.SetNeedEmcalGeom(False)
+                
+    pJetSpectraTask.SelectCollisionCandidates(physSel)
 
     if doChargedJets:
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kTPCfid)
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
+        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kTPCfid)
+        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
 
     if doFullJets:
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
-        pSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
+        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
+        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
 
     if doHF:
-        pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault");
+        if doFullJets:
+            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault")
+            pDMesonJetsTask.SetNeedEmcalGeom(True)
+        else:
+            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "")
+            pDMesonJetsTask.SetNeedEmcalGeom(False)
         pDMesonJetsTask.SetShowJetConstituents(True)
         pDMesonJetsTask.SetShowPositionD(True)
         pDMesonJetsTask.SetShowDeltaR(True)
@@ -126,7 +137,7 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
         
     tasks = mgr.GetTasks()
     for task in tasks:
-        if isinstance(task, ROOT.AliAnalysisTaskEmcal):
+        if isinstance(task, ROOT.AliAnalysisTaskEmcal) or isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
             task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
 
     res = mgr.InitAnalysis()
