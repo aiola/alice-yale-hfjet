@@ -1,0 +1,10 @@
+*.root
+*.xml
+MLTrainDefinition.cfg
+lego_train*
+std*
+*.log
+globalvariables.C
+handlers.C
+env.sh
+outputs_valid
