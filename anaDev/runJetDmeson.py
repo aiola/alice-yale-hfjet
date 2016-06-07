@@ -105,10 +105,10 @@ def main(fileList, nFiles, nEvents, runPeriod, strmode="AOD", doHF=True, doCharg
 
     if doHF:
         if doFullJets:
-            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault")
+            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault", "", 2)
             pDMesonJetsTask.SetNeedEmcalGeom(True)
         else:
-            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "")
+            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "", 2)
             pDMesonJetsTask.SetNeedEmcalGeom(False)
         pDMesonJetsTask.SetShowJetConstituents(True)
         pDMesonJetsTask.SetShowPositionD(True)
