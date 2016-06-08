@@ -1,0 +1,8 @@
+task_name: DmesonJets
+run_period: LHC10c
+mode: AOD
+full_jets: false
+charged_jets: true
+MC: false
+charm_enhanced: false
+file_list: fileLists/files_LHC10c_pass4_AOD.txt

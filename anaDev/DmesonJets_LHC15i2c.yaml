@@ -1,0 +1,8 @@
+task_name: DmesonJets
+run_period: LHC15i2c
+mode: AOD
+full_jets: false
+charged_jets: true
+MC: true
+charm_enhanced: true
+file_list: fileLists/files_LHC15i2c_AOD.txt
