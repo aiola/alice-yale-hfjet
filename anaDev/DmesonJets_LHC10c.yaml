@@ -6,3 +6,4 @@ charged_jets: true
 MC: false
 charm_enhanced: false
 file_list: fileLists/files_LHC10c_pass4_AOD.txt
+reco_pass: 4
