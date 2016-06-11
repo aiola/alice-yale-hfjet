@@ -6,7 +6,7 @@ import ROOT
 import helperFunctions
 import yaml
 
-def main(configFileName, nFiles, nEvents, 
+def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doResponse,
          taskName="JetDmesonAna", debugLevel=0):
     
     f = open(configFileName, 'r')
@@ -60,8 +60,13 @@ def main(configFileName, nFiles, nEvents,
     if config["full_jets"]:
         helperFunctions.PrepareEMCAL(physSel)
 
+    if config["MC"]:
+        print "Running on a MC production"
+    else:
+        print "Running on data"
+
     #PID response
-    helperFunctions.AddTaskPIDResponse(config["MC"])
+    helperFunctions.AddTaskPIDResponse(config["MC"], True, True, config["reco_pass"])
 
     if config["full_jets"]:
         pSpectraTask = ROOT.AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault")
@@ -106,90 +111,100 @@ def main(configFileName, nFiles, nEvents,
         pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
         pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
 
-    if config["MC"]:
-        if config["charm_enhanced"]:
-            nOutputTrees = 6
-        else:
-            nOutputTrees = 4
-    else:
-        nOutputTrees = 2
-        
-        
-    if config["MC"]:
-        if config["full_jets"]:
-            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault", "usedefault", nOutputTrees)
-            pDMesonJetsTask.SetNeedEmcalGeom(True)
-        else:
-            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "usedefault", nOutputTrees)
-            pDMesonJetsTask.SetNeedEmcalGeom(False)
-    else:
-        if config["full_jets"]:
-            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault", "", nOutputTrees)
-            pDMesonJetsTask.SetNeedEmcalGeom(True)
-        else:
-            pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "", nOutputTrees)
-            pDMesonJetsTask.SetNeedEmcalGeom(False)
-        
-    pDMesonJetsTask.SetShowJetConstituents(True)
-    pDMesonJetsTask.SetShowPositionD(True)
-    pDMesonJetsTask.SetShowDeltaR(True)
-    pDMesonJetsTask.SetShowPositionJet(True)
-    pDMesonJetsTask.SelectCollisionCandidates(physSel)
-    pDMesonJetsTask.SetTreeOutput(True)
-        
-    # D0
-    if config["charged_jets"]:
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
+    nOutputTrees = 0
 
-    if config["full_jets"]:
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
-
-    # D*
-    if config["charged_jets"]:
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
-
-    if config["full_jets"]:
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
-        pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
+    if doRecLevel:
+        nOutputTrees += 2
         
-    if config["MC"]:
-        if config["charged_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.4)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.6)
-    
-        if config["full_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
-    
-        # D*
-        if config["charged_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.4)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.6)
-    
-        if config["full_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
+    if config["MC"] and doSignalOnly:
+        nOutputTrees += 2
+        
+    if config["MC"] and doMCTruth:
+        nOutputTrees += 2
+        
+    if nOutputTrees > 0:
+        if config["MC"]:
+            if doResponse:
+                if config["full_jets"]:
+                    pDMesonJetsTask = ROOT.AddTaskDmesonJetsDetectorResponse("usedefault", "usedefault", "usedefault", 2)
+                    pDMesonJetsTask.SetNeedEmcalGeom(True)
+                else:
+                    pDMesonJetsTask = ROOT.AddTaskDmesonJetsDetectorResponse("usedefault", "", "usedefault", 2)
+                    pDMesonJetsTask.SetNeedEmcalGeom(False)
+            else:
+                if config["full_jets"]:
+                    pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault", "usedefault", nOutputTrees)
+                    pDMesonJetsTask.SetNeedEmcalGeom(True)
+                else:
+                    pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "usedefault", nOutputTrees)
+                    pDMesonJetsTask.SetNeedEmcalGeom(False)
+                pDMesonJetsTask.SetOutputType(ROOT.AliAnalysisTaskDmesonJets.kTreeOutput)
+        else:
+            if config["full_jets"]:
+                pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault", "", nOutputTrees)
+                pDMesonJetsTask.SetNeedEmcalGeom(True)
+            else:
+                pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "", nOutputTrees)
+                pDMesonJetsTask.SetNeedEmcalGeom(False)
             
-    if config["MC"] and config["charm_enhanced"]:
-        if config["charged_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.4)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.6)
-    
-        if config["full_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
-    
-        # D*
-        if config["charged_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.4)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.6)
-    
-        if config["full_jets"]:
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
-            pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
+        pDMesonJetsTask.SelectCollisionCandidates(physSel)
+        
+        if doRecLevel:
+            # D0
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
+        
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
+        
+            # D*
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
+        
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
+            
+        if config["MC"] and doSignalOnly:
+            # D0
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.6)
+        
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
+        
+            # D*
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.6)
+        
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
+                
+        if config["MC"] and doMCTruth:
+            # D0
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.6)
+        
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
+        
+            # D*
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.6)
+        
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
 
     
     tasks = mgr.GetTasks()
@@ -245,6 +260,18 @@ if __name__ == '__main__':
                         type=int,
                         default=2000,
                         help='Number of events to be analyzed')
+    parser.add_argument('--no-signal-only',action='store_const',
+                        default=False, const=True,
+                        help='Signal only analysis')
+    parser.add_argument('--no-rec-level',action='store_const',
+                        default=False, const=True,
+                        help='Reconstructed level analysis')
+    parser.add_argument('--no-mc-truth', action='store_const',
+                        default=False, const=True,
+                        help='MC truth analysis')
+    parser.add_argument('--response', action='store_const',
+                        default=False, const=True,
+                        help='MC truth analysis')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
@@ -254,5 +281,5 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
     
-    main(args.config, args.n_files, args.n_events, 
+    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response,
          args.task_name, args.debug_level)
