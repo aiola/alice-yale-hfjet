@@ -1,0 +1,25 @@
+name: LHC10_Train701
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_701_702_703_704
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJets
+analysis:
+- 
+  trigger: AnyINT
+  d_meson: D0
+  n_mass_bins: 80
+  min_mass: 1.715
+  max_mass: 2.015
+  bins:
+  -
+    jet_pt: [5, 6, 8, 10, 15, 30]
+    d_pt: [0, -1]
+    d_z: [0.2, 1.0]
+  -
+    jet_pt: [5, 8, 13, 30]
+    d_pt: [0, -1]
+    d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+  jets:
+  -
+    type: Charged
+    radius: R040
