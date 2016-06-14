@@ -5,6 +5,7 @@ import subprocess
 import sys
 import shutil
 import argparse
+import yaml
 
 import MergeFiles
 import ScaleResults
@@ -31,7 +32,7 @@ def GetMergeLists(SearchPath):
         
     return set(resList)
 
-def StartDownload(UserDataset, LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
+def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
     FileName = "AnalysisResults.root"
 
     for Dataset,TrainNumber in zip(Datasets,TrainNumbers):
@@ -46,7 +47,7 @@ def StartDownload(UserDataset, LocalPath, Datasets, TrainNumbers, TrainName, Ove
             print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
             subprocess.call(["alien_cp", AlienPath, DestPath])
 
-def main(TrainNumbers, Overwrite=0, Year="2012", UserDataset="LHC12x", TrainName="Jets_EMC_pp"):
+def main(TrainNumbers, config, Overwrite=0):
     try:
         rootPath=subprocess.check_output(["which", "root"]).rstrip()
         alirootPath=subprocess.check_output(["which", "aliroot"]).rstrip()
@@ -76,27 +77,7 @@ def main(TrainNumbers, Overwrite=0, Year="2012", UserDataset="LHC12x", TrainName
             print "Error: could not create the token!"
             exit()
 
-    Datasets=[]
-
-    if UserDataset=="LHC15i2x":
-        print "Will work on LHC15i2{b,c,d,e}."
-        Datasets[0:]=["LHC15i2b"]
-        Datasets[1:]=["LHC15i2c"]
-        Datasets[2:]=["LHC15i2d"]
-        Datasets[3:]=["LHC15i2e"]
-    elif UserDataset=="LHC12x":
-        print "Will work on LHC12{a,b,c,d,e,f,g,h,i}."
-        Datasets[0:]=["LHC12a"]
-        Datasets[1:]=["LHC12b"]
-        Datasets[2:]=["LHC12c"]
-        Datasets[3:]=["LHC12d"]
-        Datasets[4:]=["LHC12e"]
-        Datasets[5:]=["LHC12f"]
-        Datasets[6:]=["LHC12g"]
-        Datasets[7:]=["LHC12h"]
-        Datasets[8:]=["LHC12i"]
-    else:
-       Datasets[0:]=UserDataset
+    Datasets=config["datasets"]
 
     if (len(Datasets)!=len(TrainNumbers)):
         print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets),len(TrainNumbers))
@@ -106,12 +87,12 @@ def main(TrainNumbers, Overwrite=0, Year="2012", UserDataset="LHC12x", TrainName
         print TrainNumbers
         exit()
 
-    LocalPath="{0}/{1}".format(JetResults, TrainName)
+    LocalPath="{0}/{1}".format(JetResults, config["train"])
 
     for TrainNumber in TrainNumbers:
         LocalPath = "{0}_{1}".format(LocalPath, TrainNumber)
 
-    print "Train: "+TrainName
+    print "Train: "+config["train"]
     print "Local path: "+LocalPath
     print "Overwrite mode: {0}".format(Overwrite)
     print "Train numbers are: "
@@ -121,32 +102,29 @@ def main(TrainNumbers, Overwrite=0, Year="2012", UserDataset="LHC12x", TrainName
         print "Creating directory "+LocalPath
         os.makedirs(LocalPath)
  
-    StartDownload(UserDataset, LocalPath, Datasets, TrainNumbers, TrainName, Overwrite)
+    StartDownload(LocalPath, Datasets, TrainNumbers, config["train"], Overwrite)
 
 if __name__ == '__main__':
     # FinalMergeLocal.py executed as script
     
     parser = argparse.ArgumentParser(description='Local final merging for MC production in pT hard bins.')
     parser.add_argument('trainNumber', metavar='trainNumber',
-                        help='Train numbers to be downloaded and merged')
+                        help='Train numbers to be downloaded and merged. Use ":" to define a range, and "," for a list')
+    parser.add_argument('--yaml', metavar='config.yaml',
+                        help='YAML configuration file')
     parser.add_argument('--overwrite', metavar='overwrite',
                         default=0,
                         help='Overwrite level [0-4]. 0 = no overwrite')
-    parser.add_argument('--year', metavar='year',
-                        default='2012',
-                        help='Production year')
-    parser.add_argument('--dataset', metavar='dataset',
-                        default='LHC12x',
-                        help='MC production name')
-    parser.add_argument('--trainName', metavar='trainName',
-                        default='Jets_EMC_pp_MC',
-                        help='Train name')
     args = parser.parse_args()
 
     TrainNumberList = args.trainNumber.split(",")
     TrainNumbers = []
     for TrainNumberRange in TrainNumberList:
         Range = TrainNumberRange.split(":")
-        TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range)-1])+1))    
+        TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range)-1])+1))
+        
+    f = open(args.yaml, 'r')
+    config = yaml.load(f)
+    f.close()
 
-    main(TrainNumbers, args.overwrite, args.year, args.dataset, args.trainName)
+    main(TrainNumbers, config, args.overwrite)
