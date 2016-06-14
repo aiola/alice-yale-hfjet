@@ -5,6 +5,8 @@ import ROOT
 import math
 import DMesonJetProjectors
 
+globalList = []
+
 class DMesonJetAnalysisEngine:
     def __init__(self, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, projector):
         self.fTrigger = trigger
@@ -25,6 +27,7 @@ class DMesonJetAnalysisEngine:
         for bin in self.fBinSet.fBins:
             if bin.fInvMassHisto:
                 c = ROOT.TCanvas()
+                globalList.append(c)
                 bin.fInvMassHisto.Draw()
 
 class DMesonJetAnalysis:

@@ -5,6 +5,8 @@ import ROOT
 import math
 import os
 
+globalList = []
+
 def find_file(path, file_name):
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -48,19 +50,22 @@ class BinLimits:
         self.fDZMin = min
         self.fDZMax = max
         
-    def IsInBinLimits(dmeson, jetDef):
+    def IsInBinLimits(self, dmeson, jetDef):
         if self.fDPtMax > self.fDPtMin and (dmeson.fPt < self.fDPtMin or dmeson.fPt > self.fDPtMax):
-            return false
+            return False
         
-        jetPt = getattr(dmeson, jetDef.GetPtLeafName())
-        if self.fJetPtMax > self.fJetPtMin and (jetPt < self.JetDPtMin or jetPt > self.fJetPtMax):
-            return false
+        jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
+        jet = getattr(dmeson, jetName)
         
-        DZ = getattr(dmeson, jetDef.GetDZLeafName())
+        jetPt = jet.fPt
+        if self.fJetPtMax > self.fJetPtMin and (jetPt < self.fJetPtMin or jetPt > self.fJetPtMax):
+            return False
+        
+        DZ = jet.fZ
         if self.fDZMax > self.fDZMin and (DZ < self.fDZMin or DZ > self.fDZMax):
-            return false
+            return False
         
-        return true
+        return True
     
     def GetName(self):
         name = ""
@@ -81,13 +86,13 @@ class BinLimits:
     def GetTitle(self):
         title = ""
         if self.fDPtMax > self.fDPtMin:
-            title += "{0:.2f} < #it{p}_{T,D} < {0:.2f} GeV/#it{c}, ".format(self.fDPtMin, self.fDPtMax)
+            title += "{0:.2f} < #it{{p}}_{{T,D}} < {0:.2f} GeV/#it{{c}}, ".format(self.fDPtMin, self.fDPtMax)
         
         if self.fJetPtMax > self.fJetPtMin:
-            title += "{0:.2f} < #it{p}_{T,jet} < {0:.2f} GeV/#it{c}, ".format(self.fJetPtMin, self.fJetPtMax)
+            title += "{0:.2f} < #it{{p}}_{{T,jet}} < {0:.2f} GeV/#it{{c}}, ".format(self.fJetPtMin, self.fJetPtMax)
             
         if self.fDZMax > self.fDZMin:
-            title += "{0:.2f} < #it{z}_{||, D} < {0:.2f}, ".format(self.fDZMin, self.fDZMax)
+            title += "{0:.2f} < #it{{z}}_{{||, D}} < {0:.2f}, ".format(self.fDZMin, self.fDZMax)
         
         #remove last ", "
         if title:
@@ -113,8 +118,6 @@ class DMesonJetDataProjector:
         
         files = find_file(path, self.fFileName)
         
-        print(list(files))
-        
         chain = ROOT.TChain(treeName)
         
         self.fChains[treeName] = chain
@@ -123,7 +126,7 @@ class DMesonJetDataProjector:
             print("Adding file {0}...".format(file))
             chain.Add(file)
         
-        chain.Print()
+        #chain.Print()
         return chain
         
         
@@ -134,11 +137,14 @@ class DMesonJetDataProjector:
         
         print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, chain.GetEntries()))
         
-        for dmeson in chain:
+        for i,dmeson in enumerate(chain):
+            if i % 10000 == 0:
+                print("D meson candidate n. {0}".format(i))
             for jetDef in jetDefinitions:
                 bins = binSet.FindBin(dmeson, jetDef)
+                
                 for bin in bins:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, nMassBins, minMass, maxMass)
-                    bin.fInvMassHisto.Fill(dmeson.fInvMass)
+                    bin.fInvMassHisto.Fill(dmeson.DmesonJet.fInvMass)
         
