@@ -97,18 +97,13 @@ class DMesonJetAnalysisEngine:
                 continue
             fitter = self.CreateMassFitter("{0}_fitter".format(bin.GetName()))
             bin.SetMassFitter(fitter)
-            #fitter.SetHistogram(bin.fInvMassHisto)
             integral = bin.fInvMassHisto.Integral(bin.fInvMassHisto.GetXaxis().FindBin(self.fMinMass+0.001), bin.fInvMassHisto.GetXaxis().FindBin(self.fMaxMass-0.001))
-            fitter.GetFitFunction().SetParameter(0, integral) # total integral is fixed
+            fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
             fitter.GetFitFunction().SetParameter(2, integral / 100) # signal integral (start with very small signal)
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
 
-            fitter.Fit(bin.fInvMassHisto, "0 E S");
-            
-            print("hist ({0:.3f}, {1:.3f}) integral is {2:.3f}, fit integral is {3:.3f}, fit par is {4:.3f}".format(self.fMinMass, self.fMaxMass, integral, fitter.GetFitFunction().Integral(self.fMinMass, self.fMaxMass)/(self.fMaxMass-self.fMinMass)*80, fitter.GetFitFunction().GetParameter(0)))
-            
-            fitter.Dump()
+            fitter.Fit(bin.fInvMassHisto, "0 L E S");
             
     def PlotInvMassPlots(self):
         for name,bins in self.fBinSet.fBins.iteritems():
