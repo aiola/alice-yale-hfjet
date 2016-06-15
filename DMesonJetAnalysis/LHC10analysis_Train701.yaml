@@ -16,21 +16,33 @@ analysis:
     jet_pt: [5, 6, 8, 10, 14, 18, 30]
     d_pt: [0, -1]
     d_z: [0.2, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: no
   -
     name: D_Fragmentation_JetPt_5_8
     jet_pt: [5, 8]
     d_pt: [0, -1]
     d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: yes
   -
     name: D_Fragmentation_JetPt_8_13
     jet_pt: [8, 13]
     d_pt: [0, -1]
     d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: yes
   -
     name: D_Fragmentation_JetPt_13_30
     jet_pt: [13, 30]
     d_pt: [0, -1]
     d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: yes
   jets:
   -
     type: Charged
