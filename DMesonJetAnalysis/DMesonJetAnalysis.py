@@ -18,11 +18,98 @@ class DMesonJetAnalysisEngine:
         self.fMinMass = minMass
         self.fMaxMass = maxMass
         
+    def CreateMassFitter(self, name):
+        if self.fDMeson == "D0":
+            minMass = self.fMinMass;
+            maxMass = self.fMaxMass;
+            minFitRange = self.fMinMass;
+            maxFitRange = self.fMaxMass;
+            startingSigma = 0.01;
+            startingSigmaBkg = 0.01;
+            massFitTypeSig = ROOT.MassFitter.kGaus
+            massFitTypeBkg = ROOT.MassFitter.kExpo
+        elif self.fDMeson == "DStar":
+            print("Not implemented for DStar!")
+            
+        fitter = ROOT.MassFitter(name, massFitTypeSig, massFitTypeBkg, minMass, maxMass)
+        fitter.GetFitFunction().SetParameter(1, startingSigmaBkg)
+        fitter.GetFitFunction().SetParameter(4, startingSigma)
+        fitter.SetFitRange(minFitRange, maxFitRange)
+        globalList.append(fitter)
+        
+        return fitter
+        
     def Start(self):
         self.fProjector.GetInvMassHisograms(self.fTrigger, self.fDMeson, self.fJetDefinitions, 
                                             self.fBinSet, self.fNMassBins, self.fMinMass, self.fMaxMass)
+        
+        self.FitInvMassPlots()
         self.PlotInvMassPlots()
         
+        
+    def DrawFitResutls(self,bin):
+        if not bin.fMassFitter:
+            return
+        
+        bin.fMassFitter.Draw("same");
+
+        paveSig = ROOT.TPaveText(0.22, 0.41, 0.51, 0.84, "NB NDC")
+        globalList.append(paveSig)
+        paveSig.SetBorderSize(0)
+        paveSig.SetFillStyle(0)
+        paveSig.SetTextFont(43)
+        paveSig.SetTextSize(14)
+        paveSig.AddText(bin.fMassFitter.GetSignalString().Data())
+        paveSig.AddText(bin.fMassFitter.GetBackgroundString().Data())
+        paveSig.AddText(bin.fMassFitter.GetSignalOverBackgroundString().Data())
+        paveSig.AddText(bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data())
+        
+        fitStatus = int(bin.fMassFitter.GetFitStatus())
+        if fitStatus == 0:
+            paveSig.AddText(bin.fMassFitter.GetChisquareString().Data())
+        else:
+            paveSig.AddText("Fit failed")
+            
+        paveSig.Draw()
+
+        paveFit = ROOT.TPaveText(0.47, 0.58, 0.97, 0.84, "NB NDC")
+        globalList.append(paveFit)
+        paveFit.SetBorderSize(0)
+        paveFit.SetFillStyle(0)
+        paveFit.SetTextFont(43)
+        paveFit.SetTextSize(14)
+
+        paveFit.AddText(bin.fMassFitter.GetSignalMeanString().Data())
+        paveFit.AddText(bin.fMassFitter.GetSignalWidthString().Data())
+        paveFit.AddText(bin.fMassFitter.GetBkgPar1String().Data())
+        paveFit.AddText(bin.fMassFitter.GetTotalEntriesString().Data())
+        paveFit.Draw()
+
+    def FitInvMassPlots(self):
+        for name,bins in self.fBinSet.fBins.iteritems():
+            self.FitInvMassPlotsBinSet(name,bins)
+            
+    def FitInvMassPlotsBinSet(self,name,bins):
+        pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
+        
+        for i,bin in enumerate(bins):
+            if not bin.fInvMassHisto:
+                continue
+            fitter = self.CreateMassFitter("{0}_fitter".format(bin.GetName()))
+            bin.SetMassFitter(fitter)
+            #fitter.SetHistogram(bin.fInvMassHisto)
+            integral = bin.fInvMassHisto.Integral(bin.fInvMassHisto.GetXaxis().FindBin(self.fMinMass+0.001), bin.fInvMassHisto.GetXaxis().FindBin(self.fMaxMass-0.001))
+            fitter.GetFitFunction().SetParameter(0, integral) # total integral is fixed
+            fitter.GetFitFunction().SetParameter(2, integral / 100) # signal integral (start with very small signal)
+            fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
+            fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
+
+            fitter.Fit(bin.fInvMassHisto, "0 E S");
+            
+            print("hist ({0:.3f}, {1:.3f}) integral is {2:.3f}, fit integral is {3:.3f}, fit par is {4:.3f}".format(self.fMinMass, self.fMaxMass, integral, fitter.GetFitFunction().Integral(self.fMinMass, self.fMaxMass)/(self.fMaxMass-self.fMinMass)*80, fitter.GetFitFunction().GetParameter(0)))
+            
+            fitter.Dump()
+            
     def PlotInvMassPlots(self):
         for name,bins in self.fBinSet.fBins.iteritems():
             self.PlotInvMassPlotsBinSet(name,bins)
@@ -38,9 +125,37 @@ class DMesonJetAnalysisEngine:
     def PlotInvMassPlotsBinSet(self, name, bins):
         c = self.GenerateInvMassCanvas(name, len(bins))
         for i,bin in enumerate(bins):
-            if bin.fInvMassHisto:
-                c.cd(i+1)
-                bin.fInvMassHisto.Draw()
+            if not bin.fInvMassHisto:
+                continue
+            pad = c.cd(i+1)
+            pad.SetLeftMargin(0.12)
+            pad.SetRightMargin(0.05)
+            pad.SetTopMargin(0.08)
+            pad.SetBottomMargin(0.13)
+            h = bin.fInvMassHisto.DrawCopy()
+            globalList.append(h)
+            h.GetXaxis().SetTitleFont(43)
+            h.GetXaxis().SetTitleOffset(2.3)
+            h.GetXaxis().SetTitleSize(19)
+            h.GetXaxis().SetLabelFont(43)
+            h.GetXaxis().SetLabelOffset(0.009)
+            h.GetXaxis().SetLabelSize(18)
+            h.GetYaxis().SetTitleFont(43)
+            h.GetYaxis().SetTitleOffset(2.3)
+            h.GetYaxis().SetTitleSize(19)
+            h.GetYaxis().SetLabelFont(43)
+            h.GetYaxis().SetLabelOffset(0.009)
+            h.GetYaxis().SetLabelSize(18)
+            h.SetMaximum(h.GetMaximum()*1.8)
+            htitle = ROOT.TPaveText(0.12, 0.99, 0.95, 0.93, "NB NDC")
+            htitle.SetBorderSize(0)
+            htitle.SetFillStyle(0)
+            htitle.SetTextFont(43)
+            htitle.SetTextSize(18)
+            htitle.AddText(bin.GetTitle())
+            htitle.Draw()
+            globalList.append(htitle)
+            self.DrawFitResutls(bin)
 
 class DMesonJetAnalysis:
     def __init__(self, name):
@@ -53,7 +168,8 @@ class DMesonJetAnalysis:
     def StartAnalysis(self, config):
         binSet = DMesonJetProjectors.BinSet()
         for binLists in config["bins"]:
-            binSet.AddBins(name = binLists["name"], jetPtLimits = binLists["jet_pt"], DPtLimits = binLists["d_pt"], ZLimits = binLists["d_z"])
+            binSet.AddBins(name = binLists["name"], jetPtLimits = binLists["jet_pt"], DPtLimits = binLists["d_pt"], ZLimits = binLists["d_z"], 
+                           _showJetPt = binLists["show_jet_pt"], _showDPt = binLists["show_d_pt"], _showDZ = binLists["show_d_z"])
          
         eng = DMesonJetAnalysisEngine(config["trigger"], config["d_meson"], 
                                      binSet, config["n_mass_bins"], config["min_mass"], config["max_mass"],
