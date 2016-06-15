@@ -6,6 +6,7 @@ import yaml
 import IPython
 import DMesonJetAnalysis
 import DMesonJetProjectors
+import subprocess
 import ROOT
 
 globalList = []
@@ -15,6 +16,9 @@ def main(config, maxEvents):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
+
+    subprocess.call("make")
+    ROOT.gSystem.Load("MassFitter.so")
     
     ana = DMesonJetAnalysis.DMesonJetAnalysis(config["name"])
     projector = DMesonJetProjectors.DMesonJetDataProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents)

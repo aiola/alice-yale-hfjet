@@ -1,1 +1,6 @@
 *.pyc
+*.o
+*.so
+*_Dict.cxx
+*_Dict.h
+*_Dict.o
