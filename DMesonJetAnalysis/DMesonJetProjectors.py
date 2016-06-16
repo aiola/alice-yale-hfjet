@@ -41,6 +41,7 @@ class BinLimits:
         self.fShowDPt = showDPt
         self.fShowDZ = showDZ
         self.fInvMassHisto = None
+        self.fMassFitter = None
         
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
@@ -58,7 +59,7 @@ class BinLimits:
         self.fDZMax = max
         
     def IsInBinLimits(self, dmeson, jetDef):
-        if self.fDPtMax > self.fDPtMin and (dmeson.fPt < self.fDPtMin or dmeson.fPt > self.fDPtMax):
+        if self.fDPtMax > self.fDPtMin and (dmeson.DmesonJet.fPt < self.fDPtMin or dmeson.DmesonJet.fPt > self.fDPtMax):
             return False
         
         jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
@@ -73,6 +74,25 @@ class BinLimits:
             return False
         
         return True
+    
+    def GetBinCenter(self, axis):
+        if axis == "jet_pt":
+            if self.fJetPtMax > self.fJetPtMin:
+                return (self.fJetPtMax + self.fJetPtMin) / 2
+            else:
+                return -1
+            
+        if axis == "d_pt":
+            if self.fDPtMax > self.fDPtMin:
+                return (self.fDPtMax + self.fDPtMin) / 2
+            else:
+                return -1
+            
+        if axis == "d_z":
+            if self.fDZMax > self.fDZMin:
+                return (self.fDZMax + self.fDZMin) / 2
+            else:
+                return -1
     
     def GetName(self):
         name = ""
@@ -105,6 +125,9 @@ class BinLimits:
         if title:
             title = title[:-2]
         return title
+    
+    def Print(self):
+        print(self.GetTitle())
     
     def CreateInvMassHisto(self, trigger, DMesonDef, xAxis, yAxis, nMassBins, minMass, maxMass):
         hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
