@@ -166,9 +166,11 @@ class DMesonJetDataProjector:
         #chain.Print()
         return chain
         
-        
     def GetInvMassHisograms(self, trigger, DMesonDef, jetDefinitions, binSet, nMassBins, minMass, maxMass):
-        treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
+        if trigger:
+            treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
+        else:
+            treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
         
         chain = self.GenerateChain(treeName)
         
