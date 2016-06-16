@@ -20,8 +20,8 @@ class DMesonJetAnalysisEngine:
         
     def CreateMassFitter(self, name):
         if self.fDMeson == "D0":
-            minMass = self.fMinMass;
-            maxMass = self.fMaxMass;
+            minMass = self.fMinMass-(self.fMaxMass-self.fMinMass)/2;
+            maxMass = self.fMaxMass+(self.fMaxMass-self.fMinMass)/2;
             minFitRange = self.fMinMass;
             maxFitRange = self.fMaxMass;
             startingSigma = 0.01;
@@ -53,17 +53,17 @@ class DMesonJetAnalysisEngine:
         
         bin.fMassFitter.Draw("same");
 
-        paveSig = ROOT.TPaveText(0.22, 0.41, 0.51, 0.84, "NB NDC")
+        paveSig = ROOT.TPaveText(0.165, 0.710, 0.490, 0.925, "NB NDC")
         globalList.append(paveSig)
         paveSig.SetBorderSize(0)
         paveSig.SetFillStyle(0)
         paveSig.SetTextFont(43)
         paveSig.SetTextSize(14)
-        paveSig.AddText(bin.fMassFitter.GetSignalString().Data())
-        paveSig.AddText(bin.fMassFitter.GetBackgroundString().Data())
-        paveSig.AddText(bin.fMassFitter.GetSignalOverBackgroundString().Data())
-        paveSig.AddText(bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data())
-        
+        paveSig.SetTextAlign(13)
+        paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalString().Data(), 
+                                          bin.fMassFitter.GetBackgroundString().Data()))
+        paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(), 
+                                          bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data()))
         fitStatus = int(bin.fMassFitter.GetFitStatus())
         if fitStatus == 0:
             paveSig.AddText(bin.fMassFitter.GetChisquareString().Data())
@@ -72,12 +72,13 @@ class DMesonJetAnalysisEngine:
             
         paveSig.Draw()
 
-        paveFit = ROOT.TPaveText(0.47, 0.58, 0.97, 0.84, "NB NDC")
+        paveFit = ROOT.TPaveText(0.50, 0.66, 0.99, 0.92, "NB NDC")
         globalList.append(paveFit)
         paveFit.SetBorderSize(0)
         paveFit.SetFillStyle(0)
         paveFit.SetTextFont(43)
         paveFit.SetTextSize(14)
+        paveFit.SetTextAlign(23)
 
         paveFit.AddText(bin.fMassFitter.GetSignalMeanString().Data())
         paveFit.AddText(bin.fMassFitter.GetSignalWidthString().Data())
@@ -97,7 +98,7 @@ class DMesonJetAnalysisEngine:
                 continue
             fitter = self.CreateMassFitter("{0}_fitter".format(bin.GetName()))
             bin.SetMassFitter(fitter)
-            integral = bin.fInvMassHisto.Integral(bin.fInvMassHisto.GetXaxis().FindBin(self.fMinMass+0.001), bin.fInvMassHisto.GetXaxis().FindBin(self.fMaxMass-0.001))
+            integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
             fitter.GetFitFunction().SetParameter(2, integral / 100) # signal integral (start with very small signal)
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
