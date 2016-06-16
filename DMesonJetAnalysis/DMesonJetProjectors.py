@@ -109,7 +109,7 @@ class BinLimits:
     def CreateInvMassHisto(self, trigger, DMesonDef, xAxis, yAxis, nMassBins, minMass, maxMass):
         hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
         htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
-        self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins*2, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2)
+        self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2)
         self.fInvMassHisto.Sumw2()
         self.fInvMassHisto.SetMarkerSize(0.9)
         self.fInvMassHisto.SetMarkerStyle(ROOT.kFullCircle)
