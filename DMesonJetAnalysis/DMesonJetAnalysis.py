@@ -5,6 +5,7 @@ import ROOT
 import math
 import DMesonJetProjectors
 from array import array
+from copy import deepcopy
 
 globalList = []
 
@@ -15,8 +16,8 @@ class Axis:
         self.fBins = bins
 
 class Spectrum:
-    def __init__(self, config):
-        self.fName = config["name"]
+    def __init__(self, config, name):
+        self.fName = name
         self.fBins = config["bins"]
         self.fAxis = []
         if config["jet_pt"]:
@@ -39,10 +40,11 @@ class DMesonJetAnalysisEngine:
         self.fMaxMass = maxMass
         self.fSpectra = dict()
         for s in spectra:
-            self.fSpectra[s["name"]] = Spectrum(s)
+            name = "{0}_{1}".format(self.fDMeson, s["name"])
+            self.fSpectra[name] = Spectrum(s, name)
         
     def CreateMassFitter(self, name):
-        if self.fDMeson == "D0":
+        if "D0" in self.fDMeson:
             minMass = self.fMinMass-(self.fMaxMass-self.fMinMass)/2;
             maxMass = self.fMaxMass+(self.fMaxMass-self.fMinMass)/2;
             minFitRange = self.fMinMass;
@@ -58,6 +60,10 @@ class DMesonJetAnalysisEngine:
         fitter.GetFitFunction().SetParameter(1, startingSigmaBkg)
         fitter.GetFitFunction().SetParameter(4, startingSigma)
         fitter.SetFitRange(minFitRange, maxFitRange)
+        if "SignalOnly" in self.fDMeson:
+            fitter.DisableBkg()
+        elif "BackgroundOnly" in self.fDMeson:
+            fitter.DisableSig()
         globalList.append(fitter)
         
         return fitter
@@ -66,10 +72,13 @@ class DMesonJetAnalysisEngine:
         self.fProjector.GetInvMassHisograms(self.fTrigger, self.fDMeson, self.fJetDefinitions, 
                                             self.fBinSet, self.fNMassBins, self.fMinMass, self.fMaxMass)
         
-        self.FitInvMassPlots()
-        self.PlotInvMassPlots()
-        self.GenerateSpectra()
-        self.PlotSpectra()
+        if not "MCTruth" in self.fDMeson:
+            self.FitInvMassPlots()
+            self.PlotInvMassPlots()
+        
+        if not "BackgroundOnly" in self.fDMeson:
+            self.GenerateSpectra()
+            self.PlotSpectra()
         
     def PlotSpectra(self):
         for s in self.fSpectra.itervalues():
@@ -131,8 +140,12 @@ class DMesonJetAnalysisEngine:
                     bin.Print()
                     continue
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
-                s.fHistogram.SetBinContent(xbin, bin.fMassFitter.GetSignal())
-                s.fHistogram.SetBinError(xbin, bin.fMassFitter.GetSignalError())
+                if "SignalOnly" in self.fDMeson:
+                    s.fHistogram.SetBinContent(xbin, bin.fInvMassHisto.GetEntries())
+                    s.fHistogram.SetBinError(xbin, math.sqrt(bin.fInvMassHisto.GetEntries())) 
+                else:
+                    s.fHistogram.SetBinContent(xbin, bin.fMassFitter.GetSignal())
+                    s.fHistogram.SetBinError(xbin, bin.fMassFitter.GetSignalError())
                 
     def GenerateSpectrum2D(self, s):
         s.fHistogram = ROOT.TH2D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array('d',s.fAxis[1].fBins))
@@ -148,8 +161,12 @@ class DMesonJetAnalysisEngine:
                     continue
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 ybin = s.fHistogram.GetYaxis().FindBin(bin.GetBinCenter(s.fAxis[1].fName))
-                s.fHistogram.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignal())
-                s.fHistogram.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalError())
+                if "SignalOnly" in self.fDMeson:
+                    s.fHistogram.SetBinContent(xbin, ybin, bin.fInvMassHisto.GetEntries())
+                    s.fHistogram.SetBinError(xbin, ybin, math.sqrt(bin.fInvMassHisto.GetEntries()))
+                else:
+                    s.fHistogram.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignal())
+                    s.fHistogram.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalError())
                 
     def GenerateSpectrum3D(self, s):
         print("GenerateSpectrum3D not implemented!")
@@ -203,7 +220,7 @@ class DMesonJetAnalysisEngine:
         for i,bin in enumerate(bins):
             if not bin.fInvMassHisto:
                 continue
-            fitter = self.CreateMassFitter("{0}_fitter".format(bin.GetName()))
+            fitter = self.CreateMassFitter("{0}_{1}_{2}_fitter".format(self.fDMeson, name, bin.GetName()))
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
@@ -220,7 +237,8 @@ class DMesonJetAnalysisEngine:
     def GenerateInvMassCanvas(self, name, n):
         rows = int(math.floor(math.sqrt(n)))
         cols = int(math.ceil(float(n) / rows))
-        c = ROOT.TCanvas(name, name, cols*400, rows*400)
+        cname = "{0}_{1}".format(self.fDMeson, name)
+        c = ROOT.TCanvas(cname, cname, cols*400, rows*400)
         c.Divide(cols, rows)
         globalList.append(c)
         return c
@@ -273,10 +291,13 @@ class DMesonJetAnalysis:
         for binLists in config["bins"]:
             binSet.AddBins(name = binLists["name"], jetPtLimits = binLists["jet_pt"], DPtLimits = binLists["d_pt"], ZLimits = binLists["d_z"], 
                            _showJetPt = binLists["show_jet_pt"], _showDPt = binLists["show_d_pt"], _showDZ = binLists["show_d_z"])
-         
-        eng = DMesonJetAnalysisEngine(config["trigger"], config["d_meson"], 
-                                     binSet, config["n_mass_bins"], config["min_mass"], config["max_mass"],
-                                     config["jets"], config["spectra"], self.fProjector)
-        self.fAnalysisEngine.append(eng)
-        eng.Start()
+        
+        for trigger in config["trigger"]:
+            for d_meson in config["d_meson"]:
+                binset_copy = deepcopy(binSet)
+                eng = DMesonJetAnalysisEngine(trigger, d_meson, 
+                                              binset_copy, config["n_mass_bins"], config["min_mass"], config["max_mass"],
+                                              config["jets"], config["spectra"], self.fProjector)
+                self.fAnalysisEngine.append(eng)
+                eng.Start()
         
