@@ -2,7 +2,7 @@
 
 from ROOT import TFileMerger
 
-def MergeFiles(output, fileList, skipList=[], n=20):
+def MergeFiles(output, fileList, skipList=[], acceptList=[], n=20):
     merger = TFileMerger(False)
     merger.OutputFile(output);
     merger.SetMaxOpenedFiles(n);
@@ -12,12 +12,23 @@ def MergeFiles(output, fileList, skipList=[], n=20):
     for fileName in fileList:
         print "Adding file {0}".format(fileName)
         merger.AddFile(fileName)
+        
+    mode = TFileMerger.kAllIncremental
 
-    for skipObject in skipList:
-         merger.AddObjectNames(skipObject)
+    if len(skipList) > 0:
+        mode = mode | TFileMerger.kSkipListed
+        if (len(acceptList) > 0):
+            print("Accept list is being ignored!!!")
+        for skipObject in skipList:
+            merger.AddObjectNames(skipObject)
+            
+    elif len(acceptList) > 0:
+        mode = mode | TFileMerger.kAcceptListed
+        for acceptObject in acceptList:
+            merger.AddObjectNames(acceptObject)
   
     merger.PrintFiles("");
-    r = merger.PartialMerge(TFileMerger.kAllIncremental | TFileMerger.kSkipListed);
+    r = merger.PartialMerge(mode);
 
     if not r:
         print "Merge error!"
