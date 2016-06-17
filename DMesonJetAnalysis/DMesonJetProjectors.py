@@ -148,7 +148,6 @@ class DMesonJetDataProjector:
         self.fMaxEvents = maxEvents
         self.fMassAxisTitle = "#it{m}(K#pi) GeV/#it{c}^{2}"
         self.fYieldAxisTitle = "counts"
-        self.fChains = dict()
         
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -156,8 +155,6 @@ class DMesonJetDataProjector:
         files = find_file(path, self.fFileName)
         
         chain = ROOT.TChain(treeName)
-        
-        self.fChains[treeName] = chain
 
         for file in files:
             print("Adding file {0}...".format(file))
@@ -191,4 +188,51 @@ class DMesonJetDataProjector:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
                     bin.fInvMassHisto.Fill(dmeson.DmesonJet.fInvMass)
+
+class DMesonJetResponseProjector:
+    def __init__(self, inputPath, train, fileName, taskName, maxEvents):
+        self.fInputPath = inputPath
+        self.fTrain = train
+        self.fFileName = fileName
+        self.fTaskName = taskName
+        self.fMaxEvents = maxEvents
         
+    def GenerateChain(self, treeName):
+        path = "{0}/{1}".format(self.fInputPath, self.fTrain)
+        
+        files = find_file(path, self.fFileName)
+        
+        chain = ROOT.TChain(treeName)
+
+        for file in files:
+            print("Adding file {0}...".format(file))
+            chain.Add(file)
+        
+        #chain.Print()
+        return chain
+        
+    def GetInvMassHisograms(self, trigger, DMesonDef, jetDefinitions, binSet, nMassBins, minMass, maxMass):
+        if trigger:
+            treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
+        else:
+            treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
+        
+        chain = self.GenerateChain(treeName)
+        
+        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, chain.GetEntries()))
+        if self.fMaxEvents > 0:
+            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
+        
+        for i,dmeson in enumerate(chain):
+            if i % 10000 == 0:
+                print("D meson candidate n. {0}".format(i))
+                if self.fMaxEvents > 0 and i > self.fMaxEvents:
+                    print("Stopping the analysis.")
+                    break
+            for jetDef in jetDefinitions:
+                bins = binSet.FindBin(dmeson, jetDef)
+                
+                for bin in bins:
+                    if not bin.fInvMassHisto:
+                        bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
+                    bin.fInvMassHisto.Fill(dmeson.DmesonJet.fInvMass)

@@ -5,8 +5,8 @@ file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
 analysis:
 - 
-  trigger: 
-  d_meson: D0
+  trigger: [""]
+  d_meson: [D0, D0_kSignalOnly]
   n_mass_bins: 80
   min_mass: 1.718515625
   max_mass: 2.011484375
