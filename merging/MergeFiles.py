@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from ROOT import TFileMerger
+import subprocess
 
 def MergeFiles(output, fileList, skipList=[], acceptList=[], n=20):
     merger = TFileMerger(False)
@@ -34,3 +35,10 @@ def MergeFiles(output, fileList, skipList=[], acceptList=[], n=20):
         print "Merge error!"
 
     return r
+
+
+def MergeFilesHadd(output, fileList, n=20):
+    cmd = ["hadd", "-n", str(n), output]
+    cmd.extend(fileList)
+    
+    subprocess.call(cmd)

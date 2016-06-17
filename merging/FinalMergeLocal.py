@@ -91,8 +91,8 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, Overwrite, Mi
     FinalFileList = []
 
     for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
-        FileList[:] = []
         for Dataset,TrainNumber in zip(sorted(Datasets.iterkeys()),TrainNumbers):
+            FileList[:] = []
             AlienPath="/alice/sim/"+str(Year)+"/"+Dataset
             FirtRun = Datasets[Dataset][0]
             SearchPath = "{0}/{1}".format(AlienPath, FirtRun)
@@ -125,7 +125,7 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, Overwrite, Mi
 
             if not os.path.exists(dest):
                 print "Merging for pT hard bin: {0}. Total number of files is {1}".format(PtHardBin, len(FileList))
-                MergeFiles.MergeFiles(dest, FileList)
+                MergeFiles.MergeFilesHadd(dest, FileList)
 
     print "Done."
 
