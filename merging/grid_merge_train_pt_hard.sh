@@ -22,9 +22,10 @@ echo "========================================="
 # my program is here
 
 alien_cp alien://$1 ./
-fileList=(cat ./fileList.txt)
-hadd $fileList ./AnalysisResults.root
-alien_cp ./AnalysisResults.root alien://$2
+#fileList=$(cat ./fileList.txt)
+#hadd $fileList ./AnalysisResults.root
+root -l -q -b MergeFiles.C\(\"AnalysisResults.root\",\"fileList.txt\"\)
+#alien_cp ./AnalysisResults.root alien://$2
 
 # program ends
 
