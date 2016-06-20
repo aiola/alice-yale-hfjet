@@ -7,7 +7,7 @@
 #include <string>
 #include <fstream>
 
-Int_t MergeFiles(const char* output, const char* fileList, const char* skipList = "", const char* acceptList = "", Int_t n=20)
+Int_t MergeFiles(const char* output, const char* fileList, const char* skipList = "", const char* acceptList = "", Int_t n=2)
 {
   TGrid::Connect("alien://");
 
