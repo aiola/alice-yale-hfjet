@@ -21,7 +21,7 @@ echo "========================================="
 
 # my program is here
 
-root -l -q -b MergeFiles.C\(\"AnalysisResults.root\",\"fileList.txt\"\)
+root -l -q -b MergeFiles.C\(\"AnalysisResults.root\",\"merge_files.xml\"\)
 
 # program ends
 

@@ -5,6 +5,49 @@ import subprocess
 import argparse
 import yaml
 
+def AlienDelete(fileName):
+    if not fileName.find("alien://") == -1:
+        fileName = fileName[8:]
+
+    subprocessCall(["alien_rm", fileName])
+
+def AlienFileExists(fileName):
+    if not fileName.find("alien://") == -1:
+        fileName = fileName[8:]
+
+    fileExists = True
+    try:
+        subprocess.check_call(["alien_ls", fileName], universal_newlines=True)
+    except subprocess.CalledProcessError:
+        fileExists = False
+        
+    return fileExists
+
+def AlienCopy(source, destination, attempts=3):
+    i = 0
+    fileExists = False
+    
+    if destination[-1:] == '/':
+        destination.append(source[source.rfind('/')+1:])
+
+    if destination.find("alien://") == -1:
+        destination.prepend("alien://")
+
+    if AlienFileExists(destination):
+        AlienDelete(destination)
+    
+    while True:
+        subprocessCall(["alien_cp", source, destination])
+        i += 1
+        fileExists = AlienFileExists(destination)
+        if fileExists:
+            break
+        if i > attempts:
+            print("After {0} attempts I could not copy {1} to alien://{2}".format(i, source, destination))
+            break
+    
+    return fileExists
+
 def subprocessCall(cmd):
     print(cmd)
     subprocess.call(cmd)
@@ -19,102 +62,48 @@ def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
     return FullTrainNumber
 
 def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin, MaxPtHardBin, Year, AliPhysicsVersion, TestMode, GridTestMode):
-    FileList = []
-    FinalFileList = []
-
     for Dataset,TrainNumber in zip(sorted(Datasets.iterkeys()),TrainNumbers):
         
         AlienPath="/alice/sim/"+str(Year)+"/"+Dataset
         FirtRun = Datasets[Dataset][0]
         SearchPath = "{0}/{1}".format(AlienPath, FirtRun)
         FullTrainNumber = GetFullTrainNumber(SearchPath, TrainName, TrainNumber)
-            
+
         dest = "/alice/cern.ch/user/s/saiola/{0}/{1}".format(TrainName, FullTrainNumber)
-        
+
         subprocessCall(["alien_mkdir", "-p", dest])
-        
-        subprocessCall(["alien_rm", "{0}/grid_merge_train_pt_hard.sh".format(dest)])
-        subprocessCall(["alien_rm", "{0}/MergeFiles.C".format(dest)])
-        
-        subprocessCall(["alien_cp", "./grid_merge_train_pt_hard.sh", "alien://{0}".format(dest)])
-        subprocessCall(["alien_cp", "./MergeFiles.C", "alien://{0}".format(dest)])
-        
+
+        AlienCopy("./grid_merge_train_pt_hard.sh", "alien://{0}".format(dest))
+        AlienCopy("./MergeFiles.C", "alien://{0}".format(dest))
+
         executableFile = "{0}/grid_merge_train_pt_hard.sh".format(dest)
         macroFile = "{0}/MergeFiles.C".format(dest)
-        
+
         for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
-            
+
             localDest = "{0}/{1}/{2}".format(LocalPath, Dataset, PtHardBin)
             if not os.path.isdir(localDest):
                 print "Creating directory "+localDest
                 os.makedirs(localDest)
-                
-                
-            alienFileList = "{0}/{1}/fileList.txt".format(dest, PtHardBin)
+
             alienOutputFile = "{0}/{1}".format(dest, PtHardBin)
             
-            fileExists = True
-            try:
-                subprocess.check_call(["alien_ls", "{0}/AnalysisResults.root".format(alienOutputFile)], universal_newlines=True)
-            except subprocess.CalledProcessError:
-                fileExists = False   
-            
-            if fileExists:
+            if AlienFileExists("{0}/AnalysisResults.root".format(alienOutputFile)):
                 print("Output file alien://{0}/AnalysisResults.root already exists. Skipping.".format(alienOutputFile))
                 continue
             
-            fileList = "{0}/fileList.txt".format(localDest)
-            
-            f = open(fileList, 'w')
-            
-            jdlInputData = ""
-            nruns = 0
-            for Run in Datasets[Dataset]:
-                AlienFile = "{0}/{1}/{2}/PWGJE/{3}/{4}/AnalysisResults.root ".format(AlienPath, Run, PtHardBin, TrainName, FullTrainNumber)
-                
-                fileExists = True
-                
-                try:
-                    subprocess.check_call(["alien_ls", AlienFile], universal_newlines=True)
-                except subprocess.CalledProcessError:
-                    fileExists = False
-
-                AlienFile = "alien://{0}".format(AlienFile)
-
-                if not fileExists:
-                    print("File '{0}' does not exist exist. Skipping.".format(AlienFile))
-                    continue
-            
-                print("Adding alien location '{0}'".format(AlienFile))
-                f.write(AlienFile)
-            
-                if jdlInputData:
-                    jdlInputData += ",\n"
-            
-                jdlInputData +="\"LF:{0}/{1}/{2}/PWGJE/{3}/{4}/AnalysisResults.root,nodownload\"".format(AlienPath, Run, PtHardBin, TrainName, FullTrainNumber)
-                
-                nruns += 1
-                    
-            f.close()
-            
-            if nruns == 0:
-                print("No input files found for pt,hard bin {0} of train {1}".format(PtHardBin, TrainNumber))
-                continue
+            xmlColl = subprocess.check_output(["alien_find", "{0}/*/{1}/PWGJE/{2}/{3}/AnalysisResults.root".format(AlienPath, PtHardBin, TrainName, FullTrainNumber)], universal_newlines=True)
 
             subprocessCall(["alien_mkdir", "{0}/{1}".format(dest, PtHardBin)])
-            
-            subprocessCall(["alien_rm", "{0}/{1}/grid_merge_train_pt_hard.jdl".format(dest, PtHardBin)])
-            subprocessCall(["alien_rm", "{0}/{1}/fileList.txt".format(dest, PtHardBin)])
-            
-            subprocessCall(["alien_cp", fileList, "alien://{0}/{1}".format(dest, PtHardBin)])
-            
+
             jdlContent = "# This is the startup script \n\
 Executable = \"{executable}\"; \n\
 # Time after which the job is killed (500 min.) \n\
 TTL = \"3600\"; \n\
 OutputDir = \"{dest}/{pt_hard}\"; \n\
 Output = {{ \n\
-\"AnalysisResults*.root\" \n\
+\"AnalysisResults*.root\", \n\
+\"std*\" \n\
 }}; \n\
 Arguments = \"\"; \n\
 Packages = {{ \n\
@@ -131,24 +120,34 @@ JDLVariables = \n\
 # List of input files to be uploaded to workers \n\
 InputFile = {{ \n\
 \"LF:/{dest}/MergeFiles.C\", \n\
-\"LF:/{dest}/{pt_hard}/fileList.txt\" \n\
+\"LF:/{dest}/{pt_hard}/merge_files.xml\" \n\
 }}; \n\
-InputData = {{{inputData}}}; \n\
-".format(executable=executableFile, dest=dest, inputData=jdlInputData, aliphysics=AliPhysicsVersion, pt_hard=PtHardBin)
-            
+InputDataList = \"merge_files.xml\"; \n\
+InputDataListFormat = \"xml-single\"; \n\
+InputDataCollection = {{ \n\
+\"LF:/{dest}/{pt_hard}/merge_files.xml,nodownload\" \n\
+}}; \n\
+".format(executable=executableFile, dest=dest, aliphysics=AliPhysicsVersion, pt_hard=PtHardBin)
+
             localJdlFile = "{0}/grid_merge_train_pt_hard.jdl".format(localDest)
-            
+
             f = open(localJdlFile, 'w')
             f.write(jdlContent)
             f.close()
             
-            subprocessCall(["alien_cp", localJdlFile, "alien://{0}/{1}".format(dest, PtHardBin)])
+            localXmlFile = "{0}/merge_files.xml".format(localDest)
+
+            f = open(localXmlFile, 'w')
+            f.write(xmlColl)
+            f.close()
+
+            AlienCopy(localJdlFile, "alien://{0}/{1}".format(dest, PtHardBin))
+            AlienCopy(localXmlFile, "alien://{0}/{1}".format(dest, PtHardBin))
             
             jdlFile = "alien://{0}/{1}/grid_merge_train_pt_hard.jdl".format(dest, PtHardBin)
-            
+
             if TestMode:
                 subprocessCall(["chmod", "+x", "./grid_merge_train_pt_hard.sh"])
-                subprocessCall(["./grid_merge_train_pt_hard.sh", alienFileList])
                 return
             else:
                 subprocessCall(["alien_submit", jdlFile])

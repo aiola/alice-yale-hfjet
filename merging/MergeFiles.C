@@ -3,9 +3,13 @@
 #include <TGrid.h>
 #include <TString.h>
 #include <TObjArray.h>
+#include <TAlienCollection.h>
 
 #include <string>
 #include <fstream>
+
+void AddFilesToMergerUsingXML(TFileMerger& merger, const TString& strFileList);
+void AddFilesToMergerUsingTXT(TFileMerger& merger, const TString& strFileList);
 
 Int_t MergeFiles(const char* output, const char* fileList, const char* skipList = "", const char* acceptList = "", Int_t n=2)
 {
@@ -15,25 +19,14 @@ Int_t MergeFiles(const char* output, const char* fileList, const char* skipList 
   merger.OutputFile(output);
   merger.SetMaxOpenedFiles(n);
 
-  ifstream in(fileList);
+  TString strFileList(fileList);
 
-  Int_t nFiles = 0;
-  while (in.good()) {
-    std::string f;
-
-    in >> f;
-
-    if (f.length() == 0) continue;
-
-    Printf("Adding file %s", f.c_str());
-    merger.AddFile(f.c_str());
-
-    nFiles++;
+  if (strFileList.EndsWith(".xml")) {
+    AddFilesToMergerUsingXML(merger, strFileList);
   }
-
-  in.close();
-
-  Printf("Total number of files is %d", nFiles);
+  else {
+    AddFilesToMergerUsingTXT(merger, strFileList);
+  }
 
   UInt_t mode = TFileMerger::kAllIncremental;
 
@@ -73,4 +66,50 @@ Int_t MergeFiles(const char* output, const char* fileList, const char* skipList 
   if (!r) Printf("Merge error!");
 
   return r;
+}
+
+void AddFilesToMergerUsingXML(TFileMerger& merger, const TString& strFileList)
+{
+  TGridCollection *coll = TAlienCollection::Open(strFileList);
+  if (!coll) {
+    ::Error("AddFilesToMergerUsingXML", "Cannot create an AliEn collection from %s", strFileList.Data());
+    return;
+  }
+
+  coll->Reset();
+  Int_t nFiles = 0;
+  while (coll->Next()) {
+    TString filename = coll->GetTURL();
+
+    Printf("Adding file %s", filename.Data());
+    merger.AddFile(filename);
+    nFiles++;
+  }
+
+  delete coll;
+
+  Printf("Total number of files is %d", nFiles);
+}
+
+void AddFilesToMergerUsingTXT(TFileMerger& merger, const TString& strFileList)
+{
+  ifstream in(strFileList.Data());
+
+  Int_t nFiles = 0;
+  while (in.good()) {
+    std::string f;
+
+    in >> f;
+
+    if (f.length() == 0) continue;
+
+    Printf("Adding file %s", f.c_str());
+    merger.AddFile(f.c_str());
+
+    nFiles++;
+  }
+
+  in.close();
+
+  Printf("Total number of files is %d", nFiles);
 }
