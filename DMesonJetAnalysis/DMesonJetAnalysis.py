@@ -4,29 +4,11 @@
 import ROOT
 import math
 import DMesonJetProjectors
+from DMesonJetBase import *
 from array import array
 from copy import deepcopy
 
 globalList = []
-
-class Axis:
-    def __init__(self, name, title, bins):
-        self.fName = name
-        self.fTitle = title
-        self.fBins = bins
-
-class Spectrum:
-    def __init__(self, config, name):
-        self.fName = name
-        self.fBins = config["bins"]
-        self.fAxis = []
-        if config["jet_pt"]:
-            self.fAxis.append(Axis("jet_pt", "#it{p}_{T,jet} GeV/#it{c}", config["jet_pt"]))
-        if config["d_pt"]:
-            self.fAxis.append(Axis("d_pt", "#it{p}_{T,D} GeV/#it{c}", config["d_pt"]))
-        if config["d_z"]:
-            self.fAxis.append(Axis("d_z", "#it{z}_{||,D}", config["d_z"]))
-        self.fHistogram = None
 
 class DMesonJetAnalysisEngine:
     def __init__(self, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, spectra, projector):
@@ -130,7 +112,7 @@ class DMesonJetAnalysisEngine:
             
     def GenerateSpectrum1D(self, s):
         s.fHistogram = ROOT.TH1D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array('d',s.fAxis[0].fBins))
-        s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].fTitle)
+        s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
         s.fHistogram.GetYaxis().SetTitle("counts")
         s.fHistogram.Sumw2()
         for binSetName in s.fBins:
@@ -149,8 +131,8 @@ class DMesonJetAnalysisEngine:
                 
     def GenerateSpectrum2D(self, s):
         s.fHistogram = ROOT.TH2D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array('d',s.fAxis[1].fBins))
-        s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].fTitle)
-        s.fHistogram.GetYaxis().SetTitle(s.fAxis[1].fTitle)
+        s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
+        s.fHistogram.GetYaxis().SetTitle(s.fAxis[1].GetTitle())
         s.fHistogram.GetZaxis().SetTitle("counts")
         s.fHistogram.Sumw2()
         for binSetName in s.fBins:
