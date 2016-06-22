@@ -24,13 +24,14 @@ def GetPtHardBins(SearchPath):
     ptHardBins = output.splitlines()
     resList = []
     for ptHardBin in ptHardBins:
-        stop = mergeList.rfind("merge_files.xml") - 1
-        start = mergeList.rfind("/", 0, stop-1) - 1
+        stop = ptHardBin.rfind("merge_files.xml") - 1
+        start = ptHardBin.rfind("/", 0, stop-1) + 1
         if stop <= start:
             continue
         resList.append(ptHardBin[start:stop])
 
-    return set(resList)
+    print(resList)
+    return resList
 
 def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
     FileName = "AnalysisResults.root"
@@ -42,7 +43,8 @@ def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
         for ptHard in ptHardBins:
             AlienPath = "alien://{0}/{1}/{2}/{3}".format(SearchPath, FullTrainNumber, ptHard, FileName)
             DestPath = "{0}/{1}/{2}".format(LocalPath, Dataset, ptHard)
-            os.makedirs(DestPath)
+            if not os.path.isdir(DestPath):
+                os.makedirs(DestPath)
             DestPath += "/{0}".format(FileName)
             print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
             subprocess.call(["alien_cp", AlienPath, DestPath])
@@ -77,7 +79,7 @@ def main(TrainNumbers, config, Overwrite=0):
             print "Error: could not create the token!"
             exit()
 
-    Datasets=config["datasets"]
+    Datasets = sorted(config["datasets"].keys())
 
     if (len(Datasets)!=len(TrainNumbers)):
         print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets),len(TrainNumbers))
@@ -97,6 +99,9 @@ def main(TrainNumbers, config, Overwrite=0):
     print "Overwrite mode: {0}".format(Overwrite)
     print "Train numbers are: "
     print TrainNumbers
+    print "Datasets are: "
+    print Datasets
+    
     
     if not os.path.isdir(LocalPath):
         print "Creating directory "+LocalPath
