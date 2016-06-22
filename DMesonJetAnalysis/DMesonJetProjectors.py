@@ -5,6 +5,7 @@ import ROOT
 import math
 import os
 from DMesonJetBase import *
+import array
         
 class DMesonJetDataProjector:
     def __init__(self, inputPath, train, fileName, taskName, maxEvents):
@@ -91,8 +92,14 @@ class DMesonJetResponseProjector:
     def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsection")
         trials  = hlist.FindObject("fHistTrials")
+        
+        if not trials or not xsection:
+            print("Could not find trail and x-section information!")
+            hlist.Print() 
+            self.fWeight = 1
+            return
 
-        valNTRIALS = ntrials.GetBinContent(self.fPtHard+1);
+        valNTRIALS = trials.GetBinContent(self.fPtHard+1);
         valXSEC = xsection.GetBinContent(self.fPtHard+1);
         scalingFactor = 0;
         if valNTRIALS > 0:
@@ -116,21 +123,17 @@ class DMesonJetResponseProjector:
         
         self.ExtractWeightFromHistogramList(hlist)
 
-    def GetDetectorResponse(self, trigger, DMesonDef, jetDefinitions, axis):
+    def GetDetectorResponse(self, name, DMesonDef, jetDefinitions, axis):
         response = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-            name = "{0}_{1}".format(DMesonDef, jetName)
-            response[jetName] = DetectorResponse(name, axis)
-
-        if trigger:
-            treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
-        else:
+            respName = "{0}_{1}_{2}".format(DMesonDef, jetName, name)
+            response[jetName] = DetectorResponse(respName, axis)
             treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
         
         self.GenerateChain(treeName)
 
-        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, chain.GetEntries()))
+        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
         
@@ -144,3 +147,5 @@ class DMesonJetResponseProjector:
             self.RecalculateWeight()
             for jet,r in response.iteritems():
                 r.Fill(dmeson, jet, self.fWeight)
+
+        return response

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 #python base classes and utilities for D Meson jet analysis
 
+import ROOT
+from array import array
+import os
+
 def find_file(path, file_name):
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -15,11 +19,11 @@ class DetectorResponse:
         self.fEfficiency = None
         self.fTruth = self.GenerateTruth(axis)
         self.fMeasured = self.GenerateMeasured(axis)
-        self.fMissedTruth = self.GenerateTruth(axis)
+        self.fMissedTruth = self.GenerateTruth(axis, "MissedTruth")
         if len(self.fAxis) > 1:
             self.fEfficiency1D = dict()
-            for i in range(0,len(axis)):
-                self.fEfficiency1D[a.fName] = None
+            for axis in self.fAxis:
+                self.fEfficiency1D[axis.fTruthAxis.fName] = None
             
     def Generate1DEfficiency(self):
         recoTruth = self.fResponseMatrix.ProjectionY()
@@ -52,8 +56,8 @@ class DetectorResponse:
                 truth = self.fTruth.Projection(i)
                 
             recoTruth = self.fResponseMatrix.Projection(i*2+1)
-            self.fEfficiency1D[a.fName] = ROOT.TGraphAsymmErrors(recoTruth, truth)
-            self.fEfficiency1D[a.fName].SetName("{0}_{1}_Efficiency".format(self.fName, a.fName))
+            self.fEfficiency1D[a.fTruthAxis.fName] = ROOT.TGraphAsymmErrors(recoTruth, truth)
+            self.fEfficiency1D[a.fTruthAxis.fName].SetName("{0}_{1}_Efficiency".format(self.fName, a.fTruthAxis.fName))
 
     def GenerateEfficiency(self):
         if len(self.fAxis) == 1:
@@ -70,24 +74,24 @@ class DetectorResponse:
 
         return self.GenerateHistogram(haxis, "DetectorResponse")
     
-    def GenerateTruth(self, axis, name):
+    def GenerateTruth(self, axis, name="Truth"):
         truth = []
         for a in axis:
-            truth.append(a.fTruthAxis, "Truth")
+            truth.append(a.fTruthAxis)
 
         return self.GenerateHistogram(truth, name)
         
-    def GenerateMeasured(self, axis, name):
+    def GenerateMeasured(self, axis, name="Measured"):
         detector = []
         for a in axis:
-            detector.append(a.fDetectorAxis, "Reconstructed")
+            detector.append(a.fDetectorAxis)
 
         return self.GenerateHistogram(detector, name)
     
     def GenerateHistogram(self, axis, name):
         hname = "{0}_{1}".format(self.fName, name)
         if len(axis) == 1:
-            hist = ROOT.TH2D(hname, hname, len(axis[0].fBins)-1, array('d',axis[0].fBins))
+            hist = ROOT.TH1D(hname, hname, len(axis[0].fBins)-1, array('d',axis[0].fBins))
             hist.GetXaxis().SetTitle(axis[0].GetTitle())
             hist.GetYaxis().SetTitle("counts")
         elif len(axis) == 2:
@@ -101,12 +105,15 @@ class DetectorResponse:
             hist.GetYaxis().SetTitle(axis[1].GetTitle())
             hist.GetZaxis().SetTitle(axis[2].GetTitle())
         else:
-            hist = ROOT.THnSparse(hname, hname, len(axis))
+            nbins = array('i', [len(a.fBins) for a in axis])
+            hist = ROOT.THnSparseD(hname, hname, len(axis), nbins)
             for i,a in enumerate(axis):
-                hist.GetAxis(i).Set(len(a.fBins)-1, array('d',a.fBins))            
+                hist.GetAxis(i).Set(len(a.fBins)-1, array('d',a.fBins))
+        
+        return hist    
 
     def FillResponseMatrix(self, resp, recoDmeson, truthDmeson, recoJet, truthJet, w):
-        values = array.array('d')
+        values = array('d')
         for a in self.fAxis:
             if a.fDetectorAxis.fName == "jet_pt":
                 values.append(recoJet.fPt)
@@ -118,10 +125,10 @@ class DetectorResponse:
                 values.append(recoJet.fZ)
                 values.append(truthJet.fZ)
 
-        FillHistogram(resp, values, w)
+        self.FillHistogram(resp, values, w)
 
     def FillSpectrum(self, hist, dmeson, jet, w):
-        values = array.array('d')
+        values = array('d')
         for a in self.fAxis:
             if a.fDetectorAxis.fName == "jet_pt":
                 values.append(jet.fPt)
@@ -130,7 +137,7 @@ class DetectorResponse:
             elif a.fDetectorAxis.fName == "d_z":
                 values.append(jet.fZ)
 
-        FillHistogram(hist, values, w)
+        self.FillHistogram(hist, values, w)
 
     def FillHistogram(self, hist, values, w):
         if len(values) == 1:
