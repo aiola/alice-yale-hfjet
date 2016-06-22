@@ -1,6 +1,6 @@
-name: LHC15i2_Train876
+name: LHC15i2_Train885
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_876_877_878_879
+train: Jets_EMC_pp_MC_885_886_887_888
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJetsDetectorResponse
 analysis:
@@ -14,7 +14,6 @@ analysis:
   -
     name: D_Tagged_Jet_Spectrum
     jet_pt:
-    -
       truth: [5, 6, 8, 10, 14, 18, 24]
       reco: [5, 6, 8, 10, 14, 18, 24]
     d_pt: no
@@ -22,11 +21,9 @@ analysis:
   -
     name: D_Fragmentation_JetPt_Spectra
     jet_pt:
-    -
       truth: [5, 8, 13, 24]
       reco: [5, 8, 13, 24]
     d_pt: no
     d_z:
-    -
       truth: [0.2, 0.4, 0.6, 0.8, 1.0]
       reco: [0.2, 0.4, 0.6, 0.8, 1.0]
