@@ -20,9 +20,29 @@ free 2> /dev/null || { [[ `uname` == Darwin ]] && top -l 1 -s 0 | head -8 | tail
 echo "========================================="
 
 # my program is here
+filename="AnalysisResults.root"
 
-root -l -q -b MergeFiles.C\(\"AnalysisResults.root\",\"merge_files.xml\"\)
+if [[ ! -f "${filename}" ]]; then
+	echo "File '${filename}' does not exists!"
+	echo "Validation failed!"
+	exit 1
+fi
 
+minimumsize="1024"
+actualsize=$(wc -c < "${filename}" | tr -d ' ')
+
+if [[ "${actualsize}" -le "${minimumsize}" ]]; then
+	echo "File '${filename}' has size ${actualsize} bytes!"
+	echo "Validation failed!"
+	rm "${filename}"
+    exit 1
+fi
+
+echo "File '${filename}' exists and has size ${actualsize} bytes!"
+
+echo "Validation OK!"
+
+exit 0
 # program ends
 
 RET=$?
