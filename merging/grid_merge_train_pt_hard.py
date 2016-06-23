@@ -86,9 +86,11 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
 
         executableFile = "{0}/grid_merge_train_pt_hard.sh".format(dest)
         macroFile = "{0}/MergeFiles.C".format(dest)
+        validationScript = "{0}/grid_merge_train_pt_hard_validation.sh".format(dest)
 
         AlienCopy("./grid_merge_train_pt_hard.sh", "alien://{0}".format(executableFile))
         AlienCopy("./MergeFiles.C", "alien://{0}".format(macroFile))
+        AlienCopy("./grid_merge_train_pt_hard_validation.sh", "alien://{0}".format(validationScript))
 
         for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
 
@@ -97,11 +99,13 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
                 print "Creating directory "+localDest
                 os.makedirs(localDest)
 
-            alienOutputFile = "{0}/{1}".format(dest, PtHardBin)
+            alienOutputFile = "{0}/{1}/output".format(dest, PtHardBin)
             
             if AlienFileExists("{0}/AnalysisResults.root".format(alienOutputFile)):
                 print("Output file alien://{0}/AnalysisResults.root already exists. Skipping.".format(alienOutputFile))
                 continue
+            
+            AlienDelete(alienOutputFile)
             
             xmlColl = subprocessCheckOutput(["alien_find", "-x", "merge_files.xml", AlienPath, "*/{0}/PWGJE/{1}/{2}/AnalysisResults.root".format(PtHardBin, TrainName, FullTrainNumber)])
 
@@ -111,7 +115,7 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
 Executable = \"{executable}\"; \n\
 # Time after which the job is killed (500 min.) \n\
 TTL = \"3600\"; \n\
-OutputDir = \"{dest}/{pt_hard}\"; \n\
+OutputDir = \"{dest}/{pt_hard}/output\"; \n\
 Output = {{ \n\
 \"AnalysisResults*.root\", \n\
 \"std*\" \n\
@@ -138,7 +142,8 @@ InputDataListFormat = \"xml-single\"; \n\
 InputDataCollection = {{ \n\
 \"LF:{dest}/{pt_hard}/merge_files.xml,nodownload\" \n\
 }}; \n\
-".format(executable=executableFile, dest=dest, aliphysics=AliPhysicsVersion, pt_hard=PtHardBin)
+Validationcommand = \"{validationScript}\"; \n\
+".format(executable=executableFile, dest=dest, aliphysics=AliPhysicsVersion, pt_hard=PtHardBin, validationScript=validationScript)
 
             localJdlFile = "{0}/grid_merge_train_pt_hard.jdl".format(localDest)
 

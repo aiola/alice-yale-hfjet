@@ -63,9 +63,14 @@ Int_t MergeFiles(const char* output, const char* fileList, const char* skipList 
   merger.PrintFiles("");
   Int_t r = merger.PartialMerge(mode);
 
-  if (!r) Printf("Merge error!");
-
-  return r;
+  if (r) {
+    Printf("Merge OK!");
+    return 0;
+  }
+  else {
+    Printf("Merge error!");
+    return 1;
+  }
 }
 
 void AddFilesToMergerUsingXML(TFileMerger& merger, const TString& strFileList)
