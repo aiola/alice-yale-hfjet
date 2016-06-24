@@ -116,27 +116,28 @@ class DMesonJetResponseProjector:
 
         listName = "{0}_histos".format(self.fTaskName)
         hlist = self.fChain.GetCurrentFile().Get(listName)
-        
+
         if not hlist:
             print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
             return 1
-        
+
         self.ExtractWeightFromHistogramList(hlist)
 
-    def GetDetectorResponse(self, name, DMesonDef, jetDefinitions, axis):
+    def GetDetectorResponse(self, respDefinitions, DMesonDef, jetDefinitions):
         response = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-            respName = "{0}_{1}_{2}".format(DMesonDef, jetName, name)
-            response[jetName] = DetectorResponse(respName, axis)
-            treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
-        
+            for axisName,axisDef in respDefinitions.iteritems():
+                respName = "{0}_{1}_{2}".format(DMesonDef, jetName, axisName)
+                response[respName] = DetectorResponse(respName, jetName, axisDef)
+                treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
+
         self.GenerateChain(treeName)
 
         print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
-        
+
         for i,dmeson in enumerate(self.fChain):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
@@ -145,7 +146,7 @@ class DMesonJetResponseProjector:
                     break
 
             self.RecalculateWeight()
-            for jet,r in response.iteritems():
-                r.Fill(dmeson, jet, self.fWeight)
+            for r in response.itervalues():
+                r.Fill(dmeson, self.fWeight)
 
         return response
