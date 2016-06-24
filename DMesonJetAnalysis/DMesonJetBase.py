@@ -29,18 +29,25 @@ class DetectorResponse:
         recoTruth = self.fResponseMatrix.ProjectionY()
         self.fEfficiency = ROOT.TGraphAsymmErrors(recoTruth, self.fTruth)
         self.fEfficiency.SetName("{0}_Efficiency".format(self.fName))
-        
+        self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
+        self.fEfficiency.GetYaxis().SetTitle("Efficiency")
+
     def GenerateMultiEfficiency(self):
         if  len(self.fAxis) == 2:
-            self.fEfficiency = self.fResponseMatrix.Projection(1, 3)
+            self.fEfficiency = self.fResponseMatrix.Projection(3, 1)
+            self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
+            self.fEfficiency.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
+            self.fEfficiency.GetZaxis().SetTitle("Efficiency")
         elif len(self.fAxis) == 3:
-            self.fEfficiency = self.fResponseMatrix.Projection(1, 3, 5)
+            self.fEfficiency = self.fResponseMatrix.Projection(5, 3, 1)
+            self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
+            self.fEfficiency.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
+            self.fEfficiency.GetZaxis().SetTitle(self.fAxis[2].fTruthAxis.GetTitle())
         else:
             dim = array.array('i')
-            for i in range(0, len(self.fAxis)*2, 2):
+            for i in reversed(range(0, len(self.fAxis)*2, 2)):
                 dim.append(i+1)
-            self.fEfficiency = self.fResponseMatrix.ProjectionAny(len(self.fAxis), dim)
-
+            self.fEfficiency = self.fResponseMatrix.Projection(len(dim), dim)
         self.fEfficiency.Divide(self.fTruth)
         self.fEfficiency.SetName("{0}_Efficiency".format(self.fName))
         
@@ -58,6 +65,8 @@ class DetectorResponse:
             recoTruth = self.fResponseMatrix.Projection(i*2+1)
             self.fEfficiency1D[a.fTruthAxis.fName] = ROOT.TGraphAsymmErrors(recoTruth, truth)
             self.fEfficiency1D[a.fTruthAxis.fName].SetName("{0}_{1}_Efficiency".format(self.fName, a.fTruthAxis.fName))
+            self.fEfficiency1D[a.fTruthAxis.fName].GetXaxis().SetTitle(a.fTruthAxis.GetTitle())
+            self.fEfficiency1D[a.fTruthAxis.fName].GetYaxis().SetTitle("Efficiency")
 
     def GenerateEfficiency(self):
         if len(self.fAxis) == 1:
@@ -109,6 +118,7 @@ class DetectorResponse:
             hist = ROOT.THnSparseD(hname, hname, len(axis), nbins)
             for i,a in enumerate(axis):
                 hist.GetAxis(i).Set(len(a.fBins)-1, array('d',a.fBins))
+                hist.GetAxis(i).SetTitle(axis[i].GetTitle())
         
         return hist    
 
@@ -154,16 +164,16 @@ class DetectorResponse:
         jetMeasured = getattr(dmeson, "{0}_reco".format(jetName))
 
         if jetTruth.fPt > 0 and jetMeasured.fPt > 0:
-            self.FillResponseMatrix(self.fResponseMatrix, dmeson.fReconstructed, dmeson.fGenerated, jetMeasured, jetTruth, w)
+            self.FillResponseMatrix(self.fResponseMatrix, dmeson.DmesonJet.fReconstructed, dmeson.DmesonJet.fGenerated, jetMeasured, jetTruth, w)
         
         if jetTruth.fPt > 0 and not jetMeasured.fPt > 0:
-            self.FillSpectrum(self.fMissedTruth, dmeson.fGenerated, jetTruth, w)
+            self.FillSpectrum(self.fMissedTruth, dmeson.DmesonJet.fGenerated, jetTruth, w)
         
         if jetTruth.fPt > 0:
-            self.FillSpectrum(self.fTruth, dmeson.fGenerated, jetTruth, w)
+            self.FillSpectrum(self.fTruth, dmeson.DmesonJet.fGenerated, jetTruth, w)
 
         if jetMeasured.fPt > 0:
-            self.FillSpectrum(self.fMeasured, dmeson.fReconstructed, jetMeasured, w)
+            self.FillSpectrum(self.fMeasured, dmeson.DmesonJet.fReconstructed, jetMeasured, w)
 
 class ResponseAxis:
     def __init__(self, detector, truth):
@@ -179,26 +189,26 @@ class Axis:
     def GetTitle(self, label = ""):
         if not label:
             label = self.fLabel
-        
+
         if label == "nolabel":
             label = ""
-        
+
         if self.fName == "jet_pt":
             if label:
-                title = "#it{p}_{T,jet} GeV/#it{c}"
+                title = "#it{{p}}_{{T,jet}}^{{{0}}} (GeV/#it{{c}})".format(label)
             else:
-                title = "#it{{p}}_{{T,jet}}^{{{0}}} GeV/#it{{c}}".format(label)
+                title = "#it{p}_{T,jet} (GeV/#it{c})"
         if self.fName == "d_pt":
             if label:
-                title = "#it{p}_{T,D} GeV/#it{c}"
+                title = "#it{{p}}_{{T,D}}^{{{0}}} (GeV/#it{{c}})".format(label)
             else:
-                title = "#it{p}_{T,D}^{{{0}}} GeV/#it{{c}}".format(label)
+                title = "#it{p}_{T,D} (GeV/#it{c})"
         if self.fName == "d_z":
             if label:
-                title = "#it{z}_{||,D}"
+                title = "#it{{z}}_{{||,D}}^{{{0}}}".format(label)
             else:
-                title = "#it{z}_{||,D}^{{{0}}}".format(label)
-                
+                title = "#it{z}_{||,D}"
+
         return title
 
 class Spectrum:

@@ -86,7 +86,7 @@ class DMesonJetResponseProjector:
         fname = self.fChain.GetCurrentFile().GetName()
         lastSlash = fname.rfind('/')
         secondLastSlash = fname.rfind('/',0,lastSlash-1)
-        self.fPtHardBin = fname[lastSlash-1:lastSlash]
+        self.fPtHardBin = int(fname[lastSlash-1:lastSlash])
         self.fPeriod = fname[secondLastSlash+1:lastSlash-1]
         
     def ExtractWeightFromHistogramList(self, hlist):
@@ -99,8 +99,8 @@ class DMesonJetResponseProjector:
             self.fWeight = 1
             return
 
-        valNTRIALS = trials.GetBinContent(self.fPtHard+1);
-        valXSEC = xsection.GetBinContent(self.fPtHard+1);
+        valNTRIALS = trials.GetBinContent(self.fPtHardBin+1);
+        valXSEC = xsection.GetBinContent(self.fPtHardBin+1);
         scalingFactor = 0;
         if valNTRIALS > 0:
             self.fWeight = valXSEC/valNTRIALS;
