@@ -114,7 +114,7 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
             jdlContent = "# This is the startup script \n\
 Executable = \"{executable}\"; \n\
 # Time after which the job is killed (500 min.) \n\
-TTL = \"3600\"; \n\
+TTL = \"7200\"; \n\
 OutputDir = \"{dest}/{pt_hard}/output\"; \n\
 Output = {{ \n\
 \"AnalysisResults*.root\", \n\
