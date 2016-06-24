@@ -12,9 +12,10 @@ def find_file(path, file_name):
                 yield os.path.join(root, file)
                 
 class DetectorResponse:
-    def __init__(self, name, axis):
+    def __init__(self, name, jetName, axis):
         self.fAxis = axis
         self.fName = name
+        self.fJetName = jetName
         self.fResponseMatrix = self.GenerateResponseMatrix(axis)
         self.fEfficiency = None
         self.fTruth = self.GenerateTruth(axis)
@@ -161,9 +162,9 @@ class DetectorResponse:
         else:
             hist.Fill(values, w)
 
-    def Fill(self, dmeson, jetName, w):
-        jetTruth = getattr(dmeson, "{0}_truth".format(jetName))
-        jetMeasured = getattr(dmeson, "{0}_reco".format(jetName))
+    def Fill(self, dmeson, w):
+        jetTruth = getattr(dmeson, "{0}_truth".format(self.fJetName))
+        jetMeasured = getattr(dmeson, "{0}_reco".format(self.fJetName))
 
         if jetTruth.fPt > 0 and jetMeasured.fPt > 0:
             self.FillResponseMatrix(self.fResponseMatrix, dmeson.DmesonJet.fReconstructed, dmeson.DmesonJet.fGenerated, jetMeasured, jetTruth, w)

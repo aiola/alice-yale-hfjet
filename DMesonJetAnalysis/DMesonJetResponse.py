@@ -16,11 +16,10 @@ class DMesonJetResponseEngine:
         self.fJetDefinitions = jets
         self.fProjector = projector
         self.fAxis = axis
-        self.fResponses = dict()
+        self.fResponses = None
         
     def ProjectResponse(self):
-        for name, axis in self.fAxis.iteritems():
-            self.fResponses[name] = self.fProjector.GetDetectorResponse(name, self.fDMeson, self.fJetDefinitions, axis)
+        self.fResponses = self.fProjector.GetDetectorResponse(self.fAxis, self.fDMeson, self.fJetDefinitions)
         
     def Start(self):
         self.ProjectResponse()
@@ -28,15 +27,13 @@ class DMesonJetResponseEngine:
         self.PlotResponse()
 
     def GenerateEfficiency(self):
-        for jets in self.fResponses.itervalues():
-            for resp in jets.itervalues():
-                resp.GenerateEfficiency()
+        for resp in self.fResponses.itervalues():
+            resp.GenerateEfficiency()
 
     def PlotResponse(self):
-        for jets in self.fResponses.itervalues():
-            for resp in jets.itervalues():
-                self.PlotResponseMatrix(resp)
-                self.PlotEfficiency(resp)
+        for resp in self.fResponses.itervalues():
+            self.PlotResponseMatrix(resp)
+            self.PlotEfficiency(resp)
 
     def PlotResponseMatrix(self, resp):
         if len(resp.fAxis) == 1:
