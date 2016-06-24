@@ -17,57 +17,69 @@ class DetectorResponse:
         self.fName = name
         self.fJetName = jetName
         self.fResponseMatrix = self.GenerateResponseMatrix(axis)
+        self.fReconstructedTruth = None
         self.fEfficiency = None
         self.fTruth = self.GenerateTruth(axis)
         self.fMeasured = self.GenerateMeasured(axis)
         self.fMissedTruth = self.GenerateTruth(axis, "MissedTruth")
-        if len(self.fAxis) > 1:
-            self.fEfficiency1D = dict()
-            for axis in self.fAxis:
-                self.fEfficiency1D[axis.fTruthAxis.fName] = None
+        if len(self.fAxis) == 2:
+            self.fEfficiency1D = []
             
     def Generate1DEfficiency(self):
-        recoTruth = self.fResponseMatrix.ProjectionY()
-        self.fEfficiency = ROOT.TGraphAsymmErrors(recoTruth, self.fTruth, "b(1,1) mode")
+        self.fReconstructedTruth = self.fResponseMatrix.ProjectionY()
+        self.fReconstructedTruth.SetName("{0}_RecontructedTruth".format(self.fName))
+        self.fReconstructedTruth.SetTitle("{0}_RecontructedTruth".format(self.fName))
+        self.fEfficiency = ROOT.TGraphAsymmErrors(self.fReconstructedTruth, self.fTruth, "b(1,1) mode")
         self.fEfficiency.SetName("{0}_Efficiency".format(self.fName))
+        self.fEfficiency.SetTitle("{0}_Efficiency".format(self.fName))
         self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
         self.fEfficiency.GetYaxis().SetTitle("Efficiency")
 
     def GenerateMultiEfficiency(self):
         if  len(self.fAxis) == 2:
-            self.fEfficiency = self.fResponseMatrix.Projection(3, 1)
-            self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
-            self.fEfficiency.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
-            self.fEfficiency.GetZaxis().SetTitle("Efficiency")
+            self.fReconstructedTruth = self.fResponseMatrix.Projection(3, 1)
+            self.fReconstructedTruth.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
+            self.fReconstructedTruth.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
         elif len(self.fAxis) == 3:
-            self.fEfficiency = self.fResponseMatrix.Projection(5, 3, 1)
-            self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
-            self.fEfficiency.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
-            self.fEfficiency.GetZaxis().SetTitle(self.fAxis[2].fTruthAxis.GetTitle())
+            self.fReconstructedTruth = self.fResponseMatrix.Projection(5, 3, 1)
+            self.fReconstructedTruth.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
+            self.fReconstructedTruth.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
+            self.fReconstructedTruth.GetZaxis().SetTitle(self.fAxis[2].fTruthAxis.GetTitle())
         else:
             dim = array.array('i')
             for i in reversed(range(0, len(self.fAxis)*2, 2)):
                 dim.append(i+1)
-            self.fEfficiency = self.fResponseMatrix.Projection(len(dim), dim)
+            self.fReconstructedTruth = self.fResponseMatrix.Projection(len(dim), dim)
+            
+        self.fReconstructedTruth.SetName("{0}_RecontructedTruth".format(self.fName))
+        self.fReconstructedTruth.SetTitle("{0}_RecontructedTruth".format(self.fName))
+            
+        self.fEfficiency = self.fReconstructedTruth.Clone("{0}_Efficiency".format(self.fName))
         self.fEfficiency.Divide(self.fTruth)
         self.fEfficiency.SetName("{0}_Efficiency".format(self.fName))
+        self.fEfficiency.SetTitle("{0}_Efficiency".format(self.fName))
+        if len(self.fAxis) == 2:
+            self.fEfficiency.GetZaxis().SetTitle("Efficiency")
         
-        for i,a in enumerate(self.fAxis):
-            if len(self.fAxis) < 4:
-                if i == 0:
-                    truth = self.fTruth.ProjectionX()
-                elif i == 1:
-                    truth = self.fTruth.ProjectionY()
-                elif i == 2:
-                    truth = self.fTruth.ProjectionZ()
-            else:
-                truth = self.fTruth.Projection(i)
-                
-            recoTruth = self.fResponseMatrix.Projection(i*2+1)
-            self.fEfficiency1D[a.fTruthAxis.fName] = ROOT.TGraphAsymmErrors(recoTruth, truth, "b(1,1) mode")
-            self.fEfficiency1D[a.fTruthAxis.fName].SetName("{0}_{1}_Efficiency".format(self.fName, a.fTruthAxis.fName))
-            self.fEfficiency1D[a.fTruthAxis.fName].GetXaxis().SetTitle(a.fTruthAxis.GetTitle())
-            self.fEfficiency1D[a.fTruthAxis.fName].GetYaxis().SetTitle("Efficiency")
+        if  len(self.fAxis) == 2:
+            self.GeneratePartialMultiEfficiency()
+    
+    def GeneratePartialMultiEfficiency(self):
+        for bin in range(1,self.fReconstructedTruth.GetXaxis().GetNbins()+1):
+            binLimits = BinLimits()
+            binLimits.SetFromAxis(self.fAxis[0].fTruthAxis, bin)
+            
+            self.fReconstructedTruth.GetXaxis().SetRange(bin, bin)
+            recoTruth = self.fReconstructedTruth.ProjectionY()
+            self.fTruth.GetXaxis().SetRange(bin, bin)
+            truth = self.fTruth.ProjectionY()
+            
+            eff = ROOT.TGraphAsymmErrors(recoTruth, truth, "b(1,1) mode")
+            eff.SetName("{0}_{1}_Efficiency".format(self.fName, binLimits.GetName()))
+            eff.SetTitle(binLimits.GetTitle())
+            eff.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
+            eff.GetYaxis().SetTitle("Efficiency")
+            self.fEfficiency1D.append(eff)
 
     def GenerateEfficiency(self):
         if len(self.fAxis) == 1:
@@ -259,6 +271,26 @@ class BinLimits:
         self.fInvMassHisto = None
         self.fMassFitter = None
         
+    def SetFromAxis(self, axis, binIndex):
+        self.fShowJetPt = False
+        self.fShowDPt = False
+        self.fShowDZ = False
+
+        if axis.fName == "jet_pt":
+            self.fShowJetPt = True
+            self.fJetPtMin = axis.fBins[binIndex-1]
+            self.fJetPtMax = axis.fBins[binIndex]
+
+        if axis.fName == "d_pt":
+            self.fShowDPt = True
+            self.fDPtMin = axis.fBins[binIndex-1]
+            self.fDPtMax = axis.fBins[binIndex]
+
+        if axis.fName == "d_z":
+            self.fShowDZ = True
+            self.fDZMin = axis.fBins[binIndex-1]
+            self.fDZMax = axis.fBins[binIndex]
+      
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
     

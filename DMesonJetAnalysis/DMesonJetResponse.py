@@ -118,9 +118,69 @@ class DMesonJetResponseEngine:
             h.GetZaxis().SetLabelFont(43)
             h.GetZaxis().SetLabelOffset(0.009)
             h.GetZaxis().SetLabelSize(19)
-            
+
+            self.PlotPartialMultiEfficiency(resp)
+
         globalList.append(h)
         globalList.append(c)
+        
+    def GenerateMultiCanvas(self, name, n):
+        rows = int(math.floor(math.sqrt(n)))
+        cols = int(math.ceil(float(n) / rows))
+        cname = "{0}_{1}".format(self.fDMeson, name)
+        c = ROOT.TCanvas(cname, cname, cols*400, rows*400)
+        c.Divide(cols, rows)
+        globalList.append(c)
+        return c
+    
+    def PlotPartialMultiEfficiency(self, resp):
+        cname = "{0}_{1}_PartialEfficiency".format(self.fDMeson, resp.fName)
+        c = ROOT.TCanvas(cname, cname)
+        c.SetLeftMargin(0.12)
+        c.SetBottomMargin(0.12)
+        c.SetTopMargin(0.08)
+        c.SetRightMargin(0.08)
+        c.cd()
+        globalList.append(c)
+        blank = ROOT.TH1D("blankHist", "blankHist;{0};Efficiency".format(resp.fAxis[1].fTruthAxis.GetTitle()), 100, resp.fAxis[1].fTruthAxis.fBins[0], resp.fAxis[1].fTruthAxis.fBins[-1])
+        blank.GetXaxis().SetTitleFont(43)
+        blank.GetXaxis().SetTitleOffset(1.2)
+        blank.GetXaxis().SetTitleSize(19)
+        blank.GetXaxis().SetLabelFont(43)
+        blank.GetXaxis().SetLabelOffset(0.009)
+        blank.GetXaxis().SetLabelSize(18)
+        blank.GetYaxis().SetTitleFont(43)
+        blank.GetYaxis().SetTitleOffset(1.2)
+        blank.GetYaxis().SetTitleSize(19)
+        blank.GetYaxis().SetLabelFont(43)
+        blank.GetYaxis().SetLabelOffset(0.009)
+        blank.GetYaxis().SetLabelSize(18)
+        blank.Draw()
+        globalList.append(blank)
+        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2]
+        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond]
+        max = 0;
+        leg = ROOT.TLegend(0.15, 0.85, 0.45, 0.7)
+        leg.SetFillStyle(0)
+        leg.SetBorderSize(0)
+        for color,marker,eff in zip(colors,markers,resp.fEfficiency1D):
+            h = eff.Clone()
+            globalList.append(h)
+            h.SetMarkerStyle(marker)
+            h.SetMarkerSize(0.9)
+            h.SetMarkerColor(color)
+            h.SetLineColor(color)
+            leg.AddEntry(h, h.GetTitle(), "pe")
+            h.Draw("P same")
+            for i in range(0, h.GetN()):
+                y = h.GetY()[i]
+                if y > max:
+                    max = y
+        
+        leg.Draw()
+        globalList.append(leg)
+        print("max is {0}".format(max))
+        blank.SetMaximum(max*1.5)
 
 class DMesonJetResponse:
     def __init__(self, name):
