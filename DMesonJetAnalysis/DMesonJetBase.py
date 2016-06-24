@@ -27,7 +27,7 @@ class DetectorResponse:
             
     def Generate1DEfficiency(self):
         recoTruth = self.fResponseMatrix.ProjectionY()
-        self.fEfficiency = ROOT.TGraphAsymmErrors(recoTruth, self.fTruth)
+        self.fEfficiency = ROOT.TGraphAsymmErrors(recoTruth, self.fTruth, "b(1,1) mode")
         self.fEfficiency.SetName("{0}_Efficiency".format(self.fName))
         self.fEfficiency.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
         self.fEfficiency.GetYaxis().SetTitle("Efficiency")
@@ -63,7 +63,7 @@ class DetectorResponse:
                 truth = self.fTruth.Projection(i)
                 
             recoTruth = self.fResponseMatrix.Projection(i*2+1)
-            self.fEfficiency1D[a.fTruthAxis.fName] = ROOT.TGraphAsymmErrors(recoTruth, truth)
+            self.fEfficiency1D[a.fTruthAxis.fName] = ROOT.TGraphAsymmErrors(recoTruth, truth, "b(1,1) mode")
             self.fEfficiency1D[a.fTruthAxis.fName].SetName("{0}_{1}_Efficiency".format(self.fName, a.fTruthAxis.fName))
             self.fEfficiency1D[a.fTruthAxis.fName].GetXaxis().SetTitle(a.fTruthAxis.GetTitle())
             self.fEfficiency1D[a.fTruthAxis.fName].GetYaxis().SetTitle("Efficiency")
@@ -119,6 +119,8 @@ class DetectorResponse:
             for i,a in enumerate(axis):
                 hist.GetAxis(i).Set(len(a.fBins)-1, array('d',a.fBins))
                 hist.GetAxis(i).SetTitle(axis[i].GetTitle())
+                
+        hist.Sumw2()
         
         return hist    
 
