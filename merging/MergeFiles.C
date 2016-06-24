@@ -11,7 +11,7 @@
 void AddFilesToMergerUsingXML(TFileMerger& merger, const TString& strFileList);
 void AddFilesToMergerUsingTXT(TFileMerger& merger, const TString& strFileList);
 
-Int_t MergeFiles(const char* output, const char* fileList, const char* skipList = "", const char* acceptList = "", Int_t n=2)
+Int_t MergeFiles(const char* output, const char* fileList, const char* skipList = "", const char* acceptList = "", Int_t n=5)
 {
   TGrid::Connect("alien://");
 

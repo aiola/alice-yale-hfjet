@@ -41,12 +41,15 @@ def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
         FullTrainNumber = GetFullTrainNumber(SearchPath, TrainNumber)
         ptHardBins = GetPtHardBins("{0}/{1}".format(SearchPath,FullTrainNumber))
         for ptHard in ptHardBins:
-            AlienPath = "alien://{0}/{1}/{2}/{3}".format(SearchPath, FullTrainNumber, ptHard, FileName)
+            AlienPath = "alien://{0}/{1}/{2}/output/{3}".format(SearchPath, FullTrainNumber, ptHard, FileName)
             DestPath = "{0}/{1}/{2}".format(LocalPath, Dataset, ptHard)
             if not os.path.isdir(DestPath):
                 os.makedirs(DestPath)
             DestPath += "/{0}".format(FileName)
-            print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
+            if os.path.isfile(DestPath):
+                print("File '{0}' exists, skipping...".format(DestPath))
+                continue
+            print("Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath))
             subprocess.call(["alien_cp", AlienPath, DestPath])
 
 def main(TrainNumbers, config, Overwrite=0):
