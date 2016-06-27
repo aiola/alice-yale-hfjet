@@ -86,8 +86,9 @@ class DMesonJetResponseProjector:
         fname = self.fChain.GetCurrentFile().GetName()
         lastSlash = fname.rfind('/')
         secondLastSlash = fname.rfind('/',0,lastSlash-1)
-        self.fPtHardBin = int(fname[lastSlash-1:lastSlash])
-        self.fPeriod = fname[secondLastSlash+1:lastSlash-1]
+        thirdLastSlash = fname.rfind('/',0,secondLastSlash-1)
+        self.fPtHardBin = int(fname[secondLastSlash+1:lastSlash])
+        self.fPeriod = fname[thirdLastSlash+1:secondLastSlash]
         
     def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsection")
@@ -122,6 +123,8 @@ class DMesonJetResponseProjector:
             return 1
 
         self.ExtractWeightFromHistogramList(hlist)
+        
+        print("Period: {0}\nPt hard bin: {1}\nWeight: {2}".format(self.fPeriod, self.fPtHardBin, self.fWeight))
 
     def GetDetectorResponse(self, respDefinitions, DMesonDef, jetDefinitions):
         response = dict()
