@@ -18,6 +18,11 @@ class DMesonJetResponseEngine:
         self.fAxis = axis
         self.fResponses = None
         
+    def SaveRootFile(self, file):
+        for resp in self.fResponses.itervalues():
+            rlist = resp.GenerateRootList()
+            rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
+    
     def ProjectResponse(self):
         self.fResponses = self.fProjector.GetDetectorResponse(self.fAxis, self.fDMeson, self.fJetDefinitions)
         
@@ -179,7 +184,6 @@ class DMesonJetResponseEngine:
         
         leg.Draw()
         globalList.append(leg)
-        print("max is {0}".format(max))
         blank.SetMaximum(max*1.5)
 
 class DMesonJetResponse:
@@ -203,3 +207,10 @@ class DMesonJetResponse:
             eng = DMesonJetResponseEngine(d_meson, config["jets"], axis, self.fProjector)
             self.fResponseEngine.append(eng)
             eng.Start()
+            
+    def SaveRootFile(self, path):
+        file = ROOT.TFile.Open("{0}/{1}.root".format(path, self.fName), "recreate")
+        file.cd()
+        for eng in self.fResponseEngine:
+            eng.SaveRootFile(file)
+        file.Close()

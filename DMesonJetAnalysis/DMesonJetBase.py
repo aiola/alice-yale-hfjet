@@ -24,7 +24,23 @@ class DetectorResponse:
         self.fMissedTruth = self.GenerateTruth(axis, "MissedTruth")
         if len(self.fAxis) == 2:
             self.fEfficiency1D = []
+        else:
+            self.fEfficiency1D = None
             
+    def GenerateRootList(self):
+        rlist = ROOT.TList()
+        rlist.SetName(self.fName)
+        rlist.Add(self.fResponseMatrix)
+        rlist.Add(self.fEfficiency)
+        rlist.Add(self.fReconstructedTruth)
+        rlist.Add(self.fTruth)
+        rlist.Add(self.fMeasured)
+        rlist.Add(self.fMissedTruth)
+        if self.fEfficiency1D:
+            for eff in self.fEfficiency1D:
+                rlist.Add(eff)
+        return rlist
+
     def Generate1DEfficiency(self):
         self.fReconstructedTruth = self.fResponseMatrix.ProjectionY()
         self.fReconstructedTruth.SetName("{0}_RecontructedTruth".format(self.fName))
