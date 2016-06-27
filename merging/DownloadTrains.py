@@ -10,20 +10,28 @@ import yaml
 import MergeFiles
 import ScaleResults
 
-def GetFullTrainNumber(SearchPath, TrainNumber):
-    output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, "{0}_20".format(TrainNumber)], universal_newlines=True)
-    #print(output)
-    i = output.rfind("{0}_".format(TrainNumber))
+def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
+    cmd = ["alien_find", "-d", SearchPath, "{0}/{1}_201".format(TrainName, TrainNumber)]
+    print(cmd)
+    output = subprocess.check_output(cmd, universal_newlines=True)
+    print(output)
+    i = output.rfind("{0}_201".format(TrainNumber))
     j = len(str(TrainNumber)) + 14 + i
     FullTrainNumber = output[i:j]
     return FullTrainNumber
 
 def GetMergeLists(SearchPath):
-    output = subprocess.check_output(["alien_find", "-d", SearchPath, "merge"], universal_newlines=True)
+    cmd = ["alien_find", "-d", SearchPath, "merge"]
+    print(cmd)
+    output = subprocess.check_output(cmd, universal_newlines=True)
     print output
     mergeLists = output.splitlines()
     resList = []
     for mergeList in mergeLists:
+        mergeList = mergeList.strip()
+        if not mergeList.endswith("/"):
+            continue
+        
         start = mergeList.rfind("merge")
         stop = mergeList.rfind("/")
         if stop <= start:
@@ -36,11 +44,12 @@ def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite):
     FileName = "AnalysisResults.root"
 
     for Dataset,TrainNumber in zip(Datasets,TrainNumbers):
-        SearchPath="/alice/cern.ch/user/a/alitrain/PWGJE/"+TrainName
-        FullTrainNumber = GetFullTrainNumber(SearchPath, TrainNumber)
-        mergeLists = GetMergeLists("{0}/{1}".format(SearchPath,FullTrainNumber))
+        SearchPath="/alice/cern.ch/user/a/alitrain/PWGJE/"
+        FullTrainNumber = GetFullTrainNumber(SearchPath, TrainName, TrainNumber)
+        print("The full train number is {0}". format(FullTrainNumber))
+        mergeLists = GetMergeLists("{0}/{1}/{2}".format(SearchPath, TrainName, FullTrainNumber))
         for mergeList in mergeLists:
-            AlienPath = "alien://{0}/{1}/{2}/{3}".format(SearchPath, FullTrainNumber, mergeList, FileName)
+            AlienPath = "alien://{0}/{1}/{2}/{3}/{4}".format(SearchPath, TrainName, FullTrainNumber, mergeList, FileName)
             DestPath = "{0}/{1}/{2}".format(LocalPath, Dataset, mergeList)
             os.makedirs(DestPath)
             DestPath += "/{0}".format(FileName)
