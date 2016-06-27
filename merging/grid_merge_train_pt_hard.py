@@ -27,12 +27,15 @@ def AlienFileExists(fileName):
         
     return fileExists
 
-def AlienCopy(source, destination, attempts=3):
+def AlienCopy(source, destination, attempts=3, overwrite=False):
     i = 0
     fileExists = False
 
     if AlienFileExists(destination):
-        AlienDelete(destination)
+        if overwrite:
+            AlienDelete(destination)
+        else:
+            return True
         
     if destination.find("alien://") == -1:
         dest = "alien://{0}".format(destination)
@@ -72,7 +75,7 @@ def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
     FullTrainNumber = output[i:j]
     return FullTrainNumber
 
-def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin, MaxPtHardBin, Year, AliPhysicsVersion, TestMode, GridTestMode):
+def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin, MaxPtHardBin, Year, AliPhysicsVersion, TestMode, GridTestMode, GridUpdate):
     for Dataset,TrainNumber in zip(sorted(Datasets.iterkeys()),TrainNumbers):
         
         AlienPath="/alice/sim/"+str(Year)+"/"+Dataset
@@ -88,9 +91,9 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
         macroFile = "{0}/MergeFiles.C".format(dest)
         validationScript = "{0}/grid_merge_train_pt_hard_validation.sh".format(dest)
 
-        AlienCopy("./grid_merge_train_pt_hard.sh", "alien://{0}".format(executableFile))
-        AlienCopy("./MergeFiles.C", "alien://{0}".format(macroFile))
-        AlienCopy("./grid_merge_train_pt_hard_validation.sh", "alien://{0}".format(validationScript))
+        AlienCopy("./grid_merge_train_pt_hard.sh", "alien://{0}".format(executableFile), 3, GridUpdate)
+        AlienCopy("./MergeFiles.C", "alien://{0}".format(macroFile), 3, GridUpdate)
+        AlienCopy("./grid_merge_train_pt_hard_validation.sh", "alien://{0}".format(validationScript), 3, GridUpdate)
 
         for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
 
@@ -159,8 +162,8 @@ Validationcommand = \"{validationScript}\"; \n\
 
             jdlFile = "{0}/{1}/grid_merge_train_pt_hard.jdl".format(dest, PtHardBin)
 
-            AlienCopy(localJdlFile, "alien://{0}".format(jdlFile))
-            AlienCopy(localXmlFile, "alien://{0}/{1}/merge_files.xml".format(dest, PtHardBin))
+            AlienCopy(localJdlFile, "alien://{0}".format(jdlFile), 3, GridUpdate)
+            AlienCopy(localXmlFile, "alien://{0}/{1}/merge_files.xml".format(dest, PtHardBin), 3, GridUpdate)
 
             if TestMode:
                 subprocessCall(["chmod", "+x", "./grid_merge_train_pt_hard.sh"])
@@ -174,7 +177,7 @@ Validationcommand = \"{validationScript}\"; \n\
 
     subprocessCall(["ls", LocalPath])
 
-def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode):
+def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode, GridUpdate):
     try:
         rootPath=subprocess.check_output(["which", "root"]).rstrip()
         alirootPath=subprocess.check_output(["which", "aliroot"]).rstrip()
@@ -230,7 +233,7 @@ def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode
         
     if config["pt_hard_bins"]:
         PtHardBinMerging(LocalPath, Datasets, config["train"], TrainNumbers, config["min_pt_hard_bin"], config["max_pt_hard_bin"], 
-                         config["year"], AliPhysicsVersion, TestMode, GridTestMode)
+                         config["year"], AliPhysicsVersion, TestMode, GridTestMode, GridUpdate)
     else:
         print("Error! This is only for pt hard binned productions! Fix YAML file.")
 
@@ -250,6 +253,9 @@ if __name__ == '__main__':
     parser.add_argument('--test-grid', action='store_const',
                         default=False, const=True,
                         help='Test grid mode')
+    parser.add_argument("--update", actiaio='store_const',
+                        default=False, const = True,
+                        help='Update all scripts and macros on the grid.')
     args = parser.parse_args()
 
     TrainNumberList = args.trainNumber.split(",")
@@ -262,4 +268,4 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    StartMerging(TrainNumbers, config, args.aliphysics, args.test, args.test_grid)
+    StartMerging(TrainNumbers, config, args.aliphysics, args.test, args.test_grid, args.update)
