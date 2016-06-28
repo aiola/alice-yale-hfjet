@@ -1,0 +1,62 @@
+name: LHC10_Train712
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_712_713_714_715
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJets
+analysis:
+- 
+  trigger: [AnyINT]
+  d_meson: [D0]
+  n_mass_bins: 100
+  min_mass: 1.715
+  max_mass: 2.015
+  jets:
+  -
+    type: Charged
+    radius: R040
+  bins:
+  -
+    name: D_Tagged_Jets
+    jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    d_pt: [1, 24]
+    d_z: [0, -1]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: no
+  -
+    name: D_Fragmentation_JetPt_5_8
+    jet_pt: [5, 8]
+    d_pt: [0, -1]
+    d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: yes
+  -
+    name: D_Fragmentation_JetPt_8_13
+    jet_pt: [8, 13]
+    d_pt: [0, -1]
+    d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: yes
+  -
+    name: D_Fragmentation_JetPt_13_30
+    jet_pt: [13, 24]
+    d_pt: [0, -1]
+    d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    show_jet_pt: yes
+    show_d_pt: no
+    show_d_z: yes
+  spectra:
+  -
+    name: D_Tagged_Jet_Spectrum
+    bins: [D_Tagged_Jets]
+    jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    d_pt: no
+    d_z: no
+  -
+    name: D_Fragmentation_JetPt_Spectra
+    bins: [D_Fragmentation_JetPt_5_8, D_Fragmentation_JetPt_8_13, D_Fragmentation_JetPt_13_30]
+    jet_pt: [5, 8, 13, 24]
+    d_pt: no
+    d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
