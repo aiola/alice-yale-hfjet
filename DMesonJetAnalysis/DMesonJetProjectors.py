@@ -6,9 +6,67 @@ import math
 import os
 from DMesonJetBase import *
 import array
-        
+from bisect import bisect
+
+class SimpleWeight:
+    def GetEfficiencyWeight(self, dmeson):
+        return 1.
+
+class EfficiencyWeightCalculator:
+    def __init__(self, filename="", listname="", objectname=""):
+        self.fBreakpoints = []
+        self.fEfficiencyValues = []
+        if filename and listname and objectname:
+            self.LoadEfficiency(filename,listname,objectname)
+
+    def GetObjectFromRootFile(self, file, listname, objectname):
+        rlist = file.Get(listname)
+        if not rlist:
+            print("Could not find list '{0}' in file '{1}'".format(listname, file.GetName()))
+            return None
+        obj = rlist.FindObject(objectname)
+        if not obj:
+            print("Could not find object '{0}' in list '{1}'".format(objectname, listname))
+            return None
+        return obj
+
+    def LoadEfficiency(self, filename, listname, objectname):
+        self.fBreakpoints = []
+        self.fEfficiencyValues = []
+        file = ROOT.TFile.Open(filename)
+        if not file or file.IsZombie():
+            print("Could not open file '{0}'! Effieciency could not be loaded!".format(filename))
+            return
+        obj = self.GetObjectFromRootFile(file, listname, objectname)
+        if not obj:
+            return
+        self.fRootObject = obj.Clone()
+        file.Close()
+        if isinstance(self.fRootObject, ROOT.TH1):
+            for ibin in range(1, self.fRootObject.GetNbinsX()):
+                self.fBreakpoints.append(self.fRootObject.GetXaxis().GetBinUpEdge(ibin))
+                self.fEfficiencyValues.append(1. / self.fRootObject.GetBinContent(ibin))
+
+            self.fEfficiencyValues.append(self.fRootObject.GetBinContent(self.fRootObject.GetNbinsX()))
+
+        elif isinstance(self.fRootObject, ROOT.TGraph):
+            for ipoint in range(0, self.fRootObject.GetN()-1):
+                self.fBreakpoints.append(self.fRootObject.GetX()[ipoint] + self.fRootObject.GetErrorX(ipoint))
+                self.fEfficiencyValues.append(1. / self.fRootObject.GetY()[ipoint])
+
+            self.fEfficiencyValues.append(1. / self.fRootObject.GetY()[self.fRootObject.GetN()-1])
+
+        print(len(self.fBreakpoints), self.fBreakpoints)
+        print(len(self.fEfficiencyValues), self.fEfficiencyValues)
+
+    def GetEfficiencyWeight(self, dmeson):
+        i = bisect(self.fBreakpoints, dmeson.fPt)
+        #print("Efficiency weight for pt {0} is at position {1}".format(dmeson.fPt, i))
+        #print("Efficiency is {0}".format(self.fEfficiencyValues[i]))
+        return self.fEfficiencyValues[i]
+
 class DMesonJetDataProjector:
-    def __init__(self, inputPath, train, fileName, taskName, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, maxEvents, effWeight=SimpleWeight()):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -17,6 +75,7 @@ class DMesonJetDataProjector:
         self.fMassAxisTitle = "#it{m}(K#pi) GeV/#it{c}^{2}"
         self.fYieldAxisTitle = "counts"
         self.fChain = None
+        self.fEfficiencyWeight = effWeight
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -28,9 +87,9 @@ class DMesonJetDataProjector:
         for file in files:
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
-        
+
         #self.fChain.Print()
-        
+
     def GetInvMassHisograms(self, trigger, DMesonDef, jetDefinitions, binSet, nMassBins, minMass, maxMass):
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
@@ -55,10 +114,10 @@ class DMesonJetDataProjector:
                 for bin in bins:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
-                    bin.fInvMassHisto.Fill(dmeson.DmesonJet.fInvMass)
+                    bin.fInvMassHisto.Fill(dmeson.DmesonJet.fInvMass, self.fEfficiencyWeight.GetEfficiencyWeight(dmeson.DmesonJet))
 
 class DMesonJetResponseProjector:
-    def __init__(self, inputPath, train, fileName, taskName, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, maxEvents, effWeight=SimpleWeight()):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -68,6 +127,7 @@ class DMesonJetResponseProjector:
         self.fPtHardBin = -1
         self.fPeriod = ""
         self.fWeight = 1
+        self.fEfficiencyWeight = effWeight
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -149,7 +209,11 @@ class DMesonJetResponseProjector:
                     break
 
             self.RecalculateWeight()
+            if dmeson.DmesonJet.fReconstructed.fPt > 0:
+                weff = self.fEfficiencyWeight.GetEfficiencyWeight(dmeson.DmesonJet.fReconstructed)
+            else:
+                weff = 1.
             for r in response.itervalues():
-                r.Fill(dmeson, self.fWeight)
+                r.Fill(dmeson, self.fWeight * weff)
 
         return response

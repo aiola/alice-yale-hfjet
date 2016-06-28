@@ -12,19 +12,25 @@ import ROOT
 globalList = []
 
 def main(config, maxEvents):
-    
+
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
-    
+
     ana = DMesonJetResponse.DMesonJetResponse(config["name"])
-    projector = DMesonJetProjectors.DMesonJetResponseProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents)
+
+    if config["efficiency"]:
+        effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(config["input_path"], config["efficiency"]["file_name"]), config["efficiency"]["list_name"], config["efficiency"]["object_name"])
+    else:
+        effWeight = DMesonJetProjectors.SimpleWeight()
+
+    projector = DMesonJetProjectors.DMesonJetResponseProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents, effWeight)
     ana.SetProjector(projector)
-    
+
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(anaConfig)
         ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
-        
+
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='D meson jet response for 2010 pp MC.')
