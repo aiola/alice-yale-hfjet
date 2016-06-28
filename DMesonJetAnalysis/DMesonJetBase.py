@@ -191,20 +191,29 @@ class DetectorResponse:
             hist.Fill(values, w)
 
     def Fill(self, dmeson, w):
+        jetInfo = False
+        for axis in self.fAxis:
+            if axis.fTruthAxis.fName == "jet_pt" or axis.fTruthAxis.fName == "d_z":
+                jetInfo = True
+                break
+
         jetTruth = getattr(dmeson, "{0}_truth".format(self.fJetName))
         jetMeasured = getattr(dmeson, "{0}_reco".format(self.fJetName))
-
-        if jetTruth.fPt > 0 and jetMeasured.fPt > 0:
-            self.FillResponseMatrix(self.fResponseMatrix, dmeson.DmesonJet.fReconstructed, dmeson.DmesonJet.fGenerated, jetMeasured, jetTruth, w)
         
-        if jetTruth.fPt > 0 and not jetMeasured.fPt > 0:
-            self.FillSpectrum(self.fMissedTruth, dmeson.DmesonJet.fGenerated, jetTruth, w)
-        
-        if jetTruth.fPt > 0:
-            self.FillSpectrum(self.fTruth, dmeson.DmesonJet.fGenerated, jetTruth, w)
+        dMesonTruth = dmeson.DmesonJet.fGenerated
+        dMesonMeasured = dmeson.DmesonJet.fReconstructed
 
-        if jetMeasured.fPt > 0:
-            self.FillSpectrum(self.fMeasured, dmeson.DmesonJet.fReconstructed, jetMeasured, w)
+        if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and jetMeasured.fPt > 0)):
+            self.FillResponseMatrix(self.fResponseMatrix, dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w)
+        
+        if dMesonTruth.fPt > 0 and not dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and not jetMeasured.fPt > 0)):
+            self.FillSpectrum(self.fMissedTruth, dMesonTruth, jetTruth, w)
+        
+        if dMesonTruth.fPt > 0 and (not jetInfo or jetTruth.fPt > 0):
+            self.FillSpectrum(self.fTruth, dMesonTruth, jetTruth, w)
+
+        if dMesonMeasured.fPt > 0 and (not jetInfo or jetMeasured.fPt > 0):
+            self.FillSpectrum(self.fMeasured, dMesonMeasured, jetMeasured, w)
 
 class ResponseAxis:
     def __init__(self, detector, truth):
