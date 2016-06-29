@@ -23,7 +23,7 @@ class DMesonJetAnalysisEngine:
         self.fSpectra = dict()
         for s in spectra:
             name = "{0}_{1}".format(self.fDMeson, s["name"])
-            self.fSpectra[name] = Spectrum(s, name)
+            self.fSpectra[s["name"]] = Spectrum(s, name)
         
     def CreateMassFitter(self, name):
         if "D0" in self.fDMeson:
@@ -282,4 +282,65 @@ class DMesonJetAnalysis:
                                               config["jets"], config["spectra"], self.fProjector)
                 self.fAnalysisEngine.append(eng)
                 eng.Start()
-        
+
+        spectraToCompare = []
+
+        for s in config["spectra"]:
+            dim = 0
+            if s["jet_pt"]: dim += 1
+            if s["d_pt"]: dim += 1
+            if s["d_z"]: dim += 1
+            if dim == 1:
+                spectraToCompare.append(s["name"])
+
+        self.CompareSpectra(spectraToCompare)
+
+    def CompareSpectra(self, spectraNames):
+        if not len(self.fAnalysisEngine) > 1:
+            return []
+        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2]
+        for spectrumName in spectraNames:
+            cname = "{0}_{1}_SpectraComparison".format(self.fName, spectrumName)
+            c = ROOT.TCanvas(cname, cname)
+            c.cd()
+            globalList.append(c)
+            h0 = self.fAnalysisEngine[0].fSpectra[spectrumName].fHistogram.DrawCopy()
+            h0.SetMarkerColor(colors[0])
+            h0.SetLineColor(colors[0])
+            h0.SetMarkerStyle(ROOT.kFullCircle)
+            h0.SetMarkerSize(1.2)
+            globalList.append(h0)
+
+            cname = "{0}_{1}_SpectraComparison_Ratio".format(self.fName, spectrumName)
+            cRatio = ROOT.TCanvas(cname, cname)
+            cRatio.cd()
+            globalList.append(cRatio)
+            leg = ROOT.TLegend(0.15, 0.85, 0.45, 0.7)
+            leg.SetFillStyle(0)
+            leg.SetBorderSize(0)
+            leg.AddEntry(h0, self.fAnalysisEngine[0].fDMeson, "pe")
+            globalList.append(leg)
+            print(zip(colors[1:len(self.fAnalysisEngine)],self.fAnalysisEngine[1:]))
+            for i, (color,eng) in enumerate(zip(colors[1:len(self.fAnalysisEngine)],self.fAnalysisEngine[1:])):
+                print("{0} - Working on {1}".format(i, eng.fDMeson))
+                c.cd()
+                h = eng.fSpectra[spectrumName].fHistogram.DrawCopy("same")
+                h.SetMarkerColor(color)
+                h.SetLineColor(color)
+                h.SetMarkerStyle(ROOT.kOpenCircle)
+                h.SetMarkerSize(1.2)
+                globalList.append(h)
+
+                leg.AddEntry(h, eng.fDMeson, "pe")
+
+                cRatio.cd()
+                hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
+                hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
+                hRatio.Divide(h0)
+                globalList.append(hRatio)
+                if i == 0:
+                    hRatio.Draw()
+                else:
+                    hRatio.Draw("same")
+            c.cd()
+            leg.Draw()
