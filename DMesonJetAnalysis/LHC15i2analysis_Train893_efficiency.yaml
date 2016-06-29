@@ -6,7 +6,7 @@ task_name: AliAnalysisTaskDmesonJetsDetectorResponse
 efficiency: 
   file_name: Jets_EMC_pp_MC_893_894_895_896/LHC15i2_Train893.root
   list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
-  object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency
+  object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_FoldedEfficiency
 analysis:
 - 
   d_meson: [D0]
@@ -35,6 +35,6 @@ analysis:
     name: D_Spectra
     jet_pt: no
     d_pt:
-      truth: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 16, 18, 20, 25, 30]
-      reco: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 16, 18, 20, 25, 30]
+      truth: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 16, 18, 20, 24, 30]
+      reco: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 16, 18, 20, 24, 30]
     d_z: no
