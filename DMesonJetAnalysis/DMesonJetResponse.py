@@ -96,7 +96,10 @@ class DMesonJetResponseEngine:
             h.GetYaxis().SetLabelFont(43)
             h.GetYaxis().SetLabelOffset(0.009)
             h.GetYaxis().SetLabelSize(18)
-            h.Draw("AP")
+            if isinstance(h, ROOT.TGraph):
+                h.Draw("AP")
+            else:
+                h.Draw()
         elif len(resp.fAxis) == 2:
             c = ROOT.TCanvas("{0}_canvas".format(resp.fEfficiency.GetName()), resp.fEfficiency.GetTitle())
             c.SetRightMargin(0.17)
@@ -176,12 +179,19 @@ class DMesonJetResponseEngine:
             h.SetMarkerColor(color)
             h.SetLineColor(color)
             leg.AddEntry(h, h.GetTitle(), "pe")
-            h.Draw("P same")
-            for i in range(0, h.GetN()):
-                y = h.GetY()[i]
-                if y > max:
-                    max = y
-        
+            if isinstance(h, ROOT.TGraph):
+                h.Draw("P same")
+                for i in range(0, h.GetN()):
+                    y = h.GetY()[i]
+                    if y > max:
+                        max = y
+            else:
+                h.Draw("same")
+                for i in range(1, h.GetNbinsX()+1):
+                    y = h.GetBinContent(i)
+                    if y > max:
+                        max = y
+
         leg.Draw()
         globalList.append(leg)
         blank.SetMaximum(max*1.5)
