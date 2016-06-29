@@ -42,28 +42,34 @@ class EfficiencyWeightCalculator:
             return
         self.fRootObject = obj.Clone()
         file.Close()
-        if isinstance(self.fRootObject, ROOT.TH1):
-            for ibin in range(1, self.fRootObject.GetNbinsX()):
-                self.fBreakpoints.append(self.fRootObject.GetXaxis().GetBinUpEdge(ibin))
-                self.fEfficiencyValues.append(1. / self.fRootObject.GetBinContent(ibin))
-
-            self.fEfficiencyValues.append(self.fRootObject.GetBinContent(self.fRootObject.GetNbinsX()))
-
-        elif isinstance(self.fRootObject, ROOT.TGraph):
-            for ipoint in range(0, self.fRootObject.GetN()-1):
-                self.fBreakpoints.append(self.fRootObject.GetX()[ipoint] + self.fRootObject.GetErrorX(ipoint))
-                self.fEfficiencyValues.append(1. / self.fRootObject.GetY()[ipoint])
-
-            self.fEfficiencyValues.append(1. / self.fRootObject.GetY()[self.fRootObject.GetN()-1])
-
-        print(len(self.fBreakpoints), self.fBreakpoints)
-        print(len(self.fEfficiencyValues), self.fEfficiencyValues)
+        print("Efficiency weights loaded from object '{0}/{1}' in file '{2}'".format(listname, objectname, filename))
+#         if isinstance(self.fRootObject, ROOT.TH1):
+#             for ibin in range(1, self.fRootObject.GetNbinsX()):
+#                 self.fBreakpoints.append(self.fRootObject.GetXaxis().GetBinUpEdge(ibin))
+#                 self.fEfficiencyValues.append(1. / self.fRootObject.GetBinContent(ibin))
+# 
+#             self.fEfficiencyValues.append(self.fRootObject.GetBinContent(self.fRootObject.GetNbinsX()))
+# 
+#         elif isinstance(self.fRootObject, ROOT.TGraph):
+#             for ipoint in range(0, self.fRootObject.GetN()-1):
+#                 self.fBreakpoints.append(self.fRootObject.GetX()[ipoint] + self.fRootObject.GetErrorX(ipoint))
+#                 self.fEfficiencyValues.append(1. / self.fRootObject.GetY()[ipoint])
+# 
+#             self.fEfficiencyValues.append(1. / self.fRootObject.GetY()[self.fRootObject.GetN()-1])
+# 
+#         print(len(self.fBreakpoints), self.fBreakpoints)
+#         print(len(self.fEfficiencyValues), self.fEfficiencyValues)
 
     def GetEfficiencyWeight(self, dmeson):
-        i = bisect(self.fBreakpoints, dmeson.fPt)
-        #print("Efficiency weight for pt {0} is at position {1}".format(dmeson.fPt, i))
-        #print("Efficiency is {0}".format(self.fEfficiencyValues[i]))
-        return self.fEfficiencyValues[i]
+#         i = bisect(self.fBreakpoints, dmeson.fPt)
+#         print("Efficiency weight for pt {0} is at position {1}".format(dmeson.fPt, i))
+#         print("Efficiency is {0}".format(self.fEfficiencyValues[i]))
+#         return self.fEfficiencyValues[i]
+        if isinstance(self.fRootObject, ROOT.TH1):
+            return 1. / self.fRootObject.Interpolate(dmeson.fPt)
+
+        elif isinstance(self.fRootObject, ROOT.TGraph):
+            return 1. / self.fRootObject.Eval(dmeson.fPt)
 
 class DMesonJetDataProjector:
     def __init__(self, inputPath, train, fileName, taskName, maxEvents, effWeight=SimpleWeight()):
@@ -214,6 +220,6 @@ class DMesonJetResponseProjector:
             else:
                 weff = 1.
             for r in response.itervalues():
-                r.Fill(dmeson, self.fWeight * weff)
+                r.Fill(dmeson, self.fWeight, weff)
 
         return response
