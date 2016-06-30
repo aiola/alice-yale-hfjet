@@ -168,9 +168,11 @@ class DMesonJetResponseEngine:
         colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2]
         markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond]
         max = 0;
-        leg = ROOT.TLegend(0.15, 0.85, 0.45, 0.7)
+        leg = ROOT.TLegend(0.15, 0.90, 0.45, 0.65)
         leg.SetFillStyle(0)
         leg.SetBorderSize(0)
+        leg.SetTextFont(43)
+        leg.SetTextSize(16)
         for color,marker,eff in zip(colors,markers,resp.fEfficiency1D):
             h = eff.Clone()
             globalList.append(h)
@@ -207,6 +209,8 @@ class DMesonJetResponse:
     def StartAnalysis(self, config):
         axis = dict()
         for resp in config["response"]:
+            if not resp["active"]:
+                continue
             axis[resp["name"]] = []
             axis_names = ["jet_pt", "d_pt", "d_z"]
             for axis_name in axis_names:
