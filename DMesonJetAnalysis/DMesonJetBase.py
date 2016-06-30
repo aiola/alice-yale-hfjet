@@ -27,8 +27,10 @@ class DetectorResponse:
         self.fFoldedEfficiency = None
         if len(self.fAxis) == 2:
             self.fEfficiency1D = []
+            self.fFoldedEfficiency1D = []
         else:
             self.fEfficiency1D = None
+            self.fFoldedEfficiency1D = None
 
     def GenerateRootList(self):
         rlist = ROOT.TList()
@@ -46,11 +48,13 @@ class DetectorResponse:
         if self.fEfficiency1D:
             for eff in self.fEfficiency1D:
                 rlist.Add(eff)
+        if self.fFoldedEfficiency1D:
+            for eff in self.fFoldedEfficiency1D:
+                rlist.Add(eff)
         return rlist
 
     def Generate1DEfficiency(self):
-        self.fReconstructedTruth = self.fResponseMatrix.ProjectionY()
-        self.fReconstructedTruth.SetName("{0}_RecontructedTruth".format(self.fName))
+        self.fReconstructedTruth = self.fResponseMatrix.ProjectionY("{0}_RecontructedTruth".format(self.fName), 1, self.fResponseMatrix.GetNbinsX())
         self.fReconstructedTruth.SetTitle("{0}_RecontructedTruth".format(self.fName))
         #self.fEfficiency = ROOT.TGraphAsymmErrors(self.fReconstructedTruth, self.fTruth, "b(1,1) mode")
         #self.fEfficiency.SetName("{0}_Efficiency".format(self.fName))
@@ -73,10 +77,15 @@ class DetectorResponse:
 
     def GenerateMultiEfficiency(self):
         if  len(self.fAxis) == 2:
+            self.fResponseMatrix.GetAxis(0).SetRange(1, self.fResponseMatrix.GetAxis(0).GetNbins())
+            self.fResponseMatrix.GetAxis(1).SetRange(1, self.fResponseMatrix.GetAxis(1).GetNbins())
             self.fReconstructedTruth = self.fResponseMatrix.Projection(3, 2)
             self.fReconstructedTruth.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
             self.fReconstructedTruth.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
         elif len(self.fAxis) == 3:
+            self.fResponseMatrix.GetAxis(0).SetRange(1, self.fResponseMatrix.GetAxis(0).GetNbins())
+            self.fResponseMatrix.GetAxis(1).SetRange(1, self.fResponseMatrix.GetAxis(1).GetNbins())
+            self.fResponseMatrix.GetAxis(2).SetRange(1, self.fResponseMatrix.GetAxis(2).GetNbins())
             self.fReconstructedTruth = self.fResponseMatrix.Projection(5, 4, 3)
             self.fReconstructedTruth.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
             self.fReconstructedTruth.GetYaxis().SetTitle(self.fAxis[1].fTruthAxis.GetTitle())
@@ -98,21 +107,38 @@ class DetectorResponse:
             self.fEfficiency.GetZaxis().SetTitle("Efficiency")
         
         if  len(self.fAxis) == 2:
+            self.fFoldedTruth = self.FoldResponse(self.fTruth)
+            self.fFoldedTruth.SetName("{0}_FoldedTruth".format(self.fName))
+            self.fFoldedTruth.SetTitle("{0}_FoldedTruth".format(self.fName))
+            self.fFoldedEfficiency = self.GenerateMeasured(self.fAxis, "FoldedEfficiency")
+            self.fFoldedEfficiency.Divide(self.fMeasured, self.fFoldedTruth)
+            self.fFoldedEfficiency.GetXaxis().SetTitle(self.fAxis[0].fDetectorAxis.GetTitle())
+            self.fFoldedEfficiency.GetYaxis().SetTitle(self.fAxis[1].fDetectorAxis.GetTitle())
+            self.fFoldedEfficiency.GetZaxis().SetTitle("FoldedEfficiency")
+
             self.GeneratePartialMultiEfficiency()
-            
-    def IterateResponseMatrix(self, minAxis=0, maxAxis=-1, axis=-1, coord=None):
+
+    def IterateResponseMatrix(self, coord=None, axis=-1, minAxis=0, maxAxis=-1):
         if maxAxis == -1:
-            maxAxis = len(self.fAxis)
+            maxAxis = len(self.fAxis)-1
         if coord is None:
-            coord = array('i',[-1]*len(self.fAxis))
+            coord = array('i',[-1]*(len(self.fAxis)*2))
         if axis == -1:
             axis = minAxis
-        for ibin in range(0, self.fResponseMatrix.GetAxis(axis*2)+2):
+        for ibin in range(0, self.fResponseMatrix.GetAxis(axis).GetNbins()+2):
             coord[axis] = ibin 
-            if axis == maxAxis-1: 
+            if axis == maxAxis: 
                 yield coord
             else:
-                yield self.IterateResponseMatrixMeasured(axis+1, coord)
+                iterNextAxis = self.IterateResponseMatrix(coord, axis+1, minAxis, maxAxis)
+                for coord in iterNextAxis:
+                    yield coord
+
+    def IterateResponseMatrixMeasured(self, coord=None, axis=-1):
+        return self.IterateResponseMatrix(coord, axis, 0, len(self.fAxis)-1)
+
+    def IterateResponseMatrixTruth(self, coord=None, axis=-1):
+        return self.IterateResponseMatrix(coord, axis, len(self.fAxis), len(self.fAxis)*2-1)
 
     def FoldResponse(self, truth):
         meas = self.GenerateMeasured(self.fAxis)
@@ -126,34 +152,134 @@ class DetectorResponse:
                     binContent += self.fResponseMatrix.GetBinContent(xbin, ybin) * truth.GetBinContent(ybin)
                     norm += self.fResponseMatrix.GetBinContent(xbin, ybin)
                     binError += (self.fResponseMatrix.GetBinError(xbin, ybin) * truth.GetBinContent(ybin)) ** 2 + (truth.GetBinError(ybin) * self.fResponseMatrix.GetBinContent(xbin, ybin)) ** 2
-
+                if norm == 0:
+                    continue
                 binError = math.sqrt(binError) / norm
                 binContent /= norm
                 meas.SetBinContent(xbin, binContent)
                 meas.SetBinError(xbin, binError)
+        else:
+            measAxisIter = self.IterateResponseMatrixMeasured()
+            for coord in measAxisIter:
+                binContent = 0
+                binError = 0
+                norm = 0
+                truthAxisIter = self.IterateResponseMatrixTruth(coord)
+                for coord in truthAxisIter:
+                    respMatrixValue = self.GetResponseMatrixBinContent(coord)
+                    respMatrixError = self.GetResponseMatrixBinError(coord)
+                    truthValue = self.GetHistogramBinContent(truth, coord[len(self.fAxis):len(self.fAxis)*2])
+                    truthError = self.GetHistogramBinError(truth, coord[len(self.fAxis):len(self.fAxis)*2])
+                    binContent +=  respMatrixValue * truthValue
+                    norm += respMatrixValue
+                    binError += (respMatrixError * truthValue) ** 2 + (truthError * respMatrixValue) ** 2
+
+                if norm == 0:
+                    continue
+                binError = math.sqrt(binError) / norm
+                binContent /= norm
+                self.SetHistogramBinContent(meas, coord[0:len(self.fAxis)], binContent)
+                self.SetHistogramBinError(meas, coord[0:len(self.fAxis)], binError)
 
         return meas
     
+    def GetResponseMatrixBinContent(self, coord):
+        return self.GetHistogramBinContent(self.fResponseMatrix, coord)
+
+    def GetResponseMatrixBinError(self, coord):
+        return self.GetHistogramBinError(self.fResponseMatrix, coord)
+        
+    def GetHistogramBinContent(self, histo, coord):
+        if len(coord) == 1:
+            return histo.GetBinContent(coord[0])
+        elif len(coord) == 2:
+            return histo.GetBinContent(coord[0], coord[1])
+        elif len(coord) == 3:
+            return histo.GetBinContent(coord[0], coord[1], coord[3])
+        else:
+            return histo.GetBinContent(coord)
+        
+    def GetHistogramBinError(self, histo, coord):
+        if len(coord) == 1:
+            return histo.GetBinError(coord[0])
+        elif len(coord) == 2:
+            return histo.GetBinError(coord[0], coord[1])
+        elif len(coord) == 3:
+            return histo.GetBinError(coord[0], coord[1], coord[3])
+        else:
+            return histo.GetBinError(coord)
+        
+    def SetHistogramBinContent(self, histo, coord, v):
+        if len(coord) == 1:
+            return histo.SetBinContent(coord[0], v)
+        elif len(coord) == 2:
+            return histo.SetBinContent(coord[0], coord[1], v)
+        elif len(coord) == 3:
+            return histo.SetBinContent(coord[0], coord[1], coord[3], v)
+        else:
+            return histo.SetBinContent(coord, v)
+
+    def SetHistogramBinError(self, histo, coord, v):
+        if len(coord) == 1:
+            return histo.SetBinError(coord[0], v)
+        elif len(coord) == 2:
+            return histo.SetBinError(coord[0], coord[1], v)
+        elif len(coord) == 3:
+            return histo.SetBinError(coord[0], coord[1], coord[3], v)
+        else:
+            return histo.SetBinError(coord, v)
+
     def GeneratePartialMultiEfficiency(self):
         for bin in range(1,self.fReconstructedTruth.GetXaxis().GetNbins()+1):
-            binLimits = BinLimits()
-            binLimits.SetFromAxis(self.fAxis[0].fTruthAxis, bin)
-
-            self.fReconstructedTruth.GetXaxis().SetRange(bin, bin)
-            recoTruth = self.fReconstructedTruth.ProjectionY()
-            self.fReconstructedTruth.GetXaxis().SetRange(0, -1)
-            self.fTruth.GetXaxis().SetRange(bin, bin)
-            truth = self.fTruth.ProjectionY()
-            self.fTruth.GetXaxis().SetRange(0, -1)
-
-            #eff = ROOT.TGraphAsymmErrors(recoTruth, truth, "b(1,1) mode")
-            #eff.SetName("{0}_{1}_Efficiency".format(self.fName, binLimits.GetName()))
-            eff = self.GenerateTruth(self.fAxis[1:2], "{0}_Efficiency".format(binLimits.GetName()))
-            eff.SetTitle(binLimits.GetTitle())
-            eff.Divide(recoTruth, truth)
-            eff.GetXaxis().SetTitle(self.fAxis[0].fTruthAxis.GetTitle())
-            eff.GetYaxis().SetTitle("Efficiency")
+            eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fTruthAxis, bin, self.fTruth, self.fReconstructedTruth, "Efficiency")
             self.fEfficiency1D.append(eff)
+        eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fTruthAxis, 0, self.fTruth, self.fReconstructedTruth, "Efficiency")
+        self.fEfficiency1D.append(eff)
+        eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fTruthAxis, -1, self.fTruth, self.fReconstructedTruth, "Efficiency")
+        self.fEfficiency1D.append(eff)
+
+        for bin in range(1,self.fMeasured.GetXaxis().GetNbins()+1):
+            self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fDetectorAxis, bin, self.fFoldedTruth, self.fMeasured, "FoldedEfficiency")
+            self.fFoldedEfficiency1D.append(eff)
+        self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fDetectorAxis, 0, self.fFoldedTruth, self.fMeasured, "FoldedEfficiency")
+        self.fFoldedEfficiency1D.append(eff)
+        self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fDetectorAxis, -1, self.fFoldedTruth, self.fMeasured, "FoldedEfficiency")
+        self.fFoldedEfficiency1D.append(eff)
+
+    def GeneratePartialMultiEfficiencyForBin(self, axis, axisProj, bin, truth, recoTruth, name):
+        if bin >= 0:
+            binLimits = BinLimits()
+            binLimits.SetFromAxis(axisProj, bin)
+            binName = binLimits.GetName()
+            binTitle = binLimits.GetTitle()
+        else:
+            binName = "NoJet"
+            binTitle = "All, no jet requirement"
+
+        print("{0}: Generating {1} for bin {2}".format(self.fName, name, binTitle))
+
+        if bin == -1:
+            recoTruthProj = recoTruth.ProjectionY("recoTruthProj", 0, recoTruth.GetXaxis().GetNbins()+1)
+            truthProj = truth.ProjectionY("truthProj", 0, truth.GetXaxis().GetNbins()+1)
+        elif bin == 0:
+            recoTruthProj = recoTruth.ProjectionY("recoTruthProj", 1, recoTruth.GetXaxis().GetNbins())
+            truthProj = truth.ProjectionY("truthProj", 1, truth.GetXaxis().GetNbins())
+        else:
+            recoTruthProj = recoTruth.ProjectionY("recoTruthProj", bin, bin)
+            truthProj = truth.ProjectionY("truthProj", bin, bin)
+
+        #eff = ROOT.TGraphAsymmErrors(recoTruthProj, truthProj, "b(1,1) mode")
+        #eff.SetName("{0}_{1}".format(binName, name))
+        if name == "Efficiency":
+            eff = self.GenerateTruth([axis], "{0}_{1}".format(binName, name))
+        elif name == "FoldedEfficiency":
+            eff = self.GenerateMeasured([axis], "{0}_{1}".format(binName, name))
+        eff.SetTitle(binTitle)
+        eff.Divide(recoTruthProj, truthProj)
+        eff.GetXaxis().SetTitle(axisProj.GetTitle())
+        eff.GetYaxis().SetTitle("Efficiency")
+
+        return eff
 
     def GenerateEfficiency(self):
         if len(self.fAxis) == 1:
@@ -250,7 +376,7 @@ class DetectorResponse:
         else:
             hist.Fill(values, w)
 
-    def Fill(self, dmeson, w, weff):
+    def Fill(self, dmeson, w, effWeight):
         jetInfo = False
         for axis in self.fAxis:
             if axis.fTruthAxis.fName == "jet_pt" or axis.fTruthAxis.fName == "d_z":
@@ -262,16 +388,18 @@ class DetectorResponse:
 
         dMesonTruth = dmeson.DmesonJet.fGenerated
         dMesonMeasured = dmeson.DmesonJet.fReconstructed
+        
+        weff = effWeight.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
 
-        if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and jetMeasured.fPt > 0)):
-            self.FillResponseMatrix(self.fResponseMatrix, dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
-            self.FillSpectrum(self.fMeasured, dMesonMeasured, jetMeasured, w*weff)
+        #if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and jetMeasured.fPt > 0)):
+        self.FillResponseMatrix(self.fResponseMatrix, dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
+        self.FillSpectrum(self.fMeasured, dMesonMeasured, jetMeasured, w*weff)
 
-        if dMesonTruth.fPt > 0 and not dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and not jetMeasured.fPt > 0)):
-            self.FillSpectrum(self.fMissedTruth, dMesonTruth, jetTruth, w)
+        #if dMesonTruth.fPt > 0 and not dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and not jetMeasured.fPt > 0)):
+        #self.FillSpectrum(self.fMissedTruth, dMesonTruth, jetTruth, w)
 
-        if dMesonTruth.fPt > 0 and (not jetInfo or jetTruth.fPt > 0):
-            self.FillSpectrum(self.fTruth, dMesonTruth, jetTruth, w)
+        #if dMesonTruth.fPt > 0 and (not jetInfo or jetTruth.fPt > 0):
+        self.FillSpectrum(self.fTruth, dMesonTruth, jetTruth, w)
 
         #if dMesonMeasured.fPt > 0 and (not jetInfo or jetMeasured.fPt > 0):
         #    if not dMesonTruth.fPt > 0:
@@ -366,18 +494,30 @@ class BinLimits:
 
         if axis.fName == "jet_pt":
             self.fShowJetPt = True
-            self.fJetPtMin = axis.fBins[binIndex-1]
-            self.fJetPtMax = axis.fBins[binIndex]
+            if binIndex == 0:
+                self.fJetPtMin = axis.fBins[0]
+                self.fJetPtMax = axis.fBins[-1]
+            else:
+                self.fJetPtMin = axis.fBins[binIndex-1]
+                self.fJetPtMax = axis.fBins[binIndex]                
 
         if axis.fName == "d_pt":
             self.fShowDPt = True
-            self.fDPtMin = axis.fBins[binIndex-1]
-            self.fDPtMax = axis.fBins[binIndex]
+            if binIndex == 0:
+                self.fDPtMin = axis.fBins[0]
+                self.fDPtMax = axis.fBins[-1]
+            else:
+                self.fDPtMin = axis.fBins[binIndex-1]
+                self.fDPtMax = axis.fBins[binIndex]
 
         if axis.fName == "d_z":
             self.fShowDZ = True
-            self.fDZMin = axis.fBins[binIndex-1]
-            self.fDZMax = axis.fBins[binIndex]
+            if binIndex == 0:
+                self.fDZMin = axis.fBins[0]
+                self.fDZMax = axis.fBins[-1]
+            else:
+                self.fDZMin = axis.fBins[binIndex-1]
+                self.fDZMax = axis.fBins[binIndex]
       
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
