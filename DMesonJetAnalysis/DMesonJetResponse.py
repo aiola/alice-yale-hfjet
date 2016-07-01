@@ -33,6 +33,7 @@ class DMesonJetResponseEngine:
 
     def GenerateEfficiency(self):
         for resp in self.fResponses.itervalues():
+            resp.GenerateFoldedTruth()
             resp.GenerateEfficiency()
 
     def PlotResponse(self):
