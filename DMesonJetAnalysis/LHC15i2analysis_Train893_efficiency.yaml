@@ -3,10 +3,6 @@ input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_893_894_895_896
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJetsDetectorResponse
-efficiency: 
-  file_name: Jets_EMC_pp_MC_893_894_895_896/LHC15i2_Train893.root
-  list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
-  object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_FoldedEfficiency
 analysis:
 - 
   d_meson: [D0]
@@ -17,6 +13,10 @@ analysis:
   response:
   -
     name: D_Tagged_Jet_Spectrum
+    efficiency: 
+      file_name: Jets_EMC_pp_MC_893_894_895_896/LHC15i2_Train893.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_FoldedEfficiency
     active: yes
     jet_pt:
       truth: [5, 6, 8, 10, 14, 18, 24]
@@ -25,6 +25,10 @@ analysis:
     d_z: no
   -
     name: D_Fragmentation_JetPt_Spectra
+    efficiency: 
+      file_name: Jets_EMC_pp_MC_893_894_895_896/LHC15i2_Train893.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_FoldedEfficiency
     active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
@@ -35,6 +39,10 @@ analysis:
       reco: [0.2, 0.4, 0.6, 0.8, 1.0]
   -
     name: D_Spectra
+    efficiency:
+      file_name: Jets_EMC_pp_MC_893_894_895_896/LHC15i2_Train893.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_FoldedEfficiency
     active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
@@ -45,6 +53,10 @@ analysis:
     d_z: no
   -
     name: D_Spectra_simple
+    efficiency: 
+      file_name: Jets_EMC_pp_MC_893_894_895_896/LHC15i2_Train893.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_FoldedEfficiency
     active: yes
     jet_pt: no
     d_pt:

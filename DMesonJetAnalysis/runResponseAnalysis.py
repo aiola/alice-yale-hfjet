@@ -19,12 +19,7 @@ def main(config, maxEvents):
 
     ana = DMesonJetResponse.DMesonJetResponse(config["name"])
 
-    if config["efficiency"]:
-        effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(config["input_path"], config["efficiency"]["file_name"]), config["efficiency"]["list_name"], config["efficiency"]["object_name"])
-    else:
-        effWeight = DMesonJetProjectors.SimpleWeight()
-
-    projector = DMesonJetProjectors.DMesonJetResponseProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents, effWeight)
+    projector = DMesonJetProjectors.DMesonJetResponseProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:

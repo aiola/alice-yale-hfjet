@@ -13,7 +13,8 @@ def find_file(path, file_name):
                 yield os.path.join(root, file)
 
 class DetectorResponse:
-    def __init__(self, name, jetName, axis):
+    def __init__(self, name, jetName, axis, weightEff):
+        self.fWeightEfficiency = weightEff
         self.fAxis = axis
         self.fJetInfo = False
         for a in self.fAxis:
@@ -411,7 +412,7 @@ class DetectorResponse:
                 self.FillSpectrum(self.fReconstructedTruth1D[bin], dmeson, jet, w)
                 self.FillSpectrum(self.fReconstructedTruth1D[0], dmeson, jet, w)
 
-    def Fill(self, dmeson, w, effWeight):
+    def Fill(self, dmeson, w):
         if self.fJetInfo:
             jetTruth = getattr(dmeson, "{0}_truth".format(self.fJetName))
             jetMeasured = getattr(dmeson, "{0}_reco".format(self.fJetName))
@@ -422,7 +423,7 @@ class DetectorResponse:
         dMesonTruth = dmeson.DmesonJet.fGenerated
         dMesonMeasured = dmeson.DmesonJet.fReconstructed
 
-        weff = effWeight.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
+        weff = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, self.fJetName)
 
         if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
             self.FillResponseMatrix(self.fResponseMatrix, dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
