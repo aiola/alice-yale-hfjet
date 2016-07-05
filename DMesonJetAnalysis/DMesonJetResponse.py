@@ -212,17 +212,23 @@ class DMesonJetResponse:
         for resp in config["response"]:
             if not resp["active"]:
                 continue
-            axis[resp["name"]] = []
+            if resp["efficiency"]:
+                effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"]), resp["efficiency"]["list_name"], resp["efficiency"]["object_name"])
+            else:
+                effWeight = DMesonJetProjectors.SimpleWeight()
+            axis_list = []
             axis_names = ["jet_pt", "d_pt", "d_z"]
             for axis_name in axis_names:
                 if resp[axis_name]:
-                    axis[resp["name"]].append(ResponseAxis(Axis(axis_name, resp[axis_name]["reco"], "reco"), Axis(axis_name, resp[axis_name]["truth"], "truth")))
-        
+                    axis_list.append(ResponseAxis(Axis(axis_name, resp[axis_name]["reco"], "reco"), Axis(axis_name, resp[axis_name]["truth"], "truth")))
+
+            axis[resp["name"]] = axis_list, effWeight
+
         for d_meson in config["d_meson"]:
             eng = DMesonJetResponseEngine(d_meson, config["jets"], axis, self.fProjector)
             self.fResponseEngine.append(eng)
             eng.Start()
-            
+
     def SaveRootFile(self, path):
         file = ROOT.TFile.Open("{0}/{1}.root".format(path, self.fName), "recreate")
         file.cd()
