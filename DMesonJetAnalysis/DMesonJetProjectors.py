@@ -72,7 +72,7 @@ class EfficiencyWeightCalculator:
 #            eff = self.fRootObject.Interpolate(jet.fPt, dmeson.DmesonJet.fReconstructed.fPt)
         eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(jet.fPt, dmeson.DmesonJet.fReconstructed.fPt))
         #print("pT,D = {0}, pTjet = {1}, eff = {2}".format(dmeson.DmesonJet.fReconstructed.fPt, jet.fPt, eff))
-        
+
         if eff == 0:
             return 0
         else:
