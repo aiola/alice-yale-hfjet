@@ -166,8 +166,8 @@ class DMesonJetResponseEngine:
         blank.GetYaxis().SetLabelSize(18)
         blank.Draw()
         globalList.append(blank)
-        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2]
-        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond]
+        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2, ROOT.kAzure+2, ROOT.kPink+2]
+        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross]
         max = 0;
         leg = ROOT.TLegend(0.15, 0.90, 0.45, 0.65)
         leg.SetFillStyle(0)
