@@ -6,7 +6,7 @@ import ROOT
 import helperFunctions
 import yaml
 
-def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doResponse,
+def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doResponse, noInclusiveJets,
          taskName="JetDmesonAna", debugLevel=0):
     
     f = open(configFileName, 'r')
@@ -78,38 +78,39 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     pSpectraTask.SelectCollisionCandidates(physSel)
     pSpectraTask.SetPtBin(1, 150)
 
-    #Charged jet analysis
-    if config["charged_jets"]:
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
-        pChJetTask.SelectCollisionCandidates(physSel)
-
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
-        pChJetTask.SelectCollisionCandidates(physSel)
-
-    #Full jet analysis
-    if config["full_jets"]:
-        pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
-        pJetTask.SelectCollisionCandidates(physSel)
-
-        pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
-        pJetTask.SelectCollisionCandidates(physSel)
-
-    if config["full_jets"]:
-        pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "usedefault")
-        pJetSpectraTask.SetNeedEmcalGeom(True)
-    else:
-        pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "")
-        pJetSpectraTask.SetNeedEmcalGeom(False)
-                
-    pJetSpectraTask.SelectCollisionCandidates(physSel)
-
-    if config["charged_jets"]:
-        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
-        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
-
-    if config["full_jets"]:
-        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
-        pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
+    if not noInclusiveJets:
+        #Charged jet analysis
+        if config["charged_jets"]:
+            pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pChJetTask.SelectCollisionCandidates(physSel)
+    
+            pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pChJetTask.SelectCollisionCandidates(physSel)
+    
+        #Full jet analysis
+        if config["full_jets"]:
+            pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pJetTask.SelectCollisionCandidates(physSel)
+    
+            pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pJetTask.SelectCollisionCandidates(physSel)
+    
+        if config["full_jets"]:
+            pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "usedefault")
+            pJetSpectraTask.SetNeedEmcalGeom(True)
+        else:
+            pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "")
+            pJetSpectraTask.SetNeedEmcalGeom(False)
+                    
+        pJetSpectraTask.SelectCollisionCandidates(physSel)
+    
+        if config["charged_jets"]:
+            pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
+            pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
+    
+        if config["full_jets"]:
+            pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
+            pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
 
     nOutputTrees = 0
 
@@ -269,6 +270,9 @@ if __name__ == '__main__':
     parser.add_argument('--no-mc-truth', action='store_const',
                         default=False, const=True,
                         help='MC truth analysis')
+    parser.add_argument('--no-incl-jets', action='store_const',
+                        default=False, const=True,
+                        help='No inclusive jets')
     parser.add_argument('--response', action='store_const',
                         default=False, const=True,
                         help='MC truth analysis')
@@ -281,5 +285,5 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
     
-    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response,
+    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response, args.no_incl_jets,
          args.task_name, args.debug_level)
