@@ -253,7 +253,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-grid', action='store_const',
                         default=False, const=True,
                         help='Test grid mode')
-    parser.add_argument("--update", actiaio='store_const',
+    parser.add_argument("--update", action='store_const',
                         default=False, const = True,
                         help='Update all scripts and macros on the grid.')
     args = parser.parse_args()
