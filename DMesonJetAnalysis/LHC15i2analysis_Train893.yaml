@@ -14,7 +14,7 @@ analysis:
   -
     name: D_Tagged_Jet_Spectrum
     efficiency: no
-    active: no
+    active: yes
     jet_pt:
       truth: [5, 6, 8, 10, 14, 18, 24]
       reco: [5, 6, 8, 10, 14, 18, 24]
@@ -23,7 +23,7 @@ analysis:
   -
     name: D_Fragmentation_JetPt_Spectra
     efficiency: no
-    active: no
+    active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
       reco: [5, 8, 13, 24]
@@ -34,7 +34,7 @@ analysis:
   -
     name: D_Spectra
     efficiency: no
-    active: no
+    active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
       reco: [5, 8, 13, 24]
