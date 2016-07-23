@@ -247,6 +247,7 @@ class DMesonJetResponse:
         
     def SavePlots(self, path, format):
         fullPath = "{0}/{1}/{2}".format(path, self.fName, format)
-        os.makedirs(fullPath)
+        if not os.path.isdir(fullPath):
+            os.makedirs(fullPath)
         for eng in self.fResponseEngine:
             eng.SavePlots(fullPath, format)
