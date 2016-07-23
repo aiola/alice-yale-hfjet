@@ -7,6 +7,7 @@ import DMesonJetProjectors
 from DMesonJetBase import *
 from array import array
 from copy import deepcopy
+import os
 
 globalList = []
 
@@ -17,11 +18,16 @@ class DMesonJetResponseEngine:
         self.fProjector = projector
         self.fAxis = axis
         self.fResponses = None
+        self.fCanvases = []
         
     def SaveRootFile(self, file):
         for resp in self.fResponses.itervalues():
             rlist = resp.GenerateRootList()
             rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
+    
+    def SavePlots(self, path, format):
+        for c in self.fCanvases:
+            c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
     
     def ProjectResponse(self):
         self.fResponses = self.fProjector.GetDetectorResponse(self.fAxis, self.fDMeson, self.fJetDefinitions)
@@ -70,6 +76,7 @@ class DMesonJetResponseEngine:
             h.GetZaxis().SetLabelSize(19)
             globalList.append(h)
             globalList.append(c)
+            self.fCanvases.append(c)
 
     def PlotEfficiency(self, resp):
         if len(resp.fAxis) == 1:
@@ -131,6 +138,7 @@ class DMesonJetResponseEngine:
 
         globalList.append(h)
         globalList.append(c)
+        self.fCanvases.append(c)
         
     def GenerateMultiCanvas(self, name, n):
         rows = int(math.floor(math.sqrt(n)))
@@ -139,6 +147,7 @@ class DMesonJetResponseEngine:
         c = ROOT.TCanvas(cname, cname, cols*400, rows*400)
         c.Divide(cols, rows)
         globalList.append(c)
+        self.fCanvases.append(c)
         return c
     
     def PlotPartialMultiEfficiency(self, resp):
@@ -150,6 +159,7 @@ class DMesonJetResponseEngine:
         c.SetRightMargin(0.08)
         c.cd()
         globalList.append(c)
+        self.fCanvases.append(c)
         blank = ROOT.TH1D("blankHist", "blankHist;{0};Efficiency".format(resp.fAxis[1].fTruthAxis.GetTitle()), 100, resp.fAxis[1].fTruthAxis.fBins[0], resp.fAxis[1].fTruthAxis.fBins[-1])
         blank.GetXaxis().SetTitleFont(43)
         blank.GetXaxis().SetTitleOffset(1.2)
@@ -234,3 +244,9 @@ class DMesonJetResponse:
         for eng in self.fResponseEngine:
             eng.SaveRootFile(file)
         file.Close()
+        
+    def SavePlots(self, path, format):
+        fullPath = "{0}/{1}/{2}".format(path, self.fName, format)
+        os.makedirs(fullPath)
+        for eng in self.fResponseEngine:
+            eng.SavePlots(fullPath, format)

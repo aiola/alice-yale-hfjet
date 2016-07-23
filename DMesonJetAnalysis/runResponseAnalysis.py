@@ -24,7 +24,9 @@ def main(config, maxEvents):
 
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(anaConfig)
-        ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
+    
+    ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
+    ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), "pdf")
 
 if __name__ == '__main__':
     
