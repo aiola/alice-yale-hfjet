@@ -365,14 +365,20 @@ class DetectorResponse:
         dMesonTruth = dmeson.DmesonJet.fGenerated
         dMesonMeasured = dmeson.DmesonJet.fReconstructed
 
+        jetInfo = False
+        for axis in self.fAxis:
+            if axis.fTruthAxis.fName == "jet_pt" or axis.fTruthAxis.fName == "d_z":
+                jetInfo = True
+                break
+
         weff = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, self.fJetName)
 
-        if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
+        if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0 and (not jetInfo or (jetTruth.fPt > 0 and jetMeasured.fPt > 0)):
             self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
             self.FillMeasured(dMesonMeasured, jetMeasured, w*weff)
             self.FillRecoTruth(dMesonTruth, jetTruth, w*weff)
 
-        if dMesonTruth.fPt > 0:
+        if dMesonTruth.fPt > 0 and (not jetInfo or jetTruth.fPt > 0):
             self.FillTruth(dMesonTruth, jetTruth, w)
 
 class ResponseAxis:
