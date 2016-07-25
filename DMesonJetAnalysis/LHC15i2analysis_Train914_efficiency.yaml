@@ -1,4 +1,4 @@
-name: LHC15i2_Train914
+name: LHC15i2_Train914_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_914_915_916_917
 file_name: AnalysisResults.root
@@ -13,7 +13,10 @@ analysis:
   response:
   -
     name: D_Tagged_Jet_Spectrum
-    efficiency: no
+    efficiency: 
+      file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
     active: yes
     jet_pt:
       truth: [5, 6, 8, 10, 14, 18, 24]
@@ -22,7 +25,10 @@ analysis:
     d_z: no
   -
     name: D_Fragmentation_JetPt_Spectra
-    efficiency: no
+    efficiency: 
+      file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
     active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
@@ -33,7 +39,10 @@ analysis:
       reco: [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.0]
   -
     name: D_Spectra
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
     active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
@@ -44,7 +53,10 @@ analysis:
     d_z: no
   -
     name: D_Spectra_simple
-    efficiency: no
+    efficiency: 
+      file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
     active: yes
     jet_pt: no
     d_pt:
