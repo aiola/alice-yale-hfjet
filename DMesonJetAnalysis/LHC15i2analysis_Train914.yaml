@@ -1,0 +1,53 @@
+name: LHC15i2_Train914
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_MC_914_915_916_917
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJetsDetectorResponse
+analysis:
+- 
+  d_meson: [D0]
+  jets:
+  -
+    type: Charged
+    radius: R040
+  response:
+  -
+    name: D_Tagged_Jet_Spectrum
+    efficiency: no
+    active: yes
+    jet_pt:
+      truth: [5, 6, 8, 10, 14, 18, 24]
+      reco: [5, 6, 8, 10, 14, 18, 24]
+    d_pt: no
+    d_z: no
+  -
+    name: D_Fragmentation_JetPt_Spectra
+    efficiency: no
+    active: yes
+    jet_pt:
+      truth: [5, 8, 13, 24]
+      reco: [5, 8, 13, 24]
+    d_pt: no
+    d_z:
+      truth: [0.2, 0.4, 0.6, 0.8, 1.0]
+      reco: [0.2, 0.4, 0.6, 0.8, 1.0]
+  -
+    name: D_Spectra
+    efficiency: no
+    active: yes
+    jet_pt:
+      truth: [5, 8, 13, 24]
+      reco: [5, 8, 13, 24]
+    d_pt:
+      truth: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 12, 14, 18, 24, 30]
+      reco: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 12, 14, 18, 24, 30]
+    d_z: no
+  -
+    name: D_Spectra_simple
+    efficiency: no
+    active: yes
+    jet_pt: no
+    d_pt:
+      truth: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 12, 14, 18, 24, 30]
+      reco: [0.5, 1, 1.5, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 12, 14, 18, 24, 30]
+    d_z: no
