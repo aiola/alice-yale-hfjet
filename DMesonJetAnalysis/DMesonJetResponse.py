@@ -231,7 +231,12 @@ class DMesonJetResponse:
                 if resp[axis_name]:
                     axis_list.append(ResponseAxis(Axis(axis_name, resp[axis_name]["reco"], "reco"), Axis(axis_name, resp[axis_name]["truth"], "truth")))
 
-            axis[resp["name"]] = axis_list, effWeight
+            if "cuts" in resp:
+                cut_list = resp["cuts"]
+            else:
+                cut_list = []
+
+            axis[resp["name"]] = axis_list, effWeight, cut_list
 
         for d_meson in config["d_meson"]:
             eng = DMesonJetResponseEngine(d_meson, config["jets"], axis, self.fProjector)
