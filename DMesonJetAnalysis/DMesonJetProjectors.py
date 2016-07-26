@@ -215,9 +215,9 @@ class DMesonJetResponseProjector:
         response = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-            for axisName,(axisDef, weightEff) in respDefinitions.iteritems():
+            for axisName,(axisDef, weightEff, cuts) in respDefinitions.iteritems():
                 respName = "{0}_{1}_{2}".format(DMesonDef, jetName, axisName)
-                response[respName] = DetectorResponse(respName, jetName, axisDef, weightEff)
+                response[respName] = DetectorResponse(respName, jetName, axisDef, cuts, weightEff)
                 treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
 
         self.GenerateChain(treeName)

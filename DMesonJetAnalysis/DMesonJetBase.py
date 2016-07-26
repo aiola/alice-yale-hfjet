@@ -13,9 +13,10 @@ def find_file(path, file_name):
                 yield os.path.join(root, file)
 
 class DetectorResponse:
-    def __init__(self, name, jetName, axis, weightEff):
+    def __init__(self, name, jetName, axis, cuts, weightEff):
         self.fWeightEfficiency = weightEff
         self.fAxis = axis
+        self.fCuts = cuts
         self.fJetInfo = False
         for a in self.fAxis:
             if a.fTruthAxis.fName == "jet_pt" or a.fTruthAxis.fName == "d_z":
@@ -343,14 +344,14 @@ class DetectorResponse:
 
     def FillRecoTruth(self, dmeson, jet, w):
         if not jet or jet.fPt > 0:
-            self.FillSpectrum([a.fDetectorAxis.fName for a in self.fAxis], self.fReconstructedTruth, dmeson, jet, w)
+            self.FillSpectrum([a.fTruthAxis.fName for a in self.fAxis], self.fReconstructedTruth, dmeson, jet, w)
 
         if self.fReconstructedTruth1D and jet:
-            self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fReconstructedTruth1D[self.fReconstructedTruth.GetNbinsX()+1], dmeson, jet, w)
+            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[self.fReconstructedTruth.GetNbinsX()+1], dmeson, jet, w)
             bin = self.fReconstructedTruth.GetXaxis().FindBin(jet.fPt)
             if bin >= 1 and bin <= self.fReconstructedTruth.GetNbinsX():
-                self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fReconstructedTruth1D[bin], dmeson, jet, w)
-                self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fReconstructedTruth1D[0], dmeson, jet, w)
+                self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[bin], dmeson, jet, w)
+                self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[0], dmeson, jet, w)
 
     def Fill(self, dmeson, w):
         if self.fJetInfo:
@@ -366,12 +367,30 @@ class DetectorResponse:
         weff = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, self.fJetName)
 
         if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
-            self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
-            self.FillMeasured(dMesonMeasured, jetMeasured, w*weff)
-            self.FillRecoTruth(dMesonTruth, jetTruth, w*weff)
+            if self.ApplyCuts(dMesonMeasured, jetMeasured):
+                self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
+                self.FillMeasured(dMesonMeasured, jetMeasured, w*weff)
+                self.FillRecoTruth(dMesonTruth, jetTruth, w*weff)
 
         if dMesonTruth.fPt > 0:
-            self.FillTruth(dMesonTruth, jetTruth, w)
+            if self.ApplyCuts(dMesonTruth, jetTruth):
+                self.FillTruth(dMesonTruth, jetTruth, w)
+
+    def ApplyCuts(self, dmeson, jet):
+        for cut in self.fCuts:
+            if cut["object"] == "d" and dmeson:
+                v = getattr(dmeson, cut["variable"])
+                if "min" in cut and v < cut["min"]:
+                    return False
+                if "max" in cut and v > cut["max"]:
+                    return False
+            if cut["object"] == "jet" and jet:
+                v = getattr(dmeson, cut["variable"])
+                if "min" in cut and v < cut["min"]:
+                    return False
+                if "max" in cut and v > cut["max"]:
+                    return False
+        return True
 
 class ResponseAxis:
     def __init__(self, detector, truth):
