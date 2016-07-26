@@ -15,8 +15,8 @@ analysis:
     name: D_Tagged_Jet_Spectrum
     efficiency: 
       file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
     active: yes
     jet_pt:
       truth: [5, 6, 8, 10, 14, 18, 24]
@@ -42,8 +42,8 @@ analysis:
     name: D_Fragmentation_JetPt_Spectra
     efficiency: 
       file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
     active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
@@ -67,8 +67,8 @@ analysis:
     name: D_Spectra
     efficiency:
       file_name: Jets_EMC_pp_MC_914_915_916_917/LHC15i2_Train914.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_simple_Efficiency
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
     active: yes
     jet_pt:
       truth: [5, 8, 13, 24]
