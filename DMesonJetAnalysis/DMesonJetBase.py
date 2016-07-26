@@ -208,11 +208,12 @@ class DetectorResponse:
             self.fEfficiency1D.append(eff)
 
     def GeneratePartialMultiEfficiencyForBin(self, axis, axisProj, bin, truth, recoTruth):
-        #hname = truth.GetName().replace("Truth", "Efficiency")
+        hname = truth.GetName().replace("Truth", "Efficiency")
         #eff = ROOT.TGraphAsymmErrors(recoTruthProj, truthProj, "b(1,1) mode")
         #eff.SetName("{0}_{1}".format(binName, name))
 
         eff = self.GenerateTruth([axis], "Efficiency")
+        eff.SetName(hname)
         eff.SetTitle(truth.GetTitle())
         eff.GetYaxis().SetTitle("Efficiency")
         eff.Divide(recoTruth, truth)
