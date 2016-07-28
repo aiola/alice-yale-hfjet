@@ -151,7 +151,11 @@ class DMesonJetResponseEngine:
         return c
     
     def PlotPartialMultiEfficiency(self, resp):
-        cname = "{0}_{1}_PartialEfficiency".format(self.fDMeson, resp.fName)
+        self.PlotMultiHistogram(resp, "PartialEfficiency", "Efficiency", "fEfficiency1D")
+        self.PlotMultiHistogram(resp, "PartialEfficiencyRatios", "Ratio", "fEfficiency1DRatios")
+        
+    def PlotMultiHistogram(self, resp, name, yaxisTitle, listName):
+        cname = "{0}_{1}_{2}".format(self.fDMeson, resp.fName, name)
         c = ROOT.TCanvas(cname, cname)
         c.SetLeftMargin(0.12)
         c.SetBottomMargin(0.12)
@@ -160,7 +164,7 @@ class DMesonJetResponseEngine:
         c.cd()
         globalList.append(c)
         self.fCanvases.append(c)
-        blank = ROOT.TH1D("blankHist", "blankHist;{0};Efficiency".format(resp.fAxis[1].fTruthAxis.GetTitle()), 100, resp.fAxis[1].fTruthAxis.fBins[0], resp.fAxis[1].fTruthAxis.fBins[-1])
+        blank = ROOT.TH1D("blankHist", "blankHist;{0};{1}".format(resp.fAxis[1].fTruthAxis.GetTitle(), yaxisTitle), 100, resp.fAxis[1].fTruthAxis.fBins[0], resp.fAxis[1].fTruthAxis.fBins[-1])
         blank.GetXaxis().SetTitleFont(43)
         blank.GetXaxis().SetTitleOffset(1.2)
         blank.GetXaxis().SetTitleSize(19)
@@ -183,7 +187,8 @@ class DMesonJetResponseEngine:
         leg.SetBorderSize(0)
         leg.SetTextFont(43)
         leg.SetTextSize(16)
-        for color,marker,eff in zip(colors,markers,resp.fEfficiency1D):
+        histList = getattr(resp, listName)
+        for color,marker,eff in zip(colors,markers,histList):
             h = eff.Clone()
             globalList.append(h)
             h.SetMarkerStyle(marker)

@@ -35,12 +35,14 @@ class DetectorResponse:
             self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in range(0, len(self.fAxis[0].fDetectorAxis.fBins)+1)]
             self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "RecontructedTruth") for bin in range(0, len(self.fAxis[0].fDetectorAxis.fBins)+1)]
             self.fEfficiency1D = []
+            self.fEfficiency1DRatios = []
         else:
             self.fResponseMatrix1D = None
             self.fTruth1D = None
             self.fMeasured1D = None
             self.fReconstructedTruth1D = None
             self.fEfficiency1D = None
+            self.fEfficiency1DRatios = None
             
     def GenerateLowerDimensionHistogram(self, axisProj, axis, bin, name):
         if bin >= 0 and bin < len(axisProj.fBins):
@@ -206,6 +208,15 @@ class DetectorResponse:
         for bin,(truth,recoTruth) in enumerate(zip(self.fTruth1D, self.fReconstructedTruth1D)):
             eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fTruthAxis, bin, truth, recoTruth)
             self.fEfficiency1D.append(eff)
+            ratio = self.MakeComparisonRatio(eff, self.fEfficiency1D[0])
+            self.fEfficiency1DRatios.append(ratio)
+
+    def MakeComparisonRatio(self, num, den):
+        hname = "{0}_Over_{1}".format(num.GetName(), den.GetName()) 
+        ratio = num.Clone(hname)
+        ratio.Divide(den)
+        ratio.GetYaxis().SetTitle("ratio")
+        return ratio
 
     def GeneratePartialMultiEfficiencyForBin(self, axis, axisProj, bin, truth, recoTruth):
         hname = truth.GetName().replace("Truth", "Efficiency")
