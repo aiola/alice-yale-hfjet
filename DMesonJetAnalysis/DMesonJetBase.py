@@ -17,7 +17,7 @@ class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
         self.fWeightEfficiency = weightEff
         self.fAxis = axis
-        self.fCuts = cuts
+        self.fCuts = DMesonJetCuts(cuts)
         self.fJetInfo = False
         for a in self.fAxis:
             if "jet" in a.fTruthAxis.fName or a.fTruthAxis.fName == "d_z":
@@ -392,30 +392,14 @@ class DetectorResponse:
         weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
 
         if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
-            if self.ApplyCuts(dMesonMeasured, jetMeasured):
+            if self.fCuts.ApplyCuts(dMesonMeasured, jetMeasured):
                 self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
                 self.FillMeasured(dMesonMeasured, jetMeasured, w*weff)
                 self.FillRecoTruth(dMesonTruth, jetTruth, w*weff)
 
         if dMesonTruth.fPt > 0:
-            if self.ApplyCuts(dMesonTruth, jetTruth):
+            if self.fCuts.ApplyCuts(dMesonTruth, jetTruth):
                 self.FillTruth(dMesonTruth, jetTruth, w)
-
-    def ApplyCuts(self, dmeson, jet):
-        for cut in self.fCuts:
-            if cut["object"] == "d" and dmeson:
-                v = getattr(dmeson, cut["variable"])
-                if "min" in cut and v < cut["min"]:
-                    return False
-                if "max" in cut and v > cut["max"]:
-                    return False
-            if cut["object"] == "jet" and jet:
-                v = getattr(dmeson, cut["variable"])
-                if "min" in cut and v < cut["min"]:
-                    return False
-                if "max" in cut and v > cut["max"]:
-                    return False
-        return True
 
 class ResponseAxis:
     def __init__(self, detector, truth):
@@ -427,8 +411,25 @@ class Axis:
         self.fName = name
         self.fBins = bins
         self.fLabel = label
-
+        
     def GetTitle(self, label = ""):
+        varName = self.GetVariableName(label)
+        units = self.GetVariableUnits()
+
+        if units:
+            title = "{0} ({1})".format(varName, units)
+        else:
+            title = varName
+
+        return title
+        
+    def GetVariableUnits(self):
+        if "pt" in self.fName:
+            return "GeV/#it{c}"
+        else:
+            return ""
+
+    def GetVariableName(self, label = ""):
         if not label:
             label = self.fLabel
 
@@ -437,14 +438,14 @@ class Axis:
 
         if self.fName == "jet_pt":
             if label:
-                title = "#it{{p}}_{{T,jet}}^{{{0}}} (GeV/#it{{c}})".format(label)
+                title = "#it{{p}}_{{T,ch jet}}^{ch,{{0}}}".format(label)
             else:
-                title = "#it{p}_{T,jet} (GeV/#it{c})"
+                title = "#it{p}_{T,jet}^{ch}"
         elif self.fName == "d_pt":
             if label:
-                title = "#it{{p}}_{{T,D}}^{{{0}}} (GeV/#it{{c}})".format(label)
+                title = "#it{{p}}_{{T,D}}^{{{0}}}".format(label)
             else:
-                title = "#it{p}_{T,D} (GeV/#it{c})"
+                title = "#it{p}_{T,D}"
         elif self.fName == "jet_eta":
             if label:
                 title = "#it{{#eta}}_{{jet}}^{{{0}}}".format(label)
@@ -457,9 +458,9 @@ class Axis:
                 title = "#it{#eta}_{D}"
         elif self.fName == "d_z":
             if label:
-                title = "#it{{z}}_{{||,D}}^{{{0}}}".format(label)
+                title = "#it{{z}}_{{||,D}}^{ch,{{0}}}".format(label)
             else:
-                title = "#it{z}_{||,D}"
+                title = "#it{z}_{||,D}^{ch}"
 
         return title
 
@@ -471,23 +472,71 @@ class Spectrum:
         for axisName, axisBins in config["axis"].iteritems():
             self.fAxis.append(Axis(axisName, axisBins))
         self.fHistogram = None
+        self.fNormHistogram = None
+        
+    def GenerateNormalizedSpectrum(self, events):
+        if not self.fHistogram:
+            return
+        hname = "{0}_Normalized".format(self.fHistogram.GetName())
+        self.fNormHistogram = self.fHistogram.Clone(hname)
+        self.fNormHistogram.SetTitle(hname)
+        if len(self.fAxis) == 1:
+            axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
+            if self.fAxis[0].GetVariableUnits():
+                axisTitle += " {0}^{{-1}}".format(self.fAxis[0].GetVariableUnits())
+        elif len(self.fAxis) == 2:
+            axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^2#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
+            units1 = self.fAxis[0].GetVariableUnits()
+            units2 = self.fAxis[1].GetVariableUnits()
+            if units1 != units2:
+                if units1:
+                    axisTitle += " {0}^{{-1}}".format(units1)
+                if units2:
+                    axisTitle += " {0}^{{-1}}".format(units2)
+            else:
+                if units1:
+                    axisTitle += " {0}^{{-2}}".format(units1)
+
+        self.fNormHistogram.GetYaxis().SetTitle(axisTitle)
+        self.fNormHistogram.Scale(1. / events, "width")
+
+class DMesonJetCuts:
+    def __init__(self, cutList):
+        self.fCuts = cutList
+
+    def ApplyCuts(self, dmeson, jet):
+        for cut in self.fCuts:
+            if cut["object"] == "d" and dmeson:
+                v = getattr(dmeson, cut["variable"])
+                if "min" in cut and v < cut["min"]:
+                    return False
+                if "max" in cut and v > cut["max"]:
+                    return False
+            if cut["object"] == "jet" and jet:
+                v = getattr(jet, cut["variable"])
+                if "min" in cut and v < cut["min"]:
+                    return False
+                if "max" in cut and v > cut["max"]:
+                    return False
+        return True
 
 class BinSet:
     def __init__(self):
         self.fBins = dict()
 
     def GenerateInvMassRootLists(self):
-        for binListName, binList in self.fBins.iteritems():
+        for binListName, (binList,_) in self.fBins.iteritems():
             rlist = ROOT.TList()
             rlist.SetName(binListName)
             for bin in binList:
                 rlist.Add(bin.fInvMassHisto)
             yield rlist
 
-    def AddBins(self, name, limitSetList):
-        self.fBins[name] = []
+    def AddBins(self, name, limitSetList, cutList=[]):
+        bins = []
         limits = dict()
-        self.AddBinsRecursive(self.fBins[name], limitSetList, limits)
+        self.AddBinsRecursive(bins, limitSetList, limits)
+        self.fBins[name] = bins, DMesonJetCuts(cutList)
 
     def AddBinsRecursive(self, bins, limitSetList, limits):
         if len(limitSetList) > 0:
@@ -499,7 +548,9 @@ class BinSet:
             bins.append(BinLimits(limits))
 
     def FindBin(self, dmeson, jet):
-        for bins in self.fBins.itervalues():
+        for bins,cuts in self.fBins.itervalues():
+            if not cuts.ApplyCuts(dmeson, jet):
+                continue
             for bin in bins:
                 if bin.IsInBinLimits(dmeson, jet):
                     yield bin
