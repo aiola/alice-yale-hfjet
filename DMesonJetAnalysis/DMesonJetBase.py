@@ -389,7 +389,7 @@ class DetectorResponse:
         dMesonTruth = dmeson.DmesonJet.fGenerated
         dMesonMeasured = dmeson.DmesonJet.fReconstructed
 
-        weff = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, self.fJetName)
+        weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
 
         if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
             if self.ApplyCuts(dMesonMeasured, jetMeasured):
@@ -498,10 +498,10 @@ class BinSet:
         else:
             bins.append(BinLimits(limits))
 
-    def FindBin(self, dmeson, jetDef):
+    def FindBin(self, dmeson, jet):
         for bins in self.fBins.itervalues():
             for bin in bins:
-                if bin.IsInBinLimits(dmeson, jetDef):
+                if bin.IsInBinLimits(dmeson, jet):
                     yield bin
 
 class BinLimits:
@@ -537,18 +537,15 @@ class BinLimits:
     def SetDEtaLimits(self, min, max):
         self.fLimits["d_eta"] = min, max
         
-    def IsInBinLimits(self, dmeson, jetDef):
-        jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-        jet = getattr(dmeson, jetName)
-
+    def IsInBinLimits(self, dmeson, jet):
         for name,(min,max) in self.fLimits.iteritems():
             if not min < max:
                 continue
-            if name == "d_pt" and (dmeson.DmesonJet.fPt < min or dmeson.DmesonJet.fPt > max):
+            if name == "d_pt" and (dmeson.fPt < min or dmeson.fPt > max):
                 return False
             elif name == "jet_pt" and (jet.fPt < min or jet.fPt > max):
                 return False
-            elif name == "d_eta" and (dmeson.DmesonJet.fEta < min or dmeson.DmesonJet.fEta > max):
+            elif name == "d_eta" and (dmeson.fEta < min or dmeson.fEta > max):
                 return False
             elif name == "jet_eta" and (jet.fEta < min or jet.fEta > max):
                 return False

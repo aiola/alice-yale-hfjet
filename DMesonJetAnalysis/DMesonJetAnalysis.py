@@ -138,8 +138,8 @@ class DMesonJetAnalysisEngine:
                     continue
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 if "SignalOnly" in self.fDMeson:
-                    s.fHistogram.SetBinContent(xbin, bin.fInvMassHisto.GetEntries())
-                    s.fHistogram.SetBinError(xbin, math.sqrt(bin.fInvMassHisto.GetEntries())) 
+                    s.fHistogram.SetBinContent(xbin, bin.fInvMassHisto.Integral())
+                    s.fHistogram.SetBinError(xbin, math.sqrt(bin.fInvMassHisto.Integral()))
                 else:
                     s.fHistogram.SetBinContent(xbin, bin.fMassFitter.GetSignal())
                     s.fHistogram.SetBinError(xbin, bin.fMassFitter.GetSignalError())
@@ -225,7 +225,7 @@ class DMesonJetAnalysisEngine:
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
 
-            fitter.Fit(bin.fInvMassHisto, "0 L E S");
+            fitter.Fit(bin.fInvMassHisto, "0 WL S");
             
     def PlotInvMassPlots(self):
         for name,bins in self.fBinSet.fBins.iteritems():
@@ -323,7 +323,7 @@ class DMesonJetAnalysis:
             h0 = self.fAnalysisEngine[0].fSpectra[spectrumName].fHistogram.DrawCopy()
             h0.SetMarkerColor(colors[0])
             h0.SetLineColor(colors[0])
-            h0.SetMarkerStyle(ROOT.kFullCircle)
+            h0.SetMarkerStyle(ROOT.kOpenCircle)
             h0.SetMarkerSize(1.2)
             globalList.append(h0)
 
@@ -332,7 +332,7 @@ class DMesonJetAnalysis:
             self.fCanvases.append(cRatio)
             cRatio.cd()
             globalList.append(cRatio)
-            leg = ROOT.TLegend(0.15, 0.85, 0.45, 0.7)
+            leg = ROOT.TLegend(0.55, 0.72, 0.85, 0.87)
             leg.SetFillStyle(0)
             leg.SetBorderSize(0)
             leg.AddEntry(h0, self.fAnalysisEngine[0].fDMeson, "pe")
@@ -342,7 +342,7 @@ class DMesonJetAnalysis:
                 h = eng.fSpectra[spectrumName].fHistogram.DrawCopy("same")
                 h.SetMarkerColor(color)
                 h.SetLineColor(color)
-                h.SetMarkerStyle(ROOT.kOpenCircle)
+                h.SetMarkerStyle(ROOT.kFullCircle)
                 h.SetMarkerSize(1.2)
                 globalList.append(h)
 

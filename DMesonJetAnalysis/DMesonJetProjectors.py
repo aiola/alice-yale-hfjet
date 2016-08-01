@@ -9,7 +9,7 @@ import array
 from bisect import bisect
 
 class SimpleWeight:
-    def GetEfficiencyWeight(self, dmeson, jetDef):
+    def GetEfficiencyWeight(self, dmeson, jet):
         return 1.
 
 class EfficiencyWeightCalculator:
@@ -53,16 +53,15 @@ class EfficiencyWeightCalculator:
             print("The ROOT object is of type TH1")
             self.GetEfficiencyWeight = self.GetEfficiencyWeightTH1
 
-    def GetEfficiencyWeightTGraph(self, dmeson, jetDef):
-        eff = self.fRootObject.Eval(dmeson.DmesonJet.fReconstructed.fPt)
+    def GetEfficiencyWeightTGraph(self, dmeson, jet):
+        eff = self.fRootObject.Eval(dmeson.fPt)
         #print("pT,D = {0}, eff = {1}".format(dmeson.DmesonJet.fReconstructed.fPt, eff))
         if eff == 0:
             return 0
         else:
             return 1. / eff
 
-    def GetEfficiencyWeightTH2(self, dmeson, jetDef):
-        jet = getattr(dmeson, "{0}_reco".format(jetDef))
+    def GetEfficiencyWeightTH2(self, dmeson, jet):
 #        if jet.fPt < self.fRootObject.GetXaxis().GetBinLowEdge(1) or \
 #           jet.fPt >= self.fRootObject.GetXaxis().GetBinUpEdge(self.fRootObject.GetXaxis().GetNbins()) or \
 #           dmeson.DmesonJet.fReconstructed.fPt < self.fRootObject.GetYaxis().GetBinLowEdge(1) or \
@@ -70,7 +69,7 @@ class EfficiencyWeightCalculator:
 #            eff = 0
 #        else:
 #            eff = self.fRootObject.Interpolate(jet.fPt, dmeson.DmesonJet.fReconstructed.fPt)
-        eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(jet.fPt, dmeson.DmesonJet.fReconstructed.fPt))
+        eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(jet.fPt, dmeson.fPt))
         #print("pT,D = {0}, pTjet = {1}, eff = {2}".format(dmeson.DmesonJet.fReconstructed.fPt, jet.fPt, eff))
 
         if eff == 0:
@@ -78,13 +77,13 @@ class EfficiencyWeightCalculator:
         else:
             return 1. / eff
 
-    def GetEfficiencyWeightTH1(self, dmeson, jetDef):
+    def GetEfficiencyWeightTH1(self, dmeson, jet):
 #        if dmeson.DmesonJet.fReconstructed.fPt < self.fRootObject.GetXaxis().GetBinLowEdge(1) or \
 #           dmeson.DmesonJet.fReconstructed.fPt >= self.fRootObject.GetXaxis().GetBinUpEdge(self.fRootObject.GetXaxis().GetNbins()):
 #            eff = 0
 #        else:
 #            eff = self.fRootObject.Interpolate(dmeson.DmesonJet.fReconstructed.fPt)
-        eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(dmeson.DmesonJet.fReconstructed.fPt))
+        eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(dmeson.fPt))
         #print("pT,D = {0}, eff = {1}".format(dmeson.DmesonJet.fReconstructed.fPt, eff))
 
         if eff == 0:
@@ -93,7 +92,8 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
 class DMesonJetDataProjector:
-    def __init__(self, inputPath, train, fileName, taskName, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, maxEvents, weightEff=SimpleWeight()):
+        self.fWeightEfficiency = weightEff
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -128,19 +128,23 @@ class DMesonJetDataProjector:
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
         
-        for i,dmeson in enumerate(self.fChain):
+        for i,dmesonEvent in enumerate(self.fChain):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
                 if self.fMaxEvents > 0 and i > self.fMaxEvents:
                     print("Stopping the analysis.")
                     break
+            dmeson = dmesonEvent.DmesonJet
             for jetDef in jetDefinitions:
-                bins = binSet.FindBin(dmeson, jetDef)
-                
+                jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
+                jet = getattr(dmesonEvent, jetName)
+
+                bins = binSet.FindBin(dmeson, jet)
+
                 for bin in bins:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
-                    bin.fInvMassHisto.Fill(dmeson.DmesonJet.fInvMass)
+                    bin.fInvMassHisto.Fill(dmeson.fInvMass, self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet))
 
 class DMesonJetResponseProjector:
     def __init__(self, inputPath, train, fileName, taskName, maxEvents):
