@@ -1,9 +1,12 @@
-name: LHC10_Train734
+name: LHC10_Train734_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_734_735_736_737
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
-efficiency: no
+efficiency:
+  file_name: Jets_EMC_pp_MC_922_923_924_925/LHC15i2_Train922.root
+  list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+  object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
 analysis:
 - 
   trigger: [AnyINT]

@@ -1,13 +1,16 @@
-name: LHC10_Train734
+name: LHC14j4_Train926
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_734_735_736_737
+train: Jets_EMC_pp_MC_926_927_928_929
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
-efficiency: no
+efficiency:
+  file_name: Jets_EMC_pp_MC_922_923_924_925/LHC15i2_Train922.root
+  list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+  object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
 analysis:
 - 
-  trigger: [AnyINT]
-  d_meson: [D0]
+  trigger: [""]
+  d_meson: [D0_kSignalOnly, D0]
   n_mass_bins: 100
   min_mass: 1.715
   max_mass: 2.015
@@ -43,11 +46,13 @@ analysis:
   spectra:
   -
     name: D_Tagged_Jet_Spectrum
+    efficiency: no
     bins: [D_Tagged_Jets]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Fragmentation_JetPt_Spectra
+    efficiency: no
     bins: [D_Fragmentation_JetPt_5_8, D_Fragmentation_JetPt_8_13, D_Fragmentation_JetPt_13_30]
     axis:
       jet_pt: [5, 8, 13, 24]
