@@ -33,6 +33,8 @@ class DMesonJetAnalysisEngine:
         for s in self.fSpectra.itervalues():
             if s.fHistogram:
                 s.fHistogram.Write()
+            if s.fNormHistogram:
+                s.fNormHistogram.Write()
 
     def SavePlots(self, path, format):
         for c in self.fCanvases:
@@ -66,6 +68,8 @@ class DMesonJetAnalysisEngine:
     def Start(self):
         self.fProjector.GetInvMassHisograms(self.fTrigger, self.fDMeson, self.fJetDefinitions, 
                                             self.fBinSet, self.fNMassBins, self.fMinMass, self.fMaxMass)
+
+        self.fEvents = self.fProjector.fTotalEvents
         
         if not "MCTruth" in self.fDMeson:
             self.FitInvMassPlots()
@@ -91,29 +95,42 @@ class DMesonJetAnalysisEngine:
         c.SetLogy()
         self.fCanvases.append(c)
         c.cd()
-        h = s.fHistogram.DrawCopy()
-        
+        h = s.fNormHistogram.DrawCopy()
+
         h.SetMarkerColor(ROOT.kBlue+2)
         h.SetMarkerStyle(ROOT.kFullCircle)
         h.SetMarkerSize(0.9)
         h.SetLineColor(ROOT.kBlue+2)
-        
+
+        pave = ROOT.TPaveText(0.60, 0.88, 0.9, 0.55, "NB NDC")
+        pave.SetFillStyle(0)
+        pave.SetBorderSize(0)
+        pave.SetTextFont(43)
+        pave.SetTextSize(15)
+        pave.AddText("ALICE Work In Progress")
+        pave.AddText("pp #sqrt{#it{s}} = 7 TeV")
+        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4")
+        pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        pave.AddText("|#eta_{jet}| < 0.5, #it{p}_{T,D} > 0.5 GeV/#it{c}")
+        pave.Draw()
+
         globalList.append(c)
         globalList.append(h)
-        
+        globalList.append(pave)
+
     def PlotSpectrum2D(self, s):
         c = ROOT.TCanvas("{0}_canvas".format(s.fName), s.fName)
         c.SetLogz()
         self.fCanvases.append(c)
         c.cd()
         h = s.fHistogram.DrawCopy("colz")
-        
+
         globalList.append(c)
         globalList.append(h)       
-        
+
     def PlotSpectrum3D(self, s):
         print("PlotSpectrum3D not implemented!")
-        
+
     def GenerateSpectra(self):
         for s in self.fSpectra.itervalues():
             if len(s.fAxis) == 1:
@@ -124,14 +141,15 @@ class DMesonJetAnalysisEngine:
                 self.GenerateSpectrum3D(s)
             else:
                 print("Not able to generate spectra with dim > 3!")
-            
+            s.GenerateNormalizedSpectrum(self.fEvents)
+
     def GenerateSpectrum1D(self, s):
         s.fHistogram = ROOT.TH1D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array('d',s.fAxis[0].fBins))
         s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
         s.fHistogram.GetYaxis().SetTitle("counts")
         s.fHistogram.Sumw2()
         for binSetName in s.fBins:
-            for bin in self.fBinSet.fBins[binSetName]:
+            for bin in self.fBinSet.fBins[binSetName][0]:
                 if bin.fMassFitter is None:
                     print("The bin printed below does not have a mass fitter!")
                     bin.Print()
@@ -151,7 +169,7 @@ class DMesonJetAnalysisEngine:
         s.fHistogram.GetZaxis().SetTitle("counts")
         s.fHistogram.Sumw2()
         for binSetName in s.fBins:
-            for bin in self.fBinSet.fBins[binSetName]:
+            for bin in self.fBinSet.fBins[binSetName][0]:
                 if bin.fMassFitter is None:
                     print("The bin printed below does not have a mass fitter!")
                     bin.Print()
@@ -208,7 +226,7 @@ class DMesonJetAnalysisEngine:
         paveFit.Draw()
 
     def FitInvMassPlots(self):
-        for name,bins in self.fBinSet.fBins.iteritems():
+        for name,(bins,_) in self.fBinSet.fBins.iteritems():
             self.FitInvMassPlotsBinSet(name,bins)
             
     def FitInvMassPlotsBinSet(self,name,bins):
@@ -228,7 +246,7 @@ class DMesonJetAnalysisEngine:
             fitter.Fit(bin.fInvMassHisto, "0 WL S");
             
     def PlotInvMassPlots(self):
-        for name,bins in self.fBinSet.fBins.iteritems():
+        for name,(bins,_) in self.fBinSet.fBins.iteritems():
             self.PlotInvMassPlotsBinSet(name,bins)
     
     def GenerateInvMassCanvas(self, name, n):
@@ -291,7 +309,9 @@ class DMesonJetAnalysis:
             limitSetList = []
             for name, binList in binLists["bins"].iteritems():
                 limitSetList.append((name, binList))
-            binSet.AddBins(binLists["name"], limitSetList)
+            if "cuts" in binLists:
+                cuts = binLists["cuts"]
+            binSet.AddBins(binLists["name"], limitSetList, cuts)
         
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:

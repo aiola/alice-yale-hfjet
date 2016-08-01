@@ -102,6 +102,8 @@ class DMesonJetDataProjector:
         self.fMassAxisTitle = "#it{m}(K#pi) GeV/#it{c}^{2}"
         self.fYieldAxisTitle = "counts"
         self.fChain = None
+        self.fCurrentFileName = None
+        self.fTotalEvents = 0
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -114,9 +116,67 @@ class DMesonJetDataProjector:
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
 
-        #self.fChain.Print()
+    def ExtractCurrentFileInfo(self):
+        fname = self.fChain.GetCurrentFile().GetName()
+        lastSlash = fname.rfind('/')
+        secondLastSlash = fname.rfind('/',0,lastSlash-1)
+        thirdLastSlash = fname.rfind('/',0,secondLastSlash-1)
+        self.fPeriod = fname[thirdLastSlash+1:secondLastSlash]
+        
+    def ExtractEventsFromHistogramList(self, hlist):
+        eventsHist = hlist.FindObject("fHistNEvents")
+        
+        if not eventsHist:
+            print("Could not find event book-keeping histogram!")
+            hlist.Print() 
+            return 0
+
+        events = eventsHist.GetBinContent(eventsHist.GetXaxis().FindBin("Accepted"));
+        return events
+
+    def RecalculateEvents(self, DMesonDef, trigger):
+        if self.fChain.GetCurrentFile().GetName() == self.fCurrentFileName:
+            return
+
+        self.fCurrentFileName = self.fChain.GetCurrentFile().GetName()
+
+        self.ExtractCurrentFileInfo()
+
+        if trigger:
+            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+            subListName = "histos{0}_{1}".format(self.fTaskName, trigger)
+        else:
+            listName = "{0}_histos".format(self.fTaskName)
+            subListName = "histos{0}".format(self.fTaskName)
+
+        hlist = self.fChain.GetCurrentFile().Get(listName)
+
+        if not hlist:
+            print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
+            self.fChain.GetCurrentFile().ls()
+            return
+
+        hSubList = hlist.FindObject(subListName)
+
+        if not hSubList:
+            print("Could not get list '{0}' from list '{1}'".format(subListName, listName))
+            hlist.Print()
+            return
+
+        hSubSubList = hSubList.FindObject(DMesonDef)
+
+        if not hSubSubList:
+            print("Could not get list '{0}' from list '{1}'".format(DMesonDef, subListName))
+            hSubList.Print()
+            return
+
+        events = self.ExtractEventsFromHistogramList(hSubSubList)
+        self.fTotalEvents += events
+
+        print("Period: {0}\nEvents: {1}".format(self.fPeriod, events))
 
     def GetInvMassHisograms(self, trigger, DMesonDef, jetDefinitions, binSet, nMassBins, minMass, maxMass):
+        self.fTotalEvents = 0
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
         else:
@@ -135,6 +195,7 @@ class DMesonJetDataProjector:
                     print("Stopping the analysis.")
                     break
             dmeson = dmesonEvent.DmesonJet
+            self.RecalculateEvents(DMesonDef, trigger)
             for jetDef in jetDefinitions:
                 jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
                 jet = getattr(dmesonEvent, jetName)
@@ -145,6 +206,7 @@ class DMesonJetDataProjector:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
                     bin.fInvMassHisto.Fill(dmeson.fInvMass, self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet))
+        print("Total number of events: {0}".format(self.fTotalEvents))
 
 class DMesonJetResponseProjector:
     def __init__(self, inputPath, train, fileName, taskName, maxEvents):
