@@ -236,17 +236,44 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
 //____________________________________________________________________________________
 TString MassFitter::GetSignalString() const
 {
+  TString r = GetValueString(fSignal, fSignalError);
+  r.Prepend("S=");
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetValueString(Double_t value, Double_t err)
+{
   TString r;
   
-  Double_t sigErrLog10 = fSignalError > 0 ? TMath::Log10(fSignalError) : 0;
-  if (sigErrLog10 < 0) {
-    Int_t sigPrec = TMath::CeilNint(-sigErrLog10);
-    r = Form("S=%%.%df#pm%%.%df", sigPrec, sigPrec);
-    r = Form(r.Data(), fSignal, fSignalError);
+  Double_t value_red = TMath::Abs(value);
+  Double_t err_red = TMath::Abs(err);
+  Int_t np = 0;
+
+  if (value_red >= 100) {
+    while (value_red >= 10) {
+      value_red /= 10;
+      err_red /= 10;
+      np++;
+    }
   }
-  else {
-    r = Form("S=%.0f#pm%.0f", fSignal, fSignalError);
+
+  if (value_red > 0) {
+    while (value_red < 1) {
+      value_red *= 10;
+      err_red *= 10;
+      np--;
+    }
   }
+
+  Double_t sigErrLog10 = TMath::Log10(err_red);
+  Int_t sigPrec = TMath::CeilNint(-sigErrLog10);
+  if (sigPrec == 0) sigPrec = 1;
+  r = Form("%%.%df#pm%%.%df", sigPrec, sigPrec);
+  r = Form(r.Data(), value_red, err_red);
+
+  if (np != 0) r = Form("(%s)#times10^{%d}", r.Data(), np);
+  if (value < 0) r.Prepend("-");
 
   return r;
 }
@@ -254,18 +281,8 @@ TString MassFitter::GetSignalString() const
 //____________________________________________________________________________________
 TString MassFitter::GetBackgroundString() const
 {
-  TString r;
-  
-  Double_t bkgErrLog10 = fBackgroundError > 0 ? TMath::Log10(fBackgroundError) : 0;
-  if (bkgErrLog10 < 0) {
-    Int_t bkgPrec = TMath::CeilNint(-bkgErrLog10);
-    r = Form("B=%%.%df#pm%%.%df", bkgPrec, bkgPrec);
-    r = Form(r.Data(), fBackground, fBackgroundError);
-  }
-  else {
-    r = Form("B=%.0f#pm%.0f", fBackground, fBackgroundError);
-  }
-
+  TString r = GetValueString(fBackground, fBackgroundError);
+  r.Prepend("B=");
   return r;
 }
 

@@ -81,6 +81,8 @@ class MassFitter : public TNamed {
   double   FunctionBkg(double *x, double *p);
   double   FunctionSigBkg(double *x, double *p);
 
+  static TString GetValueString(Double_t value, Double_t err);
+
  protected:
   EMassFitTypeSig   fMassFitTypeSig    ;//  Mass fit type for the signal
   EMassFitTypeBkg   fMassFitTypeBkg    ;//  Mass fit type for the background
