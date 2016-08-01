@@ -120,10 +120,12 @@ class DMesonJetAnalysisEngine:
 
     def PlotSpectrum2D(self, s):
         c = ROOT.TCanvas("{0}_canvas".format(s.fName), s.fName)
+        c.SetRightMargin(0.18)
         c.SetLogz()
         self.fCanvases.append(c)
         c.cd()
-        h = s.fHistogram.DrawCopy("colz")
+        h = s.fNormHistogram.DrawCopy("colz")
+        h.GetZaxis().SetTitleOffset(1.4)
 
         globalList.append(c)
         globalList.append(h)       
@@ -191,8 +193,14 @@ class DMesonJetAnalysisEngine:
             return
         
         bin.fMassFitter.Draw("same");
+        
+        fitStatus = int(bin.fMassFitter.GetFitStatus())
+        if fitStatus == 0:
+            chi2Text = bin.fMassFitter.GetChisquareString().Data()
+        else:
+            chi2Text = "Fit failed"
 
-        paveSig = ROOT.TPaveText(0.165, 0.710, 0.490, 0.92, "NB NDC")
+        paveSig = ROOT.TPaveText(0.165, 0.795, 0.490, 0.92, "NB NDC")
         globalList.append(paveSig)
         paveSig.SetBorderSize(0)
         paveSig.SetFillStyle(0)
@@ -201,17 +209,12 @@ class DMesonJetAnalysisEngine:
         paveSig.SetTextAlign(13)
         paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalString().Data(), 
                                           bin.fMassFitter.GetBackgroundString().Data()))
-        paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(), 
-                                          bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data()))
-        fitStatus = int(bin.fMassFitter.GetFitStatus())
-        if fitStatus == 0:
-            paveSig.AddText(bin.fMassFitter.GetChisquareString().Data())
-        else:
-            paveSig.AddText("Fit failed")
-            
+        paveSig.AddText("{0}, {1}, {2}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(), 
+                                          bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data(),
+                                          chi2Text))
         paveSig.Draw()
 
-        paveFit = ROOT.TPaveText(0.50, 0.66, 0.99, 0.92, "NB NDC")
+        paveFit = ROOT.TPaveText(0.48, 0.51, 0.97, 0.77, "NB NDC")
         globalList.append(paveFit)
         paveFit.SetBorderSize(0)
         paveFit.SetFillStyle(0)
