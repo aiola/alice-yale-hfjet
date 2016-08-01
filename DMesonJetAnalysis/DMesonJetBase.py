@@ -438,7 +438,7 @@ class Axis:
 
         if self.fName == "jet_pt":
             if label:
-                title = "#it{{p}}_{{T,ch jet}}^{ch,{{0}}}".format(label)
+                title = "#it{{p}}_{{T,ch jet}}^{{ch,{0}}}".format(label)
             else:
                 title = "#it{p}_{T,jet}^{ch}"
         elif self.fName == "d_pt":
@@ -458,7 +458,7 @@ class Axis:
                 title = "#it{#eta}_{D}"
         elif self.fName == "d_z":
             if label:
-                title = "#it{{z}}_{{||,D}}^{ch,{{0}}}".format(label)
+                title = "#it{{z}}_{{||,D}}^{{ch,{0}}}".format(label)
             else:
                 title = "#it{z}_{||,D}^{ch}"
 
@@ -483,21 +483,22 @@ class Spectrum:
         if len(self.fAxis) == 1:
             axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
             if self.fAxis[0].GetVariableUnits():
-                axisTitle += " {0}^{{-1}}".format(self.fAxis[0].GetVariableUnits())
+                axisTitle += " ({0})^{{-1}}".format(self.fAxis[0].GetVariableUnits())
+            self.fNormHistogram.GetYaxis().SetTitle(axisTitle)
         elif len(self.fAxis) == 2:
-            axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^2#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
+            axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^{{2}}#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
             units1 = self.fAxis[0].GetVariableUnits()
             units2 = self.fAxis[1].GetVariableUnits()
             if units1 != units2:
                 if units1:
-                    axisTitle += " {0}^{{-1}}".format(units1)
+                    axisTitle += " ({0})^{{-1}}".format(units1)
                 if units2:
-                    axisTitle += " {0}^{{-1}}".format(units2)
+                    axisTitle += " ({0})^{{-1}}".format(units2)
             else:
                 if units1:
-                    axisTitle += " {0}^{{-2}}".format(units1)
+                    axisTitle += " ({0})^{{-2}}".format(units1)
+            self.fNormHistogram.GetZaxis().SetTitle(axisTitle)
 
-        self.fNormHistogram.GetYaxis().SetTitle(axisTitle)
         self.fNormHistogram.Scale(1. / events, "width")
 
 class DMesonJetCuts:

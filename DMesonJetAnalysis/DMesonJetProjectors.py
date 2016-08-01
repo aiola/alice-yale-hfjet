@@ -16,6 +16,7 @@ class EfficiencyWeightCalculator:
     def __init__(self, filename="", listname="", objectname=""):
         self.fBreakpoints = []
         self.fEfficiencyValues = []
+        self.fRootObject = None
         if filename and listname and objectname:
             self.LoadEfficiency(filename,listname,objectname)
 
@@ -23,10 +24,12 @@ class EfficiencyWeightCalculator:
         rlist = file.Get(listname)
         if not rlist:
             print("Could not find list '{0}' in file '{1}'".format(listname, file.GetName()))
+            file.ls()
             return None
         obj = rlist.FindObject(objectname)
         if not obj:
             print("Could not find object '{0}' in list '{1}'".format(objectname, listname))
+            rlist.Print()
             return None
         return obj
 
@@ -52,6 +55,9 @@ class EfficiencyWeightCalculator:
         elif isinstance(self.fRootObject, ROOT.TH1):
             print("The ROOT object is of type TH1")
             self.GetEfficiencyWeight = self.GetEfficiencyWeightTH1
+        else:
+            print("The ROOT object type is not recognized!!")
+            self.fRootObject.Print()
 
     def GetEfficiencyWeightTGraph(self, dmeson, jet):
         eff = self.fRootObject.Eval(dmeson.fPt)
