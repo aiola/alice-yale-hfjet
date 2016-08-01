@@ -21,9 +21,22 @@ class DMesonJetAnalysisEngine:
         self.fMinMass = minMass
         self.fMaxMass = maxMass
         self.fSpectra = dict()
+        self.fCanvases = []
         for s in spectra:
             name = "{0}_{1}".format(self.fDMeson, s["name"])
             self.fSpectra[s["name"]] = Spectrum(s, name)
+
+    def SaveRootFile(self, file):
+        file.cd()
+        for rlist in self.fBinSet.GenerateInvMassRootLists():
+            rlist.Write("{0}_{1}".format(self.fDMeson, rlist.GetName()), ROOT.TObject.kSingleKey)
+        for s in self.fSpectra.itervalues():
+            if s.fHistogram:
+                s.fHistogram.Write()
+
+    def SavePlots(self, path, format):
+        for c in self.fCanvases:
+            c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
         
     def CreateMassFitter(self, name):
         if "D0" in self.fDMeson:
@@ -76,6 +89,7 @@ class DMesonJetAnalysisEngine:
     def PlotSpectrum1D(self, s):
         c = ROOT.TCanvas("{0}_canvas".format(s.fName), s.fName)
         c.SetLogy()
+        self.fCanvases.append(c)
         c.cd()
         h = s.fHistogram.DrawCopy()
         
@@ -90,6 +104,7 @@ class DMesonJetAnalysisEngine:
     def PlotSpectrum2D(self, s):
         c = ROOT.TCanvas("{0}_canvas".format(s.fName), s.fName)
         c.SetLogz()
+        self.fCanvases.append(c)
         c.cd()
         h = s.fHistogram.DrawCopy("colz")
         
@@ -222,6 +237,7 @@ class DMesonJetAnalysisEngine:
         cname = "{0}_{1}".format(self.fDMeson, name)
         c = ROOT.TCanvas(cname, cname, cols*400, rows*400)
         c.Divide(cols, rows)
+        self.fCanvases.append(c)
         globalList.append(c)
         return c
     
@@ -264,15 +280,18 @@ class DMesonJetAnalysis:
     def __init__(self, name):
         self.fName = name
         self.fAnalysisEngine = []
+        self.fCanvases = []
 
     def SetProjector(self, projector):
         self.fProjector = projector
         
     def StartAnalysis(self, config):
         binSet = DMesonJetProjectors.BinSet()
-        for binLists in config["bins"]:
-            binSet.AddBins(name = binLists["name"], jetPtLimits = binLists["jet_pt"], DPtLimits = binLists["d_pt"], ZLimits = binLists["d_z"], 
-                           _showJetPt = binLists["show_jet_pt"], _showDPt = binLists["show_d_pt"], _showDZ = binLists["show_d_z"])
+        for binLists in config["binLists"]:
+            limitSetList = []
+            for name, binList in binLists["bins"].iteritems():
+                limitSetList.append((name, binList))
+            binSet.AddBins(binLists["name"], limitSetList)
         
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
@@ -286,11 +305,7 @@ class DMesonJetAnalysis:
         spectraToCompare = []
 
         for s in config["spectra"]:
-            dim = 0
-            if s["jet_pt"]: dim += 1
-            if s["d_pt"]: dim += 1
-            if s["d_z"]: dim += 1
-            if dim == 1:
+            if len(s["axis"]) == 1:
                 spectraToCompare.append(s["name"])
 
         self.CompareSpectra(spectraToCompare)
@@ -302,6 +317,7 @@ class DMesonJetAnalysis:
         for spectrumName in spectraNames:
             cname = "{0}_{1}_SpectraComparison".format(self.fName, spectrumName)
             c = ROOT.TCanvas(cname, cname)
+            self.fCanvases.append(c)
             c.cd()
             globalList.append(c)
             h0 = self.fAnalysisEngine[0].fSpectra[spectrumName].fHistogram.DrawCopy()
@@ -313,6 +329,7 @@ class DMesonJetAnalysis:
 
             cname = "{0}_{1}_SpectraComparison_Ratio".format(self.fName, spectrumName)
             cRatio = ROOT.TCanvas(cname, cname)
+            self.fCanvases.append(cRatio)
             cRatio.cd()
             globalList.append(cRatio)
             leg = ROOT.TLegend(0.15, 0.85, 0.45, 0.7)
@@ -320,9 +337,7 @@ class DMesonJetAnalysis:
             leg.SetBorderSize(0)
             leg.AddEntry(h0, self.fAnalysisEngine[0].fDMeson, "pe")
             globalList.append(leg)
-            print(zip(colors[1:len(self.fAnalysisEngine)],self.fAnalysisEngine[1:]))
             for i, (color,eng) in enumerate(zip(colors[1:len(self.fAnalysisEngine)],self.fAnalysisEngine[1:])):
-                print("{0} - Working on {1}".format(i, eng.fDMeson))
                 c.cd()
                 h = eng.fSpectra[spectrumName].fHistogram.DrawCopy("same")
                 h.SetMarkerColor(color)
@@ -344,3 +359,21 @@ class DMesonJetAnalysis:
                     hRatio.Draw("same")
             c.cd()
             leg.Draw()
+
+    def SaveRootFile(self, path):
+        file = ROOT.TFile.Open("{0}/{1}.root".format(path, self.fName), "recreate")
+        file.cd()
+        for eng in self.fAnalysisEngine:
+            eng.SaveRootFile(file)
+        file.Close()
+        
+    def SavePlots(self, path, format):
+        fullPath = "{0}/{1}/{2}".format(path, self.fName, format)
+        if not os.path.isdir(fullPath):
+            os.makedirs(fullPath)
+        for eng in self.fAnalysisEngine:
+            eng.SavePlots(fullPath, format)
+
+        for c in self.fCanvases:
+            c.SaveAs("{0}/{1}.{2}".format(fullPath, c.GetName(), format))
+
