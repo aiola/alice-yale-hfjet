@@ -155,7 +155,10 @@ class DMesonJetResponseEngine:
         self.PlotMultiHistogram(resp, "PartialEfficiencyRatios", "Ratio", "fEfficiency1DRatios")
         
     def PlotMultiHistogram(self, resp, name, yaxisTitle, listName):
-        cname = "{0}_{1}_{2}".format(self.fDMeson, resp.fName, name)
+        histList = getattr(resp, listName)
+        if not histList:
+            return
+        cname = "{0}_{1}".format(resp.fName, name)
         c = ROOT.TCanvas(cname, cname)
         c.SetLeftMargin(0.12)
         c.SetBottomMargin(0.12)
@@ -179,16 +182,15 @@ class DMesonJetResponseEngine:
         blank.GetYaxis().SetLabelSize(18)
         blank.Draw()
         globalList.append(blank)
-        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2, ROOT.kAzure+2, ROOT.kPink+2]
-        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross]
+        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2, ROOT.kAzure+2, ROOT.kPink+2, ROOT.kBlack]
+        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross, ROOT.kOpenCircle]
         max = 0;
         leg = ROOT.TLegend(0.15, 0.90, 0.45, 0.65)
         leg.SetFillStyle(0)
         leg.SetBorderSize(0)
         leg.SetTextFont(43)
         leg.SetTextSize(16)
-        histList = getattr(resp, listName)
-        for color,marker,eff in zip(colors,markers,histList):
+        for color,marker,eff in zip(colors[:len(histList)-1]+colors[-1:],markers[:len(histList)-1]+markers[-1:],histList):
             h = eff.Clone()
             globalList.append(h)
             h.SetMarkerStyle(marker)
@@ -231,10 +233,11 @@ class DMesonJetResponse:
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
             axis_list = []
-            axis_names = ["jet_pt", "d_pt", "d_z"]
-            for axis_name in axis_names:
-                if resp[axis_name]:
-                    axis_list.append(ResponseAxis(Axis(axis_name, resp[axis_name]["reco"], "reco"), Axis(axis_name, resp[axis_name]["truth"], "truth")))
+            for axis_name,bins in resp["bins"].iteritems():
+                if axis_name == "jet_pt":
+                    axis_list.insert(0, ResponseAxis(Axis(axis_name, bins["reco"], "reco"), Axis(axis_name, bins["truth"], "truth")))
+                else:
+                    axis_list.append(ResponseAxis(Axis(axis_name, bins["reco"], "reco"), Axis(axis_name, bins["truth"], "truth")))
 
             if "cuts" in resp:
                 cut_list = resp["cuts"]

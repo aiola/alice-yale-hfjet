@@ -5,6 +5,7 @@ import ROOT
 from array import array
 import os
 import math
+from copy import deepcopy
 
 def find_file(path, file_name):
     for root, dirs, files in os.walk(path):
@@ -19,7 +20,7 @@ class DetectorResponse:
         self.fCuts = cuts
         self.fJetInfo = False
         for a in self.fAxis:
-            if a.fTruthAxis.fName == "jet_pt" or a.fTruthAxis.fName == "d_z":
+            if "jet" in a.fTruthAxis.fName or a.fTruthAxis.fName == "d_z":
                 self.fJetInfo = True
                 break
         self.fName = name
@@ -29,7 +30,7 @@ class DetectorResponse:
         self.fMeasured = self.GenerateMeasured(axis)
         self.fReconstructedTruth = self.GenerateTruth(axis, "RecontructedTruth")
         self.fEfficiency = None
-        if len(self.fAxis) == 2:
+        if len(self.fAxis) == 2 and self.fAxis[0].fTruthAxis.fName == "jet_pt":
             self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in range(0, len(self.fAxis[0].fTruthAxis.fBins)+1)]
             self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in range(0, len(self.fAxis[0].fTruthAxis.fBins)+1)]
             self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in range(0, len(self.fAxis[0].fDetectorAxis.fBins)+1)]
@@ -47,13 +48,13 @@ class DetectorResponse:
     def GenerateLowerDimensionHistogram(self, axisProj, axis, bin, name):
         if bin >= 0 and bin < len(axisProj.fBins):
             binLimits = BinLimits()
-            binLimits.SetFromAxis(axisProj, bin)
+            binLimits.AddFromAxis(axisProj, bin)
             binName = binLimits.GetName()
             binTitle = binLimits.GetTitle()
         else:
             binLimits = None
             binName = "NoJet"
-            binTitle = "All, no jet requirement"
+            binTitle = "All, no #it{p}_{T,jet} requirement"
 
         hist = self.GenerateHistogram(axis, "{0}_{1}".format(name, binName))
         hist.SetTitle(binTitle)
@@ -67,7 +68,7 @@ class DetectorResponse:
         rlist.Add(self.fReconstructedTruth)
         rlist.Add(self.fTruth)
         rlist.Add(self.fMeasured)
-        if len(self.fAxis) == 2:
+        if len(self.fAxis) == 2 and self.fAxis[0].fTruthAxis.fName == "jet_pt":
             for eff in self.fEfficiency1D:
                 rlist.Add(eff)
             for h in self.fTruth1D:
@@ -205,6 +206,8 @@ class DetectorResponse:
             return histo.SetBinError(coord, v)
 
     def GeneratePartialMultiEfficiency(self):
+        if not self.fTruth1D or not self.fReconstructedTruth1D:
+            return
         for bin,(truth,recoTruth) in enumerate(zip(self.fTruth1D, self.fReconstructedTruth1D)):
             eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fTruthAxis, bin, truth, recoTruth)
             self.fEfficiency1D.append(eff)
@@ -289,9 +292,15 @@ class DetectorResponse:
             if a == "jet_pt":
                 values[i] = recoJet.fPt
                 values[i+naxis] = truthJet.fPt
+            elif a == "jet_eta":
+                values[i] = recoJet.fEta
+                values[i+naxis] = truthJet.fEta
             elif a == "d_pt":
                 values[i] = recoDmeson.fPt
                 values[i+naxis] = truthDmeson.fPt
+            elif a == "d_eta":
+                values[i] = recoDmeson.fEta
+                values[i+naxis] = truthDmeson.fEta
             elif a == "d_z":
                 values[i] = recoJet.fZ
                 values[i+naxis] = truthJet.fZ
@@ -305,6 +314,10 @@ class DetectorResponse:
                 values.append(jet.fPt)
             elif a == "d_pt":
                 values.append(dmeson.fPt)
+            elif a == "jet_eta":
+                values.append(jet.fEta)
+            elif a == "d_eta":
+                values.append(dmeson.fEta)
             elif a == "d_z":
                 values.append(jet.fZ)
 
@@ -427,12 +440,22 @@ class Axis:
                 title = "#it{{p}}_{{T,jet}}^{{{0}}} (GeV/#it{{c}})".format(label)
             else:
                 title = "#it{p}_{T,jet} (GeV/#it{c})"
-        if self.fName == "d_pt":
+        elif self.fName == "d_pt":
             if label:
                 title = "#it{{p}}_{{T,D}}^{{{0}}} (GeV/#it{{c}})".format(label)
             else:
                 title = "#it{p}_{T,D} (GeV/#it{c})"
-        if self.fName == "d_z":
+        elif self.fName == "jet_eta":
+            if label:
+                title = "#it{{#eta}}_{{jet}}^{{{0}}}".format(label)
+            else:
+                title = "#it{#eta}_{jet}"
+        elif self.fName == "d_eta":
+            if label:
+                title = "#it{{#eta}}_{{D}}^{{{0}}}".format(label)
+            else:
+                title = "#it{#eta}_{D}"
+        elif self.fName == "d_z":
             if label:
                 title = "#it{{z}}_{{||,D}}^{{{0}}}".format(label)
             else:
@@ -445,25 +468,35 @@ class Spectrum:
         self.fName = name
         self.fBins = config["bins"]
         self.fAxis = []
-        if config["jet_pt"]:
-            self.fAxis.append(Axis("jet_pt", config["jet_pt"]))
-        if config["d_pt"]:
-            self.fAxis.append(Axis("d_pt", config["d_pt"]))
-        if config["d_z"]:
-            self.fAxis.append(Axis("d_z", config["d_z"]))
+        for axisName, axisBins in config["axis"].iteritems():
+            self.fAxis.append(Axis(axisName, axisBins))
         self.fHistogram = None
 
 class BinSet:
     def __init__(self):
         self.fBins = dict()
-        
-    def AddBins(self, name, jetPtLimits = [0, -1], ZLimits = [0, -1], DPtLimits = [0, -1], _showJetPt = True, _showDPt = True, _showDZ = True):
+
+    def GenerateInvMassRootLists(self):
+        for binListName, binList in self.fBins.iteritems():
+            rlist = ROOT.TList()
+            rlist.SetName(binListName)
+            for bin in binList:
+                rlist.Add(bin.fInvMassHisto)
+            yield rlist
+
+    def AddBins(self, name, limitSetList):
         self.fBins[name] = []
-        for _DPtMin,_DPtMax in zip(DPtLimits[:-1],DPtLimits[1:]):
-            for _jetPtMin,_jetPtMax in zip(jetPtLimits[:-1],jetPtLimits[1:]):
-                for _DZMin,_DZMax in zip(ZLimits[:-1],ZLimits[1:]):
-                    self.fBins[name].append(BinLimits(jetPtMin=_jetPtMin, jetPtMax=_jetPtMax, DPtMin = _DPtMin, DPtMax = _DPtMax, DZMin = _DZMin, DZMax = _DZMax, 
-                                                      showJetPt = _showJetPt, showDPt = _showDPt, showDZ = _showDZ))
+        limits = dict()
+        self.AddBinsRecursive(self.fBins[name], limitSetList, limits)
+
+    def AddBinsRecursive(self, bins, limitSetList, limits):
+        if len(limitSetList) > 0:
+            (limitSetName, limitSet) = limitSetList[0]
+            for min,max in zip(limitSet[:-1], limitSet[1:]):
+                limits[limitSetName] = min,max
+                self.AddBinsRecursive(bins, limitSetList[1:], limits)
+        else:
+            bins.append(BinLimits(limits))
 
     def FindBin(self, dmeson, jetDef):
         for bins in self.fBins.itervalues():
@@ -472,112 +505,78 @@ class BinSet:
                     yield bin
 
 class BinLimits:
-    def __init__(self, jetPtMin = 0, jetPtMax = -1, DPtMin = 0, DPtMax = -1, DZMin = 0, DZMax = -1, showJetPt = True, showDPt = True, showDZ = True):
-        self.fJetPtMin = jetPtMin
-        self.fJetPtMax = jetPtMax
-        self.fDPtMin = DPtMin
-        self.fDPtMax = DPtMax
-        self.fDZMin = DZMin
-        self.fDZMax = DZMax
-        self.fShowJetPt = showJetPt
-        self.fShowDPt = showDPt
-        self.fShowDZ = showDZ
+    def __init__(self, limits=dict()):
+        self.fLimits = deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
         
-    def SetFromAxis(self, axis, binIndex):
-        self.fShowJetPt = False
-        self.fShowDPt = False
-        self.fShowDZ = False
-
-        if axis.fName == "jet_pt":
-            self.fShowJetPt = True
-            if binIndex == 0:
-                self.fJetPtMin = axis.fBins[0]
-                self.fJetPtMax = axis.fBins[-1]
-            else:
-                self.fJetPtMin = axis.fBins[binIndex-1]
-                self.fJetPtMax = axis.fBins[binIndex]                
-
-        if axis.fName == "d_pt":
-            self.fShowDPt = True
-            if binIndex == 0:
-                self.fDPtMin = axis.fBins[0]
-                self.fDPtMax = axis.fBins[-1]
-            else:
-                self.fDPtMin = axis.fBins[binIndex-1]
-                self.fDPtMax = axis.fBins[binIndex]
-
-        if axis.fName == "d_z":
-            self.fShowDZ = True
-            if binIndex == 0:
-                self.fDZMin = axis.fBins[0]
-                self.fDZMax = axis.fBins[-1]
-            else:
-                self.fDZMin = axis.fBins[binIndex-1]
-                self.fDZMax = axis.fBins[binIndex]
+    def AddFromAxis(self, axis, binIndex):
+        if binIndex == 0:
+            min = axis.fBins[0]
+            max = axis.fBins[-1]
+        else:
+            min = axis.fBins[binIndex-1]
+            max = axis.fBins[binIndex]                
+        self.fLimits[axis.fName] = min, max
       
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
     
     def SetJetPtLimits(self, min, max):
-        self.fJetPtMin = min
-        self.fJetPtMax = max
+        self.fLimits["jet_pt"] = min, max
         
     def SetDPtLimits(self, min, max):
-        self.fDPtMin = min
-        self.fDPtMax = max
+        self.fLimits["d_pt"] = min, max
         
     def SetDZLimits(self, min, max):
-        self.fDZMin = min
-        self.fDZMax = max
+        self.fLimits["d_z"] = min, max
+        
+    def SetJetEtaLimits(self, min, max):
+        self.fLimits["jet_eta"] = min, max
+        
+    def SetDEtaLimits(self, min, max):
+        self.fLimits["d_eta"] = min, max
         
     def IsInBinLimits(self, dmeson, jetDef):
-        if self.fDPtMax > self.fDPtMin and (dmeson.DmesonJet.fPt < self.fDPtMin or dmeson.DmesonJet.fPt > self.fDPtMax):
-            return False
-        
         jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
         jet = getattr(dmeson, jetName)
-        
-        jetPt = jet.fPt
-        if self.fJetPtMax > self.fJetPtMin and (jetPt < self.fJetPtMin or jetPt > self.fJetPtMax):
-            return False
-        
-        DZ = jet.fZ
-        if self.fDZMax > self.fDZMin and (DZ < self.fDZMin or DZ > self.fDZMax):
-            return False
-        
+
+        for name,(min,max) in self.fLimits.iteritems():
+            if not min < max:
+                continue
+            if name == "d_pt" and (dmeson.DmesonJet.fPt < min or dmeson.DmesonJet.fPt > max):
+                return False
+            elif name == "jet_pt" and (jet.fPt < min or jet.fPt > max):
+                return False
+            elif name == "d_eta" and (dmeson.DmesonJet.fEta < min or dmeson.DmesonJet.fEta > max):
+                return False
+            elif name == "jet_eta" and (jet.fEta < min or jet.fEta > max):
+                return False
+            elif name == "d_z" and (jet.fZ < min or jet.fZ > max):
+                return False
+
         return True
     
     def GetBinCenter(self, axis):
-        if axis == "jet_pt":
-            if self.fJetPtMax > self.fJetPtMin:
-                return (self.fJetPtMax + self.fJetPtMin) / 2
-            else:
-                return -1
-            
-        if axis == "d_pt":
-            if self.fDPtMax > self.fDPtMin:
-                return (self.fDPtMax + self.fDPtMin) / 2
-            else:
-                return -1
-            
-        if axis == "d_z":
-            if self.fDZMax > self.fDZMin:
-                return (self.fDZMax + self.fDZMin) / 2
-            else:
-                return -1
-    
+        if axis in self.fLimits:
+            (min, max) = self.fLimits[axis]
+            return (min + max) / 2
+        else:
+            return -1
+
     def GetName(self):
         name = ""
-        if self.fDPtMax > self.fDPtMin:
-            name += "DPt_{0}_{1}_".format(int(self.fDPtMin*100), int(self.fDPtMax*100))
-        
-        if self.fJetPtMax > self.fJetPtMin:
-            name += "JetPt_{0}_{1}_".format(int(self.fJetPtMin*100), int(self.fJetPtMax*100))
-            
-        if self.fDZMax > self.fDZMin:
-            name += "DZ_{0}_{1}_".format(int(self.fDZMin*100), int(self.fDZMax*100))
+        for varName,(min,max) in self.fLimits.iteritems():
+            if varName == "d_pt":
+                name += "DPt_{0}_{1}_".format(int(min*100), int(max*100))
+            elif varName == "jet_pt":
+                name += "JetPt_{0}_{1}_".format(int(min*100), int(max*100))
+            elif varName == "d_eta":
+                name += "DEta_{0}_{1}_".format(int(min*10), int(max*10))
+            elif varName == "jet_eta":
+                name += "JetEta_{0}_{1}_".format(int(min*10), int(max*10))
+            elif varName == "d_z":
+                name += "DZ_{0}_{1}_".format(int(min*100), int(max*100))
         
         #remove last "_"
         if name:
@@ -586,15 +585,19 @@ class BinLimits:
         
     def GetTitle(self):
         title = ""
-        if self.fDPtMax > self.fDPtMin and self.fShowDPt:
-            title += "{0:.1f} < #it{{p}}_{{T,D}} < {1:.1f} GeV/#it{{c}}, ".format(self.fDPtMin, self.fDPtMax)
         
-        if self.fJetPtMax > self.fJetPtMin and self.fShowJetPt:
-            title += "{0:.0f} < #it{{p}}_{{T,jet}} < {1:.0f} GeV/#it{{c}}, ".format(self.fJetPtMin, self.fJetPtMax)
-            
-        if self.fDZMax > self.fDZMin and self.fShowDZ:
-            title += "{0:.1f} < #it{{z}}_{{||, D}} < {1:.1f}, ".format(self.fDZMin, self.fDZMax)
-        
+        for varName,(min,max) in self.fLimits.iteritems():
+            if varName == "d_pt":
+                title += "{0:.1f} < #it{{p}}_{{T,D}} < {1:.1f} GeV/#it{{c}}, ".format(min, max)
+            elif varName == "jet_pt":
+                title += "{0:.0f} < #it{{p}}_{{T,jet}} < {1:.0f} GeV/#it{{c}}, ".format(min, max)
+            elif varName == "d_eta":
+                title += "{0:.1f} < #it{{#eta}}_{{D}} < {1:.1f}, ".format(min, max)
+            elif varName == "jet_eta":
+                title += "{0:.0f} < #it{{#eta}}_{{jet}} < {1:.0f}, ".format(min, max)
+            elif varName == "d_z":
+                title += "{0:.1f} < #it{{z}}_{{||, D}} < {1:.1f}, ".format(min, max)
+
         #remove last ", "
         if title:
             title = title[:-2]
@@ -604,7 +607,10 @@ class BinLimits:
         print(self.GetTitle())
     
     def CreateInvMassHisto(self, trigger, DMesonDef, xAxis, yAxis, nMassBins, minMass, maxMass):
-        hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
+        if trigger:
+            hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
+        else:
+            hname = "InvMass_{0}_{1}".format(DMesonDef, self.GetName())
         htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
         self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2)
         self.fInvMassHisto.Sumw2()
