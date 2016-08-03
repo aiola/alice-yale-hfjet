@@ -5,8 +5,10 @@ import ROOT
 import math
 import DMesonJetProjectors
 from DMesonJetBase import *
-from array import array
-from copy import deepcopy
+import array
+import copy
+import DMesonJetUtils
+import collections
 
 globalList = []
 
@@ -20,11 +22,31 @@ class DMesonJetAnalysisEngine:
         self.fNMassBins = nMassBins
         self.fMinMass = minMass
         self.fMaxMass = maxMass
-        self.fSpectra = dict()
+        self.fSpectra = collections.OrderedDict()
         self.fCanvases = []
         for s in spectra:
+            if "active" in s and not s["active"]:
+                continue
             name = "{0}_{1}".format(self.fDMeson, s["name"])
             self.fSpectra[s["name"]] = Spectrum(s, name)
+            
+    def CompareSpectra(self):
+        spectraToCompare = []
+        for name,s in self.fSpectra.iteritems():
+            if len(s.fAxis) != 1:
+                continue
+
+            h = s.fNormHistogram.Clone("{0}_copy".format(s.fNormHistogram.GetName()))
+            if s.fTitle:
+                h.SetTitle(s.fTitle)
+            globalList.append(h)
+            spectraToCompare.append(h)
+
+        results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], "{0}_SpectraComparison".format(self.fDMeson), "", "hist")
+        for obj in results:
+            if obj and isinstance(obj, ROOT.TCanvas):
+                self.fCanvases.append(obj)
+            globalList.append(obj)        
 
     def SaveRootFile(self, file):
         file.cd()
@@ -146,7 +168,7 @@ class DMesonJetAnalysisEngine:
             s.GenerateNormalizedSpectrum(self.fEvents)
 
     def GenerateSpectrum1D(self, s):
-        s.fHistogram = ROOT.TH1D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array('d',s.fAxis[0].fBins))
+        s.fHistogram = ROOT.TH1D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins))
         s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
         s.fHistogram.GetYaxis().SetTitle("counts")
         s.fHistogram.Sumw2()
@@ -165,7 +187,7 @@ class DMesonJetAnalysisEngine:
                     s.fHistogram.SetBinError(xbin, bin.fMassFitter.GetSignalError())
                 
     def GenerateSpectrum2D(self, s):
-        s.fHistogram = ROOT.TH2D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array('d',s.fAxis[1].fBins))
+        s.fHistogram = ROOT.TH2D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array.array('d',s.fAxis[1].fBins))
         s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
         s.fHistogram.GetYaxis().SetTitle(s.fAxis[1].GetTitle())
         s.fHistogram.GetZaxis().SetTitle("counts")
@@ -309,6 +331,8 @@ class DMesonJetAnalysis:
     def StartAnalysis(self, config):
         binSet = DMesonJetProjectors.BinSet()
         for binLists in config["binLists"]:
+            if "active" in binLists and not binLists["active"]:
+                continue
             limitSetList = []
             for name, binList in binLists["bins"].iteritems():
                 limitSetList.append((name, binList))
@@ -318,70 +342,39 @@ class DMesonJetAnalysis:
         
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
-                binset_copy = deepcopy(binSet)
+                binset_copy = copy.deepcopy(binSet)
                 eng = DMesonJetAnalysisEngine(trigger, d_meson, 
                                               binset_copy, config["n_mass_bins"], config["min_mass"], config["max_mass"],
                                               config["jets"], config["spectra"], self.fProjector)
                 self.fAnalysisEngine.append(eng)
                 eng.Start()
+                eng.CompareSpectra()
 
-        spectraToCompare = []
+        self.CompareSpectra(config["spectra"])
 
-        for s in config["spectra"]:
-            if len(s["axis"]) == 1:
-                spectraToCompare.append(s["name"])
-
-        self.CompareSpectra(spectraToCompare)
-
-    def CompareSpectra(self, spectraNames):
-        if not len(self.fAnalysisEngine) > 1:
-            return []
-        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2]
-        for spectrumName in spectraNames:
-            cname = "{0}_{1}_SpectraComparison".format(self.fName, spectrumName)
-            c = ROOT.TCanvas(cname, cname)
-            self.fCanvases.append(c)
-            c.cd()
-            globalList.append(c)
-            h0 = self.fAnalysisEngine[0].fSpectra[spectrumName].fHistogram.DrawCopy()
-            h0.SetMarkerColor(colors[0])
-            h0.SetLineColor(colors[0])
-            h0.SetMarkerStyle(ROOT.kOpenCircle)
-            h0.SetMarkerSize(1.2)
-            globalList.append(h0)
-
-            cname = "{0}_{1}_SpectraComparison_Ratio".format(self.fName, spectrumName)
-            cRatio = ROOT.TCanvas(cname, cname)
-            self.fCanvases.append(cRatio)
-            cRatio.cd()
-            globalList.append(cRatio)
-            leg = ROOT.TLegend(0.55, 0.72, 0.85, 0.87)
-            leg.SetFillStyle(0)
-            leg.SetBorderSize(0)
-            leg.AddEntry(h0, self.fAnalysisEngine[0].fDMeson, "pe")
-            globalList.append(leg)
-            for i, (color,eng) in enumerate(zip(colors[1:len(self.fAnalysisEngine)],self.fAnalysisEngine[1:])):
-                c.cd()
-                h = eng.fSpectra[spectrumName].fHistogram.DrawCopy("same")
-                h.SetMarkerColor(color)
-                h.SetLineColor(color)
-                h.SetMarkerStyle(ROOT.kFullCircle)
-                h.SetMarkerSize(1.2)
+    def CompareSpectra(self, spectra):
+        if len(self.fAnalysisEngine) <= 1:
+            return
+        for s in spectra:
+            if "active" in s and not s["active"]:
+                continue
+            if len(s["axis"]) != 1:
+                continue
+            baseline = self.fAnalysisEngine[0].fSpectra[s["name"]].fHistogram.Clone("{0}_copy".format(self.fAnalysisEngine[0].fSpectra[s["name"]].fHistogram.GetName()))
+            baseline.SetTitle(self.fAnalysisEngine[0].fDMeson)
+            globalList.append(baseline)
+            spectraToCompare = []
+            for eng in self.fAnalysisEngine[1:]:
+                h = eng.fSpectra[s["name"]].fHistogram.Clone("{0}_copy".format(eng.fSpectra[s["name"]].fHistogram.GetName()))
+                h.SetTitle(eng.fDMeson)
                 globalList.append(h)
+                spectraToCompare.append(h)
 
-                leg.AddEntry(h, eng.fDMeson, "pe")
-
-                cRatio.cd()
-                hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
-                hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
-                hRatio.Divide(h0)
-                globalList.append(hRatio)
-                if i == 0:
-                    hRatio.Draw()
-                else:
-                    hRatio.Draw("same")
-            c.cd()
-            leg.Draw()
+            results = DMesonJetUtils.CompareSpectra(baseline, spectraToCompare, "{0}_SpectraComparison".format(s["name"]))
+            for obj in results:
+                if isinstance(obj, ROOT.TCanvas):
+                    self.fCanvases.append(obj)
+                globalList.append(obj)
 
     def SaveRootFile(self, path):
         file = ROOT.TFile.Open("{0}/{1}.root".format(path, self.fName), "recreate")
@@ -399,4 +392,3 @@ class DMesonJetAnalysis:
 
         for c in self.fCanvases:
             c.SaveAs("{0}/{1}.{2}".format(fullPath, c.GetName(), format))
-

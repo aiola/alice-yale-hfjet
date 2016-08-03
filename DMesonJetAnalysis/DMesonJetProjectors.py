@@ -4,9 +4,8 @@
 import ROOT
 import math
 import os
+import DMesonJetUtils
 from DMesonJetBase import *
-import array
-from bisect import bisect
 
 class SimpleWeight:
     def GetEfficiencyWeight(self, dmeson, jet):
@@ -114,7 +113,7 @@ class DMesonJetDataProjector:
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
         
-        files = find_file(path, self.fFileName)
+        files = DMesonJetUtils.find_file(path, self.fFileName)
         
         self.fChain = ROOT.TChain(treeName)
 
@@ -229,7 +228,7 @@ class DMesonJetResponseProjector:
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
 
-        files = find_file(path, self.fFileName)
+        files = DMesonJetUtils.find_file(path, self.fFileName)
 
         self.fChain = ROOT.TChain(treeName)
 

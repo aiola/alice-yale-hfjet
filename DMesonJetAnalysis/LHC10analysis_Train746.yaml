@@ -17,7 +17,8 @@ analysis:
     radius: R040
   binLists:
   -
-    name: D_Tagged_Jets
+    name: D_Tagged_Jets_PtD_05
+    active: yes
     efficiency: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
@@ -32,7 +33,72 @@ analysis:
       variable: fPt
       min: 0.5
   -
+    name: D_Tagged_Jets_PtD_10
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 1.0
+  -
+    name: D_Tagged_Jets_PtD_20
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 2.0
+  -
+    name: D_Tagged_Jets_Z_01
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.1
+  -
+    name: D_Tagged_Jets_Z_02
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.2
+  -
     name: D_Fragmentation_JetPt_5_8
+    active: no
     efficiency: no
     bins:
       jet_pt: [5, 8]
@@ -45,6 +111,7 @@ analysis:
       max: 0.5
   -
     name: D_Fragmentation_JetPt_8_13
+    active: no
     efficiency: no
     bins:
       jet_pt: [8, 13]
@@ -57,6 +124,7 @@ analysis:
       max: 0.5
   -
     name: D_Fragmentation_JetPt_13_30
+    active: no
     efficiency: no
     bins:
       jet_pt: [13, 24]
@@ -69,12 +137,43 @@ analysis:
       max: 0.5
   spectra:
   -
-    name: D_Tagged_Jet_Spectrum
-    bins: [D_Tagged_Jets]
+    name: D_Tagged_Jet_PtD_05_Spectrum
+    title: "#it{p}_{T,D} > 0.5 GeV/#it{c}"
+    active: yes
+    bins: [D_Tagged_Jets_PtD_05]
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Tagged_Jet_PtD_10_Spectrum
+    title: "#it{p}_{T,D} > 1 GeV/#it{c}"
+    active: yes
+    bins: [D_Tagged_Jets_PtD_10]
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Tagged_Jet_PtD_20_Spectrum
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
+    active: yes
+    bins: [D_Tagged_Jets_PtD_20]
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Tagged_Jet_Z_01_Spectrum
+    title: "#it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [D_Tagged_Jets_Z_01]
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Tagged_Jet_Z_02_Spectrum
+    title: "#it{z}_{||,D} > 0.2"
+    active: yes
+    bins: [D_Tagged_Jets_Z_02]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Fragmentation_JetPt_Spectra
+    active: no
     bins: [D_Fragmentation_JetPt_5_8, D_Fragmentation_JetPt_8_13, D_Fragmentation_JetPt_13_30]
     axis:
       jet_pt: [5, 8, 13, 24]

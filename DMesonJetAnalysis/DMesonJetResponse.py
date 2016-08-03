@@ -5,8 +5,6 @@ import ROOT
 import math
 import DMesonJetProjectors
 from DMesonJetBase import *
-from array import array
-from copy import deepcopy
 import os
 
 globalList = []
