@@ -2,16 +2,10 @@
 #python base classes and utilities for D Meson jet analysis
 
 import ROOT
-from array import array
+import array
 import os
 import math
-from copy import deepcopy
-
-def find_file(path, file_name):
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if file == file_name:
-                yield os.path.join(root, file)
+import copy
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -102,7 +96,7 @@ class DetectorResponse:
         if maxAxis == -1:
             maxAxis = len(self.fAxis)-1
         if coord is None:
-            coord = array('i',[-1]*(len(self.fAxis)*2))
+            coord = array.array('i',[-1]*(len(self.fAxis)*2))
         if axis == -1:
             axis = minAxis
         for ibin in range(0, self.fResponseMatrix.GetAxis(axis).GetNbins()+2):
@@ -261,24 +255,24 @@ class DetectorResponse:
     def GenerateHistogram(self, axis, name):
         hname = "{0}_{1}".format(self.fName, name)
         if len(axis) == 1:
-            hist = ROOT.TH1D(hname, hname, len(axis[0].fBins)-1, array('d',axis[0].fBins))
+            hist = ROOT.TH1D(hname, hname, len(axis[0].fBins)-1, array.array('d',axis[0].fBins))
             hist.GetXaxis().SetTitle(axis[0].GetTitle())
             hist.GetYaxis().SetTitle("counts")
         elif len(axis) == 2:
-            hist = ROOT.TH2D(hname, hname, len(axis[0].fBins)-1, array('d',axis[0].fBins), len(axis[1].fBins)-1, array('d',axis[1].fBins))
+            hist = ROOT.TH2D(hname, hname, len(axis[0].fBins)-1, array.array('d',axis[0].fBins), len(axis[1].fBins)-1, array.array('d',axis[1].fBins))
             hist.GetXaxis().SetTitle(axis[0].GetTitle())
             hist.GetYaxis().SetTitle(axis[1].GetTitle())
             hist.GetZaxis().SetTitle("counts")
         elif len(axis) == 3:
-            hist = ROOT.TH3D(hname, hname, len(axis[0].fBins)-1, array('d',axis[0].fBins), len(axis[1].fBins)-1, array('d',axis[1].fBins), len(axis[2].fBins)-1, array('d',axis[2].fBins))
+            hist = ROOT.TH3D(hname, hname, len(axis[0].fBins)-1, array.array('d',axis[0].fBins), len(axis[1].fBins)-1, array.array('d',axis[1].fBins), len(axis[2].fBins)-1, array.array('d',axis[2].fBins))
             hist.GetXaxis().SetTitle(axis[0].GetTitle())
             hist.GetYaxis().SetTitle(axis[1].GetTitle())
             hist.GetZaxis().SetTitle(axis[2].GetTitle())
         else:
-            nbins = array('i', [len(a.fBins) for a in axis])
+            nbins = array.array('i', [len(a.fBins) for a in axis])
             hist = ROOT.THnSparseD(hname, hname, len(axis), nbins)
             for i,a in enumerate(axis):
-                hist.GetAxis(i).Set(len(a.fBins)-1, array('d',a.fBins))
+                hist.GetAxis(i).Set(len(a.fBins)-1, array.array('d',a.fBins))
                 hist.GetAxis(i).SetTitle(axis[i].GetTitle())
                 
         hist.Sumw2()
@@ -287,7 +281,7 @@ class DetectorResponse:
 
     def FillResponseMatrix(self, axis, resp, recoDmeson, truthDmeson, recoJet, truthJet, w):
         naxis = len(axis)
-        values = array('d', [0]*(naxis*2))
+        values = array.array('d', [0]*(naxis*2))
         for i,a in enumerate(axis):
             if a == "jet_pt":
                 values[i] = recoJet.fPt
@@ -308,7 +302,7 @@ class DetectorResponse:
         self.FillHistogram(resp, values, w)
 
     def FillSpectrum(self, axis, hist, dmeson, jet, w):
-        values = array('d')
+        values = array.array('d')
         for a in axis:
             if a == "jet_pt":
                 values.append(jet.fPt)
@@ -493,7 +487,11 @@ class Spectrum:
             self.fAxis.append(Axis(axisName, axisBins))
         self.fHistogram = None
         self.fNormHistogram = None
-        
+        if "title" in config:
+            self.fTitle = config["title"]
+        else:
+            self.fTitle = "" 
+
     def GenerateNormalizedSpectrum(self, events):
         if not self.fHistogram:
             return
@@ -578,7 +576,7 @@ class BinSet:
 
 class BinLimits:
     def __init__(self, limits=dict()):
-        self.fLimits = deepcopy(limits)
+        self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
         
