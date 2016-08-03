@@ -30,6 +30,24 @@ analysis:
       variable: fPt
       min: 0.5
   -
+    name: D_Tagged_Jet_Spectrum
+    efficiency: no
+    active: yes
+    bins:
+      jet_pt:
+        truth: [5, 6, 8, 10, 14, 18, 24]
+        reco: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.2
+  -
     name: D_Tagged_Jet_JetEta
     efficiency: no
     active: yes
