@@ -115,7 +115,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     nOutputTrees = 0
 
     if doRecLevel:
-        nOutputTrees += 2
+        nOutputTrees += 3
         
     if config["MC"] and doSignalOnly:
         nOutputTrees += 2
@@ -155,6 +155,8 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpiLikeSign, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpiLikeSign, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
         
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
