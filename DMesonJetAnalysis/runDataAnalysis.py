@@ -30,7 +30,7 @@ def main(config, maxEvents):
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
-        ana.StartAnalysis(anaConfig)
+        ana.StartAnalysis(config["figure_title"], config["collision_system"], anaConfig)
 
     ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
     ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), "pdf")

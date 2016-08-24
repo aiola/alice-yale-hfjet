@@ -487,6 +487,10 @@ class Spectrum:
             self.fAxis.append(Axis(axisName, axisBins))
         self.fHistogram = None
         self.fNormHistogram = None
+        self.fUncertainty = None
+        self.fMass = None
+        self.fMassWidth = None
+        self.fBackground = None
         if "title" in config:
             self.fTitle = config["title"]
         else:

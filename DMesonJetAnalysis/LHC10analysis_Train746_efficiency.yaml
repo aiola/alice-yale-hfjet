@@ -7,6 +7,8 @@ efficiency:
   file_name: Jets_EMC_pp_MC_930_931_932_933/LHC15i2_Train930.root
   list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
   object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+figure_title: "ALICE Work In Progress"
+collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   trigger: [AnyINT]
@@ -18,6 +20,7 @@ analysis:
   -
     type: Charged
     radius: R040
+    title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
     name: D_Tagged_Jets_PtD_05
@@ -141,41 +144,42 @@ analysis:
   spectra:
   -
     name: D_Tagged_Jet_PtD_05_Spectrum
-    title: "#it{p}_{T,D} > 0.5 GeV/#it{c}"
+    title: "|#eta_{jet}| < 0.5, #it{p}_{T,D} > 0.5 GeV/#it{c}"
     active: yes
     bins: [D_Tagged_Jets_PtD_05]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Tagged_Jet_PtD_10_Spectrum
-    title: "#it{p}_{T,D} > 1 GeV/#it{c}"
+    title: "|#eta_{jet}| < 0.5, #it{p}_{T,D} > 1 GeV/#it{c}"
     active: yes
     bins: [D_Tagged_Jets_PtD_10]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
+    title: "|#eta_{jet}| < 0.5, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
     bins: [D_Tagged_Jets_PtD_20]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Tagged_Jet_Z_01_Spectrum
-    title: "#it{z}_{||,D} > 0.1"
+    title: "|#eta_{jet}| < 0.5, #it{z}_{||,D} > 0.1"
     active: yes
     bins: [D_Tagged_Jets_Z_01]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Tagged_Jet_Z_02_Spectrum
-    title: "#it{z}_{||,D} > 0.2"
+    title: "|#eta_{jet}| < 0.5, #it{z}_{||,D} > 0.2"
     active: yes
     bins: [D_Tagged_Jets_Z_02]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Fragmentation_JetPt_Spectra
+    title: "|#eta_{jet}| < 0.5"
     active: no
     bins: [D_Fragmentation_JetPt_5_8, D_Fragmentation_JetPt_8_13, D_Fragmentation_JetPt_13_30]
     axis:

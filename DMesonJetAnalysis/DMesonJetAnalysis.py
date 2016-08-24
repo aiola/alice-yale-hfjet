@@ -13,7 +13,9 @@ import collections
 globalList = []
 
 class DMesonJetAnalysisEngine:
-    def __init__(self, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, spectra, projector):
+    def __init__(self, figTitle, collision, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, spectra, projector):
+        self.fFigureTitle = figTitle
+        self.fCollision = collision
         self.fTrigger = trigger
         self.fDMeson = dmeson
         self.fJetDefinitions = jets
@@ -113,7 +115,8 @@ class DMesonJetAnalysisEngine:
                 print("Not able to plot spectra with dim > 3!")
     
     def PlotSpectrum1D(self, s):
-        c = ROOT.TCanvas("{0}_canvas".format(s.fName), s.fName)
+        # Spectrum
+        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
         c.SetLogy()
         self.fCanvases.append(c)
         c.cd()
@@ -129,19 +132,106 @@ class DMesonJetAnalysisEngine:
         pave.SetBorderSize(0)
         pave.SetTextFont(43)
         pave.SetTextSize(15)
-        pave.AddText("ALICE Work In Progress")
-        pave.AddText("pp #sqrt{#it{s}} = 7 TeV")
-        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4")
+        pave.AddText(self.fFigureTitle)
+        pave.AddText(self.fCollision)
+        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
         pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-        pave.AddText("|#eta_{jet}| < 0.5, #it{p}_{T,D} > 0.5 GeV/#it{c}")
+        pave.AddText(s.fTitle)
         pave.Draw()
 
         globalList.append(c)
         globalList.append(h)
         globalList.append(pave)
+        
+        # Uncertainty
+        c = ROOT.TCanvas("{0}_canvas".format(s.fUncertainty.GetName()), s.fUncertainty.GetName())
+        self.fCanvases.append(c)
+        c.cd()
+        h = s.fUncertainty.DrawCopy("hist")
+
+        h.SetLineColor(ROOT.kBlue+2)
+        h.SetLineWidth(2)
+        h.SetFillColorAlpha(ROOT.kBlue+2, 0.25)
+        h.SetFillStyle(1001)
+
+        pave = ROOT.TPaveText(0.10, 0.88, 0.4, 0.55, "NB NDC")
+        pave.SetFillStyle(0)
+        pave.SetBorderSize(0)
+        pave.SetTextFont(43)
+        pave.SetTextSize(15)
+        pave.AddText(self.fFigureTitle)
+        pave.AddText(self.fCollision)
+        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
+        pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        pave.AddText(s.fTitle)
+        pave.Draw()
+
+        globalList.append(c)
+        globalList.append(h)
+        globalList.append(pave)
+        
+        # Mass
+        c = ROOT.TCanvas("{0}_canvas".format(s.fMass.GetName()), s.fMass.GetName())
+        self.fCanvases.append(c)
+        c.cd()
+        h = s.fMass.DrawCopy()
+
+        h.SetMarkerColor(ROOT.kBlue+2)
+        h.SetMarkerStyle(ROOT.kFullCircle)
+        h.SetMarkerSize(0.9)
+        h.SetLineColor(ROOT.kBlue+2)
+        h.GetYaxis().SetRangeUser(1.84, 1.91)
+
+        pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
+        pave.SetFillStyle(0)
+        pave.SetBorderSize(0)
+        pave.SetTextFont(43)
+        pave.SetTextSize(15)
+        pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
+        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        pave.AddText(s.fTitle)
+        pave.Draw()
+        
+        line = ROOT.TLine(h.GetXaxis().GetBinLowEdge(1), 1.86484, h.GetXaxis().GetBinUpEdge(h.GetXaxis().GetNbins()), 1.86484)
+        line.SetLineColor(ROOT.kBlack)
+        line.SetLineStyle(2)
+        line.SetLineWidth(2)
+        line.Draw()
+
+        globalList.append(c)
+        globalList.append(h)
+        globalList.append(pave)
+        globalList.append(line)
+        
+        # Mass width
+        c = ROOT.TCanvas("{0}_canvas".format(s.fMassWidth.GetName()), s.fMassWidth.GetName())
+        self.fCanvases.append(c)
+        c.cd()
+        h = s.fMassWidth.DrawCopy()
+
+        h.SetMarkerColor(ROOT.kBlue+2)
+        h.SetMarkerStyle(ROOT.kFullCircle)
+        h.SetMarkerSize(0.9)
+        h.SetLineColor(ROOT.kBlue+2)
+        #h.GetYaxis().SetRangeUser(1.84, 1.91)
+
+        pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
+        pave.SetFillStyle(0)
+        pave.SetBorderSize(0)
+        pave.SetTextFont(43)
+        pave.SetTextSize(15)
+        pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
+        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        pave.AddText(s.fTitle)
+        pave.Draw()
+
+        globalList.append(c)
+        globalList.append(h)
+        globalList.append(pave)
+        globalList.append(line)
 
     def PlotSpectrum2D(self, s):
-        c = ROOT.TCanvas("{0}_canvas".format(s.fName), s.fName)
+        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
         c.SetRightMargin(0.18)
         c.SetLogz()
         self.fCanvases.append(c)
@@ -167,11 +257,19 @@ class DMesonJetAnalysisEngine:
                 print("Not able to generate spectra with dim > 3!")
             s.GenerateNormalizedSpectrum(self.fEvents)
 
+    def BuildSpectrum1D(self, s, name, yaxis):
+        hist = ROOT.TH1D(name, name, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins))
+        hist.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
+        hist.GetYaxis().SetTitle(yaxis)
+        hist.Sumw2()
+        return hist
+
     def GenerateSpectrum1D(self, s):
-        s.fHistogram = ROOT.TH1D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins))
-        s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
-        s.fHistogram.GetYaxis().SetTitle("counts")
-        s.fHistogram.Sumw2()
+        s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
+        s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
+        s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
+        s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
+        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
         for binSetName in s.fBins:
             for bin in self.fBinSet.fBins[binSetName][0]:
                 if bin.fMassFitter is None:
@@ -180,18 +278,35 @@ class DMesonJetAnalysisEngine:
                     continue
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 if "SignalOnly" in self.fDMeson:
-                    s.fHistogram.SetBinContent(xbin, bin.fInvMassHisto.Integral())
-                    s.fHistogram.SetBinError(xbin, math.sqrt(bin.fInvMassHisto.Integral()))
+                    signal = bin.fInvMassHisto.Integral()
+                    signal_unc = math.sqrt(bin.fInvMassHisto.Integral())
                 else:
-                    s.fHistogram.SetBinContent(xbin, bin.fMassFitter.GetSignal())
-                    s.fHistogram.SetBinError(xbin, bin.fMassFitter.GetSignalError())
-                
+                    signal = bin.fMassFitter.GetSignal()
+                    signal_unc = bin.fMassFitter.GetSignalError()
+
+                s.fHistogram.SetBinContent(xbin, signal)
+                s.fHistogram.SetBinError(xbin, signal_unc)
+                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground())
+                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError())
+                s.fUncertainty.SetBinContent(xbin, signal_unc/signal)
+                s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
+                s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
+                s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
+                s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+
+    def BuildSpectrum2D(self, s, name, zaxis):
+        hist = ROOT.TH2D(name, name, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array.array('d',s.fAxis[1].fBins))
+        hist.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
+        hist.GetYaxis().SetTitle(s.fAxis[1].GetTitle())
+        hist.GetZaxis().SetTitle(zaxis)
+        hist.Sumw2()
+        return hist
+
     def GenerateSpectrum2D(self, s):
-        s.fHistogram = ROOT.TH2D(s.fName, s.fName, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array.array('d',s.fAxis[1].fBins))
-        s.fHistogram.GetXaxis().SetTitle(s.fAxis[0].GetTitle())
-        s.fHistogram.GetYaxis().SetTitle(s.fAxis[1].GetTitle())
-        s.fHistogram.GetZaxis().SetTitle("counts")
-        s.fHistogram.Sumw2()
+        s.fHistogram = self.BuildSpectrum2D(s, s.fName, "counts")
+        s.fUncertainty = self.BuildSpectrum2D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
+        s.fMass = self.BuildSpectrum2D(s, "{0}_Mass".format(s.fName), "mass")
+        s.fBackground = self.BuildSpectrum2D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
         for binSetName in s.fBins:
             for bin in self.fBinSet.fBins[binSetName][0]:
                 if bin.fMassFitter is None:
@@ -201,16 +316,26 @@ class DMesonJetAnalysisEngine:
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 ybin = s.fHistogram.GetYaxis().FindBin(bin.GetBinCenter(s.fAxis[1].fName))
                 if "SignalOnly" in self.fDMeson:
-                    s.fHistogram.SetBinContent(xbin, ybin, bin.fInvMassHisto.GetEntries())
-                    s.fHistogram.SetBinError(xbin, ybin, math.sqrt(bin.fInvMassHisto.GetEntries()))
+                    signal = bin.fInvMassHisto.Integral()
+                    signal_unc = math.sqrt(bin.fInvMassHisto.Integral())
                 else:
-                    s.fHistogram.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignal())
-                    s.fHistogram.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalError())
+                    signal = bin.fMassFitter.GetSignal()
+                    signal_unc = bin.fMassFitter.GetSignalError()
+
+                s.fHistogram.SetBinContent(xbin, ybin, signal)
+                s.fHistogram.SetBinError(xbin, ybin, signal_unc)
+                s.fBackground.SetBinContent(xbin, ybin, bin.fMassFitter.GetBackground())
+                s.fBackground.SetBinError(xbin, ybin, bin.fMassFitter.GetBackgroundError())
+                s.fUncertainty.SetBinContent(xbin, ybin, signal_unc/signal)
+                s.fMass.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignalMean())
+                s.fMass.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalMeanError())
+                s.fMassWidth.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignalWidth())
+                s.fMassWidth.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalWidthError())
                 
     def GenerateSpectrum3D(self, s):
         print("GenerateSpectrum3D not implemented!")
                 
-    def DrawFitResutls(self,bin):
+    def DrawFitResults(self,bin):
         if bin.fMassFitter is None:
             return
         
@@ -317,7 +442,7 @@ class DMesonJetAnalysisEngine:
             htitle.AddText(bin.GetTitle())
             htitle.Draw()
             globalList.append(htitle)
-            self.DrawFitResutls(bin)
+            self.DrawFitResults(bin)
 
 class DMesonJetAnalysis:
     def __init__(self, name):
@@ -328,7 +453,7 @@ class DMesonJetAnalysis:
     def SetProjector(self, projector):
         self.fProjector = projector
         
-    def StartAnalysis(self, config):
+    def StartAnalysis(self, figTitle, collision, config):
         binSet = DMesonJetProjectors.BinSet()
         for binLists in config["binLists"]:
             if "active" in binLists and not binLists["active"]:
@@ -343,7 +468,7 @@ class DMesonJetAnalysis:
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
                 binset_copy = copy.deepcopy(binSet)
-                eng = DMesonJetAnalysisEngine(trigger, d_meson, 
+                eng = DMesonJetAnalysisEngine(figTitle, collision, trigger, d_meson, 
                                               binset_copy, config["n_mass_bins"], config["min_mass"], config["max_mass"],
                                               config["jets"], config["spectra"], self.fProjector)
                 self.fAnalysisEngine.append(eng)
