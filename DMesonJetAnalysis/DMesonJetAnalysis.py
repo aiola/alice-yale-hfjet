@@ -398,19 +398,12 @@ class DMesonJetAnalysisEngine:
     def PlotInvMassPlots(self):
         for name,(bins,_) in self.fBinSet.fBins.iteritems():
             self.PlotInvMassPlotsBinSet(name,bins)
-    
-    def GenerateInvMassCanvas(self, name, n):
-        rows = int(math.floor(math.sqrt(n)))
-        cols = int(math.ceil(float(n) / rows))
+
+    def PlotInvMassPlotsBinSet(self, name, bins):
         cname = "{0}_{1}".format(self.fDMeson, name)
-        c = ROOT.TCanvas(cname, cname, cols*400, rows*400)
-        c.Divide(cols, rows)
+        c = DMesonJetUtils.GenerateMultiCanvas(cname, len(bins))
         self.fCanvases.append(c)
         globalList.append(c)
-        return c
-    
-    def PlotInvMassPlotsBinSet(self, name, bins):
-        c = self.GenerateInvMassCanvas(name, len(bins))
         for i,bin in enumerate(bins):
             if not bin.fInvMassHisto:
                 continue

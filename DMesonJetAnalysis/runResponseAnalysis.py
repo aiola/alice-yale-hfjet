@@ -11,13 +11,18 @@ import ROOT
 
 globalList = []
 
-def main(config, maxEvents):
+def main(config, maxEvents, suffix):
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
 
-    ana = DMesonJetResponse.DMesonJetResponse(config["name"])
+    if suffix:
+        name = "{0}_{1}".format(config["name"], suffix)
+    else:
+        name = config["name"]
+
+    ana = DMesonJetResponse.DMesonJetResponse(name)
 
     projector = DMesonJetProjectors.DMesonJetResponseProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents)
     ana.SetProjector(projector)
@@ -35,13 +40,15 @@ if __name__ == '__main__':
                         help='YAML configuration file')
     parser.add_argument('--events', metavar='N',
                         default=-1, type=int)
+    parser.add_argument('--suffix', metavar='suffix',
+                        default="")
     args = parser.parse_args()
     
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events)
+    main(config, args.events, args.suffix)
     
     IPython.embed()
     

@@ -6,6 +6,7 @@ import array
 import os
 import math
 import copy
+import DMesonJetUtils
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -24,6 +25,15 @@ class DetectorResponse:
         self.fMeasured = self.GenerateMeasured(axis)
         self.fReconstructedTruth = self.GenerateTruth(axis, "RecontructedTruth")
         self.fEfficiency = None
+        self.fResolution = None
+        self.fEnergyScaleShift = None
+        self.fEnergyScaleShiftMedian = None
+        if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName:
+            varName = "({0}-{1}) / {1}".format(self.fAxis[0].fDetectorAxis.GetVariableName(), self.fAxis[0].fTruthAxis.GetVariableName())
+            sname = "{0}_DetectorResponse".format(self.fName)
+            self.fStatistics = DMesonJetUtils.StatisticMultiSet(sname, self.fAxis[0].fTruthAxis, varName)
+        else:
+            self.fStatistics = None
         if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName:
             self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in range(0, len(self.fAxis[0].fTruthAxis.fBins)+1)]
             self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in range(0, len(self.fAxis[0].fTruthAxis.fBins)+1)]
@@ -38,7 +48,15 @@ class DetectorResponse:
             self.fReconstructedTruth1D = None
             self.fEfficiency1D = None
             self.fEfficiency1DRatios = None
-            
+
+    def GenerateResolution(self):
+        if not self.fStatistics:
+            return
+        self.fStatistics.PrintSummary(self.fName)
+        self.fEnergyScaleShift = self.fStatistics.GenerateMeanHistogram("EnergyScaleShift")
+        self.fResolution = self.fStatistics.GenerateStdDevHistogram("Resolution")
+        self.fEnergyScaleShiftMedian = self.fStatistics.GenerateMedianHistogram("EnergyScaleShiftMedian")
+
     def GenerateLowerDimensionHistogram(self, axisProj, axis, bin, name):
         if bin >= 0 and bin < len(axisProj.fBins):
             binLimits = BinLimits()
@@ -229,7 +247,6 @@ class DetectorResponse:
         return eff
 
     def GenerateResponseMatrix(self, axis):
-        hname = "{0}_DetectorResponse".format(self.fName)
         haxis = []
         for a in axis:
             haxis.append(a.fDetectorAxis)
@@ -251,7 +268,7 @@ class DetectorResponse:
             detector.append(a.fDetectorAxis)
 
         return self.GenerateHistogram(detector, name)
-    
+
     def GenerateHistogram(self, axis, name):
         hname = "{0}_{1}".format(self.fName, name)
         if len(axis) == 1:
@@ -274,10 +291,19 @@ class DetectorResponse:
             for i,a in enumerate(axis):
                 hist.GetAxis(i).Set(len(a.fBins)-1, array.array('d',a.fBins))
                 hist.GetAxis(i).SetTitle(axis[i].GetTitle())
-                
+
         hist.Sumw2()
-        
+
         return hist
+
+    def FillResolution(self, recoDmeson, truthDmeson, recoJet, truthJet, w):
+        if not self.fStatistics:
+            return
+
+        if (not (recoJet and truthJet)) or recoJet.fPt <= 0 or truthJet.fPt <= 0:
+            return
+
+        self.fStatistics.Fill(truthJet.fPt, (recoJet.fPt - truthJet.fPt) / truthJet.fPt, w)
 
     def FillResponseMatrix(self, axis, resp, recoDmeson, truthDmeson, recoJet, truthJet, w):
         naxis = len(axis)
@@ -408,6 +434,7 @@ class DetectorResponse:
         if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
             if self.fCuts.ApplyCuts(dMesonMeasured, jetMeasured):
                 self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
+                self.FillResolution(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w*weff)
                 self.FillMeasured(dMesonMeasured, jetMeasured, w*weff)
                 self.FillRecoTruth(dMesonTruth, jetTruth, w*weff)
 
@@ -426,6 +453,14 @@ class Axis:
         self.fBins = bins
         self.fLabel = label
         
+    def FindBin(self, x):
+        for i,(min,max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
+            if x > min and x < max:
+                #print("Value {0} in bin {1}".format(x, i))
+                return i
+        #print("Value {0} outside bin limits".format(x))
+        return -1
+
     def GetTitle(self, label = ""):
         varName = self.GetVariableName(label)
         units = self.GetVariableUnits()
