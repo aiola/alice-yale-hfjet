@@ -223,6 +223,22 @@ Double_t MassFitter::GetSignalOverSqrtSignalBackgorund() const
 }
 
 //____________________________________________________________________________________
+Double_t MassFitter::GetBackgroundBinCountAndError(Double_t minNSigmas, Double_t maxNSigmas, Double_t& error) const
+{
+  error = 0;
+  if (!fHistogram) return 0;
+
+  Double_t sideBandError1 = 0;
+  Double_t sideBand1 = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean-maxNSigmas*fWidth), fHistogram->GetXaxis()->FindBin(fMean-minNSigmas*fWidth), sideBandError1);
+
+  Double_t sideBandError2 = 0;
+  Double_t sideBand2 = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean+minNSigmas*fWidth), fHistogram->GetXaxis()->FindBin(fMean+maxNSigmas*fWidth), sideBandError2);
+
+  error = TMath::Sqrt(sideBandError1*sideBandError1 + sideBandError2*sideBandError2);
+  return sideBand1 + sideBand2;
+}
+
+//____________________________________________________________________________________
 void MassFitter::GetBackgroundAndError(Double_t& bkg, Double_t& bkgErr, Double_t sigmas) const
 {
   if (fDisableBkg) {

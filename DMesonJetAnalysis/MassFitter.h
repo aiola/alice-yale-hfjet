@@ -51,6 +51,10 @@ class MassFitter : public TNamed {
   Double_t GetBackgroundError(Double_t sigmas=3.0)   const;
   void     GetBackgroundAndError(Double_t& bkg,
       Double_t& bkgErr, Double_t sigmas=3.0)         const;
+  Double_t GetBackgroundBinCountAndError(Double_t minNSigmas,
+      Double_t maxNSigmas, Double_t& error)          const;
+  Double_t GetBackgroundBinCount(Double_t minNSigmas,
+      Double_t maxNSigmas)                           const { Double_t error; return GetBackgroundBinCountAndError(minNSigmas, maxNSigmas, error); }
   Double_t GetSignalOverBackground()                 const;
   Double_t GetSignalOverSqrtSignalBackgorund()       const;
 

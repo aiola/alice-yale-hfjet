@@ -460,9 +460,7 @@ class Axis:
     def FindBin(self, x):
         for i,(min,max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
             if x > min and x < max:
-                #print("Value {0} in bin {1}".format(x, i))
                 return i
-        #print("Value {0} outside bin limits".format(x))
         return -1
 
     def GetTitle(self, label = ""):
@@ -518,22 +516,32 @@ class Axis:
         return title
 
 class Spectrum:
-    def __init__(self, config, name):
+    def __init__(self, config, name, binSet=None):
         self.fName = name
         self.fBins = config["bins"]
-        self.fAxis = []
-        for axisName, axisBins in config["axis"].iteritems():
-            self.fAxis.append(Axis(axisName, axisBins))
         self.fHistogram = None
         self.fNormHistogram = None
         self.fUncertainty = None
         self.fMass = None
         self.fMassWidth = None
         self.fBackground = None
+        self.fAxis = []
         if "title" in config:
             self.fTitle = config["title"]
         else:
             self.fTitle = "" 
+        if "side_band" in config:
+            self.fSideBand = True
+            self.fSideBandMinSigmas = config["side_band"]["min_sigmas"]
+            self.fSideBandMaxSigmas = config["side_band"]["max_sigmas"]
+            self.fSideBandMaxSignalSigmas = config["side_band"]["max_signal_sigmas"]
+        else:
+            self.fSideBand = False
+        if self.fSideBand and binSet:
+            self.fAxis.append(binSet[self.fBins[0]].fSideBandAxis)
+        else:
+            for axisName, axisBins in config["axis"].iteritems():
+                self.fAxis.append(Axis(axisName, axisBins))
 
     def GenerateNormalizedSpectrum(self, events):
         if not self.fHistogram:
@@ -582,46 +590,76 @@ class DMesonJetCuts:
                     return False
         return True
 
-class BinSet:
+class BinMultiSet:
     def __init__(self):
-        self.fBins = dict()
+        self.fBinSets = dict()
 
     def GenerateInvMassRootLists(self):
-        for binListName, (binList,_) in self.fBins.iteritems():
-            rlist = ROOT.TList()
-            rlist.SetName(binListName)
-            for bin in binList:
-                rlist.Add(bin.fInvMassHisto)
-            yield rlist
+        for binSet in self.fBinSets.itervalues():
+            yield binSet.GenerateInvMassRootList()
 
-    def AddBins(self, name, limitSetList, cutList=[]):
-        bins = []
+    def AddBinSet(self, name, limitSetList, cutList=[], side_band=None):
+        self.fBinSets[name] = BinSet(name, limitSetList, cutList, side_band)
+
+    def FindBin(self, dmeson, jet):
+        for binSet in self.fBinSets.itervalues():
+            bins = binSet.FindBin(dmeson, jet)
+            for bin in bins:
+                yield bin
+
+class BinSet:
+    def __init__(self, name, limitSetList, cutList=[], side_band=None):
+        self.fName = name
+        self.fBins = []
+        self.fCuts = DMesonJetCuts(cutList)
+        if side_band:
+            self.fSideBandAxis = Axis(side_band.keys()[0], side_band.values()[0])
+        else:
+            self.fSideBandAxis = None
         limits = dict()
-        self.AddBinsRecursive(bins, limitSetList, limits)
-        self.fBins[name] = bins, DMesonJetCuts(cutList)
+        self.AddBinsRecursive(limitSetList, limits)
 
-    def AddBinsRecursive(self, bins, limitSetList, limits):
+    def GenerateInvMassRootList(self):
+        rlist = ROOT.TList()
+        rlist.SetName(self.fName)
+        for bin in self.fBins:
+            rlist.Add(bin.fInvMassHisto)
+        return rlist
+
+    def AddBinsRecursive(self, limitSetList, limits):
         if len(limitSetList) > 0:
             (limitSetName, limitSet) = limitSetList[0]
             for min,max in zip(limitSet[:-1], limitSet[1:]):
                 limits[limitSetName] = min,max
-                self.AddBinsRecursive(bins, limitSetList[1:], limits)
+                self.AddBinsRecursive(limitSetList[1:], limits)
         else:
-            bins.append(BinLimits(limits))
+            bin = BinLimits(limits)
+            bin.fSideBandAxis = self.fSideBandAxis
+            self.fBins.append(bin)
 
     def FindBin(self, dmeson, jet):
-        for bins,cuts in self.fBins.itervalues():
-            if not cuts.ApplyCuts(dmeson, jet):
-                continue
-            for bin in bins:
-                if bin.IsInBinLimits(dmeson, jet):
-                    yield bin
+        if not self.fCuts.ApplyCuts(dmeson, jet):
+            return
+        for bin in self.fBins:
+            if bin.IsInBinLimits(dmeson, jet):
+                yield bin
 
 class BinLimits:
     def __init__(self, limits=dict()):
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
+        self.fSideBandAxis = None
+        self.fSideBandAnalysisHisto = None
+
+    def FillInvariantMass(self, dmeson, jet, w):
+        self.fInvMassHisto.Fill(dmeson.fInvMass, w)
+        if self.fSideBandAnalysisHisto:
+            if self.fSideBandAxis.fName == "jet_pt":
+                obsVal = jet.fPt
+            else:
+                obsVal = 0
+            self.fSideBandAnalysisHisto.Fill(dmeson.fInvMass, obsVal, w)
         
     def AddFromAxis(self, axis, binIndex):
         if binIndex == 0:
@@ -654,15 +692,15 @@ class BinLimits:
         for name,(min,max) in self.fLimits.iteritems():
             if not min < max:
                 continue
-            if name == "d_pt" and (dmeson.fPt < min or dmeson.fPt > max):
+            if name == "d_pt" and (dmeson.fPt < min or dmeson.fPt >= max):
                 return False
-            elif name == "jet_pt" and (jet.fPt < min or jet.fPt > max):
+            elif name == "jet_pt" and (jet.fPt < min or jet.fPt >= max):
                 return False
-            elif name == "d_eta" and (dmeson.fEta < min or dmeson.fEta > max):
+            elif name == "d_eta" and (dmeson.fEta < min or dmeson.fEta >= max):
                 return False
-            elif name == "jet_eta" and (jet.fEta < min or jet.fEta > max):
+            elif name == "jet_eta" and (jet.fEta < min or jet.fEta >= max):
                 return False
-            elif name == "d_z" and (jet.fZ < min or jet.fZ > max):
+            elif name == "d_z" and (jet.fZ < min or jet.fZ >= max):
                 return False
 
         return True
@@ -719,12 +757,24 @@ class BinLimits:
     def CreateInvMassHisto(self, trigger, DMesonDef, xAxis, yAxis, nMassBins, minMass, maxMass):
         if trigger:
             hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
+            htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
+            if self.fSideBandAxis:
+                hnameSB = "InvMassSB_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
+                htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fSideBandAxis.GetTitle(), yAxis)
         else:
             hname = "InvMass_{0}_{1}".format(DMesonDef, self.GetName())
-        htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
+            htitle = "{0} Invariant Mass: {1};{2};{3}".format(DMesonDef, self.GetTitle(), xAxis, yAxis)
+            if self.fSideBandAxis:
+                hnameSB = "InvMassSB_{0}_{1}".format(DMesonDef, self.GetName())
+                htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fSideBandAxis.GetTitle(), yAxis)
+        
         self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2)
         self.fInvMassHisto.Sumw2()
         self.fInvMassHisto.SetMarkerSize(0.9)
         self.fInvMassHisto.SetMarkerStyle(ROOT.kFullCircle)
         self.fInvMassHisto.SetMarkerColor(ROOT.kBlue+2)
         self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
+        
+        if self.fSideBandAxis:
+            self.fSideBandAnalysisHisto = ROOT.TH2D(hname, htitle, nMassBins, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2, len(self.fSideBandAxis.fBins)-1, array.array('d', self.fSideBandAxis.fBins))
+            self.fSideBandAnalysisHisto.Sumw2()

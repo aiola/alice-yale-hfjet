@@ -20,7 +20,7 @@ class DMesonJetAnalysisEngine:
         self.fDMeson = dmeson
         self.fJetDefinitions = jets
         self.fProjector = projector
-        self.fBinSet = binSet
+        self.fBinMultiSet = binSet
         self.fNMassBins = nMassBins
         self.fMinMass = minMass
         self.fMaxMass = maxMass
@@ -30,20 +30,26 @@ class DMesonJetAnalysisEngine:
             if "active" in s and not s["active"]:
                 continue
             name = "{0}_{1}".format(self.fDMeson, s["name"])
-            self.fSpectra[s["name"]] = Spectrum(s, name)
+            self.fSpectra[s["name"]] = Spectrum(s, name, self.fBinMultiSet.fBinSets)
             
     def CompareSpectra(self):
         spectraToCompare = []
+        axisBaseline = None
         for name,s in self.fSpectra.iteritems():
             if len(s.fAxis) != 1:
                 continue
-
+            if axisBaseline:
+                if axisBaseline.fName != s.fAxis[0].fName:
+                    continue
+            else:
+                axisBaseline = s.fAxis[0]
             h = s.fNormHistogram.Clone("{0}_copy".format(s.fNormHistogram.GetName()))
             if s.fTitle:
                 h.SetTitle(s.fTitle)
             globalList.append(h)
             spectraToCompare.append(h)
-
+        if len(spectraToCompare) < 2:
+            return
         results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], "{0}_SpectraComparison".format(self.fDMeson), "", "hist")
         for obj in results:
             if obj and isinstance(obj, ROOT.TCanvas):
@@ -52,7 +58,7 @@ class DMesonJetAnalysisEngine:
 
     def SaveRootFile(self, file):
         file.cd()
-        for rlist in self.fBinSet.GenerateInvMassRootLists():
+        for rlist in self.fBinMultiSet.GenerateInvMassRootLists():
             rlist.Write("{0}_{1}".format(self.fDMeson, rlist.GetName()), ROOT.TObject.kSingleKey)
         for s in self.fSpectra.itervalues():
             if s.fHistogram:
@@ -91,7 +97,7 @@ class DMesonJetAnalysisEngine:
         
     def Start(self):
         self.fProjector.GetInvMassHisograms(self.fTrigger, self.fDMeson, self.fJetDefinitions, 
-                                            self.fBinSet, self.fNMassBins, self.fMinMass, self.fMaxMass)
+                                            self.fBinMultiSet, self.fNMassBins, self.fMinMass, self.fMaxMass)
 
         self.fEvents = self.fProjector.fTotalEvents
         
@@ -171,64 +177,66 @@ class DMesonJetAnalysisEngine:
         globalList.append(pave)
         
         # Mass
-        c = ROOT.TCanvas("{0}_canvas".format(s.fMass.GetName()), s.fMass.GetName())
-        self.fCanvases.append(c)
-        c.cd()
-        h = s.fMass.DrawCopy()
-
-        h.SetMarkerColor(ROOT.kBlue+2)
-        h.SetMarkerStyle(ROOT.kFullCircle)
-        h.SetMarkerSize(0.9)
-        h.SetLineColor(ROOT.kBlue+2)
-        h.GetYaxis().SetRangeUser(1.84, 1.91)
-
-        pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
-        pave.SetFillStyle(0)
-        pave.SetBorderSize(0)
-        pave.SetTextFont(43)
-        pave.SetTextSize(15)
-        pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
-        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-        pave.AddText(s.fTitle)
-        pave.Draw()
-        
-        line = ROOT.TLine(h.GetXaxis().GetBinLowEdge(1), 1.86484, h.GetXaxis().GetBinUpEdge(h.GetXaxis().GetNbins()), 1.86484)
-        line.SetLineColor(ROOT.kBlack)
-        line.SetLineStyle(2)
-        line.SetLineWidth(2)
-        line.Draw()
-
-        globalList.append(c)
-        globalList.append(h)
-        globalList.append(pave)
-        globalList.append(line)
+        if s.fMass:
+            c = ROOT.TCanvas("{0}_canvas".format(s.fMass.GetName()), s.fMass.GetName())
+            self.fCanvases.append(c)
+            c.cd()
+            h = s.fMass.DrawCopy()
+    
+            h.SetMarkerColor(ROOT.kBlue+2)
+            h.SetMarkerStyle(ROOT.kFullCircle)
+            h.SetMarkerSize(0.9)
+            h.SetLineColor(ROOT.kBlue+2)
+            h.GetYaxis().SetRangeUser(1.84, 1.91)
+    
+            pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
+            pave.SetFillStyle(0)
+            pave.SetBorderSize(0)
+            pave.SetTextFont(43)
+            pave.SetTextSize(15)
+            pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
+            pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+            pave.AddText(s.fTitle)
+            pave.Draw()
+            
+            line = ROOT.TLine(h.GetXaxis().GetBinLowEdge(1), 1.86484, h.GetXaxis().GetBinUpEdge(h.GetXaxis().GetNbins()), 1.86484)
+            line.SetLineColor(ROOT.kBlack)
+            line.SetLineStyle(2)
+            line.SetLineWidth(2)
+            line.Draw()
+    
+            globalList.append(c)
+            globalList.append(h)
+            globalList.append(pave)
+            globalList.append(line)
         
         # Mass width
-        c = ROOT.TCanvas("{0}_canvas".format(s.fMassWidth.GetName()), s.fMassWidth.GetName())
-        self.fCanvases.append(c)
-        c.cd()
-        h = s.fMassWidth.DrawCopy()
-
-        h.SetMarkerColor(ROOT.kBlue+2)
-        h.SetMarkerStyle(ROOT.kFullCircle)
-        h.SetMarkerSize(0.9)
-        h.SetLineColor(ROOT.kBlue+2)
-        #h.GetYaxis().SetRangeUser(1.84, 1.91)
-
-        pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
-        pave.SetFillStyle(0)
-        pave.SetBorderSize(0)
-        pave.SetTextFont(43)
-        pave.SetTextSize(15)
-        pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
-        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-        pave.AddText(s.fTitle)
-        pave.Draw()
-
-        globalList.append(c)
-        globalList.append(h)
-        globalList.append(pave)
-        globalList.append(line)
+        if s.fMassWidth:
+            c = ROOT.TCanvas("{0}_canvas".format(s.fMassWidth.GetName()), s.fMassWidth.GetName())
+            self.fCanvases.append(c)
+            c.cd()
+            h = s.fMassWidth.DrawCopy()
+    
+            h.SetMarkerColor(ROOT.kBlue+2)
+            h.SetMarkerStyle(ROOT.kFullCircle)
+            h.SetMarkerSize(0.9)
+            h.SetLineColor(ROOT.kBlue+2)
+            #h.GetYaxis().SetRangeUser(1.84, 1.91)
+    
+            pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
+            pave.SetFillStyle(0)
+            pave.SetBorderSize(0)
+            pave.SetTextFont(43)
+            pave.SetTextSize(15)
+            pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
+            pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+            pave.AddText(s.fTitle)
+            pave.Draw()
+    
+            globalList.append(c)
+            globalList.append(h)
+            globalList.append(pave)
+            globalList.append(line)
 
     def PlotSpectrum2D(self, s):
         c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
@@ -264,14 +272,9 @@ class DMesonJetAnalysisEngine:
         hist.Sumw2()
         return hist
 
-    def GenerateSpectrum1D(self, s):
-        s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
-        s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-        s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
-        s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
-        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
+    def GenerateSpectrum1DInvMassFit(self, s):
         for binSetName in s.fBins:
-            for bin in self.fBinSet.fBins[binSetName][0]:
+            for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if bin.fMassFitter is None:
                     print("The bin printed below does not have a mass fitter!")
                     bin.Print()
@@ -288,11 +291,71 @@ class DMesonJetAnalysisEngine:
                 s.fHistogram.SetBinError(xbin, signal_unc)
                 s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground())
                 s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError())
-                s.fUncertainty.SetBinContent(xbin, signal_unc/signal)
+                s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
                 s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
                 s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
                 s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+
+    def GenerateSpectrum1DSideBandMethod(self, s):
+        s.fSideBandHistograms = []
+        s.fSignalHistograms = []
+        s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
+        s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
+        for binSetName in s.fBins:
+            for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
+                if "SignalOnly" in self.fDMeson:
+                    sig = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                    sig.SetTitle(bin.GetTitle())
+                    s.fSignalHistograms.append(sig)
+                    s.fSignalWindowTotalHistogram.Add(sig)
+                else:
+                    binSBL_1 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBL_2 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBR_1 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBR_2 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSig_1 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSignalSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSig_2 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSignalSigmas*bin.fMassFitter.GetSignalWidth())
+    
+                    sbL = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
+                    sbR = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
+                    sig = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+                    sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
+                    sbTotal.Add(sbR)
+    
+                    bkgNorm = bin.fMassFitter.GetBackground(s.fSideBandMaxSignalSigmas) / bin.fMassFitter.GetBackgroundBinCount(s.fSideBandMinSigmas, s.fSideBandMaxSigmas)
+                    sbTotal.Scale(bkgNorm)
+    
+                    sbTotal.SetTitle(bin.GetTitle())
+                    s.fSideBandHistograms.append(sbTotal)
+                    s.fSideBandWindowTotalHistogram.Add(sbTotal)
+    
+                    sig.SetTitle(bin.GetTitle())
+                    s.fSignalHistograms.append(sig)
+                    s.fSignalWindowTotalHistogram.Add(sig)
+    
+            s.fHistogram.Add(s.fSignalWindowTotalHistogram)
+            s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
+            s.fBackground.Add(s.fSideBandWindowTotalHistogram)
+
+        for xbin in range(0, s.fHistogram.GetNbinsX()+2):
+            if s.fHistogram.GetBinContent(xbin) > 0:
+                s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
+            else:
+                s.fUncertainty.SetBinContent(xbin, 0)
+
+    def GenerateSpectrum1D(self, s):
+        s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
+        s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
+        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
+        if s.fSideBand:
+            s.fMass = None
+            s.fMassWidth = None
+            self.GenerateSpectrum1DSideBandMethod(s)
+        else:
+            s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
+            s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
+            self.GenerateSpectrum1DInvMassFit(s)
 
     def BuildSpectrum2D(self, s, name, zaxis):
         hist = ROOT.TH2D(name, name, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins), len(s.fAxis[1].fBins)-1, array.array('d',s.fAxis[1].fBins))
@@ -308,7 +371,7 @@ class DMesonJetAnalysisEngine:
         s.fMass = self.BuildSpectrum2D(s, "{0}_Mass".format(s.fName), "mass")
         s.fBackground = self.BuildSpectrum2D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
         for binSetName in s.fBins:
-            for bin in self.fBinSet.fBins[binSetName][0]:
+            for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if bin.fMassFitter is None:
                     print("The bin printed below does not have a mass fitter!")
                     bin.Print()
@@ -376,8 +439,8 @@ class DMesonJetAnalysisEngine:
         paveFit.Draw()
 
     def FitInvMassPlots(self):
-        for name,(bins,_) in self.fBinSet.fBins.iteritems():
-            self.FitInvMassPlotsBinSet(name,bins)
+        for binSet in self.fBinMultiSet.fBinSets.itervalues():
+            self.FitInvMassPlotsBinSet(binSet.fName,binSet.fBins)
             
     def FitInvMassPlotsBinSet(self,name,bins):
         pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
@@ -396,8 +459,8 @@ class DMesonJetAnalysisEngine:
             fitter.Fit(bin.fInvMassHisto, "0 WL S");
             
     def PlotInvMassPlots(self):
-        for name,(bins,_) in self.fBinSet.fBins.iteritems():
-            self.PlotInvMassPlotsBinSet(name,bins)
+        for binSet in self.fBinMultiSet.fBinSets.itervalues():
+            self.PlotInvMassPlotsBinSet(binSet.fName,binSet.fBins)
 
     def PlotInvMassPlotsBinSet(self, name, bins):
         cname = "{0}_{1}".format(self.fDMeson, name)
@@ -447,7 +510,7 @@ class DMesonJetAnalysis:
         self.fProjector = projector
         
     def StartAnalysis(self, figTitle, collision, config):
-        binSet = DMesonJetProjectors.BinSet()
+        binMultiSet = DMesonJetProjectors.BinMultiSet()
         for binLists in config["binLists"]:
             if "active" in binLists and not binLists["active"]:
                 continue
@@ -456,11 +519,17 @@ class DMesonJetAnalysis:
                 limitSetList.append((name, binList))
             if "cuts" in binLists:
                 cuts = binLists["cuts"]
-            binSet.AddBins(binLists["name"], limitSetList, cuts)
+            else:
+                cuts = []
+            if "side_band_analysis" in binLists:
+                side_band_analysis = binLists["side_band_analysis"]
+            else:
+                side_band_analysis = None
+            binMultiSet.AddBinSet(binLists["name"], limitSetList, cuts, side_band_analysis)
         
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
-                binset_copy = copy.deepcopy(binSet)
+                binset_copy = copy.deepcopy(binMultiSet)
                 eng = DMesonJetAnalysisEngine(figTitle, collision, trigger, d_meson, 
                                               binset_copy, config["n_mass_bins"], config["min_mass"], config["max_mass"],
                                               config["jets"], config["spectra"], self.fProjector)
@@ -476,7 +545,7 @@ class DMesonJetAnalysis:
         for s in spectra:
             if "active" in s and not s["active"]:
                 continue
-            if len(s["axis"]) != 1:
+            if "axis" in s and len(s["axis"]) != 1:
                 continue
             baseline = self.fAnalysisEngine[0].fSpectra[s["name"]].fHistogram.Clone("{0}_copy".format(self.fAnalysisEngine[0].fSpectra[s["name"]].fHistogram.GetName()))
             baseline.SetTitle(self.fAnalysisEngine[0].fDMeson)
