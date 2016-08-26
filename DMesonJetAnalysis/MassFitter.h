@@ -41,36 +41,38 @@ class MassFitter : public TNamed {
   void SetMassRange(Double_t min, Double_t max);
   void SetFitRange(Double_t min, Double_t max);
 
-  Double_t GetSignalMean()                       const { return fDisableSig == kFALSE ? fMean : 0.            ; }
-  Double_t GetSignalMeanError()                  const { return fDisableSig == kFALSE ? fMeanError : 0.       ; }
-  Double_t GetSignalWidth()                      const { return fDisableSig == kFALSE ? fWidth : 0.           ; }
-  Double_t GetSignalWidthError()                 const { return fDisableSig == kFALSE ? fWidthError : 0.      ; }
-  Double_t GetSignal()                           const { return fDisableSig == kFALSE ? fSignal : 0.          ; }
-  Double_t GetSignalError()                      const { return fDisableSig == kFALSE ? fSignalError : 0.     ; }
-  Double_t GetBackground()                       const { return fDisableBkg == kFALSE ? fBackground : 0.      ; }
-  Double_t GetBackgroundError()                  const { return fDisableBkg == kFALSE ? fBackgroundError : 0. ; }
-  Double_t GetSignalOverBackground()             const { return fBackground > fgkEpsilon ? fSignal/fBackground : 0                              ; }
-  Double_t GetSignalOverSqrtSignalBackgorund()   const { return fBackground+fSignal > fgkEpsilon ? fSignal/TMath::Sqrt(fSignal+fBackground) : 0 ; }
+  Double_t GetSignalMean()                           const { return fDisableSig == kFALSE ? fMean : 0.            ; }
+  Double_t GetSignalMeanError()                      const { return fDisableSig == kFALSE ? fMeanError : 0.       ; }
+  Double_t GetSignalWidth()                          const { return fDisableSig == kFALSE ? fWidth : 0.           ; }
+  Double_t GetSignalWidthError()                     const { return fDisableSig == kFALSE ? fWidthError : 0.      ; }
+  Double_t GetSignal()                               const { return fDisableSig == kFALSE ? fSignal : 0.          ; }
+  Double_t GetSignalError()                          const { return fDisableSig == kFALSE ? fSignalError : 0.     ; }
+  Double_t GetBackground(Double_t sigmas=3.0)        const;
+  Double_t GetBackgroundError(Double_t sigmas=3.0)   const;
+  void     GetBackgroundAndError(Double_t& bkg,
+      Double_t& bkgErr, Double_t sigmas=3.0)         const;
+  Double_t GetSignalOverBackground()                 const;
+  Double_t GetSignalOverSqrtSignalBackgorund()       const;
 
-  Double_t GetTotalEntries()                     const;
-  Double_t GetTotalEntriesError()                const;
+  Double_t GetTotalEntries()                         const;
+  Double_t GetTotalEntriesError()                    const;
 
-  TString  GetSignalString()                     const;
-  TString  GetBackgroundString()                 const;
-  TString  GetSignalOverBackgroundString()       const;
-  TString  GetSignalOverSqrtSignalBackgroundString()   const;
-  TString  GetChisquareString()                  const;
-  TString  GetSignalMeanString()                 const;
-  TString  GetSignalWidthString()                const;
-  TString  GetBkgPar1String()                    const;
-  TString  GetBkgPar2String()                    const;
-  TString  GetTotalEntriesString()               const;
+  TString  GetSignalString()                         const;
+  TString  GetBackgroundString()                     const;
+  TString  GetSignalOverBackgroundString()           const;
+  TString  GetSignalOverSqrtSignalBackgroundString() const;
+  TString  GetChisquareString()                      const;
+  TString  GetSignalMeanString()                     const;
+  TString  GetSignalWidthString()                    const;
+  TString  GetBkgPar1String()                        const;
+  TString  GetBkgPar2String()                        const;
+  TString  GetTotalEntriesString()                   const;
   
-  TF1*     GetFitFunction()                      const { return fFunction     ; }
-  TF1*     GetBkgFunction()                      const { return fFunctionBkg  ; }
-  TH1*     GetFitHistogram()                     const { return fHistogram    ; }
+  TF1*     GetFitFunction()                          const { return fFunction     ; }
+  TF1*     GetBkgFunction()                          const { return fFunctionBkg  ; }
+  TH1*     GetFitHistogram()                         const { return fHistogram    ; }
 
-  TFitResultPtr GetFitStatus()                   const { return fFitResult    ; }
+  TFitResultPtr GetFitStatus()                       const { return fFitResult    ; }
 
   void     DivideByBinWidth();
   void     NormalizeBackground();
