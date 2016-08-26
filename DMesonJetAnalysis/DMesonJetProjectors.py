@@ -206,11 +206,11 @@ class DMesonJetDataProjector:
                 jet = getattr(dmesonEvent, jetName)
 
                 bins = binSet.FindBin(dmeson, jet)
-
                 for bin in bins:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
-                    bin.fInvMassHisto.Fill(dmeson.fInvMass, self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet))
+                    bin.FillInvariantMass(dmeson, jet, self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet))
+
         print("Total number of events: {0}".format(self.fTotalEvents))
 
 class DMesonJetResponseProjector:

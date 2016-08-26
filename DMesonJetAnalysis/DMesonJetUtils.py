@@ -198,6 +198,11 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
     baselineRatio = None
     maxRatio = 0
     minRatio = 999
+    
+    print("CompareSpectra: {0}".format(comparisonName))
+    print(baseline.GetName())
+    for s in spectra:
+        print(s.GetName())
 
     colors = [ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kTeal+2]
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
