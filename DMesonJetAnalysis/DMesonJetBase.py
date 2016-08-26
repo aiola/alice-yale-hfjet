@@ -80,6 +80,10 @@ class DetectorResponse:
         rlist.Add(self.fReconstructedTruth)
         rlist.Add(self.fTruth)
         rlist.Add(self.fMeasured)
+        if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName:
+            rlist.Add(self.fResolution)
+            rlist.Add(self.fEnergyScaleShift)
+            rlist.Add(self.fEnergyScaleShiftMedian)
         if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName:
             for eff in self.fEfficiency1D:
                 rlist.Add(eff)
