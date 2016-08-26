@@ -186,8 +186,6 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
 
   fFitResult = fHistogram->Fit(fFunction, opt, "", fMinFitRange, fMaxFitRange);
 
-  Double_t bkgScalingFactor = 1.;
-
   if (!fDisableSig) {
     fMean = fFunction->GetParameter(fNParBkg+1);
     fMeanError = fFunction->GetParError(fNParBkg+1);
@@ -200,37 +198,83 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
     }
     fFunctionBkg->SetParameter(0, fFunction->GetParameter(0) - fFunction->GetParameter(fNParBkg));
-
-    Double_t minMass = fMean - fWidth*3.0;
-    if (minMass < fMinMass) minMass = fMinMass;
-    Double_t maxMass = fMean + fWidth*3.0;
-    if (maxMass > fMaxMass) maxMass = fMaxMass;
-
-    switch (fMassFitTypeBkg) {
-      case kExpo:
-      {
-        // Expo = a * exp(bx) -> integral = a/b*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
-        bkgScalingFactor = ((TMath::Exp(fFunction->GetParameter(1)*maxMass)  - TMath::Exp(fFunction->GetParameter(1)*minMass))/
-                            (TMath::Exp(fFunction->GetParameter(1)*fMaxMass) - TMath::Exp(fFunction->GetParameter(1)*fMinMass)));
-        break;
-      }
-      case kExpoPower:
-      {
-        // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3*) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
-        bkgScalingFactor = ((TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(maxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(minMass-fPionMass)))) /
-                            (TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMinMass-fPionMass)))));
-        break;
-      }
-    }
-
   }
 
   if (!fDisableBkg) {
-    fBackground = (fFunction->GetParameter(0) - fSignal)*bkgScalingFactor;
-    fBackgroundError = TMath::Sqrt(fFunction->GetParError(0)*fFunction->GetParError(0) + fSignalError*fSignalError)*bkgScalingFactor;
+    fBackground = (fFunction->GetParameter(0) - fSignal);
+    fBackgroundError = TMath::Sqrt(fFunction->GetParError(0)*fFunction->GetParError(0) + fSignalError*fSignalError);
   }
   
   return fFitResult;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetSignalOverBackground() const
+{
+  Double_t bkg = GetBackground();
+  return bkg > fgkEpsilon ? GetSignal()/bkg : 0;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetSignalOverSqrtSignalBackgorund() const
+{
+  Double_t bkgSig = GetBackground() + GetSignal();
+  return bkgSig > fgkEpsilon ? fSignal/TMath::Sqrt(bkgSig) : 0;
+}
+
+//____________________________________________________________________________________
+void MassFitter::GetBackgroundAndError(Double_t& bkg, Double_t& bkgErr, Double_t sigmas) const
+{
+  if (fDisableBkg) {
+    bkg = 0;
+    bkgErr = 0;
+    return;
+  }
+
+  Double_t minMass = fMean - fWidth*sigmas;
+  if (minMass < fMinMass) minMass = fMinMass;
+  Double_t maxMass = fMean + fWidth*sigmas;
+  if (maxMass > fMaxMass) maxMass = fMaxMass;
+
+  Double_t bkgScalingFactor = 1.0;
+
+  switch (fMassFitTypeBkg) {
+  case kExpo:
+    // Expo = a * exp(bx) -> integral = a/b*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
+    bkgScalingFactor = ((TMath::Exp(fFunction->GetParameter(1)*maxMass)  - TMath::Exp(fFunction->GetParameter(1)*minMass))/
+        (TMath::Exp(fFunction->GetParameter(1)*fMaxMass) - TMath::Exp(fFunction->GetParameter(1)*fMinMass)));
+    break;
+  case kExpoPower:
+    // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3*) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
+    bkgScalingFactor = ((TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(maxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(minMass-fPionMass)))) /
+        (TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMinMass-fPionMass)))));
+    break;
+  }
+
+  bkg = fBackground * bkgScalingFactor;
+  bkgErr = fBackgroundError * bkgScalingFactor;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetBackground(Double_t sigmas) const
+{
+  Double_t bkg = 0;
+  Double_t bkgErr = 0;
+
+  GetBackgroundAndError(bkg, bkgErr, sigmas);
+
+  return bkg;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetBackgroundError(Double_t sigmas) const
+{
+  Double_t bkg = 0;
+  Double_t bkgErr = 0;
+
+  GetBackgroundAndError(bkg, bkgErr, sigmas);
+
+  return bkgErr;
 }
 
 //____________________________________________________________________________________
@@ -281,7 +325,10 @@ TString MassFitter::GetValueString(Double_t value, Double_t err)
 //____________________________________________________________________________________
 TString MassFitter::GetBackgroundString() const
 {
-  TString r = GetValueString(fBackground, fBackgroundError);
+  Double_t bkg = 0;
+  Double_t bkgErr = 0;
+  GetBackgroundAndError(bkg, bkgErr);
+  TString r = GetValueString(bkg, bkgErr);
   r.Prepend("B=");
   return r;
 }
@@ -630,7 +677,8 @@ void MassFitter::DivideByBinWidth()
 //____________________________________________________________________________________
 void MassFitter::NormalizeBackground()
 {
-  fScaleFactor = 1. / fBackground;
+  Double_t bkg = GetBackground();
+  if (bkg > fgkEpsilon) fScaleFactor = 1. / bkg;
 }
 
 //____________________________________________________________________________________
