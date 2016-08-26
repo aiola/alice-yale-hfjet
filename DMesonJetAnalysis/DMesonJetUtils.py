@@ -108,7 +108,7 @@ class StatisticSet:
     def RecalculateMedian(self):
         if not self.fHistogram:
             return
-        self.fHistogram.Scale(1./self.fHistogram.Integral())
+        self.fHistogram.Scale(1./self.fHistogram.Integral("width"))
         q = array.array('d', [0.5])
         med = array.array('d', [0.])
         self.fHistogram.GetQuantiles(1, med, q)
