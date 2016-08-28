@@ -223,7 +223,7 @@ Double_t MassFitter::GetSignalOverSqrtSignalBackgorund() const
 }
 
 //____________________________________________________________________________________
-Double_t MassFitter::GetBackgroundBinCountAndError(Double_t minNSigmas, Double_t maxNSigmas, Double_t& error) const
+Double_t MassFitter::GetBackgroundBinCountAndError(Double_t& error, Double_t minNSigmas, Double_t maxNSigmas) const
 {
   error = 0;
   if (!fHistogram) return 0;
@@ -239,12 +239,11 @@ Double_t MassFitter::GetBackgroundBinCountAndError(Double_t minNSigmas, Double_t
 }
 
 //____________________________________________________________________________________
-void MassFitter::GetBackgroundAndError(Double_t& bkg, Double_t& bkgErr, Double_t sigmas) const
+Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) const
 {
   if (fDisableBkg) {
-    bkg = 0;
     bkgErr = 0;
-    return;
+    return 0.;
   }
 
   Double_t minMass = fMean - fWidth*sigmas;
@@ -267,29 +266,23 @@ void MassFitter::GetBackgroundAndError(Double_t& bkg, Double_t& bkgErr, Double_t
     break;
   }
 
-  bkg = fBackground * bkgScalingFactor;
+  Double_t bkg = fBackground * bkgScalingFactor;
   bkgErr = fBackgroundError * bkgScalingFactor;
+  return bkg;
 }
 
 //____________________________________________________________________________________
 Double_t MassFitter::GetBackground(Double_t sigmas) const
 {
-  Double_t bkg = 0;
   Double_t bkgErr = 0;
-
-  GetBackgroundAndError(bkg, bkgErr, sigmas);
-
-  return bkg;
+  return GetBackgroundAndError(bkgErr, sigmas);
 }
 
 //____________________________________________________________________________________
 Double_t MassFitter::GetBackgroundError(Double_t sigmas) const
 {
-  Double_t bkg = 0;
   Double_t bkgErr = 0;
-
-  GetBackgroundAndError(bkg, bkgErr, sigmas);
-
+  GetBackgroundAndError(bkgErr, sigmas);
   return bkgErr;
 }
 
@@ -341,9 +334,8 @@ TString MassFitter::GetValueString(Double_t value, Double_t err)
 //____________________________________________________________________________________
 TString MassFitter::GetBackgroundString() const
 {
-  Double_t bkg = 0;
   Double_t bkgErr = 0;
-  GetBackgroundAndError(bkg, bkgErr);
+  Double_t bkg = GetBackgroundAndError(bkgErr);
   TString r = GetValueString(bkg, bkgErr);
   r.Prepend("B=");
   return r;
