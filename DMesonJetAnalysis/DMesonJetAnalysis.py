@@ -302,7 +302,7 @@ class DMesonJetAnalysisEngine:
         s.fSignalHistograms = []
         s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
         s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
-        print(s.fName)
+        print("Generating spectrum {0}".format(s.fName))
         for binSetName in s.fBins:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if "SignalOnly" in self.fDMeson:
@@ -466,7 +466,7 @@ class DMesonJetAnalysisEngine:
             fitter.GetFitFunction().SetParameter(2, integral / 100) # signal integral (start with very small signal)
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
-
+            print("Fitting bin {0}".format(bin.GetTitle()))
             fitter.Fit(bin.fInvMassHisto, "0 WL S");
             
     def PlotInvMassPlots(self):
