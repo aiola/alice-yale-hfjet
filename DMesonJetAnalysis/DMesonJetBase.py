@@ -598,20 +598,21 @@ class BinMultiSet:
         for binSet in self.fBinSets.itervalues():
             yield binSet.GenerateInvMassRootList()
 
-    def AddBinSet(self, name, limitSetList, cutList=[], side_band=None):
-        self.fBinSets[name] = BinSet(name, limitSetList, cutList, side_band)
+    def AddBinSet(self, name, limitSetList, cutList=[], side_band=None, weight=None):
+        self.fBinSets[name] = BinSet(name, limitSetList, cutList, side_band, weight)
 
     def FindBin(self, dmeson, jet):
         for binSet in self.fBinSets.itervalues():
             bins = binSet.FindBin(dmeson, jet)
-            for bin in bins:
-                yield bin
+            for bin, w in bins:
+                yield bin, w
 
 class BinSet:
-    def __init__(self, name, limitSetList, cutList=[], side_band=None):
+    def __init__(self, name, limitSetList, cutList=[], side_band=None, weight=None):
         self.fName = name
         self.fBins = []
         self.fCuts = DMesonJetCuts(cutList)
+        self.fWeightEfficiency = weight
         if side_band:
             self.fSideBandAxis = Axis(side_band.keys()[0], side_band.values()[0])
         else:
@@ -638,11 +639,12 @@ class BinSet:
             self.fBins.append(bin)
 
     def FindBin(self, dmeson, jet):
+        w = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet)
         if not self.fCuts.ApplyCuts(dmeson, jet):
             return
         for bin in self.fBins:
             if bin.IsInBinLimits(dmeson, jet):
-                yield bin
+                yield bin, w
 
 class BinLimits:
     def __init__(self, limits=dict()):

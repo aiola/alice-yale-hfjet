@@ -19,14 +19,9 @@ def main(config, maxEvents):
 
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
-    
-    if "efficiency" in config and config["efficiency"]:
-        effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(config["input_path"], config["efficiency"]["file_name"]), config["efficiency"]["list_name"], config["efficiency"]["object_name"])
-    else:
-        effWeight = DMesonJetProjectors.SimpleWeight()
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(config["name"])
-    projector = DMesonJetProjectors.DMesonJetDataProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents, effWeight)
+    projector = DMesonJetProjectors.DMesonJetDataProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
