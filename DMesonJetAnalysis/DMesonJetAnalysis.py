@@ -302,6 +302,7 @@ class DMesonJetAnalysisEngine:
         s.fSignalHistograms = []
         s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
         s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
+        print(s.fName)
         for binSetName in s.fBins:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if "SignalOnly" in self.fDMeson:
@@ -323,20 +324,30 @@ class DMesonJetAnalysisEngine:
                     sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
                     sbTotal.Add(sbR)
     
-                    bkgNorm = bin.fMassFitter.GetBackground(s.fSideBandMaxSignalSigmas) / bin.fMassFitter.GetBackgroundBinCount(s.fSideBandMinSigmas, s.fSideBandMaxSigmas)
+                    bkgErrSigWindow = ROOT.Double(0.)
+                    bkgSigWindow = bin.fMassFitter.GetBackgroundAndError(bkgErrSigWindow, s.fSideBandMaxSignalSigmas)
+                    bkgErrSBWindow = ROOT.Double(0.)
+                    bkgSBWindow = bin.fMassFitter.GetBackgroundBinCountAndError(bkgErrSBWindow, s.fSideBandMinSigmas, s.fSideBandMaxSigmas)
+                    bkgNorm = bkgSigWindow / bkgSBWindow
+                    bkgErrNorm2 = bkgErrSigWindow**2 / bkgSigWindow**2 + bkgErrSBWindow**2 / bkgSBWindow**2 * bkgNorm**2
+                    print("Bin: {0}. The background normalization is: {1} +/- {2}".format(bin.GetTitle(), bkgNorm, math.sqrt(bkgErrNorm2)))
+                    print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0,-1), sbR.Integral(0,-1), sbTotal.Integral(0,-1)))
+                    print("The background in the side bands used for normalization is {0} and the estimated background in the signal window is {1}".format(bkgSBWindow, bkgSigWindow))
                     sbTotal.Scale(bkgNorm)
-    
+                    for xbin in range(0, sbTotal.GetNbinsX()+2):
+                        sbTotal.SetBinError(xbin, math.sqrt(sbTotal.GetBinError(xbin)**2+bkgErrNorm2))
+
                     sbTotal.SetTitle(bin.GetTitle())
                     s.fSideBandHistograms.append(sbTotal)
                     s.fSideBandWindowTotalHistogram.Add(sbTotal)
-    
+
                     sig.SetTitle(bin.GetTitle())
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
-    
-            s.fHistogram.Add(s.fSignalWindowTotalHistogram)
-            s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
-            s.fBackground.Add(s.fSideBandWindowTotalHistogram)
+
+        s.fHistogram.Add(s.fSignalWindowTotalHistogram)
+        s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
+        s.fBackground.Add(s.fSideBandWindowTotalHistogram)
 
         for xbin in range(0, s.fHistogram.GetNbinsX()+2):
             if s.fHistogram.GetBinContent(xbin) > 0:
@@ -525,8 +536,12 @@ class DMesonJetAnalysis:
                 side_band_analysis = binLists["side_band_analysis"]
             else:
                 side_band_analysis = None
-            binMultiSet.AddBinSet(binLists["name"], limitSetList, cuts, side_band_analysis)
-        
+            if "efficiency" in binLists and binLists["efficiency"]:
+                effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, binLists["efficiency"]["file_name"]), binLists["efficiency"]["list_name"], binLists["efficiency"]["object_name"])
+            else:
+                effWeight = DMesonJetProjectors.SimpleWeight()
+            binMultiSet.AddBinSet(binLists["name"], limitSetList, cuts, side_band_analysis, effWeight)
+
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
                 binset_copy = copy.deepcopy(binMultiSet)

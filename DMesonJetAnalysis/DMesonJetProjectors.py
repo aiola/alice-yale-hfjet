@@ -97,8 +97,7 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
 class DMesonJetDataProjector:
-    def __init__(self, inputPath, train, fileName, taskName, maxEvents, weightEff=SimpleWeight()):
-        self.fWeightEfficiency = weightEff
+    def __init__(self, inputPath, train, fileName, taskName, maxEvents):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -112,9 +111,9 @@ class DMesonJetDataProjector:
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
-        
+
         files = DMesonJetUtils.find_file(path, self.fFileName)
-        
+
         self.fChain = ROOT.TChain(treeName)
 
         for file in files:
@@ -206,10 +205,10 @@ class DMesonJetDataProjector:
                 jet = getattr(dmesonEvent, jetName)
 
                 bins = binSet.FindBin(dmeson, jet)
-                for bin in bins:
+                for bin,weight in bins:
                     if not bin.fInvMassHisto:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
-                    bin.FillInvariantMass(dmeson, jet, self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet))
+                    bin.FillInvariantMass(dmeson, jet, weight)
 
         print("Total number of events: {0}".format(self.fTotalEvents))
 
