@@ -246,6 +246,7 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
     return 0.;
   }
 
+  /*
   Double_t minMass = fMean - fWidth*sigmas;
   if (minMass < fMinMass) minMass = fMinMass;
   Double_t maxMass = fMean + fWidth*sigmas;
@@ -268,6 +269,12 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
 
   Double_t bkg = fBackground * bkgScalingFactor;
   bkgErr = fBackgroundError * bkgScalingFactor;
+  return bkg;
+  */
+
+  Double_t bkg = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean - fWidth*sigmas), fHistogram->GetXaxis()->FindBin(fMean + fWidth*sigmas), bkgErr);
+  bkg -= GetSignal();
+  bkgErr = TMath::Sqrt(bkgErr*bkgErr + GetSignalError()*GetSignalError());
   return bkg;
 }
 
