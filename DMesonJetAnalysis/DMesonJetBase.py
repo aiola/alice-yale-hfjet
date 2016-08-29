@@ -803,5 +803,5 @@ class BinLimits:
         self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
         
         if self.fSideBandAxis:
-            self.fSideBandAnalysisHisto = ROOT.TH2D(hname, htitle, nMassBins, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2, len(self.fSideBandAxis.fBins)-1, array.array('d', self.fSideBandAxis.fBins))
+            self.fSideBandAnalysisHisto = ROOT.TH2D(hname, htitle, nMassBins, minMass, maxMass, len(self.fSideBandAxis.fBins)-1, array.array('d', self.fSideBandAxis.fBins))
             self.fSideBandAnalysisHisto.Sumw2()
