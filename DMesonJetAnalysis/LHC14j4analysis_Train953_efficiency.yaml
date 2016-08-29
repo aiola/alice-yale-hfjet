@@ -20,7 +20,7 @@ analysis:
   binLists:
   -
     name: D_Tagged_Jets_PtD_10
-    active: yes
+    active: no
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
@@ -77,7 +77,7 @@ analysis:
       min: 0.2
   -
     name: D_SideBandAnalysis_PtD_10
-    active: yes
+    active: no
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
@@ -113,7 +113,7 @@ analysis:
   -
     name: D_Tagged_Jet_PtD_10_Spectrum
     title: "Inv.Mass Fit, #it{p}_{T,D} > 1 GeV/#it{c}"
-    active: yes
+    active: no
     bins: [D_Tagged_Jets_PtD_10]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
@@ -135,13 +135,13 @@ analysis:
     name: D_Pt_Spectrum
     title: "|#eta_{jet}| < 0.5"
     active: yes
-    bins: [D_SideBandAnalysis_PtD_10]
+    bins: [D_SideBandAnalysis_PtD_20]
     axis:
-      d_pt: [1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
   -
     name: D_Tagged_Jet_PtD_10_Spectrum_SideBand
     title: "SB method, #it{p}_{T,D} > 1 GeV/#it{c}"
-    active: yes
+    active: no
     side_band:
       min_sigmas: 4
       max_sigmas: 8
