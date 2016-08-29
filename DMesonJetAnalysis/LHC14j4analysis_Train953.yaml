@@ -8,7 +8,7 @@ collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   trigger: [""]
-  d_meson: [D0_kSignalOnly, D0]
+  d_meson: [D0_kSignalOnly, D0, 2ProngLikeSign]
   n_mass_bins: 100
   min_mass: 1.715
   max_mass: 2.015
@@ -78,7 +78,7 @@ analysis:
       variable: fEta
       min: -0.5
       max: 0.5
-    side_band_analysis:
+    bin_count_analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_SideBandAnalysis_PtD_20
@@ -92,7 +92,7 @@ analysis:
       variable: fEta
       min: -0.5
       max: 0.5
-    side_band_analysis:
+    bin_count_analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   spectra:
   -
@@ -141,3 +141,13 @@ analysis:
       max_sigmas: 8
       max_signal_sigmas: 2
     bins: [D_SideBandAnalysis_PtD_20]
+  -
+    name: D_Tagged_Jet_PtD_20_Spectrum_LikeSign
+    title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
+    active: yes
+    bins: [D_Tagged_Jets_PtD_20]
+    like_sign:
+      name: 2ProngLikeSign
+      sigmas: 2
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
