@@ -20,8 +20,6 @@ MassFitter::MassFitter() :
   fWidthError(0.),
   fSignal(0.),
   fSignalError(0.),
-  fBackground(0.),
-  fBackgroundError(0.),
   fDisableBkg(kFALSE),
   fDisableSig(kFALSE),
   fNParSig(0),
@@ -52,8 +50,6 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fWidthError(0.),
   fSignal(0.),
   fSignalError(0.),
-  fBackground(0.),
-  fBackgroundError(0.),
   fDisableBkg(kFALSE),
   fDisableSig(kFALSE),
   fNParSig(0),
@@ -125,8 +121,6 @@ void MassFitter::Reset(TH1* histo)
 
   fSignal = 0;
   fSignalError = 0;
-  fBackground = 0;
-  fBackgroundError = 0;
 
   fMean = 0;
   fMeanError = 0;
@@ -200,11 +194,6 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     fFunctionBkg->SetParameter(0, fFunction->GetParameter(0) - fFunction->GetParameter(fNParBkg));
   }
 
-  if (!fDisableBkg) {
-    fBackground = (fFunction->GetParameter(0) - fSignal);
-    fBackgroundError = TMath::Sqrt(fFunction->GetParError(0)*fFunction->GetParError(0) + fSignalError*fSignalError);
-  }
-  
   return fFitResult;
 }
 
@@ -245,32 +234,6 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
     bkgErr = 0;
     return 0.;
   }
-
-  /*
-  Double_t minMass = fMean - fWidth*sigmas;
-  if (minMass < fMinMass) minMass = fMinMass;
-  Double_t maxMass = fMean + fWidth*sigmas;
-  if (maxMass > fMaxMass) maxMass = fMaxMass;
-
-  Double_t bkgScalingFactor = 1.0;
-
-  switch (fMassFitTypeBkg) {
-  case kExpo:
-    // Expo = a * exp(bx) -> integral = a/b*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
-    bkgScalingFactor = ((TMath::Exp(fFunction->GetParameter(1)*maxMass)  - TMath::Exp(fFunction->GetParameter(1)*minMass))/
-        (TMath::Exp(fFunction->GetParameter(1)*fMaxMass) - TMath::Exp(fFunction->GetParameter(1)*fMinMass)));
-    break;
-  case kExpoPower:
-    // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3*) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
-    bkgScalingFactor = ((TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(maxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(minMass-fPionMass)))) /
-        (TMath::Gamma(1.5) * (TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, fFunction->GetParameter(1)*(fMinMass-fPionMass)))));
-    break;
-  }
-
-  Double_t bkg = fBackground * bkgScalingFactor;
-  bkgErr = fBackgroundError * bkgScalingFactor;
-  return bkg;
-  */
 
   Double_t bkg = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean - fWidth*sigmas), fHistogram->GetXaxis()->FindBin(fMean + fWidth*sigmas), bkgErr);
   bkg -= GetSignal();

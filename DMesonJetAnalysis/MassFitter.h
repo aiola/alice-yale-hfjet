@@ -98,8 +98,6 @@ class MassFitter : public TNamed {
   Double_t          fWidthError        ;//  Signal width error extracted from the fit
   Double_t          fSignal            ;//  Signal extracted from the fit
   Double_t          fSignalError       ;//  Signal error extracted from the fit
-  Double_t          fBackground        ;//  Background extracted from the fit
-  Double_t          fBackgroundError   ;//  Background error extracted from the fit
   Bool_t            fDisableBkg        ;//  Disable background component of the fit function
   Bool_t            fDisableSig        ;//  Disable signal component of the fit function
   Int_t             fNParSig           ;//  Number of parameters of the signal function
