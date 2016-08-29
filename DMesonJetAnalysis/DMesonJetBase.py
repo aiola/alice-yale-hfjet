@@ -635,8 +635,8 @@ class BinMultiSet:
         for binSet in self.fBinSets.itervalues():
             yield binSet.GenerateInvMassRootList()
 
-    def AddBinSet(self, name, limitSetList, cutList=[], side_band=None, weight=None):
-        self.fBinSets[name] = BinSet(name, limitSetList, cutList, side_band, weight)
+    def AddBinSet(self, name, limitSetList, cutList=[], side_band=None, weight=None, fitOptions=""):
+        self.fBinSets[name] = BinSet(name, limitSetList, cutList, side_band, weight, fitOptions)
 
     def FindBin(self, dmeson, jet):
         for binSet in self.fBinSets.itervalues():
@@ -645,10 +645,11 @@ class BinMultiSet:
                 yield bin, w
 
 class BinSet:
-    def __init__(self, name, limitSetList, cutList=[], bin_count_axis=None, weight=None):
+    def __init__(self, name, limitSetList, cutList=[], bin_count_axis=None, weight=None, fitOptions=""):
         self.fName = name
         self.fBins = []
         self.fCuts = DMesonJetCuts(cutList)
+        self.fFitOptions = fitOptions
         self.fWeightEfficiency = weight
         if bin_count_axis:
             self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0])
