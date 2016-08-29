@@ -61,10 +61,10 @@ class DMesonJetAnalysisEngine:
         for rlist in self.fBinMultiSet.GenerateInvMassRootLists():
             rlist.Write("{0}_{1}".format(self.fDMeson, rlist.GetName()), ROOT.TObject.kSingleKey)
         for s in self.fSpectra.itervalues():
-            if s.fHistogram:
-                s.fHistogram.Write()
             if s.fNormHistogram:
                 s.fNormHistogram.Write()
+            slist = s.GenerateRootList()
+            slist.Write(slist.GetName(), ROOT.TObject.kSingleKey)
 
     def SavePlots(self, path, format):
         for c in self.fCanvases:
@@ -72,12 +72,12 @@ class DMesonJetAnalysisEngine:
         
     def CreateMassFitter(self, name):
         if "D0" in self.fDMeson:
-            minMass = self.fMinMass-(self.fMaxMass-self.fMinMass)/2;
-            maxMass = self.fMaxMass+(self.fMaxMass-self.fMinMass)/2;
-            minFitRange = self.fMinMass;
-            maxFitRange = self.fMaxMass;
-            startingSigma = 0.01;
-            startingSigmaBkg = 0.01;
+            minMass = self.fMinMass
+            maxMass = self.fMaxMass
+            minFitRange = self.fMinMass
+            maxFitRange = self.fMaxMass
+            startingSigma = 0.01
+            startingSigmaBkg = 0.01
             massFitTypeSig = ROOT.MassFitter.kGaus
             massFitTypeBkg = ROOT.MassFitter.kExpo
         elif self.fDMeson == "DStar":
@@ -273,6 +273,7 @@ class DMesonJetAnalysisEngine:
         return hist
 
     def GenerateSpectrum1DInvMassFit(self, s):
+        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
         for binSetName in s.fBins:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if bin.fMassFitter is None:
@@ -289,8 +290,8 @@ class DMesonJetAnalysisEngine:
 
                 s.fHistogram.SetBinContent(xbin, signal)
                 s.fHistogram.SetBinError(xbin, signal_unc)
-                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground())
-                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError())
+                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground(2))
+                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError(2))
                 s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
                 s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
@@ -300,6 +301,7 @@ class DMesonJetAnalysisEngine:
     def GenerateSpectrum1DSideBandMethod(self, s):
         s.fSideBandHistograms = []
         s.fSignalHistograms = []
+        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fSideBandMaxSignalSigmas)))
         s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
         s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
         print("Generating spectrum {0}".format(s.fName))
@@ -364,7 +366,6 @@ class DMesonJetAnalysisEngine:
         #    print("Bkg+Sig bin {0} = {1} +/- {2}".format(xbin, s.fSignalWindowTotalHistogram.GetBinContent(xbin), s.fSignalWindowTotalHistogram.GetBinError(xbin)))
          #   print("Sig bin {0} = {1} +/- {2}".format(xbin, s.fHistogram.GetBinContent(xbin), s.fHistogram.GetBinError(xbin)))
 
-
         for xbin in range(0, s.fHistogram.GetNbinsX()+2):
             if s.fHistogram.GetBinContent(xbin) > 0:
                 s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
@@ -374,7 +375,6 @@ class DMesonJetAnalysisEngine:
     def GenerateSpectrum1D(self, s):
         s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
         s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
         if s.fSideBand:
             s.fMass = None
             s.fMassWidth = None

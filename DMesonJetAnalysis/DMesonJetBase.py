@@ -543,6 +543,31 @@ class Spectrum:
             for axisName, axisBins in config["axis"].iteritems():
                 self.fAxis.append(Axis(axisName, axisBins))
 
+    def GenerateRootList(self):
+        rlist = ROOT.TList()
+        rlist.SetName(self.fName)
+        if self.fHistogram:
+            rlist.Add(self.fHistogram)
+        if self.fUncertainty:    
+            rlist.Add(self.fUncertainty)
+        if self.fMass:    
+            rlist.Add(self.fMass)
+        if self.fMassWidth:    
+            rlist.Add(self.fMassWidth)
+        if self.fBackground:    
+            rlist.Add(self.fBackground)
+        if self.fSideBand:
+            SBlist = ROOT.TList()
+            SBlist.SetName("SideBandAnalysis")
+            for h in self.fSideBandHistograms:
+                SBlist.Add(h)
+            for h in self.fSignalHistograms:
+                SBlist.Add(h)
+            SBlist.Add(self.fSideBandWindowTotalHistogram)
+            SBlist.Add(self.fSignalWindowTotalHistogram)
+            rlist.Add(SBlist)
+        return rlist
+
     def GenerateNormalizedSpectrum(self, events):
         if not self.fHistogram:
             return
@@ -770,7 +795,7 @@ class BinLimits:
                 hnameSB = "InvMassSB_{0}_{1}".format(DMesonDef, self.GetName())
                 htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fSideBandAxis.GetTitle(), yAxis)
         
-        self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass-(maxMass-minMass)/2, maxMass+(maxMass-minMass)/2)
+        self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
         self.fInvMassHisto.Sumw2()
         self.fInvMassHisto.SetMarkerSize(0.9)
         self.fInvMassHisto.SetMarkerStyle(ROOT.kFullCircle)
