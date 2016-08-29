@@ -7,6 +7,7 @@ import os
 import math
 import copy
 import DMesonJetUtils
+from enum import Enum
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -515,6 +516,11 @@ class Axis:
 
         return title
 
+class AnalysisType(Enum):
+    InvMassFit = 1
+    SideBand = 2
+    LikeSign = 3
+
 class Spectrum:
     def __init__(self, config, name, binSet=None):
         self.fName = name
@@ -525,20 +531,26 @@ class Spectrum:
         self.fMass = None
         self.fMassWidth = None
         self.fBackground = None
+        self.fSideBandHistograms = None
+        self.fSignalHistograms = None
         self.fAxis = []
         if "title" in config:
             self.fTitle = config["title"]
         else:
             self.fTitle = "" 
         if "side_band" in config:
-            self.fSideBand = True
+            self.fAnalysisType = AnalysisType.SideBand
             self.fSideBandMinSigmas = config["side_band"]["min_sigmas"]
             self.fSideBandMaxSigmas = config["side_band"]["max_sigmas"]
-            self.fSideBandMaxSignalSigmas = config["side_band"]["max_signal_sigmas"]
+            self.fBinCountSignalSigmas = config["side_band"]["max_signal_sigmas"]
+        elif "like_sign" in config:
+            self.fAnalysisType = AnalysisType.LikeSign
+            self.fBinCountSignalSigmas = config["like_sign"]["sigmas"]
+            self.fLikeSignTree = config["like_sign"]["name"]
         else:
-            self.fSideBand = False
-        if self.fSideBand and binSet:
-            self.fAxis.append(binSet[self.fBins[0]].fSideBandAxis)
+            self.fAnalysisType = AnalysisType.InvMassFit
+        if self.fAnalysisType ==  AnalysisType.SideBand and binSet:
+            self.fAxis.append(binSet[self.fBins[0]].fBinCountAnalysisAxis)
         else:
             for axisName, axisBins in config["axis"].iteritems():
                 self.fAxis.append(Axis(axisName, axisBins))
@@ -556,7 +568,7 @@ class Spectrum:
             rlist.Add(self.fMassWidth)
         if self.fBackground:    
             rlist.Add(self.fBackground)
-        if self.fSideBand:
+        if self.fAnalysisType == AnalysisType.SideBand and self.fSideBandHistograms and self.fSignalHistograms:
             SBlist = ROOT.TList()
             SBlist.SetName("SideBandAnalysis")
             for h in self.fSideBandHistograms:
@@ -633,15 +645,15 @@ class BinMultiSet:
                 yield bin, w
 
 class BinSet:
-    def __init__(self, name, limitSetList, cutList=[], side_band=None, weight=None):
+    def __init__(self, name, limitSetList, cutList=[], bin_count_axis=None, weight=None):
         self.fName = name
         self.fBins = []
         self.fCuts = DMesonJetCuts(cutList)
         self.fWeightEfficiency = weight
-        if side_band:
-            self.fSideBandAxis = Axis(side_band.keys()[0], side_band.values()[0])
+        if bin_count_axis:
+            self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0])
         else:
-            self.fSideBandAxis = None
+            self.fBinCountAnalysisAxis = None
         limits = dict()
         self.AddBinsRecursive(limitSetList, limits)
 
@@ -660,7 +672,7 @@ class BinSet:
                 self.AddBinsRecursive(limitSetList[1:], limits)
         else:
             bin = BinLimits(limits)
-            bin.fSideBandAxis = self.fSideBandAxis
+            bin.fBinCountAnalysisAxis = self.fBinCountAnalysisAxis
             self.fBins.append(bin)
 
     def FindBin(self, dmeson, jet):
@@ -676,17 +688,17 @@ class BinLimits:
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
-        self.fSideBandAxis = None
-        self.fSideBandAnalysisHisto = None
+        self.fBinCountAnalysisAxis = None
+        self.fBinCountAnalysisHisto = None
 
     def FillInvariantMass(self, dmeson, jet, w):
         self.fInvMassHisto.Fill(dmeson.fInvMass, w)
-        if self.fSideBandAnalysisHisto:
-            if self.fSideBandAxis.fName == "jet_pt":
+        if self.fBinCountAnalysisHisto:
+            if self.fBinCountAnalysisAxis.fName == "jet_pt":
                 obsVal = jet.fPt
             else:
                 obsVal = 0
-            self.fSideBandAnalysisHisto.Fill(dmeson.fInvMass, obsVal, w)
+            self.fBinCountAnalysisHisto.Fill(dmeson.fInvMass, obsVal, w)
         
     def AddFromAxis(self, axis, binIndex):
         if binIndex == 0:
@@ -785,15 +797,15 @@ class BinLimits:
         if trigger:
             hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
             htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
-            if self.fSideBandAxis:
+            if self.fBinCountAnalysisAxis:
                 hnameSB = "InvMassSB_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
-                htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fSideBandAxis.GetTitle(), yAxis)
+                htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         else:
             hname = "InvMass_{0}_{1}".format(DMesonDef, self.GetName())
             htitle = "{0} Invariant Mass: {1};{2};{3}".format(DMesonDef, self.GetTitle(), xAxis, yAxis)
-            if self.fSideBandAxis:
+            if self.fBinCountAnalysisAxis:
                 hnameSB = "InvMassSB_{0}_{1}".format(DMesonDef, self.GetName())
-                htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fSideBandAxis.GetTitle(), yAxis)
+                htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         
         self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
         self.fInvMassHisto.Sumw2()
@@ -802,6 +814,6 @@ class BinLimits:
         self.fInvMassHisto.SetMarkerColor(ROOT.kBlue+2)
         self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
         
-        if self.fSideBandAxis:
-            self.fSideBandAnalysisHisto = ROOT.TH2D(hname, htitle, nMassBins, minMass, maxMass, len(self.fSideBandAxis.fBins)-1, array.array('d', self.fSideBandAxis.fBins))
-            self.fSideBandAnalysisHisto.Sumw2()
+        if self.fBinCountAnalysisAxis:
+            self.fBinCountAnalysisHisto = ROOT.TH2D(hname, htitle, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins)-1, array.array('d', self.fBinCountAnalysisAxis.fBins))
+            self.fBinCountAnalysisHisto.Sumw2()
