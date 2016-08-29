@@ -310,6 +310,8 @@ class DMesonJetAnalysisEngine:
                     sig.SetTitle(bin.GetTitle())
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
+                    #for xbin in range(0, sig.GetNbinsX()+2):
+                    #    print("Sig bin {0} = {1} +/- {2}".format(xbin, sig.GetBinContent(xbin), sig.GetBinError(xbin)))
                 else:
                     binSBL_1 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
                     binSBL_2 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
@@ -317,25 +319,33 @@ class DMesonJetAnalysisEngine:
                     binSBR_2 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
                     binSig_1 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSignalSigmas*bin.fMassFitter.GetSignalWidth())
                     binSig_2 = bin.fSideBandAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSignalSigmas*bin.fMassFitter.GetSignalWidth())
-    
+
                     sbL = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
                     sbR = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
                     sig = bin.fSideBandAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
                     sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
                     sbTotal.Add(sbR)
-    
+
                     bkgErrSigWindow = ROOT.Double(0.)
                     bkgSigWindow = bin.fMassFitter.GetBackgroundAndError(bkgErrSigWindow, s.fSideBandMaxSignalSigmas)
                     bkgErrSBWindow = ROOT.Double(0.)
                     bkgSBWindow = bin.fMassFitter.GetBackgroundBinCountAndError(bkgErrSBWindow, s.fSideBandMinSigmas, s.fSideBandMaxSigmas)
                     bkgNorm = bkgSigWindow / bkgSBWindow
-                    bkgErrNorm2 = bkgErrSigWindow**2 / bkgSigWindow**2 + bkgErrSBWindow**2 / bkgSBWindow**2 * bkgNorm**2
-                    print("Bin: {0}. The background normalization is: {1} +/- {2}".format(bin.GetTitle(), bkgNorm, math.sqrt(bkgErrNorm2)))
+                    bkgErrNorm2 = bkgErrSigWindow**2 / bkgSigWindow**2 + bkgErrSBWindow**2 / bkgSBWindow**2
+                    print("Bin: {0}. The background normalization is: {1} +/- {2}".format(bin.GetTitle(), bkgNorm, math.sqrt(bkgErrNorm2) * bkgNorm))
                     print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0,-1), sbR.Integral(0,-1), sbTotal.Integral(0,-1)))
                     print("The background in the side bands used for normalization is {0} and the estimated background in the signal window is {1}".format(bkgSBWindow, bkgSigWindow))
-                    sbTotal.Scale(bkgNorm)
+                    print("The total signal+background is {0}, which is the same from the invariant mass plot {1} ({2})".format(sig.Integral(0,-1), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fSideBandMaxSignalSigmas), bin.fInvMassHisto.Integral(binSig_1, binSig_2)))
+
                     for xbin in range(0, sbTotal.GetNbinsX()+2):
-                        sbTotal.SetBinError(xbin, math.sqrt(sbTotal.GetBinError(xbin)**2+bkgErrNorm2))
+                        if sbTotal.GetBinContent(xbin) == 0:
+                            continue
+                        error = math.sqrt(sbTotal.GetBinError(xbin)**2/sbTotal.GetBinContent(xbin)**2+bkgErrNorm2)*sbTotal.GetBinContent(xbin)*bkgNorm
+                        sbTotal.SetBinError(xbin, error)
+                        sbTotal.SetBinContent(xbin, sbTotal.GetBinContent(xbin)*bkgNorm)
+
+                        #print("Side band bin {0} = {1} +/- {2}".format(xbin, sbTotal.GetBinContent(xbin), sbTotal.GetBinError(xbin)))
+                        #print("Bkg+Sig bin {0} = {1} +/- {2}".format(xbin, sig.GetBinContent(xbin), sig.GetBinError(xbin)))
 
                     sbTotal.SetTitle(bin.GetTitle())
                     s.fSideBandHistograms.append(sbTotal)
@@ -348,6 +358,12 @@ class DMesonJetAnalysisEngine:
         s.fHistogram.Add(s.fSignalWindowTotalHistogram)
         s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
         s.fBackground.Add(s.fSideBandWindowTotalHistogram)
+        #print("Totals")
+        #for xbin in range(0, s.fHistogram.GetNbinsX()+2):
+        #    print("Side band bin {0} = {1} +/- {2}".format(xbin, s.fSideBandWindowTotalHistogram.GetBinContent(xbin), s.fSideBandWindowTotalHistogram.GetBinError(xbin)))
+        #    print("Bkg+Sig bin {0} = {1} +/- {2}".format(xbin, s.fSignalWindowTotalHistogram.GetBinContent(xbin), s.fSignalWindowTotalHistogram.GetBinError(xbin)))
+         #   print("Sig bin {0} = {1} +/- {2}".format(xbin, s.fHistogram.GetBinContent(xbin), s.fHistogram.GetBinError(xbin)))
+
 
         for xbin in range(0, s.fHistogram.GetNbinsX()+2):
             if s.fHistogram.GetBinContent(xbin) > 0:
