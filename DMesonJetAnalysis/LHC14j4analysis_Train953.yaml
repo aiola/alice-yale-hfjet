@@ -9,7 +9,7 @@ analysis:
 - 
   trigger: [""]
   d_meson: [D0_kSignalOnly, D0, 2ProngLikeSign]
-  n_mass_bins: 100
+  n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015
   jets:
