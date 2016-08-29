@@ -330,24 +330,24 @@ class DMesonJetAnalysisEngine:
 
                     bkgErrSigWindow = ROOT.Double(0.)
                     bkgSigWindow = bin.fMassFitter.GetBackgroundAndError(bkgErrSigWindow, s.fSideBandMaxSignalSigmas)
-                    bkgErrSBWindow = ROOT.Double(0.)
-                    bkgSBWindow = bin.fMassFitter.GetBackgroundBinCountAndError(bkgErrSBWindow, s.fSideBandMinSigmas, s.fSideBandMaxSigmas)
-                    bkgNorm = bkgSigWindow / bkgSBWindow
-                    bkgErrNorm2 = bkgErrSigWindow**2 / bkgSigWindow**2 + bkgErrSBWindow**2 / bkgSBWindow**2
-                    print("Bin: {0}. The background normalization is: {1} +/- {2}".format(bin.GetTitle(), bkgNorm, math.sqrt(bkgErrNorm2) * bkgNorm))
+                    print("Bin: {0}".format(bin.GetTitle()))
                     print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0,-1), sbR.Integral(0,-1), sbTotal.Integral(0,-1)))
-                    print("The background in the side bands used for normalization is {0} and the estimated background in the signal window is {1}".format(bkgSBWindow, bkgSigWindow))
-                    print("The total signal+background is {0}, which is the same from the invariant mass plot {1} ({2})".format(sig.Integral(0,-1), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fSideBandMaxSignalSigmas), bin.fInvMassHisto.Integral(binSig_1, binSig_2)))
+                    print("The estimated background in the signal window is {0} +/- {1}".format(bkgSigWindow, bkgErrSigWindow))
+                    print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0,-1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fSideBandMaxSignalSigmas)))
+
+                    sbTotal.Scale(1. / sbTotal.Integral(0, -1))
 
                     for xbin in range(0, sbTotal.GetNbinsX()+2):
                         if sbTotal.GetBinContent(xbin) == 0:
                             continue
-                        error = math.sqrt(sbTotal.GetBinError(xbin)**2/sbTotal.GetBinContent(xbin)**2+bkgErrNorm2)*sbTotal.GetBinContent(xbin)*bkgNorm
+                        error = math.sqrt(sbTotal.GetBinError(xbin)**2/sbTotal.GetBinContent(xbin)**2+bkgErrSigWindow**2/bkgSigWindow**2)*sbTotal.GetBinContent(xbin)*bkgSigWindow
+                        cont = sbTotal.GetBinContent(xbin)*bkgSigWindow
                         sbTotal.SetBinError(xbin, error)
-                        sbTotal.SetBinContent(xbin, sbTotal.GetBinContent(xbin)*bkgNorm)
+                        sbTotal.SetBinContent(xbin, cont)
 
-                        #print("Side band bin {0} = {1} +/- {2}".format(xbin, sbTotal.GetBinContent(xbin), sbTotal.GetBinError(xbin)))
-                        #print("Bkg+Sig bin {0} = {1} +/- {2}".format(xbin, sig.GetBinContent(xbin), sig.GetBinError(xbin)))
+                    integralError = ROOT.Double(0.)
+                    integral = sbTotal.IntegralAndError(0, -1, integralError)
+                    print("The total normalized side-band background is {0} +/- {1}".format(integral, integralError))
 
                     sbTotal.SetTitle(bin.GetTitle())
                     s.fSideBandHistograms.append(sbTotal)
