@@ -399,6 +399,10 @@ class DMesonJetAnalysisEngine:
                     binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
                     binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
 
+                    if binSBL_1 < 1:
+                        binSBL_1 = 1
+                    if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
+                        binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
                     sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
                     sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
                     sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
@@ -591,7 +595,7 @@ class DMesonJetAnalysisEngine:
         globalList.append(hls)
 
         return hls
-    
+
     def PlotInvMassSideBands(self, name, bin):
         spectrum = None
         for s in self.fSpectra.itervalues():
