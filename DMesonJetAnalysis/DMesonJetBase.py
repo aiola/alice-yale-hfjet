@@ -533,6 +533,9 @@ class Spectrum:
         self.fBackground = None
         self.fSideBandHistograms = None
         self.fSignalHistograms = None
+        self.fLikeSignSubtractedBinSet = None
+        self.fSideBandWindowInvMassHistos = dict()
+        self.fSignalWindowInvMassHistos = dict()
         self.fAxis = []
         if "title" in config:
             self.fTitle = config["title"]
@@ -571,6 +574,10 @@ class Spectrum:
         if self.fAnalysisType == AnalysisType.SideBand and self.fSideBandHistograms and self.fSignalHistograms:
             SBlist = ROOT.TList()
             SBlist.SetName("SideBandAnalysis")
+            for h in self.fSideBandWindowInvMassHistos.itervalues():
+                SBlist.Add(h)
+            for h in self.fSignalWindowInvMassHistos.itervalues():
+                SBlist.Add(h)
             for h in self.fSideBandHistograms:
                 SBlist.Add(h)
             for h in self.fSignalHistograms:
@@ -578,6 +585,10 @@ class Spectrum:
             SBlist.Add(self.fSideBandWindowTotalHistogram)
             SBlist.Add(self.fSignalWindowTotalHistogram)
             rlist.Add(SBlist)
+        if self.fAnalysisType == AnalysisType.LikeSign and self.fLikeSignSubtractedBinSet:
+            LSlist = self.fLikeSignSubtractedBinSet.GenerateInvMassRootList()
+            LSlist.SetName("LikeSignAnalysis")
+            rlist.Add(LSlist)
         return rlist
 
     def GenerateNormalizedSpectrum(self, events):
@@ -662,7 +673,10 @@ class BinSet:
         rlist = ROOT.TList()
         rlist.SetName(self.fName)
         for bin in self.fBins:
-            rlist.Add(bin.fInvMassHisto)
+            if bin.fInvMassHisto:
+                rlist.Add(bin.fInvMassHisto)
+            if bin.fMassFitter:
+                rlist.Add(bin.fMassFitter)
         return rlist
 
     def AddBinsRecursive(self, limitSetList, limits):
