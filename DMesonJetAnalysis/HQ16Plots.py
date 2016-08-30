@@ -10,28 +10,154 @@ import subprocess
 globalList = []
 canvases = []
 
-def main(config, actions):
+def main(actions):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
+    
+    f = open("LHC14j4analysis_Train953.yaml", 'r')
+    config = yaml.load(f)
+    f.close()
+    
+    f = open("LHC15i2analysis_Train949.yaml", 'r')
+    configRM = yaml.load(f)
+    f.close()
 
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
 
     file = OpenFile(config)
     fileW = OpenFile(config, "efficiency")
+    fileRM = OpenFile(configRM)
 
     if "all" in actions or "SB" in actions:
         SideBandAnalysisPlots(file, config)
-        
+
     if "all" in actions or "LS" in actions:
         LikeSignAnalysisPlots(file, config)
-        
+
     if "all" in actions or "compare" in actions:
         CompareMethods(file, config)
-        
+
     if "all" in actions or "unc" in actions:
         CompareUncertainties(file, fileW, config)
+
+    if "all" in actions or "eff" in actions:
+        EfficiencyPlots(fileRM, configRM)
+
+    if "all" in actions or "resp" in actions:
+        DetectorResponsePlots(fileRM, configRM)
+
+def DetectorResponsePlots(file, config):
+    respList = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum", file)
+    resp = respList["DetectorResponse"]
+    histList = [resp["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_5_6"], resp["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_8_10"], 
+                resp["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_18_24"]]
+    histList[0].SetTitle("5 < #it{p}_{T,jet}^{ch,truth} < 6 GeV/#it{c}")
+    histList[1].SetTitle("8 < #it{p}_{T,jet}^{ch,truth} < 10 GeV/#it{c}")
+    histList[2].SetTitle("18 < #it{p}_{T,jet}^{ch,truth} < 24 GeV/#it{c}")
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,jet}^{ch,reco}-#it{p}_{T,jet}^{ch,truth}} / #it{p}_{T,jet}^{ch,truth}", "Probability density",
+                               [ROOT.kBlue+1, ROOT.kRed+1, ROOT.kGreen+1], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenTriangleUp])
+    blank.GetYaxis().SetRangeUser(0, 18)
+    blank.GetXaxis().SetRangeUser(-0.8, 0.8)
+    
+    histList = [respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_EnergyScaleShift"], respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_EnergyScaleShiftMedian"]]
+    histList[0].SetTitle("Mean")
+    histList[1].SetTitle("Median")
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_EnergyScaleShift", "#it{p}_{T,jet}^{ch,truth} (GeV/#it{c})", "#(){#it{p}_{T,jet}^{ch,reco}-#it{p}_{T,jet}^{ch,truth}} / #it{p}_{T,jet}^{ch,truth}")
+    blank.GetYaxis().SetRangeUser(-0.07, 0.08)
+
+    histList = [respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_Resolution"]]
+    histList[0].SetTitle("Resolution")
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_Resolution", "#it{p}_{T,jet}^{ch,truth} (GeV/#it{c})", "#sigma#(){#it{p}_{T,jet}^{ch,reco}-#it{p}_{T,jet}^{ch,truth}} / #it{p}_{T,jet}^{ch,truth}")
+    blank.GetYaxis().SetRangeUser(0.05, 0.18)
+
+def EfficiencyPlots(file, config):
+    etaEff = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_JetEta", file)
+    histList = [etaEff["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_JetEta_Efficiency_JetPt_500_2400"], etaEff["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_JetEta_Efficiency_JetPt_500_800"], 
+                etaEff["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_JetEta_Efficiency_JetPt_800_1300"], etaEff["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_JetEta_Efficiency_JetPt_1300_2400"]]
+    histList[0].SetTitle("5 < #it{p}_{T,jet}^{ch} < 24 GeV/#it{c}")
+    histList[1].SetTitle("5 < #it{p}_{T,jet}^{ch} < 8 GeV/#it{c}")
+    histList[2].SetTitle("8 < #it{p}_{T,jet}^{ch} < 13 GeV/#it{c}")
+    histList[3].SetTitle("13 < #it{p}_{T,jet}^{ch} < 24 GeV/#it{c}")
+    PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsJetEta", "#eta_{jet}", "Efficiency")
+    
+    ptEff = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Spectra", file)
+    histList = [ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_800"], 
+                ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_800_1300"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_1300_2400"]]
+    histList[0].SetTitle("5 < #it{p}_{T,jet}^{ch} < 24 GeV/#it{c}")
+    histList[1].SetTitle("5 < #it{p}_{T,jet}^{ch} < 8 GeV/#it{c}")
+    histList[2].SetTitle("8 < #it{p}_{T,jet}^{ch} < 13 GeV/#it{c}")
+    histList[3].SetTitle("13 < #it{p}_{T,jet}^{ch} < 24 GeV/#it{c}")
+    PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "Efficiency")
+
+def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, markers=None):
+    c = ROOT.TCanvas(cname, cname)
+    c.SetLeftMargin(0.12)
+    c.SetBottomMargin(0.12)
+    c.SetTopMargin(0.08)
+    c.SetRightMargin(0.08)
+    c.cd()
+    globalList.append(c)
+    canvases.append(c)
+    blank = ROOT.TH1D("blankHist", "blankHist;{0};{1}".format(xaxisTitle, yaxisTitle), 100, histList[0].GetXaxis().GetXmin(), histList[0].GetXaxis().GetXmax())
+    blank.GetXaxis().SetTitleFont(43)
+    blank.GetXaxis().SetTitleOffset(1.2)
+    blank.GetXaxis().SetTitleSize(19)
+    blank.GetXaxis().SetLabelFont(43)
+    blank.GetXaxis().SetLabelOffset(0.009)
+    blank.GetXaxis().SetLabelSize(18)
+    blank.GetYaxis().SetTitleFont(43)
+    blank.GetYaxis().SetTitleOffset(1.2)
+    blank.GetYaxis().SetTitleSize(19)
+    blank.GetYaxis().SetLabelFont(43)
+    blank.GetYaxis().SetLabelOffset(0.009)
+    blank.GetYaxis().SetLabelSize(18)
+    blank.Draw("AXIS")
+    globalList.append(blank)
+    if not colors:
+        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2, ROOT.kAzure+2, ROOT.kPink+2]
+    if not markers:
+        markers = [ROOT.kStar, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross]
+    max = 0;
+    leg = ROOT.TLegend(0.62, 0.90-len(histList)*0.055, 0.92, 0.90)
+    leg.SetFillStyle(0)
+    leg.SetBorderSize(0)
+    leg.SetTextFont(43)
+    leg.SetTextSize(16)
+    for color,marker,eff in zip(colors,markers,histList):
+        h = eff.Clone()
+        globalList.append(h)
+        h.SetMarkerStyle(marker)
+        h.SetMarkerSize(0.9)
+        h.SetMarkerColor(color)
+        h.SetLineColor(color)
+        leg.AddEntry(h, h.GetTitle(), "pe")
+        h.Draw("same")
+        for i in range(1, h.GetNbinsX()+1):
+            y = h.GetBinContent(i)
+            if y > max:
+                max = y
+
+    if len(histList) > 1:
+        leg.Draw()
+    globalList.append(leg)
+    blank.SetMaximum(max*1.8)
+
+    paveALICE = ROOT.TPaveText(0.13, 0.70, 0.52, 0.90, "NB NDC")
+    globalList.append(paveALICE)
+    paveALICE.SetBorderSize(0)
+    paveALICE.SetFillStyle(0)
+    paveALICE.SetTextFont(43)
+    paveALICE.SetTextSize(17)
+    paveALICE.SetTextAlign(13)
+    paveALICE.AddText("ALICE Simulation")
+    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
+    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+    paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}")
+    paveALICE.Draw()
+    return blank
 
 def CompareUncertainties(file, fileW, config):
     LSlist = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign", file)
@@ -525,18 +651,11 @@ def ExtractRootList(input):
     return result
 
 if __name__ == '__main__':
-    
     parser = argparse.ArgumentParser(description='Side Band analysis.')
-    parser.add_argument('--yaml', metavar='config.yaml',
-                        help='YAML configuration file')
     parser.add_argument('actions', metavar='action',
                         help='Actions to be taken', nargs='*')
     args = parser.parse_args()
-    
-    f = open(args.yaml, 'r')
-    config = yaml.load(f)
-    f.close()
 
-    main(config, args.actions)
+    main(args.actions)
     
     IPython.embed()
