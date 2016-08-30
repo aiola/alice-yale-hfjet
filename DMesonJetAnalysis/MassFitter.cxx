@@ -470,10 +470,8 @@ TString MassFitter::GetBkgPar2String() const
 //____________________________________________________________________________________
 TString MassFitter::GetTotalEntriesString() const
 {
-  TString r;
-
-  r = Form("Entries = %.1f#pm%.1f", GetTotalEntries(), GetTotalEntriesError());
-
+  TString r = GetValueString(GetTotalEntries(), GetTotalEntriesError());
+  r.Prepend("N=");
   return r;
 }
 
