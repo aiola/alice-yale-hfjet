@@ -66,7 +66,8 @@ class DMesonJetAnalysisEngine:
             if s.fNormHistogram:
                 s.fNormHistogram.Write()
             slist = s.GenerateRootList()
-            slist.Write(slist.GetName(), ROOT.TObject.kSingleKey)
+            if slist.GetEntries() > 0:
+                slist.Write(slist.GetName(), ROOT.TObject.kSingleKey)
 
     def SavePlots(self, path, format):
         for c in self.fCanvases:
@@ -107,10 +108,12 @@ class DMesonJetAnalysisEngine:
         self.fEngines = engines
         if not "MCTruth" in self.fDMeson:
             self.FitInvMassPlots()
-            self.PlotInvMassPlots()
-        
         if not "BackgroundOnly" in self.fDMeson:
             self.GenerateSpectra()
+
+        if not "MCTruth" in self.fDMeson:
+            self.PlotInvMassPlots()            
+        if not "BackgroundOnly" in self.fDMeson:
             self.PlotSpectra()
 
     def PlotSpectra(self):
@@ -409,6 +412,19 @@ class DMesonJetAnalysisEngine:
                     sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
                     sbTotal.Add(sbR)
 
+                    sideBandWindowInvMassHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
+                    signalWindowInvMassHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
+
+                    for xbin in range(0,bin.fInvMassHisto.GetNbinsX()+2):
+                        if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
+                            sideBandWindowInvMassHisto.SetBinContent(xbin, 0)
+                            sideBandWindowInvMassHisto.SetBinError(xbin, 0)
+                        if not (xbin >= binSig_1 and xbin < binSig_2):
+                            signalWindowInvMassHisto.SetBinContent(xbin, 0)
+                            signalWindowInvMassHisto.SetBinError(xbin, 0)
+                    s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
+                    s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
+
                     bkgErrSigWindow = ROOT.Double(0.)
                     bkgSigWindow = bin.fMassFitter.GetBackgroundAndError(bkgErrSigWindow, s.fBinCountSignalSigmas)
                     print("Bin: {0}".format(bin.GetTitle()))
@@ -542,14 +558,19 @@ class DMesonJetAnalysisEngine:
     def FitInvMassPlots(self):
         for binSet in self.fBinMultiSet.fBinSets.itervalues():
             self.FitInvMassPlotsBinSet(binSet.fName,binSet.fBins,binSet.fFitOptions)
-            
+
     def FitInvMassPlotsBinSet(self,name,bins,fitOptions):
         pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
-        
+
         for i,bin in enumerate(bins):
             if not bin.fInvMassHisto:
                 continue
-            fitter = self.CreateMassFitter("{0}_{1}_{2}_fitter".format(self.fDMeson, name, bin.GetName()))
+            if self.fTrigger:
+                fitterName = "InvMass_{0}_{1}_{2}_fitter".format(self.fTrigger, self.fDMeson, bin.GetName())
+            else:
+                fitterName = "InvMass_{0}_{1}_fitter".format(self.fDMeson, bin.GetName())
+
+            fitter = self.CreateMassFitter(fitterName)
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
@@ -557,9 +578,9 @@ class DMesonJetAnalysisEngine:
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
-            
+
             fitter.Fit(bin.fInvMassHisto, fitOptions);
-            
+
     def PlotInvMassPlots(self):
         for binSet in self.fBinMultiSet.fBinSets.itervalues():
             self.PlotInvMassPlotsBinSet(binSet.fName,binSet.fBins)
@@ -606,28 +627,15 @@ class DMesonJetAnalysisEngine:
         if not spectrum:
             return None
 
-        binSBL_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - spectrum.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
-        binSBL_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - spectrum.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-        binSBR_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + spectrum.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-        binSBR_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + spectrum.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
-        binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - spectrum.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
-        binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + spectrum.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
-
-        bin.fSideBandWindowHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
-        bin.fSignalWindowHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
-
-        for xbin in range(0,bin.fInvMassHisto.GetNbinsX()+2):
-            if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
-                bin.fSideBandWindowHisto.SetBinContent(xbin, 0)
-                bin.fSideBandWindowHisto.SetBinError(xbin, 0)
-            if not (xbin >= binSig_1 and xbin < binSig_2):
-                bin.fSignalWindowHisto.SetBinContent(xbin, 0)
-                bin.fSignalWindowHisto.SetBinError(xbin, 0)
-        hsb = bin.fSideBandWindowHisto.DrawCopy("hist")
+        invMassSBHistoName = bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow")
+        invMassSigHistoName = bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow")
+        if not invMassSBHistoName in spectrum.fSideBandWindowInvMassHistos.keys() or not invMassSigHistoName in spectrum.fSignalWindowInvMassHistos.keys():
+            return None
+        hsb = spectrum.fSideBandWindowInvMassHistos[invMassSBHistoName].DrawCopy("hist")
         hsb.SetFillColorAlpha(ROOT.kGreen+2, 0.4)
         hsb.SetFillStyle(1001)
         hsb.SetLineColorAlpha(ROOT.kGreen+2, 0.4)
-        hsig = bin.fSignalWindowHisto.DrawCopy("hist same")
+        hsig = spectrum.fSignalWindowInvMassHistos[invMassSigHistoName].DrawCopy("hist same")
         hsig.SetFillColorAlpha(ROOT.kRed+2, 0.4)
         hsig.SetFillStyle(1001)
         hsig.SetLineColorAlpha(ROOT.kRed+2, 0.4)
