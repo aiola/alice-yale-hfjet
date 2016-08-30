@@ -96,6 +96,12 @@ class DetectorResponse:
                 rlist.Add(h)
             for h in self.fResponseMatrix1D:
                 rlist.Add(h)
+        if self.fStatistics:
+            slist = ROOT.TList()
+            slist.SetName("DetectorResponse")
+            for s in self.fStatistics.fStatisticSets:
+                slist.Add(s.fHistogram)
+            rlist.Add(slist)
         return rlist
 
     def GenerateEfficiency(self):

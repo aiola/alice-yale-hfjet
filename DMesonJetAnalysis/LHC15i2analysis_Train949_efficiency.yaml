@@ -12,7 +12,7 @@ analysis:
     radius: R040
   response:
   -
-    name: D_Tagged_Jet_Spectrum_PtD_10
+    name: D_Tagged_Jet_Spectrum
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
@@ -31,7 +31,7 @@ analysis:
     -
       object: d
       variable: fPt
-      min: 1.0
+      min: 2.0
   -
     name: D_Tagged_Jet_JetEta
     efficiency:
@@ -50,7 +50,7 @@ analysis:
     -
       object: d
       variable: fPt
-      min: 1.0
+      min: 2.0
   -
     name: D_Fragmentation_JetPt_Spectra
     efficiency:
