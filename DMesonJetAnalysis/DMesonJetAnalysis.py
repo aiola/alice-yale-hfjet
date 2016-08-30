@@ -104,12 +104,13 @@ class DMesonJetAnalysisEngine:
         self.fEvents = self.fProjector.fTotalEvents
 
     def Start(self, engines):
+        self.fEngines = engines
         if not "MCTruth" in self.fDMeson:
             self.FitInvMassPlots()
             self.PlotInvMassPlots()
         
         if not "BackgroundOnly" in self.fDMeson:
-            self.GenerateSpectra(engines)
+            self.GenerateSpectra()
             self.PlotSpectra()
 
     def PlotSpectra(self):
@@ -256,10 +257,10 @@ class DMesonJetAnalysisEngine:
     def PlotSpectrum3D(self, s):
         print("PlotSpectrum3D not implemented!")
 
-    def GenerateSpectra(self, engines):
+    def GenerateSpectra(self):
         for s in self.fSpectra.itervalues():
             if len(s.fAxis) == 1:
-                self.GenerateSpectrum1D(s, engines)
+                self.GenerateSpectrum1D(s)
             elif len(s.fAxis) == 2:
                 self.GenerateSpectrum2D(s)
             elif len(s.fAxis) == 3:
@@ -305,7 +306,7 @@ class DMesonJetAnalysisEngine:
                 s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
                 s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
-    def GenerateSpectrum1DLikeSignMethod(self, s, engines):
+    def GenerateSpectrum1DLikeSignMethod(self, s):
         if "SignalOnly" in self.fDMeson:
             return self.GenerateSpectrum1DInvMassFit(s)
         s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
@@ -318,7 +319,7 @@ class DMesonJetAnalysisEngine:
         s.fLikeSignBackground = self.BuildSpectrum1D(s, "{0}_LikeSignBackground".format(s.fName), "counts")
         s.fSignalMinusLikeSign = self.BuildSpectrum1D(s, "{0}_SignalMinusLikeSign".format(s.fName), "counts")
         eng = None
-        for engTest in engines:
+        for engTest in self.fEngines:
             if engTest.fTrigger == self.fTrigger and engTest.fDMeson == s.fLikeSignTree:
                 eng = engTest
                 break
@@ -352,7 +353,7 @@ class DMesonJetAnalysisEngine:
 
         self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions)
         self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
-        
+
         for i,bin in enumerate(s.fLikeSignSubtractedBinSet.fBins):
             if bin.fMassFitter is None:
                 print("The bin printed below does not have a mass fitter!")
@@ -445,11 +446,11 @@ class DMesonJetAnalysisEngine:
             else:
                 s.fUncertainty.SetBinContent(xbin, 0)
 
-    def GenerateSpectrum1D(self, s, engines):
+    def GenerateSpectrum1D(self, s):
         if s.fAnalysisType == AnalysisType.SideBand:
             self.GenerateSpectrum1DSideBandMethod(s)
         elif s.fAnalysisType == AnalysisType.LikeSign:
-            self.GenerateSpectrum1DLikeSignMethod(s, engines)
+            self.GenerateSpectrum1DLikeSignMethod(s)
         else:
             self.GenerateSpectrum1DInvMassFit(s)
 
@@ -559,6 +560,78 @@ class DMesonJetAnalysisEngine:
         for binSet in self.fBinMultiSet.fBinSets.itervalues():
             self.PlotInvMassPlotsBinSet(binSet.fName,binSet.fBins)
 
+    def PlotInvMassLikeSign(self, name, bin):
+        spectrum = None
+        for s in self.fSpectra.itervalues():
+            for binSetName in s.fBins:
+                if binSetName == name and s.fAnalysisType == AnalysisType.LikeSign:
+                    spectrum = s
+                    break
+        if not spectrum:
+            return None
+
+        eng = None
+        for engTest in self.fEngines:
+            if engTest.fTrigger == self.fTrigger and engTest.fDMeson == s.fLikeSignTree:
+                eng = engTest
+                break
+        if not eng:
+            return None
+
+        binLS = None
+        for binTest in eng.fBinMultiSet.fBinSets[name].fBins:
+            if binTest.IsSameOf(bin):
+                binLS = binTest
+                break
+
+        hls = binLS.fInvMassHisto.DrawCopy("hist")
+        hls.SetLineColorAlpha(ROOT.kCyan+2, 0.4)
+        hls.SetFillColorAlpha(ROOT.kCyan+2, 0.4)
+        hls.SetFillStyle(1001)
+        globalList.append(hls)
+
+        return hls
+    
+    def PlotInvMassSideBands(self, name, bin):
+        spectrum = None
+        for s in self.fSpectra.itervalues():
+            for binSetName in s.fBins:
+                if binSetName == name and s.fAnalysisType == AnalysisType.SideBand:
+                    spectrum = s
+                    break
+        if not spectrum:
+            return None
+
+        binSBL_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - spectrum.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+        binSBL_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - spectrum.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+        binSBR_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + spectrum.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+        binSBR_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + spectrum.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+        binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - spectrum.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
+        binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + spectrum.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
+
+        bin.fSideBandWindowHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
+        bin.fSignalWindowHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
+
+        for xbin in range(0,bin.fInvMassHisto.GetNbinsX()+2):
+            if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
+                bin.fSideBandWindowHisto.SetBinContent(xbin, 0)
+                bin.fSideBandWindowHisto.SetBinError(xbin, 0)
+            if not (xbin >= binSig_1 and xbin < binSig_2):
+                bin.fSignalWindowHisto.SetBinContent(xbin, 0)
+                bin.fSignalWindowHisto.SetBinError(xbin, 0)
+        hsb = bin.fSideBandWindowHisto.DrawCopy("hist")
+        hsb.SetFillColorAlpha(ROOT.kGreen+2, 0.4)
+        hsb.SetFillStyle(1001)
+        hsb.SetLineColorAlpha(ROOT.kGreen+2, 0.4)
+        hsig = bin.fSignalWindowHisto.DrawCopy("hist same")
+        hsig.SetFillColorAlpha(ROOT.kRed+2, 0.4)
+        hsig.SetFillStyle(1001)
+        hsig.SetLineColorAlpha(ROOT.kRed+2, 0.4)
+        globalList.append(hsb)
+        globalList.append(hsig)
+
+        return hsb
+
     def PlotInvMassPlotsBinSet(self, name, bins):
         cname = "{0}_{1}".format(self.fDMeson, name)
         c = DMesonJetUtils.GenerateMultiCanvas(cname, len(bins))
@@ -572,8 +645,26 @@ class DMesonJetAnalysisEngine:
             pad.SetRightMargin(0.05)
             pad.SetTopMargin(0.08)
             pad.SetBottomMargin(0.13)
-            h = bin.fInvMassHisto.DrawCopy()
-            globalList.append(h)
+            if not "SignalOnly" in self.fDMeson:
+                SB = self.PlotInvMassSideBands(name, bin)
+                LS = self.PlotInvMassLikeSign(name, bin)
+            else:
+                SB = None
+                LS = None
+            if SB:
+                h = bin.fInvMassHisto.DrawCopy("same")
+                globalList.append(h)
+                SB.SetMaximum(h.GetMaximum()*1.8)
+                h = SB
+            elif LS:
+                h = bin.fInvMassHisto.DrawCopy("same")
+                globalList.append(h)
+                LS.SetMaximum(h.GetMaximum()*1.8)
+                h = LS
+            else:
+                h = bin.fInvMassHisto.DrawCopy()
+                globalList.append(h)
+                h.SetMaximum(h.GetMaximum()*1.8)
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(2.3)
             h.GetXaxis().SetTitleSize(19)
@@ -586,7 +677,6 @@ class DMesonJetAnalysisEngine:
             h.GetYaxis().SetLabelFont(43)
             h.GetYaxis().SetLabelOffset(0.009)
             h.GetYaxis().SetLabelSize(18)
-            h.SetMaximum(h.GetMaximum()*1.8)
             htitle = ROOT.TPaveText(0.12, 0.99, 0.95, 0.93, "NB NDC")
             htitle.SetBorderSize(0)
             htitle.SetFillStyle(0)

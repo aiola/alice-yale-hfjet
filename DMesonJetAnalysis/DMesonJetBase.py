@@ -713,6 +713,15 @@ class BinLimits:
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
     
+    def IsSameOf(self, bin):
+        for name,(min, max) in self.fLimits.iteritems():
+            if bin.fLimits.has_key(name):
+                if not bin.fLimits[name] == (min, max):
+                    return False
+            else:
+                return False
+        return True
+
     def SetJetPtLimits(self, min, max):
         self.fLimits["jet_pt"] = min, max
         
@@ -799,13 +808,13 @@ class BinLimits:
             hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
             htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
             if self.fBinCountAnalysisAxis:
-                hnameSB = "InvMassSB_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
+                hnameSB = "InvMassBinCounting_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
                 htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         else:
             hname = "InvMass_{0}_{1}".format(DMesonDef, self.GetName())
             htitle = "{0} Invariant Mass: {1};{2};{3}".format(DMesonDef, self.GetTitle(), xAxis, yAxis)
             if self.fBinCountAnalysisAxis:
-                hnameSB = "InvMassSB_{0}_{1}".format(DMesonDef, self.GetName())
+                hnameSB = "InvMassBinCounting_{0}_{1}".format(DMesonDef, self.GetName())
                 htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         
         self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
