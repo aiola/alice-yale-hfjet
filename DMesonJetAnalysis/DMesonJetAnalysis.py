@@ -310,71 +310,116 @@ class DMesonJetAnalysisEngine:
                 s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
     def GenerateSpectrum1DLikeSignMethod(self, s):
-        if "SignalOnly" in self.fDMeson:
-            return self.GenerateSpectrum1DInvMassFit(s)
+        s.fLikeSignHistograms = []
+        s.fUnlikeSignHistograms = []
+        s.fMass = None
+        s.fMassWidth = None
         s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
         s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-        s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
-        s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
-        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
-
-        s.fSignalPlusBackground = self.BuildSpectrum1D(s, "{0}_SignalPlusBackground".format(s.fName), "counts")
-        s.fLikeSignBackground = self.BuildSpectrum1D(s, "{0}_LikeSignBackground".format(s.fName), "counts")
-        s.fSignalMinusLikeSign = self.BuildSpectrum1D(s, "{0}_SignalMinusLikeSign".format(s.fName), "counts")
-        eng = None
-        for engTest in self.fEngines:
-            if engTest.fTrigger == self.fTrigger and engTest.fDMeson == s.fLikeSignTree:
-                eng = engTest
-                break
-        if not eng:
-            print("Could not find engine with trigger '{0}' and tree name '{1}'".format(self.fTrigger, s.fLikeSignTree))
-            return
+        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
+        s.fLikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_LikeSignTotal".format(s.fName), "counts")
+        s.fUnlikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_UnlikeSignTotal".format(s.fName), "counts")
+        print("Generating spectrum {0}".format(s.fName))
         binSetName = s.fBins[0]
-        s.fLikeSignSubtractedBinSet = copy.deepcopy(self.fBinMultiSet.fBinSets[binSetName])
-        s.fLikeSignSubtractedBinSet.fName = "{0}_LikeSignSubtracted".format(s.fLikeSignSubtractedBinSet.fName)
-        for i,bin in enumerate(s.fLikeSignSubtractedBinSet.fBins):
-            binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
-            binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
 
-            sigBkgErr = ROOT.Double(0)
-            sigBkg = bin.fInvMassHisto.IntegralAndError(binSig_1, binSig_2, sigBkgErr)
-            s.fSignalPlusBackground.SetBinContent(i+1, sigBkg)
-            s.fSignalPlusBackground.SetBinError(i+1, sigBkgErr)
+        if "SignalOnly" in self.fDMeson:
+            for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
+                sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                sig.SetTitle(bin.GetTitle())
+                s.fUnlikeSignHistograms.append(sig)
+                s.fUnlikeSignTotalHistogram.Add(sig)
+        else:
+            eng_LS = None
+            for engTest in self.fEngines:
+                if engTest.fTrigger == self.fTrigger and engTest.fDMeson == s.fLikeSignTree:
+                    eng_LS = engTest
+                    break
+            if not eng_LS:
+                print("Could not find engine with trigger '{0}' and tree name '{1}'".format(self.fTrigger, s.fLikeSignTree))
+                return
 
-            lsErr = ROOT.Double(0)
-            ls = eng.fBinMultiSet.fBinSets[binSetName].fBins[i].fInvMassHisto.IntegralAndError(binSig_1, binSig_2, lsErr)
-            s.fLikeSignBackground.SetBinContent(i+1, ls)
-            s.fLikeSignBackground.SetBinError(i+1, lsErr)
+            s.fLikeSignSubtractedBinSet = copy.deepcopy(self.fBinMultiSet.fBinSets[binSetName])
+            s.fLikeSignSubtractedBinSet.fName = "{0}_LikeSignSubtracted".format(s.fLikeSignSubtractedBinSet.fName)
 
-            sig = sigBkg - ls
-            sigErr = math.sqrt(sigBkgErr**2 + lsErr**2)
-            s.fSignalMinusLikeSign.SetBinContent(i+1, sig)
-            s.fSignalMinusLikeSign.SetBinError(i+1, sigErr)
+            for (LS_sub_bin, LSbin, bin) in zip(s.fLikeSignSubtractedBinSet.fBins, eng_LS.fBinMultiSet.fBinSets[binSetName].fBins, self.fBinMultiSet.fBinSets[binSetName].fBins):
+                binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+                binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+                binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
+                binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
+                if binSBL_1 < 1:
+                    binSBL_1 = 1
+                if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
+                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
 
-            bin.fInvMassHisto.Add(eng.fBinMultiSet.fBinSets[binSetName].fBins[i].fInvMassHisto, -1)
-            bin.fMassFitter = None
+                SB_L_err = ROOT.Double(0)
+                SB_L = bin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
+                SB_R_err = ROOT.Double(0)
+                SB_R = bin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
+                SB_total = SB_L + SB_R
+                SB_total_err = math.sqrt(SB_L_err**2 + SB_R_err**2)
 
-        self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions)
-        self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
+                LS_SB_L_err = ROOT.Double(0)
+                LS_SB_L = LSbin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
+                LS_SB_R_err = ROOT.Double(0)
+                LS_SB_R = LSbin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
+                LS_SB_total = LS_SB_L + LS_SB_R
+                LS_SB_total_err = math.sqrt(LS_SB_L_err**2 + LS_SB_R_err**2)
 
-        for i,bin in enumerate(s.fLikeSignSubtractedBinSet.fBins):
-            if bin.fMassFitter is None:
-                print("The bin printed below does not have a mass fitter!")
-                bin.Print()
-                continue
-            xbin = i+1
-            signal = bin.fMassFitter.GetSignal()
-            signal_unc = bin.fMassFitter.GetSignalError()
+                sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+                LStotal = LSbin.fBinCountAnalysisHisto.ProjectionY("{0}_LikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
 
-            s.fHistogram.SetBinContent(xbin, signal)
-            s.fHistogram.SetBinError(xbin, signal_unc)
-            s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground(2))
-            s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError(2))
-            s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
-            s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
-            s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
-            s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
-            s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+                if LS_SB_total > 0:
+                    bkgNorm = SB_total / LS_SB_total
+                    bkgNorm_err = ((SB_total_err/SB_total)**2 + (LS_SB_total_err/LS_SB_total)**2) * bkgNorm
+                else:
+                    bkgNorm = 0
+                    bkgNorm_err = 0
+
+                print("Bin: {0}".format(bin.GetTitle()))
+                print("The background in side bands U-S is: {0} + {1} = {2}".format(SB_L, SB_R, SB_total))
+                print("The background in side bands L-S is: {0} + {1} = {2}".format(LS_SB_L, SB_R, LS_SB_total))
+                print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
+                print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0,-1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+
+                for xbin in range(0, LStotal.GetNbinsX()+2):
+                    if LStotal.GetBinContent(xbin) == 0:
+                        continue
+                    error = math.sqrt(LStotal.GetBinError(xbin)**2/LStotal.GetBinContent(xbin)**2+bkgNorm_err**2/bkgNorm**2)*LStotal.GetBinContent(xbin)*bkgNorm
+                    cont = LStotal.GetBinContent(xbin)*bkgNorm
+                    LStotal.SetBinError(xbin, error)
+                    LStotal.SetBinContent(xbin, cont)
+
+                integralError = ROOT.Double(0.)
+                integral = LStotal.IntegralAndError(0, -1, integralError)
+                print("The total normalized like-sign background is {0} +/- {1}".format(integral, integralError))
+
+                LSbin.fInvMassHisto.Scale(bkgNorm)
+
+                LStotal.SetTitle(bin.GetTitle())
+                s.fLikeSignHistograms.append(LStotal)
+                s.fLikeSignTotalHistogram.Add(LStotal)
+
+                sig.SetTitle(bin.GetTitle())
+                s.fUnlikeSignHistograms.append(sig)
+                s.fUnlikeSignTotalHistogram.Add(sig)
+                
+                LS_sub_bin.fInvMassHisto.Add(LSbin.fInvMassHisto, -1)
+                LS_sub_bin.fMassFitter = None
+                
+            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions)
+            self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
+
+        s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
+        s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
+        s.fBackground.Add(s.fLikeSignTotalHistogram)
+
+        for xbin in range(0, s.fHistogram.GetNbinsX()+2):
+            if s.fHistogram.GetBinContent(xbin) > 0:
+                s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
+            else:
+                s.fUncertainty.SetBinContent(xbin, 0)
 
     def GenerateSpectrum1DSideBandMethod(self, s):
         s.fSideBandHistograms = []
@@ -609,10 +654,11 @@ class DMesonJetAnalysisEngine:
                 binLS = binTest
                 break
 
-        hls = binLS.fInvMassHisto.DrawCopy("hist")
-        hls.SetLineColorAlpha(ROOT.kCyan+2, 0.4)
-        hls.SetFillColorAlpha(ROOT.kCyan+2, 0.4)
-        hls.SetFillStyle(1001)
+        hls = binLS.fInvMassHisto.DrawCopy("hist same")
+        hls.SetLineColor(ROOT.kMagenta)
+        hls.SetLineStyle(2)
+        hls.SetLineWidth(2)
+        hls.SetFillStyle(0)
         globalList.append(hls)
 
         return hls
@@ -659,20 +705,13 @@ class DMesonJetAnalysisEngine:
             pad.SetBottomMargin(0.13)
             if not "SignalOnly" in self.fDMeson:
                 SB = self.PlotInvMassSideBands(name, bin)
-                LS = self.PlotInvMassLikeSign(name, bin)
             else:
                 SB = None
-                LS = None
             if SB:
                 h = bin.fInvMassHisto.DrawCopy("same")
                 globalList.append(h)
                 SB.SetMaximum(h.GetMaximum()*1.8)
                 h = SB
-            elif LS:
-                h = bin.fInvMassHisto.DrawCopy("same")
-                globalList.append(h)
-                LS.SetMaximum(h.GetMaximum()*1.8)
-                h = LS
             else:
                 h = bin.fInvMassHisto.DrawCopy()
                 globalList.append(h)
@@ -698,6 +737,7 @@ class DMesonJetAnalysisEngine:
             htitle.Draw()
             globalList.append(htitle)
             self.DrawFitResults(bin)
+            self.PlotInvMassLikeSign(name, bin)
 
 class DMesonJetAnalysis:
     def __init__(self, name):

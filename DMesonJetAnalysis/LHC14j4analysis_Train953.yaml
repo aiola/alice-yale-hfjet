@@ -19,23 +19,7 @@ analysis:
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: D_Tagged_Jets_PtD_10
-    active: no
-    efficiency: no
-    bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPt
-      min: 1.0
-  -
-    name: D_Tagged_Jets_PtD_20
+    name: JetPtBins_PtD_20
     active: yes
     efficiency: no
     bins:
@@ -51,37 +35,7 @@ analysis:
       variable: fPt
       min: 2.0
   -
-    name: D_Tagged_Jets_Z_02
-    active: no
-    efficiency: no
-    bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: jet
-      variable: fZ
-      min: 0.2
-  -
-    name: D_SideBandAnalysis_PtD_10
-    active: no
-    efficiency: no
-    bins:
-      d_pt: [1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    bin_count_analysis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-  -
-    name: D_SideBandAnalysis_PtD_20
+    name: DPtBins_PtD_20
     active: yes
     efficiency: no
     bins:
@@ -96,42 +50,19 @@ analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   spectra:
   -
-    name: D_Tagged_Jet_PtD_10_Spectrum
-    title: "Inv.Mass Fit, #it{p}_{T,D} > 1 GeV/#it{c}"
-    active: no
-    bins: [D_Tagged_Jets_PtD_10]
-    axis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-  -
     name: D_Tagged_Jet_PtD_20_Spectrum
     title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
-    bins: [D_Tagged_Jets_PtD_20]
-    axis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-  -
-    name: D_Tagged_Jet_Z_02_Spectrum
-    title: "Inv.Mass Fit, #it{z}_{||,D} > 0.2"
-    active: no
-    bins: [D_Tagged_Jets_Z_02]
+    bins: [JetPtBins_PtD_20]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Pt_Spectrum
     title: "|#eta_{jet}| < 0.5"
     active: yes
-    bins: [D_SideBandAnalysis_PtD_20]
+    bins: [DPtBins_PtD_20]
     axis:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
-  -
-    name: D_Tagged_Jet_PtD_10_Spectrum_SideBand
-    title: "SB method, #it{p}_{T,D} > 1 GeV/#it{c}"
-    active: no
-    side_band:
-      min_sigmas: 4
-      max_sigmas: 8
-      max_signal_sigmas: 2
-    bins: [D_SideBandAnalysis_PtD_10]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum_SideBand
     title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
@@ -140,14 +71,16 @@ analysis:
       min_sigmas: 4
       max_sigmas: 8
       max_signal_sigmas: 2
-    bins: [D_SideBandAnalysis_PtD_20]
+    bins: [DPtBins_PtD_20]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum_LikeSign
     title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
-    bins: [D_Tagged_Jets_PtD_20]
+    bins: [DPtBins_PtD_20]
     like_sign:
       name: 2ProngLikeSign
-      sigmas: 2
+      min_sigmas: 4
+      max_sigmas: 8
+      max_signal_sigmas: 2
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
