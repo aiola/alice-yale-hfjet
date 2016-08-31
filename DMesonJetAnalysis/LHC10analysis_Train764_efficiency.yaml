@@ -25,6 +25,7 @@ analysis:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
       object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+      apply_to_final_spectrum: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
@@ -44,6 +45,7 @@ analysis:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
       object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+      apply_to_final_spectrum: yes
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
     cuts:
@@ -85,8 +87,8 @@ analysis:
     bins: [DPtBins_PtD_20]
     like_sign:
       name: 2ProngLikeSign
-      min_sigmas: 4
-      max_sigmas: 8
+      min_sigmas: 0
+      max_sigmas: 0
       max_signal_sigmas: 2
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
