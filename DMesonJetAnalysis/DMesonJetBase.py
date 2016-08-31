@@ -667,8 +667,8 @@ class BinMultiSet:
         for binSet in self.fBinSets.itervalues():
             yield binSet.GenerateInvMassRootList()
 
-    def AddBinSet(self, name, limitSetList, cutList=[], side_band=None, weight=None, fitOptions=""):
-        self.fBinSets[name] = BinSet(name, limitSetList, cutList, side_band, weight, fitOptions)
+    def AddBinSet(self, binSet):
+        self.fBinSets[binSet.fName] = binSet
 
     def FindBin(self, dmeson, jet):
         for binSet in self.fBinSets.itervalues():
@@ -677,12 +677,13 @@ class BinMultiSet:
                 yield bin, w
 
 class BinSet:
-    def __init__(self, name, limitSetList, cutList=[], bin_count_axis=None, weight=None, fitOptions=""):
+    def __init__(self, name, limitSetList, cutList=[], bin_count_axis=None, weight=None, effToSpectrum=False, fitOptions=""):
         self.fName = name
         self.fBins = []
         self.fCuts = DMesonJetCuts(cutList)
         self.fFitOptions = fitOptions
         self.fWeightEfficiency = weight
+        self.fApplyEfficiencyToSpectrum = effToSpectrum
         if bin_count_axis:
             self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0])
         else:
@@ -712,9 +713,12 @@ class BinSet:
             self.fBins.append(bin)
 
     def FindBin(self, dmeson, jet):
-        w = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet)
         if not self.fCuts.ApplyCuts(dmeson, jet):
             return
+        if self.fApplyEfficiencyToSpectrum:
+            w = 1.
+        else:
+            w = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet)
         for bin in self.fBins:
             if bin.IsInBinLimits(dmeson, jet):
                 yield bin, w

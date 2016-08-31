@@ -291,18 +291,22 @@ class DMesonJetAnalysisEngine:
                     print("The bin printed below does not have a mass fitter!")
                     bin.Print()
                     continue
+                if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
+                    w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+                else:
+                    w = 1
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 if "SignalOnly" in self.fDMeson:
-                    signal = bin.fInvMassHisto.Integral()
-                    signal_unc = math.sqrt(bin.fInvMassHisto.Integral())
+                    signal = bin.fInvMassHisto.Integral()*w
+                    signal_unc = math.sqrt(bin.fInvMassHisto.Integral())*w
                 else:
-                    signal = bin.fMassFitter.GetSignal()
-                    signal_unc = bin.fMassFitter.GetSignalError()
+                    signal = bin.fMassFitter.GetSignal()*w
+                    signal_unc = bin.fMassFitter.GetSignalError()*w
 
                 s.fHistogram.SetBinContent(xbin, signal)
                 s.fHistogram.SetBinError(xbin, signal_unc)
-                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground(2))
-                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError(2))
+                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
+                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
                 s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
                 s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
@@ -325,6 +329,9 @@ class DMesonJetAnalysisEngine:
         if "SignalOnly" in self.fDMeson:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
+                    w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+                    sig.Scale(w)
                 sig.SetTitle(bin.GetTitle())
                 s.fUnlikeSignHistograms.append(sig)
                 s.fUnlikeSignTotalHistogram.Add(sig)
@@ -393,9 +400,18 @@ class DMesonJetAnalysisEngine:
 
                 integralError = ROOT.Double(0.)
                 integral = LStotal.IntegralAndError(0, -1, integralError)
-                print("The total normalized like-sign background is {0} +/- {1}".format(integral, integralError))
+                print("The total normalized like-sign background in the peak area is {0} +/- {1}".format(integral, integralError))
+
+                peakAreaBkgError = ROOT.Double(0.)
+                peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
+                print("The total background in the peak area estimated from the fit is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
 
                 LSbin.fInvMassHisto.Scale(bkgNorm)
+
+                if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
+                    w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+                    LStotal.Scale(w)
+                    sig.Scale(w)
 
                 LStotal.SetTitle(bin.GetTitle())
                 s.fLikeSignHistograms.append(LStotal)
@@ -434,9 +450,15 @@ class DMesonJetAnalysisEngine:
         print("Generating spectrum {0}".format(s.fName))
         for binSetName in s.fBins:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
+                if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
+                    w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+                else:
+                    w = 1
                 if "SignalOnly" in self.fDMeson:
                     sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
                     sig.SetTitle(bin.GetTitle())
+                    if w != 1:
+                        sig.Scale(w)
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
                 else:
@@ -492,6 +514,10 @@ class DMesonJetAnalysisEngine:
                     integralError = ROOT.Double(0.)
                     integral = sbTotal.IntegralAndError(0, -1, integralError)
                     print("The total normalized side-band background is {0} +/- {1}".format(integral, integralError))
+
+                    if w != 1:
+                        sig.Scale(w)
+                        sbTotal.Scale(w)
 
                     sbTotal.SetTitle(bin.GetTitle())
                     s.fSideBandHistograms.append(sbTotal)
@@ -737,7 +763,8 @@ class DMesonJetAnalysisEngine:
             htitle.Draw()
             globalList.append(htitle)
             self.DrawFitResults(bin)
-            self.PlotInvMassLikeSign(name, bin)
+            if not "SignalOnly" in self.fDMeson:
+                self.PlotInvMassLikeSign(name, bin)
 
 class DMesonJetAnalysis:
     def __init__(self, name):
@@ -766,11 +793,16 @@ class DMesonJetAnalysis:
                 bin_count_analysis = None
             if "efficiency" in binLists and binLists["efficiency"]:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, binLists["efficiency"]["file_name"]), binLists["efficiency"]["list_name"], binLists["efficiency"]["object_name"])
-                fitOptions = "0 WL S"
+                effToSpectrum = binLists["efficiency"]["apply_to_final_spectrum"]
+                if effToSpectrum:
+                    fitOptions = "0 L S"
+                else:
+                    fitOptions = "0 WL S"
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
                 fitOptions = "0 L S"
-            binMultiSet.AddBinSet(binLists["name"], limitSetList, cuts, bin_count_analysis, effWeight, fitOptions)
+                effToSpectrum = False
+            binMultiSet.AddBinSet(BinSet(binLists["name"], limitSetList, cuts, bin_count_analysis, effWeight, effToSpectrum, fitOptions))
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:

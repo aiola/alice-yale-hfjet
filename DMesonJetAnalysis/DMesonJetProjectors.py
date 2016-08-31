@@ -96,6 +96,13 @@ class EfficiencyWeightCalculator:
         else:
             return 1. / eff
 
+    def GetEfficiencyWeightTH1ForPt(self, pt):
+        eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(pt))
+        if eff == 0:
+            return 0
+        else:
+            return 1. / eff
+
 class DMesonJetDataProjector:
     def __init__(self, inputPath, train, fileName, taskName, maxEvents):
         self.fInputPath = inputPath
