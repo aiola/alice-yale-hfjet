@@ -346,65 +346,91 @@ class DMesonJetAnalysisEngine:
                 return
 
             s.fLikeSignSubtractedBinSet = copy.deepcopy(self.fBinMultiSet.fBinSets[binSetName])
-            s.fLikeSignSubtractedBinSet.fName = "{0}_LikeSignSubtracted".format(s.fLikeSignSubtractedBinSet.fName)
+            s.fLikeSignSubtractedBinSet.fName = "{0}_LikeSignSubtracted_{1}".format(s.fLikeSignSubtractedBinSet.fName, s.fName)
 
             for (LS_sub_bin, LSbin, bin) in zip(s.fLikeSignSubtractedBinSet.fBins, eng_LS.fBinMultiSet.fBinSets[binSetName].fBins, self.fBinMultiSet.fBinSets[binSetName].fBins):
-                binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
-                binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-                binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-                binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                # Calculate the projections in the peak area for L-S and U-S
                 binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
                 binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
-                if binSBL_1 < 1:
-                    binSBL_1 = 1
-                if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
-                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
-
-                SB_L_err = ROOT.Double(0)
-                SB_L = bin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
-                SB_R_err = ROOT.Double(0)
-                SB_R = bin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
-                SB_total = SB_L + SB_R
-                SB_total_err = math.sqrt(SB_L_err**2 + SB_R_err**2)
-
-                LS_SB_L_err = ROOT.Double(0)
-                LS_SB_L = LSbin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
-                LS_SB_R_err = ROOT.Double(0)
-                LS_SB_R = LSbin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
-                LS_SB_total = LS_SB_L + LS_SB_R
-                LS_SB_total_err = math.sqrt(LS_SB_L_err**2 + LS_SB_R_err**2)
-
                 sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
                 LStotal = LSbin.fBinCountAnalysisHisto.ProjectionY("{0}_LikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
 
-                if LS_SB_total > 0:
-                    bkgNorm = SB_total / LS_SB_total
-                    bkgNorm_err = ((SB_total_err/SB_total)**2 + (LS_SB_total_err/LS_SB_total)**2) * bkgNorm
-                else:
-                    bkgNorm = 0
-                    bkgNorm_err = 0
-
                 print("Bin: {0}".format(bin.GetTitle()))
-                print("The background in side bands U-S is: {0} + {1} = {2}".format(SB_L, SB_R, SB_total))
-                print("The background in side bands L-S is: {0} + {1} = {2}".format(LS_SB_L, SB_R, LS_SB_total))
-                print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
                 print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0,-1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
-
-                for xbin in range(0, LStotal.GetNbinsX()+2):
-                    if LStotal.GetBinContent(xbin) == 0:
-                        continue
-                    error = math.sqrt(LStotal.GetBinError(xbin)**2/LStotal.GetBinContent(xbin)**2+bkgNorm_err**2/bkgNorm**2)*LStotal.GetBinContent(xbin)*bkgNorm
-                    cont = LStotal.GetBinContent(xbin)*bkgNorm
-                    LStotal.SetBinError(xbin, error)
-                    LStotal.SetBinContent(xbin, cont)
-
-                integralError = ROOT.Double(0.)
-                integral = LStotal.IntegralAndError(0, -1, integralError)
-                print("The total normalized like-sign background in the peak area is {0} +/- {1}".format(integral, integralError))
-
                 peakAreaBkgError = ROOT.Double(0.)
                 peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
                 print("The total background in the peak area estimated from the fit is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
+                bkgNorm = 0
+                bkgNorm_err = 0
+                # Two methods to normalize the background
+                # Method 1: use the side-bands
+                if s.fSideBandMaxSigmas > s.fSideBandMinSigmas:
+                    binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                    if binSBL_1 < 1:
+                        binSBL_1 = 1
+                    if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
+                        binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
+    
+                    SB_L_err = ROOT.Double(0)
+                    SB_L = bin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
+                    SB_R_err = ROOT.Double(0)
+                    SB_R = bin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
+                    SB_total = SB_L + SB_R
+                    SB_total_err = math.sqrt(SB_L_err**2 + SB_R_err**2)
+    
+                    LS_SB_L_err = ROOT.Double(0)
+                    LS_SB_L = LSbin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
+                    LS_SB_R_err = ROOT.Double(0)
+                    LS_SB_R = LSbin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
+                    LS_SB_total = LS_SB_L + LS_SB_R
+                    LS_SB_total_err = math.sqrt(LS_SB_L_err**2 + LS_SB_R_err**2)
+    
+                    if LS_SB_total > 0:
+                        bkgNorm = SB_total / LS_SB_total
+                        bkgNorm_err = ((SB_total_err/SB_total)**2 + (LS_SB_total_err/LS_SB_total)**2) * bkgNorm
+                    else:
+                        bkgNorm = 0
+                        bkgNorm_err = 0
+    
+                    print("The background in side bands U-S is: {0} + {1} = {2}".format(SB_L, SB_R, SB_total))
+                    print("The background in side bands L-S is: {0} + {1} = {2}".format(LS_SB_L, SB_R, LS_SB_total))
+                    print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
+
+                    for xbin in range(0, LStotal.GetNbinsX()+2):
+                        if LStotal.GetBinContent(xbin) == 0:
+                            continue
+                        error = math.sqrt(LStotal.GetBinError(xbin)**2/LStotal.GetBinContent(xbin)**2+bkgNorm_err**2/bkgNorm**2)*LStotal.GetBinContent(xbin)*bkgNorm
+                        cont = LStotal.GetBinContent(xbin)*bkgNorm
+                        LStotal.SetBinError(xbin, error)
+                        LStotal.SetBinContent(xbin, cont)
+                # Method 2: use the peak area
+                else:
+                    LStotalIntegralError = ROOT.Double(0)
+                    LStotalIntegral = LStotal.IntegralAndError(0, -1, LStotalIntegralError)
+                    if LStotalIntegral > 0:
+                        for xbin in range(0, LStotal.GetNbinsX()+2):
+                            if LStotal.GetBinContent(xbin) == 0:
+                                continue
+                            # Error propagation
+                            error2_1 = peakAreaBkgError**2 * LStotal.GetBinContent(xbin)**2
+                            error2_2 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinError(xbin)**2 * (LStotalIntegral-LStotal.GetBinContent(xbin))**2
+                            error2_3 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinContent(xbin)**2 * (LStotalIntegralError**2-LStotal.GetBinError(xbin)**2)
+                            #print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/LStotalIntegral, math.sqrt(error2_2)/LStotalIntegral, math.sqrt(error2_3)/LStotalIntegral))
+                            error = math.sqrt(error2_1 + error2_2 + error2_3) / LStotalIntegral
+                            cont = LStotal.GetBinContent(xbin)*peakAreaBkg/LStotalIntegral
+                            LStotal.SetBinError(xbin, error)
+                            LStotal.SetBinContent(xbin, cont)
+                        bkgNorm = peakAreaBkg / LStotalIntegral
+                        # this is only a rough estimate
+                        bkgNorm_err = ((peakAreaBkgError/peakAreaBkg)**2 + (LStotalIntegralError/LStotalIntegral)**2) * bkgNorm
+
+                print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
+                integralError = ROOT.Double(0.)
+                integral = LStotal.IntegralAndError(0, -1, integralError)
+                print("The total normalized like-sign background in the peak area is {0} +/- {1}".format(integral, integralError))
 
                 LSbin.fInvMassHisto.Scale(bkgNorm)
 
@@ -492,22 +518,26 @@ class DMesonJetAnalysisEngine:
                     s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
                     s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
 
-                    bkgErrSigWindow = ROOT.Double(0.)
-                    bkgSigWindow = bin.fMassFitter.GetBackgroundAndError(bkgErrSigWindow, s.fBinCountSignalSigmas)
+                    peakAreaBkgError = ROOT.Double(0.)
+                    peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
                     print("Bin: {0}".format(bin.GetTitle()))
                     print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0,-1), sbR.Integral(0,-1), sbTotal.Integral(0,-1)))
-                    print("The estimated background in the signal window is {0} +/- {1}".format(bkgSigWindow, bkgErrSigWindow))
+                    print("The estimated background in the signal window is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
                     print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0,-1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
 
-                    sbTotalIntegral = sbTotal.Integral(0, -1)
+                    sbTotalIntegralError = ROOT.Double(0)
+                    sbTotalIntegral = sbTotal.IntegralAndError(0, -1, sbTotalIntegralError)
                     if sbTotalIntegral > 0:
-                        sbTotal.Scale(1. / sbTotalIntegral)
-    
                         for xbin in range(0, sbTotal.GetNbinsX()+2):
                             if sbTotal.GetBinContent(xbin) == 0:
                                 continue
-                            error = math.sqrt(sbTotal.GetBinError(xbin)**2/sbTotal.GetBinContent(xbin)**2+bkgErrSigWindow**2/bkgSigWindow**2)*sbTotal.GetBinContent(xbin)*bkgSigWindow
-                            cont = sbTotal.GetBinContent(xbin)*bkgSigWindow
+                            # Error propagation
+                            error2_1 = peakAreaBkgError**2 * sbTotal.GetBinContent(xbin)**2
+                            error2_2 = peakAreaBkg**2 / sbTotalIntegral**2 * sbTotal.GetBinError(xbin)**2 * (sbTotalIntegral-sbTotal.GetBinContent(xbin))**2
+                            error2_3 = peakAreaBkg**2 / sbTotalIntegral**2 * sbTotal.GetBinContent(xbin)**2 * (sbTotalIntegralError**2-sbTotal.GetBinError(xbin)**2)
+                            #print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/sbTotalIntegral, math.sqrt(error2_2)/sbTotalIntegral, math.sqrt(error2_3)/sbTotalIntegral))
+                            error = math.sqrt(error2_1 + error2_2 + error2_3) / sbTotalIntegral
+                            cont = sbTotal.GetBinContent(xbin)*peakAreaBkg/sbTotalIntegral
                             sbTotal.SetBinError(xbin, error)
                             sbTotal.SetBinContent(xbin, cont)
 

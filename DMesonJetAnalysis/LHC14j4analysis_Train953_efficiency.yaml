@@ -87,8 +87,8 @@ analysis:
     bins: [DPtBins_PtD_20]
     like_sign:
       name: 2ProngLikeSign
-      min_sigmas: 4
-      max_sigmas: 8
+      min_sigmas: 0
+      max_sigmas: 0
       max_signal_sigmas: 2
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
