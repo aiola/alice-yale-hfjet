@@ -537,12 +537,19 @@ class Spectrum:
         self.fMass = None
         self.fMassWidth = None
         self.fBackground = None
-        self.fSideBandHistograms = None
-        self.fSignalHistograms = None
-        self.fLikeSignSubtractedBinSet = None
+        self.fAxis = []
+
+        # S-B analysis
         self.fSideBandWindowInvMassHistos = dict()
         self.fSignalWindowInvMassHistos = dict()
-        self.fAxis = []
+        self.fSideBandHistograms = None
+        self.fSignalHistograms = None
+
+        # L-S analysis
+        self.fLikeSignSubtractedBinSet = None
+        self.fLikeSignHistograms = None
+        self.fUnlikeSignHistograms = None
+
         if "title" in config:
             self.fTitle = config["title"]
         else:
@@ -554,7 +561,9 @@ class Spectrum:
             self.fBinCountSignalSigmas = config["side_band"]["max_signal_sigmas"]
         elif "like_sign" in config:
             self.fAnalysisType = AnalysisType.LikeSign
-            self.fBinCountSignalSigmas = config["like_sign"]["sigmas"]
+            self.fSideBandMinSigmas = config["like_sign"]["min_sigmas"]
+            self.fSideBandMaxSigmas = config["like_sign"]["max_sigmas"]
+            self.fBinCountSignalSigmas = config["like_sign"]["max_signal_sigmas"]
             self.fLikeSignTree = config["like_sign"]["name"]
         else:
             self.fAnalysisType = AnalysisType.InvMassFit
@@ -594,6 +603,12 @@ class Spectrum:
         if self.fAnalysisType == AnalysisType.LikeSign and self.fLikeSignSubtractedBinSet:
             LSlist = self.fLikeSignSubtractedBinSet.GenerateInvMassRootList()
             LSlist.SetName("LikeSignAnalysis")
+            for h in self.fLikeSignHistograms:
+                LSlist.Add(h)
+            for h in self.fUnlikeSignHistograms:
+                LSlist.Add(h)
+            LSlist.Add(self.fLikeSignTotalHistogram)
+            LSlist.Add(self.fUnlikeSignTotalHistogram)
             rlist.Add(LSlist)
         return rlist
 
