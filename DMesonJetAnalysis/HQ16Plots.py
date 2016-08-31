@@ -10,7 +10,7 @@ import subprocess
 globalList = []
 canvases = []
 
-def main(actions):
+def main(actions, output_path, output_type):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
@@ -22,6 +22,10 @@ def main(actions):
     f = open("LHC15i2analysis_Train949.yaml", 'r')
     configRM = yaml.load(f)
     f.close()
+    
+    f = open("LHC10analysis_Train764.yaml", 'r')
+    configData = yaml.load(f)
+    f.close()
 
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
@@ -29,6 +33,7 @@ def main(actions):
     file = OpenFile(config)
     fileW = OpenFile(config, "efficiency")
     fileRM = OpenFile(configRM)
+    fileData = OpenFile(configData)
 
     if "all" in actions or "SB" in actions:
         SideBandAnalysisPlots(file, config)
@@ -47,6 +52,46 @@ def main(actions):
 
     if "all" in actions or "resp" in actions:
         DetectorResponsePlots(fileRM, configRM)
+
+    if "all" in actions or "stat" in actions:
+        StatisticalUncertaintyData(fileData, configData)
+
+    for c in canvases:
+        c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
+
+def StatisticalUncertaintyData(file, config):
+    dataList = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum", file)
+    hist = dataList["D0_D_Tagged_Jet_PtD_20_Spectrum_Unc"]
+    cname = "HQ16_WorkInProgress_StatisticalUncertainty"
+    c = ROOT.TCanvas(cname, cname, 650, 500)
+    canvases.append(c)
+    c.cd()
+    h = hist.DrawCopy("hist")
+
+    h.SetLineColor(ROOT.kBlue+2)
+    h.SetLineWidth(2)
+    h.SetFillColorAlpha(ROOT.kBlue+2, 0.25)
+    h.SetFillStyle(1001)
+    h.GetYaxis().SetRangeUser(0, 0.25)
+    h.GetYaxis().SetTitleOffset(1.2)
+    h.GetXaxis().SetTitleOffset(1.2)
+    h.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch,reco} (GeV/#it{c})")
+
+    pave = ROOT.TPaveText(0.12, 0.88, 0.4, 0.55, "NB NDC")
+    pave.SetFillStyle(0)
+    pave.SetBorderSize(0)
+    pave.SetTextFont(43)
+    pave.SetTextSize(15)
+    pave.AddText("ALICE Work In Progress")
+    pave.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
+    pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+    pave.AddText("#it{p}_{T,D} > 2 GeV/#it{c}")
+    pave.Draw()
+
+    globalList.append(c)
+    globalList.append(h)
+    globalList.append(pave)
 
 def DetectorResponsePlots(file, config):
     respList = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum", file)
@@ -654,8 +699,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Side Band analysis.')
     parser.add_argument('actions', metavar='action',
                         help='Actions to be taken', nargs='*')
+    parser.add_argument('-o', metavar='path',
+                        help='Output path', default='../notes/HQ16/img')
+    parser.add_argument('-f', metavar='format',
+                        help='Format (pdf, eps, png,...)', default='pdf')
     args = parser.parse_args()
 
-    main(args.actions)
+    main(args.actions, args.o, args.f)
     
     IPython.embed()

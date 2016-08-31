@@ -767,12 +767,12 @@ class DMesonJetAnalysis:
                 h.SetTitle(eng.fDMeson)
                 globalList.append(h)
                 spectraToCompare.append(h)
-
-            results = DMesonJetUtils.CompareSpectra(baseline, spectraToCompare, "{0}_SpectraComparison".format(s["name"]))
-            for obj in results:
-                if isinstance(obj, ROOT.TCanvas):
-                    self.fCanvases.append(obj)
-                globalList.append(obj)
+            if len(spectraToCompare) > 0:
+                results = DMesonJetUtils.CompareSpectra(baseline, spectraToCompare, "{0}_SpectraComparison".format(s["name"]))
+                for obj in results:
+                    if isinstance(obj, ROOT.TCanvas):
+                        self.fCanvases.append(obj)
+                    globalList.append(obj)
 
     def SaveRootFile(self, path):
         file = ROOT.TFile.Open("{0}/{1}.root".format(path, self.fName), "recreate")
