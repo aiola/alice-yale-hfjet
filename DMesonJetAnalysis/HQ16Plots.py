@@ -61,18 +61,19 @@ def StatisticalUncertaintyData(file, config):
     hist = dataList["D0_D_Tagged_Jet_PtD_20_Spectrum_Unc"]
     cname = "HQ16_WorkInProgress_StatisticalUncertainty"
     c = ROOT.TCanvas(cname, cname, 650, 500)
+    c.SetTicks(1,1)
     canvases.append(c)
     c.cd()
     h = hist.DrawCopy("hist")
 
     h.SetLineColor(ROOT.kBlue+2)
     h.SetLineWidth(2)
-    h.SetFillColorAlpha(ROOT.kBlue+2, 0.25)
+    h.SetFillColor(ROOT.kBlue-10)
     h.SetFillStyle(1001)
     h.GetYaxis().SetRangeUser(0, 0.25)
     h.GetYaxis().SetTitleOffset(1.2)
     h.GetXaxis().SetTitleOffset(1.2)
-    h.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch,reco} (GeV/#it{c})")
+    h.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
 
     pave = ROOT.TPaveText(0.12, 0.88, 0.4, 0.55, "NB NDC")
     pave.SetFillStyle(0)
@@ -95,42 +96,47 @@ def DetectorResponsePlots(file, config):
     resp = respList["DetectorResponse"]
     histList = [resp["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_5_6"], resp["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_8_10"], 
                 resp["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_18_24"]]
-    histList[0].SetTitle("5 < #it{p}_{T,jet}^{ch,truth} < 6 GeV/#it{c}")
-    histList[1].SetTitle("8 < #it{p}_{T,jet}^{ch,truth} < 10 GeV/#it{c}")
-    histList[2].SetTitle("18 < #it{p}_{T,jet}^{ch,truth} < 24 GeV/#it{c}")
-    blank = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,jet}^{ch,reco}-#it{p}_{T,jet}^{ch,truth}} / #it{p}_{T,jet}^{ch,truth}", "Probability density",
-                               [ROOT.kBlue+1, ROOT.kRed+1, ROOT.kGreen+1], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenTriangleUp])
+    histList[0].SetTitle("5 < #it{p}_{T,ch jet}^{part} < 6 GeV/#it{c}")
+    histList[1].SetTitle("8 < #it{p}_{T,ch jet}^{part} < 10 GeV/#it{c}")
+    histList[2].SetTitle("18 < #it{p}_{T,ch jet}^{part} < 24 GeV/#it{c}")
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}", "Probability density",
+                               [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross], [1.0, 1.0, 1.4])
     blank.GetYaxis().SetRangeUser(0, 18)
     blank.GetXaxis().SetRangeUser(-0.8, 0.8)
     
     histList = [respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_EnergyScaleShift"], respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_EnergyScaleShiftMedian"]]
     histList[0].SetTitle("Mean")
     histList[1].SetTitle("Median")
-    blank = PlotMultiHistogram(histList, "HQ16_Simulation_EnergyScaleShift", "#it{p}_{T,jet}^{ch,truth} (GeV/#it{c})", "#(){#it{p}_{T,jet}^{ch,reco}-#it{p}_{T,jet}^{ch,truth}} / #it{p}_{T,jet}^{ch,truth}")
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_EnergyScaleShift", "#it{p}_{T,ch jet}^{part} (GeV/#it{c})", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}",
+                               [ROOT.kBlue+2, ROOT.kRed+2], [ROOT.kFullCircle, ROOT.kFullSquare], [1.0, 1.0])
     blank.GetYaxis().SetRangeUser(-0.07, 0.08)
 
     histList = [respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_Resolution"]]
     histList[0].SetTitle("Resolution")
-    blank = PlotMultiHistogram(histList, "HQ16_Simulation_Resolution", "#it{p}_{T,jet}^{ch,truth} (GeV/#it{c})", "#sigma#(){#it{p}_{T,jet}^{ch,reco}-#it{p}_{T,jet}^{ch,truth}} / #it{p}_{T,jet}^{ch,truth}")
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_Resolution", "#it{p}_{T,ch jet}^{part} (GeV/#it{c})", "#sigma#[]{#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}}",
+                               [ROOT.kBlue+2], [ROOT.kFullCircle], [1.0])
     blank.GetYaxis().SetRangeUser(0.05, 0.18)
 
 def EfficiencyPlots(file, config):
     ptEff = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Spectra", file)
     histList = [ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_800"], 
                 ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_800_1300"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_1300_2400"]]
-    histList[0].SetTitle("5 < #it{p}_{T,jet}^{ch} < 24 GeV/#it{c}")
-    histList[1].SetTitle("5 < #it{p}_{T,jet}^{ch} < 8 GeV/#it{c}")
-    histList[2].SetTitle("8 < #it{p}_{T,jet}^{ch} < 13 GeV/#it{c}")
-    histList[3].SetTitle("13 < #it{p}_{T,jet}^{ch} < 24 GeV/#it{c}")
-    PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "Efficiency")
+    histList[0].SetTitle("5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
+    histList[1].SetTitle("5 < #it{p}_{T,ch jet} < 8 GeV/#it{c}")
+    histList[2].SetTitle("8 < #it{p}_{T,ch jet} < 13 GeV/#it{c}")
+    histList[3].SetTitle("13 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
+    PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
+                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5])
 
-def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, markers=None):
+def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, markers=None, markerSizes=None):
     c = ROOT.TCanvas(cname, cname)
     c.SetLeftMargin(0.12)
     c.SetBottomMargin(0.12)
     c.SetTopMargin(0.08)
     c.SetRightMargin(0.08)
+    c.SetTicks(1,1)
     c.cd()
+    #c.SetLogy()
     globalList.append(c)
     canvases.append(c)
     blank = ROOT.TH1D("blankHist", "blankHist;{0};{1}".format(xaxisTitle, yaxisTitle), 100, histList[0].GetXaxis().GetXmin(), histList[0].GetXaxis().GetXmax())
@@ -149,20 +155,22 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
     blank.Draw("AXIS")
     globalList.append(blank)
     if not colors:
-        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2, ROOT.kAzure+2, ROOT.kPink+2]
+        colors = [ROOT.kBlack, ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2]
     if not markers:
-        markers = [ROOT.kStar, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross]
+        markers = [ROOT.kStar, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullDiamond, ROOT.kFullCross, ROOT.kFullStar]
+    if not markerSizes:
+        markerSizes = [1.0]*len(markers)
     max = 0;
-    leg = ROOT.TLegend(0.62, 0.90-len(histList)*0.055, 0.92, 0.90)
+    leg = ROOT.TLegend(0.55, 0.90-len(histList)*0.075, 0.90, 0.85)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
     leg.SetTextFont(43)
-    leg.SetTextSize(16)
-    for color,marker,eff in zip(colors,markers,histList):
+    leg.SetTextSize(19)
+    for color,marker,markerSize,eff in zip(colors,markers,markerSizes,histList):
         h = eff.Clone()
         globalList.append(h)
         h.SetMarkerStyle(marker)
-        h.SetMarkerSize(0.9)
+        h.SetMarkerSize(markerSize)
         h.SetMarkerColor(color)
         h.SetLineColor(color)
         leg.AddEntry(h, h.GetTitle(), "pe")
@@ -175,9 +183,10 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
     if len(histList) > 1:
         leg.Draw()
     globalList.append(leg)
-    blank.SetMaximum(max*1.8)
+    #blank.GetYaxis().SetRangeUser(2e-3, 9)
+    blank.GetYaxis().SetRangeUser(0, max*1.8)
 
-    paveALICE = ROOT.TPaveText(0.13, 0.70, 0.52, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.13, 0.64, 0.52, 0.90, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -212,6 +221,7 @@ def CompareUncertainties(file, fileW, config):
 
     cname = "HQ16_Simulation_UncertaintyComparison"
     c = ROOT.TCanvas(cname, cname, 650, 500)
+    c.SetTicks(1,1)
     canvases.append(c)
     globalList.append(c)
 
@@ -224,7 +234,7 @@ def CompareUncertainties(file, fileW, config):
     h.GetYaxis().SetTitleOffset(1.3)
     h.GetYaxis().SetRangeUser(0, 0.50)
     h.GetXaxis().SetTitleOffset(1.2)
-    h.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch,reco} GeV/#it{c}")
+    h.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
 
     leg1 = ROOT.TLegend(0.11, 0.45, 0.55, 0.66, "", "NB NDC")
     globalList.append(leg1)
@@ -238,6 +248,7 @@ def CompareUncertainties(file, fileW, config):
         h = s.DrawCopy("same hist")
         globalList.append(h)
         h.SetLineColor(color)
+        h.SetLineWidth(2)
         h.SetLineStyle(lineStyle)
         h.SetFillStyle(0)
         leg1.AddEntry(h, title, "l")
@@ -251,6 +262,7 @@ def CompareUncertainties(file, fileW, config):
     paveALICE.SetTextAlign(13)
     paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("350 M minimum-bias events")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
     paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}")
     paveALICE.Draw()
@@ -274,6 +286,7 @@ def CompareMethods(file, config):
     padMain = c.cd(1)
     padMain.SetPad(0, 0.35, 1, 1)
     padMain.SetBottomMargin(0)
+    padMain.SetTicks(1,1)
     hS = Tspectrum.DrawCopy("hist")
     globalList.append(hS)
     hS.SetLineColor(ROOT.kGray)
@@ -290,6 +303,7 @@ def CompareMethods(file, config):
     padRatio.SetPad(0, 0., 1, 0.35)
     padRatio.SetTopMargin(0)
     padRatio.SetBottomMargin(0.25)
+    padRatio.SetTicks(1,1)
     hSratio = Tspectrum.DrawCopy("hist")
     globalList.append(hSratio)
     hSratio.Divide(Tspectrum)
@@ -307,12 +321,12 @@ def CompareMethods(file, config):
     hSratio.GetYaxis().SetLabelSize(16)
     hSratio.GetYaxis().SetTitleOffset(1.6)
     hSratio.GetXaxis().SetTitleOffset(3.4)
-    hSratio.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch,reco} GeV/#it{c}")
+    hSratio.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
     hSratio.GetYaxis().SetTitle("ratio")
     hSratio.GetYaxis().SetNdivisions(504)
 
     colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2]
-    markers = [ROOT.kFullSquare, ROOT.kFullCircle, ROOT.kFullTriangleUp]
+    markers = [ROOT.kFullSquare, ROOT.kFullCircle, ROOT.kFullCross]
     sizes = [1.2, 1.1, 1.2]
     fillStyles = [3002, 3245, 3254]
     titles = ["Inv.Mass Fit", "Side-band Method", "Like-sign Method"]
@@ -345,7 +359,7 @@ def CompareMethods(file, config):
         h.SetMarkerStyle(marker)
         h.SetMarkerSize(size)
         h.SetLineColor(color)
-        h.SetFillColorAlpha(color,0.55)
+        h.SetFillColor(color-9)
         h.SetFillStyle(fillStyle)
 
     padMain.cd()
@@ -372,73 +386,6 @@ def InvMassPlots(file, config):
     invMassLS = LoadHistograms("2ProngLikeSign_DPtBins_PtD_20", file)
     
     PlotInvMass(invMass, invMassLS, spectrumSB, spectrumLS, config)
-    PlotSpectra(spectrumSB, spectrumLS, config)
-
-def PlotSpectra(spectrumSBlist, spectrumLSlist, config):
-    cname = "HQ16_Simulation_Spectra_SB_LS"
-    c = ROOT.TCanvas(cname, cname, 650, 500)
-    globalList.append(c)
-    canvases.append(c)
-    c.SetLogy()
-    c.cd()
-    SBbkgSpectrum = spectrumSBlist["SideBandAnalysis"]["D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand_SideBandWindowTotal"]
-    SigWinSpectrum = spectrumSBlist["SideBandAnalysis"]["D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand_SignalWindowTotal"]
-    SBspectrum = spectrumSBlist["D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand"]
-
-    LSbkgSpectrum = spectrumLSlist["LikeSignAnalysis"]["D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign_LikeSignTotal"]
-    LSspectrum = spectrumLSlist["D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign"]
-
-    hSigWin = SigWinSpectrum.DrawCopy()
-    globalList.append(hSigWin)
-    hSigWin.SetMarkerStyle(ROOT.kStar)
-    hSigWin.SetMarkerSize(1.0)
-    hSigWin.SetMarkerColor(ROOT.kBlue+2)
-    hSigWin.SetLineColor(ROOT.kBlue+2)
-    hSigWin.GetYaxis().SetRangeUser(5e1, 1e4)
-    hSigWin.GetXaxis().SetTitleOffset(1.2)
-    hSigWin.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch,reco} GeV/#it{c}")
-
-    hSBbkg = SBbkgSpectrum.DrawCopy("same")
-    globalList.append(hSBbkg)
-    hSBbkg.SetMarkerStyle(ROOT.kOpenSquare)
-    hSBbkg.SetMarkerSize(1.0)
-    hSBbkg.SetMarkerColor(ROOT.kRed+2)
-    hSBbkg.SetLineColor(ROOT.kRed+2)
-
-    hLSbkg = LSbkgSpectrum.DrawCopy("same")
-    globalList.append(hLSbkg)
-    hLSbkg.SetMarkerStyle(ROOT.kOpenCircle)
-    hLSbkg.SetMarkerSize(1.0)
-    hLSbkg.SetMarkerColor(ROOT.kGreen+2)
-    hLSbkg.SetLineColor(ROOT.kGreen+2)
-
-    paveALICE = ROOT.TPaveText(0.09, 0.73, 0.88, 0.90, "NB NDC")
-    globalList.append(paveALICE)
-    paveALICE.SetBorderSize(0)
-    paveALICE.SetFillStyle(0)
-    paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(17)
-    paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Simulation")
-    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-    paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}")
-    paveALICE.Draw()
-    
-    leg = ROOT.TLegend(0.09, 0.12, 0.46, 0.38, "", "NB NDC")
-    globalList.append(leg)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0)
-    leg.SetTextFont(43)
-    leg.SetTextSize(16)
-    leg.SetTextAlign(13)
-    leg.AddEntry(hSigWin, "Signal candidates", "pe")
-    leg.AddEntry(hSigWin, "#||{#it{m}(#piK) - #it{m}_{fit}} < 2#sigma_{fit}", "")
-    leg.AddEntry(hSBbkg, "S-B candidates", "pe")
-    leg.AddEntry(hSBbkg, "4#sigma_{fit} < #||{#it{m}(#piK) - #it{m}_{fit}} < 8#sigma_{fit}", "")
-    leg.AddEntry(hLSbkg, "L-S candidates", "pe")
-    leg.AddEntry(hLSbkg, "#||{#it{m}(#piK) - #it{m}_{fit}} < 2#sigma_{fit}", "")
-    leg.Draw()
 
 def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrumPlotListLS, config):
     #bins = ["200_300", "600_700", "1200_1600"]
@@ -462,18 +409,21 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
         pad.SetRightMargin(0.05)
         pad.SetTopMargin(0.09)
         pad.SetBottomMargin(0.13)
+        pad.SetTicks(1,1)
 
         (h, hsig) = PlotInvMassSideBands(invMassHistoSB, invMassHistoSig)
+        h.GetXaxis().SetTitle("#it{M}_{K#pi} (GeV/#it{c}^{2})")
+
         invMassHisto_copy = invMassHisto.DrawCopy("same")
         globalList.append(invMassHisto_copy)
         
         invMassHistoLS_copy = invMassHistoLS.DrawCopy("same hist")
         invMassHistoLS_copy.SetFillStyle(0)
         invMassHistoLS_copy.SetLineColor(ROOT.kGreen+2)
-        invMassHistoLS_copy.SetLineStyle(2)
+        invMassHistoLS_copy.SetLineStyle(1)
         invMassHistoLS_copy.SetLineWidth(2)
 
-        h.SetMaximum(invMassHisto_copy.GetMaximum()*1.9)
+        h.SetMaximum(invMassHisto_copy.GetMaximum()*1.3)
         h.GetXaxis().SetTitleFont(43)
         h.GetXaxis().SetTitleOffset(1.1)
         h.GetXaxis().SetTitleSize(19)
@@ -486,7 +436,7 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
         h.GetYaxis().SetLabelFont(43)
         h.GetYaxis().SetLabelOffset(0.009)
         h.GetYaxis().SetLabelSize(18)
-        htitle = ROOT.TPaveText(0.60, 0.35, 0.95, 0.48, "NB NDC")
+        htitle = ROOT.TPaveText(0.59, 0.80, 0.94, 0.89, "NB NDC")
         htitle.SetBorderSize(0)
         htitle.SetFillStyle(0)
         htitle.SetTextFont(43)
@@ -494,10 +444,10 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
         htitle.AddText(binTitle)
         htitle.Draw()
         globalList.append(htitle)
-        DrawFitResults(invMassFitter)
+        invMassFitter.Draw("same");
 
     c.cd(1)    
-    paveALICE = ROOT.TPaveText(0.17, 0.81, 0.96, 0.92, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.19, 0.80, 0.59, 0.89, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -508,7 +458,7 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
 
-    leg1 = ROOT.TLegend(0.19, 0.35, 0.57, 0.61, "", "NB NDC")
+    leg1 = ROOT.TLegend(0.20, 0.47, 0.58, 0.74, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
@@ -525,51 +475,17 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
 
 def PlotInvMassSideBands(sideBandWindowHisto, signalWindowHisto):
     hsb = sideBandWindowHisto.DrawCopy("hist")
-    hsb.SetFillColorAlpha(ROOT.kRed+2, 0.4)
+    hsb.SetFillColor(ROOT.kRed-10)
     hsb.SetFillStyle(1001)
-    hsb.SetLineColorAlpha(ROOT.kRed+2, 0.4)
+    hsb.SetLineColor(ROOT.kRed-10)
     hsig = signalWindowHisto.DrawCopy("hist same")
-    hsig.SetFillColorAlpha(ROOT.kBlue+2, 0.4)
+    hsig.SetFillColor(ROOT.kBlue+-10)
     hsig.SetFillStyle(1001)
-    hsig.SetLineColorAlpha(ROOT.kBlue+2, 0.4)
+    hsig.SetLineColor(ROOT.kBlue-10)
     globalList.append(hsb)
     globalList.append(hsig)
 
     return hsb,hsig
-
-def DrawFitResults(invMassFitter):
-    invMassFitter.Draw("same");
-
-    fitStatus = int(invMassFitter.GetFitStatus())
-    if fitStatus == 0:
-        chi2Text = invMassFitter.GetChisquareString().Data()
-    else:
-        chi2Text = "Fit failed"
-
-    paveSig = ROOT.TPaveText(0.18, 0.67, 0.54, 0.80, "NB NDC")
-    globalList.append(paveSig)
-    paveSig.SetBorderSize(0)
-    paveSig.SetFillStyle(0)
-    paveSig.SetTextFont(43)
-    paveSig.SetTextSize(14)
-    paveSig.SetTextAlign(13)
-    paveSig.AddText("{0}, {1}".format(invMassFitter.GetSignalString().Data(), 
-                                      invMassFitter.GetBackgroundString().Data()))
-    paveSig.AddText("{0}, {1}".format(invMassFitter.GetSignalOverSqrtSignalBackgroundString().Data(),
-                                      chi2Text))
-    paveSig.Draw()
-
-    paveFit = ROOT.TPaveText(0.47, 0.52, 0.96, 0.67, "NB NDC")
-    globalList.append(paveFit)
-    paveFit.SetBorderSize(0)
-    paveFit.SetFillStyle(0)
-    paveFit.SetTextFont(43)
-    paveFit.SetTextSize(14)
-    paveFit.SetTextAlign(33)
-    paveFit.AddText(invMassFitter.GetSignalMeanString().Data())
-    paveFit.AddText(invMassFitter.GetSignalWidthString().Data())
-    paveFit.AddText("Entries={0}".format(int(invMassFitter.GetTotalEntries())))
-    paveFit.Draw()
 
 def OpenFile(config, suffix=""):
     ROOT.TH1.AddDirectory(0)
