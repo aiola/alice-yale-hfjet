@@ -52,6 +52,10 @@ def main(actions, output_path, output_type):
 
     if "all" in actions or "stat" in actions:
         StatisticalUncertaintyData(fileData, configData)
+        
+    if "all" in actions or "spectra" in actions:
+        PlotSpectra(file)
+        PlotSpectra(fileW, "Eff")
 
     for c in canvases:
         c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
@@ -127,8 +131,33 @@ def EfficiencyPlots(file, config):
     histList[3].SetTitle("13 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
     PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
                        [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5])
+    blank = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt_LogScale", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
+                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], False,True)
+    blank.GetYaxis().SetRangeUser(2e-3, 9)
 
-def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, markers=None, markerSizes=None):
+def PlotSpectra(file, suffix=""):
+    if suffix:
+        suffix = "_{0}".format(suffix)
+
+    spectrumLSlist = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign", file)
+    spectrumSBlist = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand", file)
+
+    #bins = ["200_300", "300_400", "400_500", "500_600", "600_700", "700_800", "800_1200", "1200_1600", "1600_2400"]
+    bins = ["200_300", "500_600", "700_800", "1200_1600", "1600_2400"]
+
+    hlist = [spectrumSBlist["SideBandAnalysis"]["D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand_SideBandWindow_DPt_{0}".format(bin)] for bin in bins]
+    PlotMultiHistogram(hlist, "HQ16_Simulation_SBSpectra{0}".format(suffix), "#it{p}_{T,ch jet}^{det} (GeV/#it{c})", "counts",
+                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2, ROOT.kPink+2, ROOT.kTeal+2], [ROOT.kOpenCircle]*9, [1.0]*9, False,True)
+    
+    hlist = [spectrumSBlist["SideBandAnalysis"]["D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand_SignalWindow_DPt_{0}".format(bin)] for bin in bins]
+    PlotMultiHistogram(hlist, "HQ16_Simulation_SigSpectra{0}".format(suffix), "#it{p}_{T,ch jet}^{det} (GeV/#it{c})", "counts",
+                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2, ROOT.kPink+2, ROOT.kTeal+2], [ROOT.kOpenSquare]*9, [1.0]*9, False,True)
+
+    hlist = [spectrumLSlist["LikeSignAnalysis"]["D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign_LikeSign_DPt_{0}".format(bin)] for bin in bins]
+    PlotMultiHistogram(hlist, "HQ16_Simulation_LSSpectra{0}".format(suffix), "#it{p}_{T,ch jet}^{det} (GeV/#it{c})", "counts",
+                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2, ROOT.kPink+2, ROOT.kTeal+2], [ROOT.kOpenCross]*9, [1.4]*9, False,True)
+
+def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, markers=None, markerSizes=None, simuPlot=True, logY=False):
     c = ROOT.TCanvas(cname, cname)
     c.SetLeftMargin(0.12)
     c.SetBottomMargin(0.12)
@@ -136,7 +165,8 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
     c.SetRightMargin(0.08)
     c.SetTicks(1,1)
     c.cd()
-    #c.SetLogy()
+    if logY:
+        c.SetLogy()
     globalList.append(c)
     canvases.append(c)
     blank = ROOT.TH1D("blankHist", "blankHist;{0};{1}".format(xaxisTitle, yaxisTitle), 100, histList[0].GetXaxis().GetXmin(), histList[0].GetXaxis().GetXmax())
@@ -161,6 +191,7 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
     if not markerSizes:
         markerSizes = [1.0]*len(markers)
     max = 0;
+    min = 1e15
     leg = ROOT.TLegend(0.55, 0.90-len(histList)*0.075, 0.90, 0.85)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
@@ -179,26 +210,31 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
             y = h.GetBinContent(i)
             if y > max:
                 max = y
+            if y < max:
+                min = y
 
     if len(histList) > 1:
         leg.Draw()
     globalList.append(leg)
-    #blank.GetYaxis().SetRangeUser(2e-3, 9)
-    blank.GetYaxis().SetRangeUser(0, max*1.8)
+    if logY:
+        blank.GetYaxis().SetRangeUser(min/10, max*10)
+    else:
+        blank.GetYaxis().SetRangeUser(0, max*1.8)
 
-    paveALICE = ROOT.TPaveText(0.13, 0.64, 0.52, 0.90, "NB NDC")
-    globalList.append(paveALICE)
-    paveALICE.SetBorderSize(0)
-    paveALICE.SetFillStyle(0)
-    paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(17)
-    paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Simulation")
-    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-    paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}")
-    paveALICE.Draw()
+    if simuPlot:
+        paveALICE = ROOT.TPaveText(0.13, 0.64, 0.52, 0.90, "NB NDC")
+        globalList.append(paveALICE)
+        paveALICE.SetBorderSize(0)
+        paveALICE.SetFillStyle(0)
+        paveALICE.SetTextFont(43)
+        paveALICE.SetTextSize(17)
+        paveALICE.SetTextAlign(13)
+        paveALICE.AddText("ALICE Simulation")
+        paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
+        paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
+        paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}")
+        paveALICE.Draw()
     return blank
 
 def CompareUncertainties(file, fileW, config):
@@ -278,6 +314,10 @@ def CompareMethods(file, config):
     Tspectrum = Tlist["D0_kSignalOnly_D_Tagged_Jet_PtD_20_Spectrum"]
     spectra = [IMlist["D0_D_Tagged_Jet_PtD_20_Spectrum"], SBlist["D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand"], LSlist["D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign"]]
 
+    cname = "HQ16_Simulation_MethodComparison_Diff"
+    cDiff = ROOT.TCanvas(cname, cname, 650, 500)
+    canvases.append(cDiff)
+
     cname = "HQ16_Simulation_MethodComparison"
     c = ROOT.TCanvas(cname, cname, 700, 700)
     canvases.append(c)
@@ -325,6 +365,18 @@ def CompareMethods(file, config):
     hSratio.GetYaxis().SetTitle("ratio")
     hSratio.GetYaxis().SetNdivisions(504)
 
+    cDiff.cd()
+    hSdiff = Tspectrum.DrawCopy("hist")
+    globalList.append(hSdiff)
+    hSdiff.Add(Tspectrum, -1)
+    hSdiff.SetFillStyle(0)
+    hSdiff.SetLineColor(ROOT.kBlack)
+    hSdiff.SetLineStyle(2)
+    hSdiff.SetLineWidth(2)
+    hSdiff.GetYaxis().SetRangeUser(-100,100)
+    hSdiff.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
+    hSdiff.GetYaxis().SetTitle("difference")
+
     colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2]
     markers = [ROOT.kFullSquare, ROOT.kFullCircle, ROOT.kFullCross]
     sizes = [1.2, 1.1, 1.2]
@@ -355,12 +407,21 @@ def CompareMethods(file, config):
         h = s.DrawCopy("same E2")
         globalList.append(h)
         h.Divide(Tspectrum)
+        (chi2, chi2Avg) = CalculateChi2(h)
+        print("The chi2 for {0} is {1}. For the average is {2}".format(title, chi2, chi2Avg))
         h.SetMarkerColor(color)
         h.SetMarkerStyle(marker)
         h.SetMarkerSize(size)
         h.SetLineColor(color)
         h.SetFillColor(color-9)
         h.SetFillStyle(fillStyle)
+
+        cDiff.cd()
+        h = s.DrawCopy("same hist")
+        globalList.append(h)
+        h.Add(Tspectrum, -1)
+        h.SetLineColor(color)
+        h.SetFillStyle(0)
 
     padMain.cd()
     paveALICE = ROOT.TPaveText(0.24, 0.55, 0.63, 0.88, "NB NDC")
@@ -378,6 +439,19 @@ def CompareMethods(file, config):
     paveALICE.Draw()
 
     leg1.Draw()
+
+def CalculateChi2(h):
+    chi2 = 0
+    avg = 0
+    avgErr2 = 0
+    for xbin in range(1, h.GetNbinsX()+1):
+        chi2 += (h.GetBinContent(xbin) - 1)**2 / h.GetBinError(xbin)**2
+        avg += h.GetBinContent(xbin)
+        avgErr2 += h.GetBinError(xbin)**2
+    avg /= h.GetNbinsX()
+    avgErr2 /= h.GetNbinsX()**2
+    chi2Avg = (avg - 1)**2 / avgErr2
+    return chi2, chi2Avg
 
 def InvMassPlots(file, config):
     spectrumSB = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand", file)
@@ -413,6 +487,7 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
 
         (h, hsig) = PlotInvMassSideBands(invMassHistoSB, invMassHistoSig)
         h.GetXaxis().SetTitle("#it{M}_{K#pi} (GeV/#it{c}^{2})")
+        h.GetYaxis().SetTitle("arb. units")
 
         invMassHisto_copy = invMassHisto.DrawCopy("same")
         globalList.append(invMassHisto_copy)
