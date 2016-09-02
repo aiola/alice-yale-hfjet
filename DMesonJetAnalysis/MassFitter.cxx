@@ -139,6 +139,7 @@ void MassFitter::Reset(TH1* histo)
   fFunctionBkg = new TF1(fnameBkg, this, &MassFitter::FunctionBkg, fMinMass, fMaxMass, fNParBkg);
   fFunctionBkg->SetLineColor(kRed+1);
   fFunctionBkg->SetLineWidth(2);
+  fFunctionBkg->SetLineStyle(2);
 }
 
 //____________________________________________________________________________________
