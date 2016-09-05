@@ -11,7 +11,7 @@ import ROOT
 
 globalList = []
 
-def main(config, maxEvents, suffix):
+def main(config, maxEvents, suffix, format):
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -31,7 +31,7 @@ def main(config, maxEvents, suffix):
         ana.StartAnalysis(anaConfig)
     
     ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
-    ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), "pdf")
+    ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
 
 if __name__ == '__main__':
     
@@ -42,13 +42,15 @@ if __name__ == '__main__':
                         default=-1, type=int)
     parser.add_argument('--suffix', metavar='suffix',
                         default="")
+    parser.add_argument('--format', metavar='pdf',
+                        default="pdf")
     args = parser.parse_args()
     
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.suffix)
+    main(config, args.events, args.suffix, args.format)
     
     IPython.embed()
     
