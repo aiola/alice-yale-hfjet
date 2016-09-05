@@ -80,7 +80,7 @@ class DMesonJetAnalysisEngine:
             minFitRange = self.fMinMass
             maxFitRange = self.fMaxMass
             startingSigma = 0.01
-            startingSigmaBkg = 0.01
+            startingSigmaBkg = -1
             massFitTypeSig = ROOT.MassFitter.kGaus
             massFitTypeBkg = ROOT.MassFitter.kExpo
         elif self.fDMeson == "DStar":
@@ -675,12 +675,12 @@ class DMesonJetAnalysisEngine:
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
-            fitter.GetFitFunction().SetParameter(2, integral / 100) # signal integral (start with very small signal)
+            fitter.GetFitFunction().SetParameter(2, integral / 10) # signal integral (start with small signal)
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
 
-            fitter.Fit(bin.fInvMassHisto, fitOptions);
+            fitter.Fit(bin.fInvMassHisto, fitOptions)
 
     def PlotInvMassPlots(self):
         for binSet in self.fBinMultiSet.fBinSets.itervalues():
