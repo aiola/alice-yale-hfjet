@@ -110,9 +110,11 @@ def DetectorResponsePlots(file, config):
     histList[0].SetTitle("5 < #it{p}_{T,ch jet}^{part} < 6 GeV/#it{c}")
     histList[1].SetTitle("8 < #it{p}_{T,ch jet}^{part} < 10 GeV/#it{c}")
     histList[2].SetTitle("18 < #it{p}_{T,ch jet}^{part} < 24 GeV/#it{c}")
-    (blank, c) = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}", "Probability density",
+    for h in histList:
+        h.Scale(0.04)
+    (blank, c) = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}", "Probability density #times bin width (0.04)",
                                [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross], [1.0, 1.0, 1.4], simuPlot)
-    blank.GetYaxis().SetRangeUser(0, 18)
+    blank.GetYaxis().SetRangeUser(0, 0.72)
     blank.GetXaxis().SetRangeUser(-0.8, 0.8)
     blank.GetXaxis().SetTitleOffset(1.4)
     c.SetBottomMargin(0.15)
@@ -145,8 +147,9 @@ def EfficiencyPlots(file, config):
     histList[1].SetTitle("5 < #it{p}_{T,ch jet} < 8 GeV/#it{c}")
     histList[2].SetTitle("8 < #it{p}_{T,ch jet} < 13 GeV/#it{c}")
     histList[3].SetTitle("13 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
-    PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
+    (blank,c) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
                        [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], simuPlot)
+    blank.GetXaxis().SetRangeUser(2, 24)
     (blank,c) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt_LogScale", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
                        [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], None,True)
     blank.GetYaxis().SetRangeUser(2e-3, 9)
@@ -578,12 +581,12 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
     leg1.SetTextFont(43)
     leg1.SetTextSize(14)
     leg1.SetTextAlign(13)
-    leg1.AddEntry(invMassHisto_copy, "Inv.Mass", "pe")
-    leg1.AddEntry(h1, "S-B Window", "f")
-    leg1.AddEntry(hsig, "Signal Window", "f")
-    leg1.AddEntry(invMassHistoLS_copy, "L-S Inv.Mass", "l")
+    leg1.AddEntry(invMassHisto_copy, "Unlike Sign", "pe")
+    leg1.AddEntry(invMassHistoLS_copy, "Like Sign", "f")
     leg1.AddEntry(invMassFitter.GetFitFunction(), "Fit Sig+Bkg", "l")
     leg1.AddEntry(invMassFitter.GetBkgFunction(), "Fit Bkg-only", "l")
+    leg1.AddEntry(hsig, "Signal Window", "f")
+    leg1.AddEntry(h1, "S-B Window", "f")
     leg1.Draw()
 
 def PlotInvMassSideBands(sideBandWindowHisto, signalWindowHisto):
