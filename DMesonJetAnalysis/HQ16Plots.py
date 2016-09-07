@@ -68,6 +68,8 @@ def StatisticalUncertaintyData(file, config):
     cname = "HQ16_WorkInProgress_StatisticalUncertainty"
     c = ROOT.TCanvas(cname, cname, 650, 500)
     c.SetTicks(1,1)
+    c.SetLeftMargin(0.13)
+    c.SetBottomMargin(0.14)
     canvases.append(c)
     c.cd()
     h = hist.DrawCopy("hist")
@@ -76,16 +78,25 @@ def StatisticalUncertaintyData(file, config):
     h.SetLineWidth(2)
     h.SetFillColor(ROOT.kBlue-10)
     h.SetFillStyle(1001)
-    h.GetYaxis().SetRangeUser(0, 0.25)
-    h.GetYaxis().SetTitleOffset(1.2)
-    h.GetXaxis().SetTitleOffset(1.2)
+    h.GetYaxis().SetRangeUser(0, 0.30)
+    h.GetYaxis().SetTitleOffset(1.1)
+    h.GetXaxis().SetTitleOffset(1.1)
+    h.GetXaxis().SetTitleFont(43)
+    h.GetXaxis().SetLabelFont(43)
+    h.GetXaxis().SetTitleSize(26)    
+    h.GetXaxis().SetLabelSize(22)
+    h.GetYaxis().SetTitleFont(43)
+    h.GetYaxis().SetLabelFont(43)
+    h.GetYaxis().SetTitleSize(26)
+    h.GetYaxis().SetLabelSize(22)
     h.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
 
-    pave = ROOT.TPaveText(0.12, 0.88, 0.4, 0.55, "NB NDC")
+    pave = ROOT.TPaveText(0.15, 0.86, 0.4, 0.55, "NB NDC")
     pave.SetFillStyle(0)
     pave.SetBorderSize(0)
     pave.SetTextFont(43)
-    pave.SetTextSize(15)
+    pave.SetTextSize(20)
+    pave.SetTextAlign(11)
     pave.AddText("ALICE Work In Progress")
     pave.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     pave.AddText("316 M minimum-bias events")
@@ -100,8 +111,9 @@ def StatisticalUncertaintyData(file, config):
 
 def DetectorResponsePlots(file, config):
     simuPlot = ["ALICE Simulation", "PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV",
-                "Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5",
+                "Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4",
                 "with D^{0} #rightarrow K^{-}#pi^{+} and c.c.",
+                "|#eta_{jet}| < 0.5",
                 "2 < #it{p}_{T,D} < 24 GeV/#it{c}"]
     respList = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum", file)
     resp = respList["DetectorResponse"]
@@ -112,34 +124,51 @@ def DetectorResponsePlots(file, config):
     histList[2].SetTitle("18 < #it{p}_{T,ch jet}^{part} < 24 GeV/#it{c}")
     for h in histList:
         h.Scale(0.04)
-    (blank, c) = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}", "Probability density #times bin width (0.04)",
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}", "Probability density #times bin width (0.04)",
                                [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross], [1.0, 1.0, 1.4], simuPlot)
     blank.GetYaxis().SetRangeUser(0, 0.72)
     blank.GetXaxis().SetRangeUser(-0.8, 0.8)
-    blank.GetXaxis().SetTitleOffset(1.4)
-    c.SetBottomMargin(0.15)
+    blank.GetXaxis().SetTitleOffset(1.3)
+    blank.GetYaxis().SetTitleOffset(1.0)
+    c.SetBottomMargin(0.17)
     
     histList = [respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_EnergyScaleShift"], respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_EnergyScaleShiftMedian"]]
     histList[0].SetTitle("Mean")
     histList[1].SetTitle("Median")
-    (blank, c) = PlotMultiHistogram(histList, "HQ16_Simulation_EnergyScaleShift", "#it{p}_{T,ch jet}^{part} (GeV/#it{c})", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}",
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EnergyScaleShift", "#it{p}_{T,ch jet}^{part} (GeV/#it{c})", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}",
                                [ROOT.kBlue+2, ROOT.kRed+2], [ROOT.kFullCircle, ROOT.kFullSquare], [1.0, 1.0], simuPlot)
-    blank.GetYaxis().SetRangeUser(-0.07, 0.08)
-    blank.GetXaxis().SetTitleOffset(1.4)
-    blank.GetYaxis().SetTitleOffset(1.4)
+    blank.GetYaxis().SetRangeUser(-0.07, 0.1)
+    blank.GetXaxis().SetTitleOffset(1.3)
+    blank.GetYaxis().SetTitleOffset(1.3)
+    c.SetLeftMargin(0.15)
+    c.SetBottomMargin(0.16)
+    leg.SetTextSize(28)
+    c.Update()
+    leg.SetX1NDC(0.65)
+    leg.SetX2NDC(0.95)
+    leg.SetY1NDC(0.70)
+    leg.SetY2NDC(0.85)
+    pave.SetX1NDC(0.17)
+    pave.SetX2NDC(0.56)
 
     histList = [respList["D0_Jet_AKTChargedR040_pt_scheme_D_Tagged_Jet_Spectrum_DetectorResponse_Resolution"]]
     histList[0].SetTitle("Resolution")
-    (blank, c) = PlotMultiHistogram(histList, "HQ16_Simulation_Resolution", "#it{p}_{T,ch jet}^{part} (GeV/#it{c})", "#sigma#[]{#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}}",
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_Resolution", "#it{p}_{T,ch jet}^{part} (GeV/#it{c})", "#sigma#[]{#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}}",
                                [ROOT.kBlue+2], [ROOT.kFullCircle], [1.0], simuPlot)
-    blank.GetYaxis().SetRangeUser(0.05, 0.18)
-    blank.GetXaxis().SetTitleOffset(1.4)
-    blank.GetYaxis().SetTitleOffset(1.4)
+    blank.GetYaxis().SetRangeUser(0.07, 0.18)
+    blank.GetXaxis().SetTitleOffset(1.3)
+    blank.GetYaxis().SetTitleOffset(1.3)
+    c.SetLeftMargin(0.15)
+    c.SetBottomMargin(0.16)
+    c.Update()
+    pave.SetX1NDC(0.17)
+    pave.SetX2NDC(0.56)
 
 def EfficiencyPlots(file, config):
     simuPlot = ["ALICE Simulation", "PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV",
-                "Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5",
-                "with D^{0} #rightarrow K^{-}#pi^{+} and c.c."]
+                "Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4",
+                "with D^{0} #rightarrow K^{-}#pi^{+} and c.c.",
+                "|#eta_{jet}| < 0.5"]
     ptEff = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Spectra", file)
     histList = [ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_800"], 
                 ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_800_1300"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_1300_2400"]]
@@ -147,10 +176,10 @@ def EfficiencyPlots(file, config):
     histList[1].SetTitle("5 < #it{p}_{T,ch jet} < 8 GeV/#it{c}")
     histList[2].SetTitle("8 < #it{p}_{T,ch jet} < 13 GeV/#it{c}")
     histList[3].SetTitle("13 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
-    (blank,c) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-Tagged Jet Efficiency",
                        [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], simuPlot)
     blank.GetXaxis().SetRangeUser(2, 24)
-    (blank,c) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt_LogScale", "#it{p}_{T,D} (GeV/#it{c})", "D-tagged Jet Efficiency",
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt_LogScale", "#it{p}_{T,D} (GeV/#it{c})", "D-Tagged Jet Efficiency",
                        [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], None,True)
     blank.GetYaxis().SetRangeUser(2e-3, 9)
 
@@ -179,7 +208,7 @@ def PlotSpectra(file, suffix=""):
 def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, markers=None, markerSizes=None, simuPlot=None, logY=False):
     c = ROOT.TCanvas(cname, cname)
     c.SetLeftMargin(0.12)
-    c.SetBottomMargin(0.12)
+    c.SetBottomMargin(0.13)
     c.SetTopMargin(0.08)
     c.SetRightMargin(0.08)
     c.SetTicks(1,1)
@@ -190,17 +219,17 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
     canvases.append(c)
     blank = ROOT.TH1D("blankHist", "blankHist;{0};{1}".format(xaxisTitle, yaxisTitle), 100, histList[0].GetXaxis().GetXmin(), histList[0].GetXaxis().GetXmax())
     blank.GetXaxis().SetTitleFont(43)
-    blank.GetXaxis().SetTitleOffset(1.2)
-    blank.GetXaxis().SetTitleSize(19)
+    blank.GetXaxis().SetTitleOffset(1.15)
+    blank.GetXaxis().SetTitleSize(24)
     blank.GetXaxis().SetLabelFont(43)
     blank.GetXaxis().SetLabelOffset(0.009)
-    blank.GetXaxis().SetLabelSize(18)
+    blank.GetXaxis().SetLabelSize(21)
     blank.GetYaxis().SetTitleFont(43)
-    blank.GetYaxis().SetTitleOffset(1.2)
-    blank.GetYaxis().SetTitleSize(19)
+    blank.GetYaxis().SetTitleOffset(1.15)
+    blank.GetYaxis().SetTitleSize(24)
     blank.GetYaxis().SetLabelFont(43)
     blank.GetYaxis().SetLabelOffset(0.009)
-    blank.GetYaxis().SetLabelSize(18)
+    blank.GetYaxis().SetLabelSize(21)
     blank.Draw("AXIS")
     globalList.append(blank)
     if not colors:
@@ -211,11 +240,11 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
         markerSizes = [1.0]*len(markers)
     max = 0;
     min = 1e15
-    leg = ROOT.TLegend(0.55, 0.90-len(histList)*0.075, 0.90, 0.85)
+    leg = ROOT.TLegend(0.55, 0.90-len(histList)*0.075, 0.90, 0.90)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
     leg.SetTextFont(43)
-    leg.SetTextSize(19)
+    leg.SetTextSize(20)
     leg.SetMargin(0.15)
     for color,marker,markerSize,eff in zip(colors,markers,markerSizes,histList):
         h = eff.Clone()
@@ -242,17 +271,19 @@ def PlotMultiHistogram(histList, cname, xaxisTitle, yaxisTitle, colors=None, mar
         blank.GetYaxis().SetRangeUser(0, max*1.8)
 
     if simuPlot:
-        paveALICE = ROOT.TPaveText(0.13, 0.64, 0.52, 0.90, "NB NDC")
+        paveALICE = ROOT.TPaveText(0.13, 0.90-len(simuPlot)*0.06, 0.52, 0.90, "NB NDC")
         globalList.append(paveALICE)
         paveALICE.SetBorderSize(0)
         paveALICE.SetFillStyle(0)
         paveALICE.SetTextFont(43)
-        paveALICE.SetTextSize(17)
+        paveALICE.SetTextSize(22)
         paveALICE.SetTextAlign(13)
         for t in simuPlot:
             paveALICE.AddText(t)
         paveALICE.Draw()
-    return blank, c
+    else:
+        paveALICE = None
+    return blank, c, leg, paveALICE
 
 def CompareUncertainties(file, fileW, config, suffix):
     LSlist = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign", file)
@@ -275,7 +306,7 @@ def CompareUncertainties(file, fileW, config, suffix):
            IMlist_eff["D0_D_Tagged_Jet_PtD_20_Spectrum_Unc"]]
     colors = [ROOT.kBlue+2, ROOT.kGreen+2,
               ROOT.kBlue+2]
-    titles = ["Inv.Mass Fit", "Like-sign Method",
+    titles = ["Inv.Mass Fit", "Like-Sign Method",
               "Inv.Mass Fit w/ eff."]
     lineStyles = [1,1,
                   2]
@@ -285,32 +316,32 @@ def CompareUncertainties(file, fileW, config, suffix):
         cname = "HQ16_Simulation_UncertaintyComparison"
     c = ROOT.TCanvas(cname, cname, 650, 500)
     c.SetTicks(1,1)
-    c.SetBottomMargin(0.12)
+    c.SetBottomMargin(0.15)
+    c.SetLeftMargin(0.14)
     canvases.append(c)
     globalList.append(c)
 
     h = unc[0].DrawCopy("AXIS")
     globalList.append(h)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleSize(19)
+    h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
-    h.GetYaxis().SetLabelSize(18)
+    h.GetYaxis().SetLabelSize(22)
     h.GetYaxis().SetTitleOffset(1.1)
     h.GetXaxis().SetTitleFont(43)
-    h.GetXaxis().SetTitleSize(19)
+    h.GetXaxis().SetTitleSize(26)
     h.GetXaxis().SetLabelFont(43)
-    h.GetXaxis().SetLabelSize(18)
+    h.GetXaxis().SetLabelSize(22)
     h.GetXaxis().SetTitleOffset(1.2)
     h.GetYaxis().SetRangeUser(0, 0.50)
     h.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
 
-    leg1 = ROOT.TLegend(0.13, 0.45, 0.55, 0.58, "", "NB NDC")
+    leg1 = ROOT.TLegend(0.18, 0.40, 0.55, 0.58, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
-    leg1.SetTextSize(19)
-    leg1.SetTextAlign(13)
+    leg1.SetTextSize(22)
     leg1.SetMargin(0.1)
 
     for s,color,lineStyle,title in zip(unc,colors,lineStyles,titles):
@@ -322,18 +353,18 @@ def CompareUncertainties(file, fileW, config, suffix):
         h.SetFillStyle(0)
         leg1.AddEntry(h, title, "l")
 
-    paveALICE = ROOT.TPaveText(0.11, 0.69, 0.50, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.16, 0.62, 0.50, 0.88, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(17)
+    paveALICE.SetTextSize(18)
     paveALICE.SetTextAlign(13)
     paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("350 M minimum-bias events")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-    paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+    paveALICE.AddText("2 < #it{p}_{T,D} < 24 GeV/#it{c}, |#eta_{jet}| < 0.5")
     paveALICE.Draw()
 
     leg1.Draw()
@@ -362,6 +393,7 @@ def CompareMethods(file, config):
     padMain = c.cd(1)
     padMain.SetPad(0, 0.35, 1, 1)
     padMain.SetBottomMargin(0)
+    padMain.SetLeftMargin(0.11)
     padMain.SetTicks(1,1)
     hS = Tspectrum.DrawCopy("hist")
     globalList.append(hS)
@@ -370,15 +402,16 @@ def CompareMethods(file, config):
     hS.SetFillStyle(1001)
     hS.GetYaxis().SetRangeUser(0.001,1100)
     hS.GetYaxis().SetTitleFont(43)
-    hS.GetYaxis().SetTitleSize(19)
+    hS.GetYaxis().SetTitleSize(26)
     hS.GetYaxis().SetLabelFont(43)
-    hS.GetYaxis().SetLabelSize(18)
-    hS.GetYaxis().SetTitleOffset(1.6)
+    hS.GetYaxis().SetLabelSize(22)
+    hS.GetYaxis().SetTitleOffset(1.4)
 
     padRatio = c.cd(2)
     padRatio.SetPad(0, 0., 1, 0.35)
     padRatio.SetTopMargin(0)
-    padRatio.SetBottomMargin(0.25)
+    padRatio.SetBottomMargin(0.27)
+    padRatio.SetLeftMargin(0.11)
     padRatio.SetTicks(1,1)
     hSratio = Tspectrum.DrawCopy("hist")
     globalList.append(hSratio)
@@ -388,15 +421,15 @@ def CompareMethods(file, config):
     hSratio.SetLineStyle(2)
     hSratio.SetLineWidth(2)
     hSratio.GetXaxis().SetTitleFont(43)
-    hSratio.GetXaxis().SetTitleSize(19)
+    hSratio.GetXaxis().SetTitleSize(26)
     hSratio.GetXaxis().SetLabelFont(43)
-    hSratio.GetXaxis().SetLabelSize(18)
+    hSratio.GetXaxis().SetLabelSize(22)
     hSratio.GetYaxis().SetTitleFont(43)
-    hSratio.GetYaxis().SetTitleSize(19)
+    hSratio.GetYaxis().SetTitleSize(26)
     hSratio.GetYaxis().SetLabelFont(43)
-    hSratio.GetYaxis().SetLabelSize(18)
-    hSratio.GetYaxis().SetTitleOffset(1.6)
-    hSratio.GetXaxis().SetTitleOffset(3.4)
+    hSratio.GetYaxis().SetLabelSize(22)
+    hSratio.GetYaxis().SetTitleOffset(1.4)
+    hSratio.GetXaxis().SetTitleOffset(2.9)
     hSratio.GetXaxis().SetTitle("#it{p}_{T,ch jet}^{det} (GeV/#it{c})")
     hSratio.GetYaxis().SetTitle("ratio")
     hSratio.GetYaxis().SetNdivisions(504)
@@ -417,15 +450,16 @@ def CompareMethods(file, config):
     markers = [ROOT.kFullSquare, ROOT.kFullCircle, ROOT.kFullCross]
     sizes = [1.2, 1.1, 1.2]
     fillStyles = [3002, 3245, 3254]
-    titles = ["Inv.Mass Fit", "Side-band Method", "Like-sign Method"]
+    titles = ["Inv.Mass Fit", "Side-Band Method", "Like-Sign Method"]
     
-    leg1 = ROOT.TLegend(0.52, 0.28, 0.96, 0.49, "", "NB NDC")
+    leg1 = ROOT.TLegend(0.50, 0.23, 0.96, 0.49, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
-    leg1.SetTextSize(19)
+    leg1.SetTextSize(25)
     leg1.SetTextAlign(13)
+    leg1.SetMargin(0.2)
     leg1.AddEntry(hS, "MC truth", "f")
 
     for s,color,marker,fillStyle,title,size in zip(spectra,colors,markers,fillStyles,titles,sizes):
@@ -465,7 +499,7 @@ def CompareMethods(file, config):
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(17)
+    paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
     paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
