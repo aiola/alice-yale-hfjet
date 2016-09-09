@@ -59,6 +59,12 @@ def main(actions, output_path, output_type):
         PlotSpectra(file)
         PlotSpectra(fileW, "Eff")
 
+    if "invmassSB" in actions:
+        InvMassPlots(file, config, "SB")
+
+    if "invmassLS" in actions:
+        InvMassPlots(file, config, "LS")
+
     for c in canvases:
         c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
 
@@ -523,20 +529,20 @@ def CalculateChi2(h):
     chi2Avg = (avg - 1)**2 / avgErr2
     return chi2, chi2Avg
 
-def InvMassPlots(file, config):
+def InvMassPlots(file, config, type=""):
     spectrumSB = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_SideBand", file)
     spectrumLS = LoadHistograms("D0_D_Tagged_Jet_PtD_20_Spectrum_LikeSign", file)
     invMass = LoadHistograms("D0_DPtBins_PtD_20", file)
     invMassLS = LoadHistograms("2ProngLikeSign_DPtBins_PtD_20", file)
     
-    PlotInvMass(invMass, invMassLS, spectrumSB, spectrumLS, config)
+    PlotInvMass(invMass, invMassLS, spectrumSB, spectrumLS, config, type)
 
-def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrumPlotListLS, config):
+def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrumPlotListLS, config, type):
     #bins = ["200_300", "600_700", "1200_1600"]
     bins = ["600_700"]
     #binTitles = ["2 < #it{p}_{T,D} < 3 GeV/#it{c}", "6 < #it{p}_{T,D} < 7 GeV/#it{c}", "12 < #it{p}_{T,D} < 16 GeV/#it{c}"]
     binTitles = ["6 < #it{p}_{T,D} < 7 GeV/#it{c}"]
-    cname = "HQ16_Simulation_InvMassSB"
+    cname = "HQ16_Simulation_InvMass{0}".format(type)
     c = ROOT.TCanvas(cname, cname, len(bins)*400, 400)
     canvases.append(c)
     c.Divide(len(bins), 1)
@@ -559,16 +565,22 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
         h.GetXaxis().SetTitle("#it{M}_{K#pi} (GeV/#it{c}^{2})")
         h.GetYaxis().SetTitle("arb. units")
 
-        (h1, h2, hsig) = PlotInvMassSideBands(invMassHistoSB, invMassHistoSig)
+        if not type or type == "SB":
+            (h1, h2, hsig) = PlotInvMassSideBands(invMassHistoSB, invMassHistoSig)
+        else:
+            (h1, h2, hsig) = (None, None, None)
 
         invMassHisto_copy = invMassHisto.DrawCopy("same")
         globalList.append(invMassHisto_copy)
         
-        invMassHistoLS_copy = invMassHistoLS.DrawCopy("same hist")
-        invMassHistoLS_copy.SetFillStyle(0)
-        invMassHistoLS_copy.SetLineColor(ROOT.kGreen+2)
-        invMassHistoLS_copy.SetLineStyle(1)
-        invMassHistoLS_copy.SetLineWidth(2)
+        if not type or type == "LS":
+            invMassHistoLS_copy = invMassHistoLS.DrawCopy("same hist")
+            invMassHistoLS_copy.SetFillStyle(0)
+            invMassHistoLS_copy.SetLineColor(ROOT.kGreen+2)
+            invMassHistoLS_copy.SetLineStyle(1)
+            invMassHistoLS_copy.SetLineWidth(2)
+        else:
+            invMassHistoLS_copy = None
 
         h.SetMaximum(invMassHisto_copy.GetMaximum()*1.3)
         h.GetXaxis().SetTitleFont(43)
@@ -604,7 +616,8 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(14)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Simulation")
+    if not type:
+        paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
 
@@ -616,11 +629,13 @@ def PlotInvMass(invMassPlotList, invMassPlotListLS, spectrumPlotListSB, spectrum
     leg1.SetTextSize(14)
     leg1.SetTextAlign(13)
     leg1.AddEntry(invMassHisto_copy, "Unlike Sign", "pe")
-    leg1.AddEntry(invMassHistoLS_copy, "Like Sign", "f")
+    if invMassHistoLS_copy:
+        leg1.AddEntry(invMassHistoLS_copy, "Like Sign", "f")
     leg1.AddEntry(invMassFitter.GetFitFunction(), "Fit Sig+Bkg", "l")
     leg1.AddEntry(invMassFitter.GetBkgFunction(), "Fit Bkg-only", "l")
-    leg1.AddEntry(hsig, "Signal Window", "f")
-    leg1.AddEntry(h1, "S-B Window", "f")
+    if hsig and h1:
+        leg1.AddEntry(hsig, "Signal Window", "f")
+        leg1.AddEntry(h1, "S-B Window", "f")
     leg1.Draw()
 
 def PlotInvMassSideBands(sideBandWindowHisto, signalWindowHisto):
