@@ -132,7 +132,7 @@ def DetectorResponsePlots(file, config):
         h.Scale(0.04)
     (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_DetectorResponse", "#(){#it{p}_{T,ch jet}^{det} #minus #it{p}_{T,ch jet}^{part}} / #it{p}_{T,ch jet}^{part}", "Probability density #times bin width (0.04)",
                                [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross], [1.0, 1.0, 1.4], simuPlot)
-    blank.GetYaxis().SetRangeUser(0, 0.72)
+    blank.GetYaxis().SetRangeUser(0, 0.75)
     blank.GetXaxis().SetRangeUser(-0.8, 0.8)
     blank.GetXaxis().SetTitleOffset(1.3)
     blank.GetYaxis().SetTitleOffset(1.0)
