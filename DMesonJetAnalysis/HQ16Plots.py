@@ -176,17 +176,17 @@ def EfficiencyPlots(file, config):
                 "with D^{0} #rightarrow K^{-}#pi^{+} and c.c.",
                 "|#eta_{jet}| < 0.5"]
     ptEff = LoadHistograms("D0_Jet_AKTChargedR040_pt_scheme_D_Spectra", file)
-    histList = [ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_800"], 
-                ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_800_1300"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_1300_2400"]]
-    histList[0].SetTitle("5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
-    histList[1].SetTitle("5 < #it{p}_{T,ch jet} < 8 GeV/#it{c}")
-    histList[2].SetTitle("8 < #it{p}_{T,ch jet} < 13 GeV/#it{c}")
-    histList[3].SetTitle("13 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
-    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D-Tagged Jet Efficiency",
-                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], simuPlot)
+    histList = [ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_800"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_800_1300"], 
+                ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_1300_2400"], ptEff["D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400"]]
+    histList[0].SetTitle("5 < #it{p}_{T,ch jet} < 8 GeV/#it{c}")
+    histList[1].SetTitle("8 < #it{p}_{T,ch jet} < 13 GeV/#it{c}")
+    histList[2].SetTitle("13 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
+    histList[3].SetTitle("5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}")
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt", "#it{p}_{T,D} (GeV/#it{c})", "D^{0} Efficiency #times Acceptance",
+                       [ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kBlue+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], simuPlot)
     blank.GetXaxis().SetRangeUser(2, 24)
-    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt_LogScale", "#it{p}_{T,D} (GeV/#it{c})", "D-Tagged Jet Efficiency",
-                       [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], None,True)
+    (blank, c, leg, pave) = PlotMultiHistogram(histList, "HQ16_Simulation_EfficiencyVsDPt_LogScale", "#it{p}_{T,D} (GeV/#it{c})", "D^{0} Efficiency #times Acceptance",
+                       [ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kBlue+2], [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenCross, ROOT.kOpenStar], [1.0, 1.0, 1.4, 1.5], None,True)
     blank.GetYaxis().SetRangeUser(2e-3, 9)
 
 def PlotSpectra(file, suffix=""):
