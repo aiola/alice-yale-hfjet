@@ -544,11 +544,15 @@ class Spectrum:
         self.fSignalWindowInvMassHistos = dict()
         self.fSideBandHistograms = None
         self.fSignalHistograms = None
+        self.fSideBandWindowTotalHistogram = None
+        self.fSignalWindowTotalHistogram = None
 
         # L-S analysis
         self.fLikeSignSubtractedBinSet = None
         self.fLikeSignHistograms = None
         self.fUnlikeSignHistograms = None
+        self.fLikeSignTotalHistogram = None
+        self.fUnlikeSignTotalHistogram = None
 
         if "title" in config:
             self.fTitle = config["title"]
