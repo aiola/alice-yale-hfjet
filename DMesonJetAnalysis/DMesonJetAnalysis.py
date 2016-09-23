@@ -513,7 +513,7 @@ class DMesonJetAnalysisEngine:
                 LS_sub_bin.fInvMassHisto.Add(LSbin.fInvMassHisto, -1)
                 LS_sub_bin.fMassFitter = None
                 
-            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions)
+            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.8)
             self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
 
         s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
@@ -723,7 +723,7 @@ class DMesonJetAnalysisEngine:
         for binSet in self.fBinMultiSet.fBinSets.itervalues():
             self.FitInvMassPlotsBinSet(binSet.fName,binSet.fBins,binSet.fFitOptions)
 
-    def FitInvMassPlotsBinSet(self,name,bins,fitOptions):
+    def FitInvMassPlotsBinSet(self,name,bins,fitOptions,initialSigOverBkg=0.1):
         pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
 
         for i,bin in enumerate(bins):
@@ -738,7 +738,7 @@ class DMesonJetAnalysisEngine:
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
-            fitter.GetFitFunction().SetParameter(2, integral / 10) # signal integral (start with small signal)
+            fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg) # signal integral (start with small signal)
             fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
