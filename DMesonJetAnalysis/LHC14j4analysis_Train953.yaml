@@ -35,6 +35,22 @@ analysis:
       variable: fPt
       min: 2.0
   -
+    name: JetPtBins_ZJet_01
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.1
+  -
     name: DPtBins_PtD_20
     active: yes
     efficiency: no
@@ -48,6 +64,24 @@ analysis:
       max: 0.5
     bin_count_analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: DPtBins_ZJet_01
+    active: yes
+    efficiency: no
+    bins:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.1
+    bin_count_analysis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
   spectra:
   -
     name: D_Tagged_Jet_PtD_20_Spectrum
@@ -57,10 +91,24 @@ analysis:
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
-    name: D_Pt_Spectrum
+    name: D_Tagged_Jet_ZJet_01_Spectrum
+    title: "Inv.Mass Fit, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [JetPtBins_ZJet_01]
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Pt_Spectrum_PtD_20
     title: "|#eta_{jet}| < 0.5"
     active: yes
     bins: [DPtBins_PtD_20]
+    axis:
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Pt_Spectrum_ZJet_01
+    title: "|#eta_{jet}| < 0.5, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
     axis:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
   -
@@ -73,10 +121,31 @@ analysis:
       max_signal_sigmas: 2
     bins: [DPtBins_PtD_20]
   -
+    name: D_Tagged_Jet_ZJet_01_Spectrum_SideBand
+    title: "SB method, #it{z}_{||,D} > 0.1"
+    active: yes
+    side_band:
+      min_sigmas: 4
+      max_sigmas: 8
+      max_signal_sigmas: 2
+    bins: [DPtBins_ZJet_01]
+  -
     name: D_Tagged_Jet_PtD_20_Spectrum_LikeSign
     title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
     bins: [DPtBins_PtD_20]
+    like_sign:
+      name: 2ProngLikeSign
+      min_sigmas: 0
+      max_sigmas: 0
+      max_signal_sigmas: 2
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Tagged_Jet_ZJet_01_Spectrum_LikeSign
+    title: "LS method, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
     like_sign:
       name: 2ProngLikeSign
       min_sigmas: 0
