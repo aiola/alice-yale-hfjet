@@ -81,12 +81,11 @@ class DMesonJetAnalysisEngine:
             maxFitRange = self.fMaxMass
             startingSigma = 0.01
             startingSigmaBkg = -1
-            massFitTypeSig = ROOT.MassFitter.kGaus
-            massFitTypeBkg = ROOT.MassFitter.kExpo
+            DMesonType = ROOT.MassFitter.kDzeroKpi
         elif self.fDMeson == "DStar":
             print("Not implemented for DStar!")
 
-        fitter = ROOT.MassFitter(name, massFitTypeSig, massFitTypeBkg, minMass, maxMass)
+        fitter = ROOT.MassFitter(name, DMesonType, minMass, maxMass)
         fitter.GetFitFunction().SetParameter(1, startingSigmaBkg)
         fitter.GetFitFunction().SetParameter(4, startingSigma)
         fitter.SetFitRange(minFitRange, maxFitRange)
@@ -413,8 +412,14 @@ class DMesonJetAnalysisEngine:
 
             for (LS_sub_bin, LSbin, bin) in zip(s.fLikeSignSubtractedBinSet.fBins, eng_LS.fBinMultiSet.fBinSets[binSetName].fBins, self.fBinMultiSet.fBinSets[binSetName].fBins):
                 # Calculate the projections in the peak area for L-S and U-S
-                binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
-                binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
+                if bin.fMassFitter.FitSuccessfull():
+                    sigma = bin.fMassFitter.GetSignalWidth()
+                    mean = bin.fMassFitter.GetSignalMean()
+                else:
+                    sigma = s.fBackupSigma
+                    mean = s.fBackupMean                   
+                binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
+                binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
                 sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
                 LStotal = LSbin.fBinCountAnalysisHisto.ProjectionY("{0}_LikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
 
@@ -428,10 +433,10 @@ class DMesonJetAnalysisEngine:
                 # Two methods to normalize the background
                 # Method 1: use the side-bands
                 if s.fSideBandMaxSigmas > s.fSideBandMinSigmas:
-                    binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
+                    binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
+                    binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
+                    binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas*sigma)
+                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
                     if binSBL_1 < 1:
                         binSBL_1 = 1
                     if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
@@ -470,7 +475,9 @@ class DMesonJetAnalysisEngine:
                         LStotal.SetBinError(xbin, error)
                         LStotal.SetBinContent(xbin, cont)
                 # Method 2: use the peak area
-                else:
+                elif s.fBinCountNormSignalSigmas > 0:
+                    if not bin.fMassFitter.FitSuccessfull():
+                        continue
                     LStotalIntegralError = ROOT.Double(0)
                     LStotalIntegral = LStotal.IntegralAndError(0, -1, LStotalIntegralError)
                     if LStotalIntegral > 0:
@@ -489,6 +496,10 @@ class DMesonJetAnalysisEngine:
                         bkgNorm = peakAreaBkg / LStotalIntegral
                         # this is only a rough estimate
                         bkgNorm_err = ((peakAreaBkgError/peakAreaBkg)**2 + (LStotalIntegralError/LStotalIntegral)**2) * bkgNorm
+                # no background normalization
+                else:
+                    bkgNorm = 1
+                    bkgNorm_err = 0
 
                 print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
                 integralError = ROOT.Double(0.)
@@ -551,25 +562,25 @@ class DMesonJetAnalysisEngine:
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
                 else:
-                    binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMinSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fSideBandMaxSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() - s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
-                    binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(bin.fMassFitter.GetSignalMean() + s.fBinCountSignalSigmas*bin.fMassFitter.GetSignalWidth())
+                    if bin.fMassFitter.FitSuccessfull():
+                        sigma = bin.fMassFitter.GetSignalWidth()
+                        mean = bin.fMassFitter.GetSignalMean()
+                    else:
+                        sigma = s.fBackupSigma
+                        mean = s.fBackupMean    
 
-                    if binSBL_1 < 1:
-                        binSBL_1 = 1
-                    if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
-                        binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
-                    sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
-                    sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
-                    sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
-                    sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
-                    sbTotal.Add(sbR)
+                    binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
+                    binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
+                    binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas*sigma)
+                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
+                    binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
+                    binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
 
                     sideBandWindowInvMassHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
                     signalWindowInvMassHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
+
+                    if not bin.fMassFitter.FitSuccessfull():
+                        continue
 
                     for xbin in range(0,bin.fInvMassHisto.GetNbinsX()+2):
                         if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
@@ -580,6 +591,16 @@ class DMesonJetAnalysisEngine:
                             signalWindowInvMassHisto.SetBinError(xbin, 0)
                     s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
                     s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
+
+                    if binSBL_1 < 1:
+                        binSBL_1 = 1
+                    if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
+                        binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
+                    sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
+                    sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
+                    sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+                    sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
+                    sbTotal.Add(sbR)
 
                     peakAreaBkgError = ROOT.Double(0.)
                     peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
@@ -680,16 +701,12 @@ class DMesonJetAnalysisEngine:
         print("GenerateSpectrum3D not implemented!")
                 
     def DrawFitResults(self,bin):
-        if bin.fMassFitter is None:
+        if bin.fMassFitter is None or not bin.fMassFitter.FitSuccessfull():
             return
-        
+
         bin.fMassFitter.Draw("same");
-        
-        fitStatus = int(bin.fMassFitter.GetFitStatus())
-        if fitStatus == 0:
-            chi2Text = bin.fMassFitter.GetChisquareString().Data()
-        else:
-            chi2Text = "Fit failed"
+
+        chi2Text = bin.fMassFitter.GetChisquareString().Data()
 
         paveSig = ROOT.TPaveText(0.165, 0.795, 0.490, 0.92, "NB NDC")
         globalList.append(paveSig)

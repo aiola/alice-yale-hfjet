@@ -32,6 +32,9 @@ MassFitter::MassFitter() :
   fFunction(0),
   fFunctionBkg(0),
   fHistogram(0),
+  fFitSuccessfull(kFALSE),
+  fPDGMass(0),
+  fMaxAllowedWidth(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Default constructor.
@@ -40,10 +43,10 @@ MassFitter::MassFitter() :
 }
 
 //____________________________________________________________________________________
-MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb, Double_t minMass, Double_t maxMass) :
+MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t maxMass) :
   TNamed(name, name),
-  fMassFitTypeSig(ts),
-  fMassFitTypeBkg(tb),
+  fMassFitTypeSig(kGaus),
+  fMassFitTypeBkg(kExpo),
   fMean(0.),
   fMeanError(0.),
   fWidth(0.),
@@ -62,9 +65,28 @@ MassFitter::MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb,
   fFunction(0),
   fFunctionBkg(0),
   fHistogram(0),
+  fFitSuccessfull(kFALSE),
+  fPDGMass(0),
+  fMaxAllowedWidth(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Standard constructor.
+
+  switch (m) {
+  case kDzeroKpi:
+    fPDGMass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    fMaxAllowedWidth = 0.03;
+    fMassFitTypeSig = kGaus;
+    fMassFitTypeBkg = kExpo;
+    break;
+
+  case kDstarKpipi:
+    fPDGMass = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+    fMaxAllowedWidth = 0.03;
+    fMassFitTypeSig = kGaus;
+    fMassFitTypeBkg = kExpoPower;
+    break;
+  }
 
   Reset();
 }
@@ -181,6 +203,8 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
 
   fFitResult = fHistogram->Fit(fFunction, opt, "", fMinFitRange, fMaxFitRange);
 
+  fFitSuccessfull = (Int_t(fFitResult) == 0);
+
   if (!fDisableSig) {
     fMean = fFunction->GetParameter(fNParBkg+1);
     fMeanError = fFunction->GetParError(fNParBkg+1);
@@ -193,6 +217,15 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
     }
     fFunctionBkg->SetParameter(0, fFunction->GetParameter(0) - fFunction->GetParameter(fNParBkg));
+  }
+
+  if (fFitSuccessfull) {
+    if (TMath::Abs(fMean - fPDGMass) > 4 * fMeanError) {
+      fFitSuccessfull = kFALSE;
+    }
+    if (fWidth > fMaxAllowedWidth) {
+      fFitSuccessfull = kFALSE;
+    }
   }
 
   return fFitResult;
