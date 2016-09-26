@@ -563,11 +563,16 @@ class Spectrum:
             self.fSideBandMinSigmas = config["side_band"]["min_sigmas"]
             self.fSideBandMaxSigmas = config["side_band"]["max_sigmas"]
             self.fBinCountSignalSigmas = config["side_band"]["max_signal_sigmas"]
+            self.fBackupSigma = config["side_band"]["backup_sigma"]
+            self.fBackupMean = config["side_band"]["backup_mean"]
         elif "like_sign" in config:
             self.fAnalysisType = AnalysisType.LikeSign
             self.fSideBandMinSigmas = config["like_sign"]["min_sigmas"]
             self.fSideBandMaxSigmas = config["like_sign"]["max_sigmas"]
             self.fBinCountSignalSigmas = config["like_sign"]["max_signal_sigmas"]
+            self.fBinCountNormSignalSigmas = config["like_sign"]["max_signal_norm_sigmas"]
+            self.fBackupSigma = config["like_sign"]["backup_sigma"]
+            self.fBackupMean = config["like_sign"]["backup_mean"]
             self.fLikeSignTree = config["like_sign"]["name"]
         else:
             self.fAnalysisType = AnalysisType.InvMassFit

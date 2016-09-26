@@ -16,14 +16,16 @@ class MassFitter : public TNamed {
  public:
   enum EMassFitTypeSig { kGaus };
   // Gaus = a / (sqrt(2pi)*c) * exp(-1/2*((x-b)^2/c^2))  -> integral is a
-  enum EMassFitTypeBkg { kExpo, kExpoPower };  //
+  enum EMassFitTypeBkg { kExpo, kExpoPower };
   // Expo = ab * exp(bx) -> integral = a*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
   // ExpoPower = a * sqrt(b^3*(x - mpi)) * exp(-b*(x-mpi)) -> integral = a * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
+
+  enum EMeson { kDzeroKpi, kDstarKpipi };
 
   static const Double_t fgkEpsilon;
   
   MassFitter();
-  MassFitter(const char* name, EMassFitTypeSig ts, EMassFitTypeBkg tb, Double_t minMass, Double_t maxMass);
+  MassFitter(const char* name, EMeson m, Double_t minMass, Double_t maxMass);
 
   ~MassFitter();
 
@@ -77,6 +79,7 @@ class MassFitter : public TNamed {
   TH1*     GetFitHistogram()                         const { return fHistogram    ; }
 
   TFitResultPtr GetFitStatus()                       const { return fFitResult    ; }
+  Bool_t        FitSuccessfull()                     const { return fFitSuccessfull; }
 
   void     DivideByBinWidth();
   void     NormalizeBackground();
@@ -112,6 +115,9 @@ class MassFitter : public TNamed {
   TF1*              fFunction          ;//  Fit function
   TF1*              fFunctionBkg       ;//  Bkg function
   TH1*              fHistogram         ;//  Histogram to be fitted
+  Bool_t            fFitSuccessfull    ;//  Whether the fit was successful
+  Double_t          fPDGMass           ;//  PDG mass
+  Double_t          fMaxAllowedWidth   ;//  Maximum allowed width of the signal peak
   const Double_t    fPionMass          ;//! Pion mass 
   
  private:

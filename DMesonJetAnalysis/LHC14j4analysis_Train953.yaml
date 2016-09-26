@@ -99,18 +99,33 @@ analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Pt_Spectrum_PtD_20
-    title: "|#eta_{jet}| < 0.5"
+    title: "Inv.Mass Fit"
     active: yes
     bins: [DPtBins_PtD_20]
     axis:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
   -
     name: D_Pt_Spectrum_ZJet_01
-    title: "|#eta_{jet}| < 0.5, #it{z}_{||,D} > 0.1"
+    title: "Inv.Mass Fit, #it{z}_{||,D} > 0.1"
     active: yes
     bins: [DPtBins_ZJet_01]
     axis:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Pt_Spectrum_ZJet_01_LikeSign
+    title: "LS method, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
+    like_sign:
+      name: 2ProngLikeSign
+      min_sigmas: 4
+      max_sigmas: 8
+      max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1864.84
+      backup_sigma: 0.015
+    axis:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum_SideBand
     title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
@@ -119,6 +134,8 @@ analysis:
       min_sigmas: 4
       max_sigmas: 8
       max_signal_sigmas: 2
+      backup_mean: 1864.84
+      backup_sigma: 0.015
     bins: [DPtBins_PtD_20]
   -
     name: D_Tagged_Jet_ZJet_01_Spectrum_SideBand
@@ -128,6 +145,8 @@ analysis:
       min_sigmas: 4
       max_sigmas: 8
       max_signal_sigmas: 2
+      backup_mean: 1864.84
+      backup_sigma: 0.015
     bins: [DPtBins_ZJet_01]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum_LikeSign
@@ -136,9 +155,12 @@ analysis:
     bins: [DPtBins_PtD_20]
     like_sign:
       name: 2ProngLikeSign
-      min_sigmas: 0
-      max_sigmas: 0
+      min_sigmas: 4
+      max_sigmas: 8
       max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1864.84
+      backup_sigma: 0.015
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
@@ -148,8 +170,11 @@ analysis:
     bins: [DPtBins_ZJet_01]
     like_sign:
       name: 2ProngLikeSign
-      min_sigmas: 0
-      max_sigmas: 0
+      min_sigmas: 4
+      max_sigmas: 8
       max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1864.84
+      backup_sigma: 0.015
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
