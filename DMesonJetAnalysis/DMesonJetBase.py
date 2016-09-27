@@ -873,5 +873,5 @@ class BinLimits:
         self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
         
         if self.fBinCountAnalysisAxis:
-            self.fBinCountAnalysisHisto = ROOT.TH2D(hname, htitle, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins)-1, array.array('d', self.fBinCountAnalysisAxis.fBins))
+            self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins)-1, array.array('d', self.fBinCountAnalysisAxis.fBins))
             self.fBinCountAnalysisHisto.Sumw2()

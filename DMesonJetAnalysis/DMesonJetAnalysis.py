@@ -441,7 +441,7 @@ class DMesonJetAnalysisEngine:
                         binSBL_1 = 1
                     if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
                         binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
-    
+
                     SB_L_err = ROOT.Double(0)
                     SB_L = bin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
                     SB_R_err = ROOT.Double(0)
@@ -455,14 +455,14 @@ class DMesonJetAnalysisEngine:
                     LS_SB_R = LSbin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
                     LS_SB_total = LS_SB_L + LS_SB_R
                     LS_SB_total_err = math.sqrt(LS_SB_L_err**2 + LS_SB_R_err**2)
-    
+
                     if LS_SB_total > 0:
                         bkgNorm = SB_total / LS_SB_total
                         bkgNorm_err = ((SB_total_err/SB_total)**2 + (LS_SB_total_err/LS_SB_total)**2) * bkgNorm
                     else:
                         bkgNorm = 0
                         bkgNorm_err = 0
-    
+
                     print("The background in side bands U-S is: {0} + {1} = {2}".format(SB_L, SB_R, SB_total))
                     print("The background in side bands L-S is: {0} + {1} = {2}".format(LS_SB_L, SB_R, LS_SB_total))
                     print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
@@ -520,11 +520,11 @@ class DMesonJetAnalysisEngine:
                 sig.SetTitle(bin.GetTitle())
                 s.fUnlikeSignHistograms.append(sig)
                 s.fUnlikeSignTotalHistogram.Add(sig)
-                
+
                 LS_sub_bin.fInvMassHisto.Add(LSbin.fInvMassHisto, -1)
                 LS_sub_bin.fMassFitter = None
-                
-            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.8)
+
+            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.7)
             self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
 
         s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
@@ -755,8 +755,12 @@ class DMesonJetAnalysisEngine:
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
-            fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg) # signal integral (start with small signal)
-            fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
+            if initialSigOverBkg < 1:
+                fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg) # signal integral (start with small signal)
+                fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
+            else:
+                fitter.GetFitFunction().SetParameter(2, integral) # signal integral (start with small signal)
+                fitter.GetFitFunction().SetParLimits(2, integral*(initialSigOverBkg-1), integral) # signal integral has to be contained in the total integral
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
 
