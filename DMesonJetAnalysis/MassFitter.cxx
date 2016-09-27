@@ -220,10 +220,12 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
   }
 
   if (fFitSuccessfull) {
-    if (TMath::Abs(fMean - fPDGMass) > 4 * fMeanError) {
+    if (TMath::Abs(fMean - fPDGMass) > 10 * fMeanError) {
+      Printf("Marking fit as unsuccessful because mean = %f +/- %f is far from PDG mass %f", fMean, fMeanError, fPDGMass);
       fFitSuccessfull = kFALSE;
     }
-    if (fWidth > fMaxAllowedWidth) {
+    if (fWidth - 3*fWidthError > fMaxAllowedWidth) {
+      Printf("Marking fit as unsuccessful because width = %f +/- %f is larger than %f", fWidth, fWidthError, fMaxAllowedWidth);
       fFitSuccessfull = kFALSE;
     }
   }
