@@ -526,6 +526,7 @@ class AnalysisType(Enum):
     InvMassFit = 1
     SideBand = 2
     LikeSign = 3
+    LikeSignFit = 4
 
 class Spectrum:
     def __init__(self, config, name, binSet=None):
@@ -566,7 +567,10 @@ class Spectrum:
             self.fBackupSigma = config["side_band"]["backup_sigma"]
             self.fBackupMean = config["side_band"]["backup_mean"]
         elif "like_sign" in config:
-            self.fAnalysisType = AnalysisType.LikeSign
+            if config["like_sign"]["mode"] == "bin_count":
+                self.fAnalysisType = AnalysisType.LikeSign
+            elif config["like_sign"]["mode"] == "fit":
+                self.fAnalysisType = AnalysisType.LikeSignFit
             self.fSideBandMinSigmas = config["like_sign"]["min_sigmas"]
             self.fSideBandMaxSigmas = config["like_sign"]["max_sigmas"]
             self.fBinCountSignalSigmas = config["like_sign"]["max_signal_sigmas"]

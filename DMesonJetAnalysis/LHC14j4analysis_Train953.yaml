@@ -114,12 +114,29 @@ analysis:
   -
     name: D_Pt_Spectrum_ZJet_01_LikeSign
     title: "LS method, #it{z}_{||,D} > 0.1"
-    active: no
+    active: yes
     bins: [DPtBins_ZJet_01]
     like_sign:
+      mode: bin_count
       name: 2ProngLikeSign
       min_sigmas: 4
       max_sigmas: 8
+      max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1.86484
+      backup_sigma: 0.015
+    axis:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Pt_Spectrum_ZJet_01_LikeSignFit
+    title: "LS method (fit), #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
+    like_sign:
+      mode: fit
+      name: 2ProngLikeSign
+      min_sigmas: 0
+      max_sigmas: 0
       max_signal_sigmas: 2
       max_signal_norm_sigmas: 0
       backup_mean: 1.86484
@@ -154,6 +171,7 @@ analysis:
     active: yes
     bins: [DPtBins_PtD_20]
     like_sign:
+      mode: bin_count
       name: 2ProngLikeSign
       min_sigmas: 4
       max_sigmas: 8
@@ -169,6 +187,7 @@ analysis:
     active: yes
     bins: [DPtBins_ZJet_01]
     like_sign:
+      mode: bin_count
       name: 2ProngLikeSign
       min_sigmas: 4
       max_sigmas: 8

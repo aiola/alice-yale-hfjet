@@ -347,50 +347,73 @@ class DMesonJetAnalysisEngine:
         s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
         s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
         s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
-        for binSetName in s.fBins:
-            for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
-                if bin.fMassFitter is None:
-                    print("The bin printed below does not have a mass fitter!")
-                    bin.Print()
-                    continue
-                if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
-                    w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
-                else:
-                    w = 1
-                xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
-                if "SignalOnly" in self.fDMeson:
-                    signal = bin.fInvMassHisto.Integral()*w
-                    signal_unc = math.sqrt(bin.fInvMassHisto.Integral())*w
-                else:
-                    signal = bin.fMassFitter.GetSignal()*w
-                    signal_unc = bin.fMassFitter.GetSignalError()*w
+        if s.fAnalysisType == AnalysisType.InvMassFit:
+            for binSetName in s.fBins:
+                for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
+                    self.ProcessInvMassFitSpectrumBin(s, bin, self.fBinMultiSet.fBinSets[binSetName])
+        elif s.fAnalysisType == AnalysisType.LikeSignFit:
+            if not s.fLikeSignSubtractedBinSet:
+                print("No LS subtracted invariant mass bin sets was found!")
+                return
+            for bin in s.fLikeSignSubtractedBinSet.fBins:
+                self.ProcessInvMassFitSpectrumBin(s, bin, s.fLikeSignSubtractedBinSet)
 
-                s.fHistogram.SetBinContent(xbin, signal)
-                s.fHistogram.SetBinError(xbin, signal_unc)
-                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
-                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
-                s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
-                s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
-                s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
-                s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
-                s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet):
+        if bin.fMassFitter is None:
+            print("The bin printed below does not have a mass fitter!")
+            bin.Print()
+            return
+        if not bin.fMassFitter.FitSuccessfull():
+            print("The bin printed below does not have a successful invariant mass fit!")
+            bin.Print()
+            return            
+        if binSet.fApplyEfficiencyToSpectrum:
+            w = binSet.fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+        else:
+            w = 1
+        xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
+        if "SignalOnly" in self.fDMeson:
+            signal = bin.fInvMassHisto.Integral()*w
+            signal_unc = math.sqrt(bin.fInvMassHisto.Integral())*w
+        else:
+            signal = bin.fMassFitter.GetSignal()*w
+            signal_unc = bin.fMassFitter.GetSignalError()*w
+
+        s.fHistogram.SetBinContent(xbin, signal)
+        s.fHistogram.SetBinError(xbin, signal_unc)
+        s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
+        s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
+        s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
+        s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
+        s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
+        s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
+        s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
     def GenerateSpectrum1DLikeSignMethod(self, s):
-        s.fLikeSignHistograms = []
-        s.fUnlikeSignHistograms = []
-        s.fMass = None
-        s.fMassWidth = None
-        s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
-        s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
-        s.fLikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_LikeSignTotal".format(s.fName), "counts")
-        s.fUnlikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_UnlikeSignTotal".format(s.fName), "counts")
+        if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson:
+            s.fLikeSignHistograms = []
+            s.fUnlikeSignHistograms = []
+            s.fMass = None
+            s.fMassWidth = None
+            s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
+            s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
+            s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
+            s.fLikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_LikeSignTotal".format(s.fName), "counts")
+            s.fUnlikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_UnlikeSignTotal".format(s.fName), "counts")
         print("Generating spectrum {0}".format(s.fName))
         binSetName = s.fBins[0]
 
         if "SignalOnly" in self.fDMeson:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
-                sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                if s.fAxis[0].fName == bin.fBinCountAnalysisAxis.fName:
+                    sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                else:
+                    sig = self.BuildSpectrum1D(s, "{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), "counts")
+                    ibin = sig.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
+                    sigValueErr = ROOT.Double(0.)
+                    sigValue = bin.fInvMassHisto.IntegralAndError(0, -1, sigValueErr)
+                    sig.SetBinContent(ibin, sigValue)
+                    sig.SetBinError(ibin, sigValueErr)
                 if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
                     w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
                     sig.Scale(w)
@@ -420,13 +443,33 @@ class DMesonJetAnalysisEngine:
                 else:
                     sigma = s.fBackupSigma
                     mean = s.fBackupMean                   
-                binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
-                binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
-                sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
-                LStotal = LSbin.fBinCountAnalysisHisto.ProjectionY("{0}_LikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+                binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
+                binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
+                
+                if s.fAnalysisType == AnalysisType.LikeSign:
+                    if s.fAxis[0].fName == bin.fBinCountAnalysisAxis.fName:
+                        sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+                        LStotal = LSbin.fBinCountAnalysisHisto.ProjectionY("{0}_LikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+                    else:
+                        sig = self.BuildSpectrum1D(s, "{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), "counts")
+                        LStotal = self.BuildSpectrum1D(s, "{0}_LikeSign_{1}".format(s.fName, bin.GetName()), "counts")
+                        ibin = sig.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
+                        sigValueErr = ROOT.Double(0.)
+                        sigValue = bin.fInvMassHisto.IntegralAndError(binSig_1, binSig_2, sigValueErr)
+                        sig.SetBinContent(ibin, sigValue)
+                        sig.SetBinError(ibin, sigValueErr)
+                        lsValueErr = ROOT.Double(0.)
+                        lsValue = LSbin.fInvMassHisto.IntegralAndError(binSig_1, binSig_2, lsValueErr)
+                        LStotal.SetBinContent(ibin, lsValue)
+                        LStotal.SetBinError(ibin, lsValueErr)
+                else:
+                    sig = None
+                    LStotal = None
 
                 print("Bin: {0}".format(bin.GetTitle()))
-                print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0,-1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+                if sig:
+                    print("The total signal+background is {0}".format(sig.Integral(0,-1)))
+                print("The signal+background from the invariant mass plot {0} or summing signal and background {1}".format(bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
                 peakAreaBkgError = ROOT.Double(0.)
                 peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
                 print("The total background in the peak area estimated from the fit is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
@@ -435,14 +478,14 @@ class DMesonJetAnalysisEngine:
                 # Two methods to normalize the background
                 # Method 1: use the side-bands
                 if s.fSideBandMaxSigmas > s.fSideBandMinSigmas:
-                    binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
-                    binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
-                    binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas*sigma)
-                    binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
+                    binSBL_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
+                    binSBL_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
+                    binSBR_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas*sigma)
+                    binSBR_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
                     if binSBL_1 < 1:
                         binSBL_1 = 1
-                    if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
-                        binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
+                    if binSBR_2 > bin.fInvMassHisto.GetXaxis().GetNbins():
+                        binSBR_2 = bin.fInvMassHisto.GetXaxis().GetNbins()
 
                     SB_L_err = ROOT.Double(0)
                     SB_L = bin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
@@ -462,20 +505,21 @@ class DMesonJetAnalysisEngine:
                         bkgNorm = SB_total / LS_SB_total
                         bkgNorm_err = ((SB_total_err/SB_total)**2 + (LS_SB_total_err/LS_SB_total)**2) * bkgNorm
                     else:
-                        bkgNorm = 0
+                        bkgNorm = 1
                         bkgNorm_err = 0
 
                     print("The background in side bands U-S is: {0} + {1} = {2}".format(SB_L, SB_R, SB_total))
                     print("The background in side bands L-S is: {0} + {1} = {2}".format(LS_SB_L, SB_R, LS_SB_total))
                     print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
 
-                    for xbin in range(0, LStotal.GetNbinsX()+2):
-                        if LStotal.GetBinContent(xbin) == 0:
-                            continue
-                        error = math.sqrt(LStotal.GetBinError(xbin)**2/LStotal.GetBinContent(xbin)**2+bkgNorm_err**2/bkgNorm**2)*LStotal.GetBinContent(xbin)*bkgNorm
-                        cont = LStotal.GetBinContent(xbin)*bkgNorm
-                        LStotal.SetBinError(xbin, error)
-                        LStotal.SetBinContent(xbin, cont)
+                    if LStotal:
+                        for xbin in range(0, LStotal.GetNbinsX()+2):
+                            if LStotal.GetBinContent(xbin) == 0:
+                                continue
+                            error = math.sqrt(LStotal.GetBinError(xbin)**2/LStotal.GetBinContent(xbin)**2+bkgNorm_err**2/bkgNorm**2)*LStotal.GetBinContent(xbin)*bkgNorm
+                            cont = LStotal.GetBinContent(xbin)*bkgNorm
+                            LStotal.SetBinError(xbin, error)
+                            LStotal.SetBinContent(xbin, cont)
 
                     (signalWindowInvMassHisto, sideBandWindowInvMassHisto) = self.GenerateInvMassWidonws(bin.fInvMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2)
                     s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
@@ -486,65 +530,77 @@ class DMesonJetAnalysisEngine:
                     if not bin.fMassFitter.FitSuccessfull():
                         continue
                     LStotalIntegralError = ROOT.Double(0)
-                    LStotalIntegral = LStotal.IntegralAndError(0, -1, LStotalIntegralError)
+                    LStotalIntegral = bin.fInvMassHisto.IntegralAndError(binSig_1, binSig_2, LStotalIntegralError)
                     if LStotalIntegral > 0:
-                        for xbin in range(0, LStotal.GetNbinsX()+2):
-                            if LStotal.GetBinContent(xbin) == 0:
-                                continue
-                            # Error propagation
-                            error2_1 = peakAreaBkgError**2 * LStotal.GetBinContent(xbin)**2
-                            error2_2 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinError(xbin)**2 * (LStotalIntegral-LStotal.GetBinContent(xbin))**2
-                            error2_3 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinContent(xbin)**2 * (LStotalIntegralError**2-LStotal.GetBinError(xbin)**2)
-                            #print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/LStotalIntegral, math.sqrt(error2_2)/LStotalIntegral, math.sqrt(error2_3)/LStotalIntegral))
-                            error = math.sqrt(error2_1 + error2_2 + error2_3) / LStotalIntegral
-                            cont = LStotal.GetBinContent(xbin)*peakAreaBkg/LStotalIntegral
-                            LStotal.SetBinError(xbin, error)
-                            LStotal.SetBinContent(xbin, cont)
+                        if LStotal:
+                            for xbin in range(0, LStotal.GetNbinsX()+2):
+                                if LStotal.GetBinContent(xbin) == 0:
+                                    continue
+                                # Error propagation
+                                error2_1 = peakAreaBkgError**2 * LStotal.GetBinContent(xbin)**2
+                                error2_2 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinError(xbin)**2 * (LStotalIntegral-LStotal.GetBinContent(xbin))**2
+                                error2_3 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinContent(xbin)**2 * (LStotalIntegralError**2-LStotal.GetBinError(xbin)**2)
+                                #print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/LStotalIntegral, math.sqrt(error2_2)/LStotalIntegral, math.sqrt(error2_3)/LStotalIntegral))
+                                error = math.sqrt(error2_1 + error2_2 + error2_3) / LStotalIntegral
+                                cont = LStotal.GetBinContent(xbin)*peakAreaBkg/LStotalIntegral
+                                LStotal.SetBinError(xbin, error)
+                                LStotal.SetBinContent(xbin, cont)
                         bkgNorm = peakAreaBkg / LStotalIntegral
                         # this is only a rough estimate
                         bkgNorm_err = ((peakAreaBkgError/peakAreaBkg)**2 + (LStotalIntegralError/LStotalIntegral)**2) * bkgNorm
+                    else:
+                        bkgNorm = 1
+                        bkgNorm_err = 0
                 # no background normalization
                 else:
                     bkgNorm = 1
                     bkgNorm_err = 0
 
                 print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
-                integralError = ROOT.Double(0.)
-                integral = LStotal.IntegralAndError(0, -1, integralError)
-                print("The total normalized like-sign background in the peak area is {0} +/- {1}".format(integral, integralError))
+                
+                if LStotal:
+                    integralError = ROOT.Double(0.)
+                    integral = LStotal.IntegralAndError(0, -1, integralError)
+                    print("The total normalized like-sign background in the peak area is {0} +/- {1}".format(integral, integralError))
 
                 LSbin.fInvMassHisto.Scale(bkgNorm)
 
                 if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
                     w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
-                    LStotal.Scale(w)
-                    sig.Scale(w)
+                    if LStotal:
+                        LStotal.Scale(w)
+                    if sig:
+                        sig.Scale(w)
 
-                LStotal.SetTitle(bin.GetTitle())
-                s.fLikeSignHistograms.append(LStotal)
-                s.fLikeSignTotalHistogram.Add(LStotal)
+                if LStotal:
+                    LStotal.SetTitle(bin.GetTitle())
+                    s.fLikeSignHistograms.append(LStotal)
+                    s.fLikeSignTotalHistogram.Add(LStotal)
 
-                sig.SetTitle(bin.GetTitle())
-                s.fUnlikeSignHistograms.append(sig)
-                s.fUnlikeSignTotalHistogram.Add(sig)
+                if sig:
+                    sig.SetTitle(bin.GetTitle())
+                    s.fUnlikeSignHistograms.append(sig)
+                    s.fUnlikeSignTotalHistogram.Add(sig)
 
                 LS_sub_bin.fInvMassHisto.Add(LSbin.fInvMassHisto, -1)
                 LS_sub_bin.fMassFitter = None
 
-            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.7)
-            self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
-
             self.PlotInvMassPlotsBinSet(s.fLikeSignNormalizedBinSet.fName, self.fBinMultiSet.fBinSets[binSetName].fBins, s.fLikeSignNormalizedBinSet.fBins, s)
 
-        s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
-        s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
-        s.fBackground.Add(s.fLikeSignTotalHistogram)
-
-        for xbin in range(0, s.fHistogram.GetNbinsX()+2):
-            if s.fHistogram.GetBinContent(xbin) > 0:
-                s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
-            else:
-                s.fUncertainty.SetBinContent(xbin, 0)
+        if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson:
+            s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
+            s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
+            s.fBackground.Add(s.fLikeSignTotalHistogram)
+    
+            for xbin in range(0, s.fHistogram.GetNbinsX()+2):
+                if s.fHistogram.GetBinContent(xbin) > 0:
+                    s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
+                else:
+                    s.fUncertainty.SetBinContent(xbin, 0)
+        elif s.fAnalysisType == AnalysisType.LikeSignFit:
+            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.7)
+            self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
+            self.GenerateSpectrum1DInvMassFit(s)
 
     def GenerateInvMassWidonws(self, invMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2):
         sideBandWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
@@ -668,7 +724,7 @@ class DMesonJetAnalysisEngine:
     def GenerateSpectrum1D(self, s):
         if s.fAnalysisType == AnalysisType.SideBand:
             self.GenerateSpectrum1DSideBandMethod(s)
-        elif s.fAnalysisType == AnalysisType.LikeSign:
+        elif s.fAnalysisType == AnalysisType.LikeSign or s.fAnalysisType == AnalysisType.LikeSignFit:
             self.GenerateSpectrum1DLikeSignMethod(s)
         else:
             self.GenerateSpectrum1DInvMassFit(s)
@@ -755,6 +811,7 @@ class DMesonJetAnalysisEngine:
             self.FitInvMassPlotsBinSet(binSet.fName,binSet.fBins,binSet.fFitOptions)
 
     def FitInvMassPlotsBinSet(self,name,bins,fitOptions,initialSigOverBkg=0.1):
+        print("Fitting {0}".format(name))
         pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
 
         for i,bin in enumerate(bins):
@@ -782,6 +839,7 @@ class DMesonJetAnalysisEngine:
                 fitter.GetFitFunction().SetParameter(2, 10) # signal integral
 
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
+            fitter.GetFitFunction().SetParLimits(3, pdgMass*0.9975, pdgMass*1.0025) # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
 
             fitter.Fit(bin.fInvMassHisto, fitOptions)
