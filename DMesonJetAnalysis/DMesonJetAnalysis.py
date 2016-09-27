@@ -409,8 +409,10 @@ class DMesonJetAnalysisEngine:
 
             s.fLikeSignSubtractedBinSet = copy.deepcopy(self.fBinMultiSet.fBinSets[binSetName])
             s.fLikeSignSubtractedBinSet.fName = "{0}_LikeSignSubtracted_{1}".format(s.fLikeSignSubtractedBinSet.fName, s.fName)
+            s.fLikeSignNormalizedBinSet = copy.deepcopy(eng_LS.fBinMultiSet.fBinSets[binSetName])
+            s.fLikeSignNormalizedBinSet.fName = "{0}_Normalized_{1}".format(s.fLikeSignNormalizedBinSet.fName, s.fName)
 
-            for (LS_sub_bin, LSbin, bin) in zip(s.fLikeSignSubtractedBinSet.fBins, eng_LS.fBinMultiSet.fBinSets[binSetName].fBins, self.fBinMultiSet.fBinSets[binSetName].fBins):
+            for (LS_sub_bin, LSbin, bin) in zip(s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignNormalizedBinSet.fBins, self.fBinMultiSet.fBinSets[binSetName].fBins):
                 # Calculate the projections in the peak area for L-S and U-S
                 if bin.fMassFitter.FitSuccessfull():
                     sigma = bin.fMassFitter.GetSignalWidth()
@@ -474,6 +476,11 @@ class DMesonJetAnalysisEngine:
                         cont = LStotal.GetBinContent(xbin)*bkgNorm
                         LStotal.SetBinError(xbin, error)
                         LStotal.SetBinContent(xbin, cont)
+
+                    (signalWindowInvMassHisto, sideBandWindowInvMassHisto) = self.GenerateInvMassWidonws(bin.fInvMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2)
+                    s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
+                    s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
+
                 # Method 2: use the peak area
                 elif s.fBinCountNormSignalSigmas > 0:
                     if not bin.fMassFitter.FitSuccessfull():
@@ -527,6 +534,8 @@ class DMesonJetAnalysisEngine:
             self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.7)
             self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
 
+            self.PlotInvMassPlotsBinSet(s.fLikeSignNormalizedBinSet.fName, self.fBinMultiSet.fBinSets[binSetName].fBins, s.fLikeSignNormalizedBinSet.fBins, s)
+
         s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
         s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
         s.fBackground.Add(s.fLikeSignTotalHistogram)
@@ -536,6 +545,19 @@ class DMesonJetAnalysisEngine:
                 s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
             else:
                 s.fUncertainty.SetBinContent(xbin, 0)
+
+    def GenerateInvMassWidonws(self, invMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2):
+        sideBandWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
+        signalWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
+        for xbin in range(0,invMassHisto.GetNbinsX()+2):
+            if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
+                sideBandWindowInvMassHisto.SetBinContent(xbin, 0)
+                sideBandWindowInvMassHisto.SetBinError(xbin, 0)
+            if not (xbin >= binSig_1 and xbin < binSig_2):
+                signalWindowInvMassHisto.SetBinContent(xbin, 0)
+                signalWindowInvMassHisto.SetBinError(xbin, 0)
+
+        return signalWindowInvMassHisto, sideBandWindowInvMassHisto 
 
     def GenerateSpectrum1DSideBandMethod(self, s):
         s.fSideBandHistograms = []
@@ -562,12 +584,11 @@ class DMesonJetAnalysisEngine:
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
                 else:
-                    if bin.fMassFitter.FitSuccessfull():
-                        sigma = bin.fMassFitter.GetSignalWidth()
-                        mean = bin.fMassFitter.GetSignalMean()
-                    else:
-                        sigma = s.fBackupSigma
-                        mean = s.fBackupMean    
+                    if not bin.fMassFitter.FitSuccessfull():
+                        continue
+
+                    sigma = bin.fMassFitter.GetSignalWidth()
+                    mean = bin.fMassFitter.GetSignalMean()
 
                     binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
                     binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
@@ -575,27 +596,16 @@ class DMesonJetAnalysisEngine:
                     binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
                     binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
                     binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
-
-                    sideBandWindowInvMassHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
-                    signalWindowInvMassHisto = bin.fInvMassHisto.Clone(bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
-
-                    if not bin.fMassFitter.FitSuccessfull():
-                        continue
-
-                    for xbin in range(0,bin.fInvMassHisto.GetNbinsX()+2):
-                        if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
-                            sideBandWindowInvMassHisto.SetBinContent(xbin, 0)
-                            sideBandWindowInvMassHisto.SetBinError(xbin, 0)
-                        if not (xbin >= binSig_1 and xbin < binSig_2):
-                            signalWindowInvMassHisto.SetBinContent(xbin, 0)
-                            signalWindowInvMassHisto.SetBinError(xbin, 0)
-                    s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
-                    s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
-
                     if binSBL_1 < 1:
                         binSBL_1 = 1
                     if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
                         binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
+
+                    (signalWindowInvMassHisto, sideBandWindowInvMassHisto) = self.GenerateInvMassWidonws(bin.fInvMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2)
+
+                    s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
+                    s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
+
                     sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
                     sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
                     sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
@@ -640,6 +650,10 @@ class DMesonJetAnalysisEngine:
                     sig.SetTitle(bin.GetTitle())
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
+
+            if not "SignalOnly" in self.fDMeson:
+                SBinvMassName = "{0}_SideBand_{1}".format(binSetName, s.fName)
+                self.PlotInvMassPlotsBinSet(SBinvMassName, self.fBinMultiSet.fBinSets[binSetName].fBins, None, s)
 
         s.fHistogram.Add(s.fSignalWindowTotalHistogram)
         s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
@@ -754,13 +768,19 @@ class DMesonJetAnalysisEngine:
             fitter = self.CreateMassFitter(fitterName)
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
-            fitter.GetFitFunction().FixParameter(0, integral) # total integral is fixed
-            if initialSigOverBkg < 1:
-                fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg) # signal integral (start with small signal)
-                fitter.GetFitFunction().SetParLimits(2, 0, integral) # signal integral has to be contained in the total integral
+            if integral > 10:
+                fitter.GetFitFunction().SetParameter(0, integral) # total integral
+                fitter.GetFitFunction().SetParLimits(0, integral-2*math.sqrt(integral), integral+2*math.sqrt(integral)) # total integral
+                if initialSigOverBkg < 1:
+                    fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg) # signal integral
+                    fitter.GetFitFunction().SetParLimits(2, 0, integral+2*math.sqrt(integral)) # signal integral has to be contained in the total integral
+                else:
+                    fitter.GetFitFunction().SetParameter(2, integral) # signal integral
+                    fitter.GetFitFunction().SetParLimits(2, integral*(initialSigOverBkg-1), integral+2*math.sqrt(integral)) # signal integral has to be contained in the total integral
             else:
-                fitter.GetFitFunction().SetParameter(2, integral) # signal integral (start with small signal)
-                fitter.GetFitFunction().SetParLimits(2, integral*(initialSigOverBkg-1), integral) # signal integral has to be contained in the total integral
+                fitter.GetFitFunction().SetParameter(0, 10) # total integral
+                fitter.GetFitFunction().SetParameter(2, 10) # signal integral
+
             fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
 
@@ -770,31 +790,8 @@ class DMesonJetAnalysisEngine:
         for binSet in self.fBinMultiSet.fBinSets.itervalues():
             self.PlotInvMassPlotsBinSet(binSet.fName,binSet.fBins)
 
-    def PlotInvMassLikeSign(self, name, bin):
-        spectrum = None
-        for s in self.fSpectra.itervalues():
-            for binSetName in s.fBins:
-                if binSetName == name and s.fAnalysisType == AnalysisType.LikeSign:
-                    spectrum = s
-                    break
-        if not spectrum:
-            return None
-
-        eng = None
-        for engTest in self.fEngines:
-            if engTest.fTrigger == self.fTrigger and engTest.fDMeson == s.fLikeSignTree:
-                eng = engTest
-                break
-        if not eng:
-            return None
-
-        binLS = None
-        for binTest in eng.fBinMultiSet.fBinSets[name].fBins:
-            if binTest.IsSameOf(bin):
-                binLS = binTest
-                break
-
-        hls = binLS.fInvMassHisto.DrawCopy("hist same")
+    def PlotInvMassLikeSign(self, bin):
+        hls = bin.fInvMassHisto.DrawCopy("hist same")
         hls.SetLineColor(ROOT.kMagenta)
         hls.SetLineStyle(2)
         hls.SetLineWidth(2)
@@ -803,16 +800,9 @@ class DMesonJetAnalysisEngine:
 
         return hls
 
-    def PlotInvMassSideBands(self, name, bin):
-        spectrum = None
-        for s in self.fSpectra.itervalues():
-            for binSetName in s.fBins:
-                if binSetName == name and s.fAnalysisType == AnalysisType.SideBand:
-                    spectrum = s
-                    break
+    def PlotInvMassSideBands(self, bin, spectrum):
         if not spectrum:
             return None
-
         invMassSBHistoName = bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSBWindow")
         invMassSigHistoName = bin.fInvMassHisto.GetName().replace("InvMass", "InvMassSigWindow")
         if not invMassSBHistoName in spectrum.fSideBandWindowInvMassHistos.keys() or not invMassSigHistoName in spectrum.fSignalWindowInvMassHistos.keys():
@@ -830,7 +820,7 @@ class DMesonJetAnalysisEngine:
 
         return hsb
 
-    def PlotInvMassPlotsBinSet(self, name, bins):
+    def PlotInvMassPlotsBinSet(self, name, bins, LS_bins=None, SB_spectrum=None):
         cname = "{0}_{1}".format(self.fDMeson, name)
         c = DMesonJetUtils.GenerateMultiCanvas(cname, len(bins))
         self.fCanvases.append(c)
@@ -844,7 +834,7 @@ class DMesonJetAnalysisEngine:
             pad.SetTopMargin(0.08)
             pad.SetBottomMargin(0.13)
             if not "SignalOnly" in self.fDMeson:
-                SB = self.PlotInvMassSideBands(name, bin)
+                SB = self.PlotInvMassSideBands(bin, SB_spectrum)
             else:
                 SB = None
             if SB:
@@ -877,8 +867,8 @@ class DMesonJetAnalysisEngine:
             htitle.Draw()
             globalList.append(htitle)
             self.DrawFitResults(bin)
-            if not "SignalOnly" in self.fDMeson:
-                self.PlotInvMassLikeSign(name, bin)
+            if not "SignalOnly" in self.fDMeson and LS_bins:
+                self.PlotInvMassLikeSign(LS_bins[i])
 
 class DMesonJetAnalysis:
     def __init__(self, name):

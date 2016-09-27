@@ -538,10 +538,10 @@ class Spectrum:
         self.fMassWidth = None
         self.fBackground = None
         self.fAxis = []
-
-        # S-B analysis
         self.fSideBandWindowInvMassHistos = dict()
         self.fSignalWindowInvMassHistos = dict()
+
+        # S-B analysis
         self.fSideBandHistograms = None
         self.fSignalHistograms = None
         self.fSideBandWindowTotalHistogram = None
