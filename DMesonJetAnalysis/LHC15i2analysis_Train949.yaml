@@ -12,7 +12,7 @@ analysis:
     radius: R040
   response:
   -
-    name: D_Tagged_Jet_Spectrum
+    name: D_Tagged_Jet_Pt_Spectrum_PtD_20
     efficiency: no
     active: yes
     bins:
@@ -30,7 +30,7 @@ analysis:
       variable: fPt
       min: 2.0
   -
-    name: D_Tagged_Jet_JetEta
+    name: D_Tagged_Jet_Eta_Spectrum_PtD_20
     efficiency: no
     active: yes
     bins:
@@ -46,7 +46,7 @@ analysis:
       variable: fPt
       min: 2.0
   -
-    name: D_Fragmentation_JetPt_Spectra
+    name: D_Tagged_Jet_PtZ_Spectrum
     efficiency: no
     active: yes
     bins:
@@ -63,7 +63,7 @@ analysis:
       min: -0.5
       max: 0.5
   -
-    name: D_Spectra
+    name: D_Pt_Spectrum
     efficiency: no
     active: yes
     bins:

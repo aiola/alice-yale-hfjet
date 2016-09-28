@@ -1,0 +1,23 @@
+name: LHC14j4_Train953_LHC15i2_Train949
+input_path: /Volumes/DATA/ALICE/JetResults
+data_train: Jets_EMC_pp_MC_953_954_955_956
+data: LHC14j4_Train953_efficiency
+response_train: Jets_EMC_pp_MC_949_950_951_952
+response: LHC15i2_Train949_efficiency
+analysis:
+-
+  d_meson: D0
+  jet: Jet_AKTChargedR040_pt_scheme
+  spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20
+  truth: D_MCtruth_Tagged_Jet_PtD_20_Spectrum
+  priors: [train_truth]
+  unfolding:
+  -
+    method: SVD
+    default_reg: 4
+  -
+    method: Bayes
+    default_reg: 4
+    iter_min: 1
+    iter_max: 10
+    iter_step: 1
