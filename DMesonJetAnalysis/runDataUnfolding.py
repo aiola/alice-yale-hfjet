@@ -16,13 +16,13 @@ def main(config, format):
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
 
-    ana = DMesonJetUnfolding.DMesonJetUnfolding(config["name"])
+    ana = DMesonJetUnfolding.DMesonJetUnfolding(config["name"], config["input_path"], config["data_train"], config["data"], config["response_train"], config["response"])
 
     for anaConfig in config["analysis"]:
         ana.StartUnfolding(anaConfig)
 
-    ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
-    ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
+    #ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
+    #ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
 
 if __name__ == '__main__':
     
