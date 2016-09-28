@@ -213,7 +213,7 @@ class DMesonJetDataProjector:
 
                 bins = binSet.FindBin(dmeson, jet)
                 for bin,weight in bins:
-                    if not bin.fInvMassHisto:
+                    if bin.fCounts == 0:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
                     bin.FillInvariantMass(dmeson, jet, weight)
 

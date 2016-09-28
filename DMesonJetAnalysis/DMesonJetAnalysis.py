@@ -358,39 +358,47 @@ class DMesonJetAnalysisEngine:
             for bin in s.fLikeSignSubtractedBinSet.fBins:
                 self.ProcessInvMassFitSpectrumBin(s, bin, s.fLikeSignSubtractedBinSet)
 
-    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet):
-        if bin.fMassFitter is None:
-            print("The bin printed below does not have a mass fitter!")
-            bin.Print()
-            return
-        if not bin.fMassFitter.FitSuccessfull():
-            print("The bin printed below does not have a successful invariant mass fit!")
-            bin.Print()
-            return            
+    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet):         
         if binSet.fApplyEfficiencyToSpectrum:
             w = binSet.fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
         else:
             w = 1
         xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
-        if "SignalOnly" in self.fDMeson:
-            signal = bin.fInvMassHisto.Integral()*w
-            signal_unc = math.sqrt(bin.fInvMassHisto.Integral())*w
+        if "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
+            if bin.fInvMassHisto:
+                signal_unc = ROOT.Double(0.)
+                signal = bin.fInvMassHisto.IntegralAndError(0, -1, signal_unc)
+            else:
+                signal_unc = math.sqrt(bin.fSumw2)
+                signal = bin.fCounts
         else:
-            signal = bin.fMassFitter.GetSignal()*w
-            signal_unc = bin.fMassFitter.GetSignalError()*w
+            if bin.fMassFitter is None:
+                print("The bin printed below does not have a mass fitter!")
+                bin.Print()
+                return
+            if not bin.fMassFitter.FitSuccessfull():
+                print("The bin printed below does not have a successful invariant mass fit!")
+                bin.Print()
+                return   
+            signal = bin.fMassFitter.GetSignal()
+            signal_unc = bin.fMassFitter.GetSignalError()
 
+        signal *= w
+        signal_unc *= w
         s.fHistogram.SetBinContent(xbin, signal)
         s.fHistogram.SetBinError(xbin, signal_unc)
-        s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
-        s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
-        s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
-        s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
-        s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
-        s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
-        s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+
+        if bin.fMassFitter:
+            s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
+            s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
+            s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
+            s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
+            s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
+            s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
+            s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
     def GenerateSpectrum1DLikeSignMethod(self, s):
-        if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson:
+        if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
             s.fLikeSignHistograms = []
             s.fUnlikeSignHistograms = []
             s.fMass = None
@@ -400,10 +408,9 @@ class DMesonJetAnalysisEngine:
             s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
             s.fLikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_LikeSignTotal".format(s.fName), "counts")
             s.fUnlikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_UnlikeSignTotal".format(s.fName), "counts")
-        print("Generating spectrum {0}".format(s.fName))
         binSetName = s.fBins[0]
 
-        if "SignalOnly" in self.fDMeson:
+        if "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if s.fAxis[0].fName == bin.fBinCountAnalysisAxis.fName:
                     if bin.fBinCountAnalysisHisto:
@@ -413,11 +420,12 @@ class DMesonJetAnalysisEngine:
                 else:
                     sig = self.BuildSpectrum1D(s, "{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), "counts")
                     ibin = sig.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
-                    sigValueErr = ROOT.Double(0.)
                     if bin.fInvMassHisto:
+                        sigValueErr = ROOT.Double(0.)
                         sigValue = bin.fInvMassHisto.IntegralAndError(0, -1, sigValueErr)
                     else:
-                        sigValue = 0
+                        sigValueErr = math.sqrt(bin.fSumw2)
+                        sigValue = bin.fCounts
                     sig.SetBinContent(ibin, sigValue)
                     sig.SetBinError(ibin, sigValueErr)
                 if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
@@ -593,7 +601,7 @@ class DMesonJetAnalysisEngine:
 
             self.PlotInvMassPlotsBinSet(s.fLikeSignNormalizedBinSet.fName, self.fBinMultiSet.fBinSets[binSetName].fBins, s.fLikeSignNormalizedBinSet.fBins, s)
 
-        if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson:
+        if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
             s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
             s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
             s.fBackground.Add(s.fLikeSignTotalHistogram)
@@ -631,14 +639,13 @@ class DMesonJetAnalysisEngine:
         s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
         s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
         s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
-        print("Generating spectrum {0}".format(s.fName))
         for binSetName in s.fBins:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
                     w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
                 else:
                     w = 1
-                if "SignalOnly" in self.fDMeson:
+                if "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
                     sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
                     sig.SetTitle(bin.GetTitle())
                     if w != 1:
@@ -713,7 +720,7 @@ class DMesonJetAnalysisEngine:
                     s.fSignalHistograms.append(sig)
                     s.fSignalWindowTotalHistogram.Add(sig)
 
-            if not "SignalOnly" in self.fDMeson:
+            if not "SignalOnly" in self.fDMeson and not "MCTruth" in self.fDMeson:
                 SBinvMassName = "{0}_SideBand_{1}".format(binSetName, s.fName)
                 self.PlotInvMassPlotsBinSet(SBinvMassName, self.fBinMultiSet.fBinSets[binSetName].fBins, None, s)
 
@@ -728,6 +735,7 @@ class DMesonJetAnalysisEngine:
                 s.fUncertainty.SetBinContent(xbin, 0)
 
     def GenerateSpectrum1D(self, s):
+        print("Generating spectrum {0}".format(s.fName))
         if s.fAnalysisType == AnalysisType.SideBand:
             self.GenerateSpectrum1DSideBandMethod(s)
         elif s.fAnalysisType == AnalysisType.LikeSign or s.fAnalysisType == AnalysisType.LikeSignFit:
@@ -756,9 +764,13 @@ class DMesonJetAnalysisEngine:
                     continue
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 ybin = s.fHistogram.GetYaxis().FindBin(bin.GetBinCenter(s.fAxis[1].fName))
-                if "SignalOnly" in self.fDMeson:
-                    signal = bin.fInvMassHisto.Integral()
-                    signal_unc = math.sqrt(bin.fInvMassHisto.Integral())
+                if "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
+                    if bin.fInvMassHisto:
+                        signal_unc = ROOT.Double(0.)
+                        signal = bin.fInvMassHisto.IntegralAndError(0, -1, signal_unc)
+                    else:
+                        signal_unc = math.sqrt(bin.fSumw2)
+                        signal = bin.fCounts
                 else:
                     signal = bin.fMassFitter.GetSignal()
                     signal_unc = bin.fMassFitter.GetSignalError()
@@ -944,7 +956,7 @@ class DMesonJetAnalysis:
         self.fProjector = projector
         
     def StartAnalysis(self, figTitle, collision, config):
-        binMultiSet = DMesonJetProjectors.BinMultiSet()
+        binMultiSet = BinMultiSet()
         for binLists in config["binLists"]:
             if "active" in binLists and not binLists["active"]:
                 continue
@@ -975,6 +987,13 @@ class DMesonJetAnalysis:
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
                 binset_copy = copy.deepcopy(binMultiSet)
+                if trigger:
+                    print("Projecting trigger {0}, D meson {1}".format(trigger, d_meson))
+                else:
+                    print("Projecting D meson {0}".format(d_meson))
+                if "MCTruth" in d_meson:
+                    print("Resetting weight efficiency to 1")
+                    binset_copy.SetWeightEfficiency(DMesonJetProjectors.SimpleWeight(), False)
                 eng = DMesonJetAnalysisEngine(figTitle, collision, trigger, d_meson, 
                                               binset_copy, config["n_mass_bins"], config["min_mass"], config["max_mass"],
                                               config["jets"], config["spectra"], self.fProjector)
@@ -1002,6 +1021,8 @@ class DMesonJetAnalysis:
             spectraToCompare = []
             for eng in self.fAnalysisEngine[1:]:
                 if not eng.fSpectra[s["name"]].fHistogram:
+                    continue
+                if "MCTruth" in eng.fDMeson:
                     continue
                 h = eng.fSpectra[s["name"]].fHistogram.Clone("{0}_copy".format(eng.fSpectra[s["name"]].fHistogram.GetName()))
                 h.SetTitle(eng.fDMeson)

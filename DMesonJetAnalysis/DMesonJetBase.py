@@ -682,6 +682,11 @@ class BinMultiSet:
 
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fName] = binSet
+        
+    def SetWeightEfficiency(self, weight, applyToSpectrum):
+        for binSet in self.fBinSets.itervalues():
+            binSet.fWeightEfficiency = weight
+            binSet.fApplyEfficiencyToSpectrum = applyToSpectrum
 
     def FindBin(self, dmeson, jet):
         for binSet in self.fBinSets.itervalues():
@@ -743,9 +748,14 @@ class BinLimits:
         self.fMassFitter = None
         self.fBinCountAnalysisAxis = None
         self.fBinCountAnalysisHisto = None
+        self.fCounts = 0
+        self.fSumw2 = 0
 
     def FillInvariantMass(self, dmeson, jet, w):
-        self.fInvMassHisto.Fill(dmeson.fInvMass, w)
+        self.fCounts += w
+        self.fSumw2 += w*w
+        if self.fInvMassHisto:
+            self.fInvMassHisto.Fill(dmeson.fInvMass, w)
         if self.fBinCountAnalysisHisto:
             if self.fBinCountAnalysisAxis.fName == "jet_pt":
                 obsVal = jet.fPt
@@ -869,12 +879,13 @@ class BinLimits:
                 hnameSB = "InvMassBinCounting_{0}_{1}".format(DMesonDef, self.GetName())
                 htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         
-        self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
-        self.fInvMassHisto.Sumw2()
-        self.fInvMassHisto.SetMarkerSize(0.9)
-        self.fInvMassHisto.SetMarkerStyle(ROOT.kFullCircle)
-        self.fInvMassHisto.SetMarkerColor(ROOT.kBlue+2)
-        self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
+        if not "MCTruth" in DMesonDef:
+            self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
+            self.fInvMassHisto.Sumw2()
+            self.fInvMassHisto.SetMarkerSize(0.9)
+            self.fInvMassHisto.SetMarkerStyle(ROOT.kFullCircle)
+            self.fInvMassHisto.SetMarkerColor(ROOT.kBlue+2)
+            self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
         
         if self.fBinCountAnalysisAxis:
             self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins)-1, array.array('d', self.fBinCountAnalysisAxis.fBins))

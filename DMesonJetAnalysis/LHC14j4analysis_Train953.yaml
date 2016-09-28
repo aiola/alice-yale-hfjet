@@ -8,7 +8,7 @@ collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   trigger: [""]
-  d_meson: [D0_kSignalOnly, D0, 2ProngLikeSign]
+  d_meson: [D0_kSignalOnly, D0, D0_MCTruth, 2ProngLikeSign]
   n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015
