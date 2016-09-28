@@ -406,12 +406,18 @@ class DMesonJetAnalysisEngine:
         if "SignalOnly" in self.fDMeson:
             for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
                 if s.fAxis[0].fName == bin.fBinCountAnalysisAxis.fName:
-                    sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                    if bin.fBinCountAnalysisHisto:
+                        sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                    else:
+                        sig = self.BuildSpectrum1D(s, "{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), "counts")    
                 else:
                     sig = self.BuildSpectrum1D(s, "{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), "counts")
                     ibin = sig.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                     sigValueErr = ROOT.Double(0.)
-                    sigValue = bin.fInvMassHisto.IntegralAndError(0, -1, sigValueErr)
+                    if bin.fInvMassHisto:
+                        sigValue = bin.fInvMassHisto.IntegralAndError(0, -1, sigValueErr)
+                    else:
+                        sigValue = 0
                     sig.SetBinContent(ibin, sigValue)
                     sig.SetBinError(ibin, sigValueErr)
                 if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
