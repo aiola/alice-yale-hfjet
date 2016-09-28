@@ -39,6 +39,26 @@ analysis:
       variable: fPt
       min: 2.0
   -
+    name: JetPtBins_ZJet_01
+    active: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+      apply_to_final_spectrum: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.1
+  -
     name: DPtBins_PtD_20
     active: yes
     efficiency:
@@ -54,6 +74,38 @@ analysis:
       variable: fEta
       min: -0.5
       max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 24
+    bin_count_analysis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: DPtBins_ZJet_01
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+      apply_to_final_spectrum: yes
+    bins:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fZ
+      min: 0.1
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 24
     bin_count_analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   spectra:
@@ -65,12 +117,58 @@ analysis:
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
-    name: D_Pt_Spectrum
-    title: "|#eta_{jet}| < 0.5"
-    active: yes
+    name: D_Tagged_Jet_ZJet_01_Spectrum
+    title: "Inv.Mass Fit, #it{z}_{||,D} > 0.1"
+    active: no
+    bins: [JetPtBins_ZJet_01]
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Pt_Spectrum_PtD_20
+    title: "Inv.Mass Fit"
+    active: no
     bins: [DPtBins_PtD_20]
     axis:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Pt_Spectrum_ZJet_01
+    title: "Inv.Mass Fit, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
+    axis:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Pt_Spectrum_ZJet_01_LikeSign
+    title: "LS method, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
+    like_sign:
+      mode: bin_count
+      name: 2ProngLikeSign
+      min_sigmas: 4
+      max_sigmas: 8
+      max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1.86484
+      backup_sigma: 0.015
+    axis:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Pt_Spectrum_ZJet_01_LikeSignFit
+    title: "LS method (fit), #it{z}_{||,D} > 0.1"
+    active: no
+    bins: [DPtBins_ZJet_01]
+    like_sign:
+      mode: fit
+      name: 2ProngLikeSign
+      min_sigmas: 0
+      max_sigmas: 0
+      max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1.86484
+      backup_sigma: 0.015
+    axis:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum_SideBand
     title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
@@ -79,16 +177,49 @@ analysis:
       min_sigmas: 4
       max_sigmas: 8
       max_signal_sigmas: 2
+      backup_mean: 1.86484
+      backup_sigma: 0.015
     bins: [DPtBins_PtD_20]
+  -
+    name: D_Tagged_Jet_ZJet_01_Spectrum_SideBand
+    title: "SB method, #it{z}_{||,D} > 0.1"
+    active: no
+    side_band:
+      min_sigmas: 4
+      max_sigmas: 8
+      max_signal_sigmas: 2
+      backup_mean: 1.86484
+      backup_sigma: 0.015
+    bins: [DPtBins_ZJet_01]
   -
     name: D_Tagged_Jet_PtD_20_Spectrum_LikeSign
     title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
     bins: [DPtBins_PtD_20]
     like_sign:
+      mode: bin_count
       name: 2ProngLikeSign
-      min_sigmas: 0
-      max_sigmas: 0
+      min_sigmas: 4
+      max_sigmas: 8
       max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1.86484
+      backup_sigma: 0.015
+    axis:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Tagged_Jet_ZJet_01_Spectrum_LikeSign
+    title: "LS method, #it{z}_{||,D} > 0.1"
+    active: yes
+    bins: [DPtBins_ZJet_01]
+    like_sign:
+      mode: bin_count
+      name: 2ProngLikeSign
+      min_sigmas: 4
+      max_sigmas: 8
+      max_signal_sigmas: 2
+      max_signal_norm_sigmas: 0
+      backup_mean: 1.86484
+      backup_sigma: 0.015
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]

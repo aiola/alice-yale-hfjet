@@ -35,6 +35,7 @@ MassFitter::MassFitter() :
   fFitSuccessfull(kFALSE),
   fPDGMass(0),
   fMaxAllowedWidth(0),
+  fMaxAllowedMeanShift(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Default constructor.
@@ -68,6 +69,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fFitSuccessfull(kFALSE),
   fPDGMass(0),
   fMaxAllowedWidth(0),
+  fMaxAllowedMeanShift(0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Standard constructor.
@@ -76,6 +78,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   case kDzeroKpi:
     fPDGMass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
     fMaxAllowedWidth = 0.03;
+    fMaxAllowedMeanShift = 0.005;
     fMassFitTypeSig = kGaus;
     fMassFitTypeBkg = kExpo;
     break;
@@ -83,6 +86,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   case kDstarKpipi:
     fPDGMass = TDatabasePDG::Instance()->GetParticle(413)->Mass();
     fMaxAllowedWidth = 0.03;
+    fMaxAllowedMeanShift = 0.005;
     fMassFitTypeSig = kGaus;
     fMassFitTypeBkg = kExpoPower;
     break;
@@ -220,8 +224,8 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
   }
 
   if (fFitSuccessfull) {
-    if (TMath::Abs(fMean - fPDGMass) > 10 * fMeanError) {
-      Printf("Marking fit as unsuccessful because mean = %f +/- %f is far from PDG mass %f", fMean, fMeanError, fPDGMass);
+    if (TMath::Abs(fMean - fPDGMass) > fMaxAllowedMeanShift) {
+      Printf("Marking fit as unsuccessful because mean = %f is far from PDG mass %f", fMean, fPDGMass);
       fFitSuccessfull = kFALSE;
     }
     if (fWidth - 3*fWidthError > fMaxAllowedWidth) {

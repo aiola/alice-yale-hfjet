@@ -118,6 +118,7 @@ class MassFitter : public TNamed {
   Bool_t            fFitSuccessfull    ;//  Whether the fit was successful
   Double_t          fPDGMass           ;//  PDG mass
   Double_t          fMaxAllowedWidth   ;//  Maximum allowed width of the signal peak
+  Double_t          fMaxAllowedMeanShift;// Maximum allowed mean shift of the signal peak
   const Double_t    fPionMass          ;//! Pion mass 
   
  private:
