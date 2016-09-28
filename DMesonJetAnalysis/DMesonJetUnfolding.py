@@ -15,26 +15,49 @@ globalList = []
 class DMesonJetUnfoldingEngine:
     def __init__(self, config):
         self.fDMeson = config["d_meson"]
+        self.fDMesonTruth = config["d_meson_truth"]
+        self.fDMesonResponse = config["d_meson_response"]
         self.fJetDefinition = config["jet"]
         self.fSpectrumName = config["spectrum"]
         self.fPriors = config["priors"]
-        self.UnfoldingConfig = config["unfolding"]
+        self.UnfoldingConfig = config["methods"]
+        print(self.UnfoldingConfig)
+        self.DefaultPrior = config["default_prior"]
+        self.DefaultMethod = config["default_method"]
         self.fResponseMatrices = dict()
         self.fUnfoldedSpectra = dict()
 
     def Start(self):
         self.GenerateRooUnfoldResponse()
-        for unf in self.UnfoldingConfig:
-            if unf["method"] == "SVD":
+        for method, config in self.UnfoldingConfig.iteritems():
+            if method == "SVD":
                 self.UnfoldSVD()
-            elif unf["method"] == "Bayes":
-                self.UnfoldBayes(unf["iter_min"], unf["iter_max"], unf["iter_step"])
+            elif method == "Bayes":
+                self.UnfoldBayes(config["iter_min"], config["iter_max"], config["iter_step"])
             else:
-                print("Unfolding method {0} not known!".format(unf["method"]))
+                print("Unfolding method {0} not known!".format(method))
         self.Plot()
 
     def Plot(self):
-        r = DMesonJetUtils.CompareSpectra(self.fUnfoldedSpectra.values()[0], self.fUnfoldedSpectra.values()[1:], "UnfoldingMethod")
+        if len(self.UnfoldingConfig) > 1:
+            self.CompareMethods()
+
+    def CompareMethods(self):
+        if self.fTruthSpectrum:
+            baselineId = None
+            baseline = self.fTruthSpectrum
+        else:
+            baselineId = (self.DefaultMethod, self.UnfoldingConfig[self.DefaultMethod]["default_reg"], self.DefaultPrior)
+            baseline = self.fUnfoldedSpectra[baselineId]
+
+        spectra = []
+        for method, config in self.UnfoldingConfig.iteritems():
+            id = (method, config["default_reg"], self.DefaultPrior)
+            if id == baselineId:
+                continue
+            spectra.append(self.fUnfoldedSpectra[id])
+
+        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "UnfoldingMethod")
         for obj in r:
             globalList.append(obj)
 
@@ -73,15 +96,26 @@ class DMesonJetUnfoldingEngine:
             print("Could not find list {0} in file {1}". format(dataListName, dataFile.GetName()))
             return False
         self.fInputSpectrum = dataList.FindObject("{0}_{1}".format(self.fDMeson, self.fSpectrumName))
-        responseListName = "{0}_{1}_{2}".format(self.fDMeson, self.fJetDefinition, self.fSpectrumName)
+
+        if self.fDMesonTruth:
+            dataTruthListName = "{0}_{1}".format(self.fDMesonTruth, self.fSpectrumName)
+            dataTruthList = dataFile.Get(dataTruthListName)
+            if not dataTruthList:
+                print("Could not find list {0} in file {1}". format(dataTruthListName, dataFile.GetName()))
+                return False
+            self.fTruthSpectrum = dataTruthList.FindObject("{0}_{1}".format(self.fDMesonTruth, self.fSpectrumName))
+        else:
+            self.fTruthSpectrum = None
+
+        responseListName = "{0}_{1}_{2}".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName)
         responseList = responseFile.Get(responseListName)
         if not responseList:
             print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
             return False
-        self.fDetectorResponse = responseList.FindObject("{0}_{1}_{2}_DetectorResponse".format(self.fDMeson, self.fJetDefinition, self.fSpectrumName))
-        self.fDetectorEfficiency = responseList.FindObject("{0}_{1}_{2}_DetectorEfficiency".format(self.fDMeson, self.fJetDefinition, self.fSpectrumName))
-        self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMeson, self.fJetDefinition, self.fSpectrumName))
-        self.fDetectorRecontructedTruth = responseList.FindObject("{0}_{1}_{2}_ReconstructedTruth".format(self.fDMeson, self.fJetDefinition, self.fSpectrumName))
+        self.fDetectorResponse = responseList.FindObject("{0}_{1}_{2}_DetectorResponse".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+        self.fDetectorEfficiency = responseList.FindObject("{0}_{1}_{2}_DetectorEfficiency".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+        self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+        self.fDetectorRecontructedTruth = responseList.FindObject("{0}_{1}_{2}_ReconstructedTruth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
         return True
 
 class DMesonJetUnfolding:
