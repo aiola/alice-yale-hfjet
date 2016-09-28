@@ -94,14 +94,14 @@ analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   spectra:
   -
-    name: D_Tagged_Jet_PtD_20_Spectrum
+    name: D_Tagged_Jet_Pt_Spectrum_PtD_20
     title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
     bins: [JetPtBins_PtD_20]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
-    name: D_Tagged_Jet_ZJet_01_Spectrum
+    name: D_Tagged_Jet_Pt_Spectrum_ZJet_01
     title: "Inv.Mass Fit, #it{z}_{||,D} > 0.1"
     active: no
     bins: [JetPtBins_ZJet_01]
@@ -154,7 +154,7 @@ analysis:
     axis:
       d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
   -
-    name: D_Tagged_Jet_PtD_20_Spectrum_SideBand
+    name: D_Tagged_Jet_Pt_Spectrum_PtD_20_SideBand
     title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
     side_band:
@@ -165,7 +165,7 @@ analysis:
       backup_sigma: 0.015
     bins: [DPtBins_PtD_20]
   -
-    name: D_Tagged_Jet_ZJet_01_Spectrum_SideBand
+    name: D_Tagged_Jet_Pt_Spectrum_ZJet_01_SideBand
     title: "SB method, #it{z}_{||,D} > 0.1"
     active: no
     side_band:
@@ -176,7 +176,7 @@ analysis:
       backup_sigma: 0.015
     bins: [DPtBins_ZJet_01]
   -
-    name: D_Tagged_Jet_PtD_20_Spectrum_LikeSign
+    name: D_Tagged_Jet_Pt_Spectrum_PtD_20_LikeSign
     title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
     active: yes
     bins: [DPtBins_PtD_20]
@@ -192,7 +192,7 @@ analysis:
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
   -
-    name: D_Tagged_Jet_ZJet_01_Spectrum_LikeSign
+    name: D_Tagged_Jet_Pt_Spectrum_ZJet_01_LikeSign
     title: "LS method, #it{z}_{||,D} > 0.1"
     active: yes
     bins: [DPtBins_ZJet_01]

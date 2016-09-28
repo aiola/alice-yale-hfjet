@@ -12,11 +12,11 @@ analysis:
     radius: R040
   response:
   -
-    name: D_Tagged_Jet_Spectrum
+    name: D_Tagged_Jet_Pt_Spectrum_PtD_20
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
     active: yes
     bins:
       jet_pt:
@@ -33,12 +33,12 @@ analysis:
       variable: fPt
       min: 2.0
   -
-    name: D_Tagged_Jet_JetEta
+    name: D_Tagged_Jet_Eta_Spectrum_PtD_20
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
-    active: yes
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+    active: no
     bins:
       jet_pt:
         truth: [5, 8, 13, 24]
@@ -52,12 +52,12 @@ analysis:
       variable: fPt
       min: 2.0
   -
-    name: D_Fragmentation_JetPt_Spectra
+    name: D_Tagged_Jet_PtZ_Spectrum
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
-    active: yes
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+    active: no
     bins:
       jet_pt:
         truth: [5, 8, 13, 24]
@@ -72,11 +72,11 @@ analysis:
       min: -0.5
       max: 0.5
   -
-    name: D_Spectra
+    name: D_Pt_Spectrum
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Spectra_Efficiency_JetPt_500_2400
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
     active: yes
     bins:
       jet_pt:
