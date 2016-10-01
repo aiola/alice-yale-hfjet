@@ -204,7 +204,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
     for s in spectra:
         print(s.GetName())
 
-    colors = [ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kTeal+2]
+    colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2]
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
     lines = range(2,11)
     c = ROOT.TCanvas(comparisonName, comparisonName)
@@ -212,14 +212,18 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
     c.cd()
     c.SetLogy()
     if "hist" in opt:
-        baseline.SetLineColor(ROOT.kBlue+2)
+        baseline.SetLineColor(ROOT.kBlack)
         baseline.SetLineWidth(2)
         baseline.SetLineStyle(1)
     else: 
-        baseline.SetMarkerColor(ROOT.kBlue+2)
-        baseline.SetLineColor(ROOT.kBlue+2)
+        baseline.SetMarkerColor(ROOT.kBlack)
+        baseline.SetLineColor(ROOT.kBlack)
         baseline.SetMarkerStyle(ROOT.kOpenCircle)
         baseline.SetMarkerSize(1.2)
+
+    minY = baseline.GetMinimum()
+    maxY = baseline.GetMaximum()
+    baseline.Draw()
 
     cname = "{0}_Ratio".format(comparisonName)
     cRatio = ROOT.TCanvas(cname, cname)
@@ -246,6 +250,10 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
         optRatio += "same"
     for color, marker, line, h in zip(colors, markers, lines, spectra):
         c.cd()
+        if minY > h.GetMinimum():
+            minY = h.GetMinimum()
+        if maxY < h.GetMaximum():
+            maxY = h.GetMaximum()
         h.Draw(opt)
         if "hist" in opt:
             h.SetLineColor(color)
@@ -286,7 +294,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
         opt.replace("same","")
         optRatio.replace("same","")
     c.cd()
-    baseline.Draw("same")
+
     maxRatio *= 1.5
     if minRatio < 0.2:
         minRatio = 0
