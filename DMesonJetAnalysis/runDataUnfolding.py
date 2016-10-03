@@ -20,7 +20,7 @@ def main(config, format):
 
     for anaConfig in config["analysis"]:
         if anaConfig["active"]:
-            ana.StartUnfolding(anaConfig)
+            ana.StartUnfolding(anaConfig, config["efficiency"])
 
     #ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
     #ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
