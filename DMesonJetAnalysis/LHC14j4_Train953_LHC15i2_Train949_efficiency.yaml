@@ -4,9 +4,10 @@ data_train: Jets_EMC_pp_MC_953_954_955_956
 data: LHC14j4_Train953_efficiency
 response_train: Jets_EMC_pp_MC_949_950_951_952
 response: LHC15i2_Train949_efficiency
+efficiency: no  # apply effieciency correction?
 analysis:
 -
-  active: no
+  active: yes
   d_meson: D0_kSignalOnly
   d_meson_response: D0
   d_meson_truth: D0_MCTruth
@@ -27,7 +28,7 @@ analysis:
     }
   }
 -
-  active: yes
+  active: no
   d_meson: D0
   d_meson_response: D0
   d_meson_truth: D0_MCTruth

@@ -394,10 +394,16 @@ class DMesonJetResponse:
                 effWeight = DMesonJetProjectors.SimpleWeight()
             axis_list = []
             for axis_name,bins in resp["bins"].iteritems():
-                if axis_name == "jet_pt":
-                    axis_list.insert(0, ResponseAxis(Axis(axis_name, bins["reco"], "reco"), Axis(axis_name, bins["truth"], "truth")))
+                if "bins" in bins:
+                    a = ResponseAxis(Axis(axis_name, bins["bins"], "reco"), Axis(axis_name, bins["bins"], "truth"))
                 else:
-                    axis_list.append(ResponseAxis(Axis(axis_name, bins["reco"], "reco"), Axis(axis_name, bins["truth"], "truth")))
+                    a = ResponseAxis(Axis.fromLimits(axis_name, bins["min"], bins["max"], bins["width"], "reco"), Axis.fromLimits(axis_name, bins["min"], bins["max"], bins["width"], "truth"))
+                if "coarse" in bins:
+                    a.SetCoarseAxis(Axis(axis_name, bins["coarse"], "reco"), Axis(axis_name, bins["coarse"], "truth"))
+                if axis_name == "jet_pt":
+                    axis_list.insert(0, a)
+                else:
+                    axis_list.append(a)
 
             if "cuts" in resp:
                 cut_list = resp["cuts"]
