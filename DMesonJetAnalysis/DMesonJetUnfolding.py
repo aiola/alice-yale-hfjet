@@ -31,7 +31,7 @@ class DMesonJetUnfoldingEngine:
         self.fSvdDvectors = OrderedDict()
         self.fPearsonMatrices = OrderedDict()
 
-    def LoadData(self, dataFile, responseFile):
+    def LoadData(self, dataFile, responseFile, eff):
         dataListName = "{0}_{1}".format(self.fDMeson, self.fSpectrumName)
         dataList = dataFile.Get(dataListName)
         if not dataList:
@@ -55,9 +55,10 @@ class DMesonJetUnfoldingEngine:
             print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
             return False
         self.fDetectorResponse = responseList.FindObject("{0}_{1}_{2}_DetectorResponse".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
-        self.fDetectorEfficiency = responseList.FindObject("{0}_{1}_{2}_DetectorEfficiency".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
-        self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
-        self.fDetectorRecontructedTruth = responseList.FindObject("{0}_{1}_{2}_ReconstructedTruth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+        if eff:
+            self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+        else:
+            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
         return True
 
     def Start(self):
@@ -329,18 +330,65 @@ class DMesonJetUnfoldingEngine:
 
     def GenerateRooUnfoldResponse(self):
         for prior in self.fPriors:
-            if prior == "train_truth":
-                rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, self.fDetectorTrainTruth, self.fDetectorResponse)
-                priorSpectrum = self.fDetectorTrainTruth.Clone()
-                
-            else:
-                (detResp, trainTruth) = self.NormalizeResponseMatrix(self.fDetectorResponse, prior, self.fDetectorEfficiency)
-                rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
-                priorSpectrum = trainTruth.Clone()
+            (detResp, trainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
+            print(detResp)
+            print(trainTruth)
+            rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
+            priorSpectrum = trainTruth.Clone("Prior_{0}".format(prior))
             priorSpectrum.Scale(1. / priorSpectrum.Integral())
-            priorSpectrum.SetName("Prior_{0}".format(prior))
             self.fPriorSpectra[prior] = priorSpectrum
             self.fResponseMatrices[prior] = rooUnfoldResp
+
+    def NormalizeAndRebinResponseMatrix(self, prior): 
+        (normResp, priorHist) = self.NormalizeResponseMatrix(prior)
+        coarseResp = self.Rebin(normResp)
+        coarsePrior = self.Rebin(priorHist)
+        return coarseResp, coarsePrior
+
+    def Rebin(self, hist):
+        if isinstance(hist, ROOT.TH2):
+            return self.Rebin2D(hist, self.fInputSpectrum, self.fInputSpectrum)
+        elif isinstance(hist, ROOT.TH1):
+            return self.Rebin1D(hist, self.fInputSpectrum)
+        else:
+            print("Object {0} of unrecognized type!".format(hist))
+            return None # will fail
+
+    def Rebin1D(self, hist, template):
+        r = ROOT.TH1D(hist.GetName(), hist.GetTitle(), template.GetXaxis().GetNbins(), template.GetXaxis().GetXbins().GetArray())
+        r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
+        r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
+        for xbin in range(0, hist.GetXaxis().GetNbins()+2):
+            xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
+            rxbin = r.GetXaxis().FindBin(xbinCenter)
+            binValue = hist.GetBinContent(xbin) + r.GetBinContent(rxbin)
+            binError = math.sqrt(hist.GetBinError(xbin)**2 + r.GetBinError(rxbin)**2)
+            r.SetBinContent(rxbin, binValue)
+            r.SetBinError(rxbin, binError)
+        return r
+
+    def Rebin2D(self, hist, templatex, templatey):
+        r = ROOT.TH2D(hist.GetName(), hist.GetTitle(), templatex.GetXaxis().GetNbins(), templatex.GetXaxis().GetXbins().GetArray(), templatey.GetXaxis().GetNbins(), templatey.GetXaxis().GetXbins().GetArray())
+        r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
+        r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
+        for xbin in range(0, hist.GetXaxis().GetNbins()+2):
+            for ybin in range(0, hist.GetYaxis().GetNbins()+2):
+                xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
+                ybinCenter = hist.GetYaxis().GetBinCenter(ybin)
+                rxbin = r.GetXaxis().FindBin(xbinCenter)
+                rybin = r.GetYaxis().FindBin(ybinCenter)
+                binValue = hist.GetBinContent(xbin, ybin) + r.GetBinContent(rxbin, rybin)
+                binError = math.sqrt(hist.GetBinError(xbin, ybin)**2 + r.GetBinError(rxbin, rybin)**2)
+                r.SetBinContent(rxbin, rybin, binValue)
+                r.SetBinError(rxbin, rybin, binError)
+        return r
+
+    def NormalizeResponseMatrix(self, prior):
+        if prior == "train_truth":
+            return self.fDetectorResponse, self.fDetectorTrainTruth
+        else:
+            print("Only train_truth prior implemented!!")
+            return None # will fail
 
 class DMesonJetUnfolding:
     def __init__(self, name, input_path, dataTrain, data, responseTrain, response):
@@ -357,9 +405,9 @@ class DMesonJetUnfolding:
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fDataTrain, self.fData))
         self.fResponseFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fResponseTrain, self.fResponse))
 
-    def StartUnfolding(self, config):
+    def StartUnfolding(self, config, eff):
         eng = DMesonJetUnfoldingEngine(config)
         self.fUnfoldingEngine.append(eng)
-        r = eng.LoadData(self.fDataFile, self.fResponseFile)
+        r = eng.LoadData(self.fDataFile, self.fResponseFile, eff)
         if r:
             eng.Start()
