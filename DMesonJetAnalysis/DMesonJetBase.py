@@ -7,6 +7,7 @@ import os
 import math
 import copy
 import DMesonJetUtils
+import numpy
 from enum import Enum
 
 class DetectorResponse:
@@ -21,34 +22,46 @@ class DetectorResponse:
                 break
         self.fName = name
         self.fJetName = jetName
-        self.fResponseMatrix = self.GenerateResponseMatrix(axis)
-        self.fTruth = self.GenerateTruth(axis)
-        self.fMeasured = self.GenerateMeasured(axis)
-        self.fReconstructedTruth = self.GenerateTruth(axis, "RecontructedTruth")
+        self.fResponseMatrix = None
+        self.fTruth = None
+        self.fMeasured = None
+        self.fReconstructedTruth = None
         self.fEfficiency = None
         self.fResolution = None
         self.fEnergyScaleShift = None
         self.fEnergyScaleShiftMedian = None
-        if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName:
-            varName = "({0}-{1}) / {1}".format(self.fAxis[0].fDetectorAxis.GetVariableName(), self.fAxis[0].fTruthAxis.GetVariableName())
-            sname = "{0}_DetectorResponse".format(self.fName)
-            self.fStatistics = DMesonJetUtils.StatisticMultiSet(sname, self.fAxis[0].fTruthAxis, varName)
-        else:
-            self.fStatistics = None
-        if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName:
-            self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in range(0, len(self.fAxis[0].fTruthAxis.fBins)+1)]
-            self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in range(0, len(self.fAxis[0].fTruthAxis.fBins)+1)]
-            self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in range(0, len(self.fAxis[0].fDetectorAxis.fBins)+1)]
-            self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "RecontructedTruth") for bin in range(0, len(self.fAxis[0].fDetectorAxis.fBins)+1)]
+        self.fStatistics = None
+        self.fResponseMatrix1D = None
+        self.fTruth1D = None
+        self.fMeasured1D = None
+        self.fReconstructedTruth1D = None
+        self.fEfficiency1D = None
+        self.fEfficiency1DRatios = None
+    
+    def GenerateHistograms(self):
+        self.fResponseMatrix = self.GenerateResponseMatrix(self.fAxis)
+        self.fTruth = self.GenerateTruth(self.fAxis)
+        self.fMeasured = self.GenerateMeasured(self.fAxis)
+        self.fReconstructedTruth = self.GenerateTruth(self.fAxis, "RecontructedTruth")
+        if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
+            self.SetupStatistics(self.fAxis[0].fCoarseResponseAxis)
+        if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
+            self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins)+1)]
+            self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins)+1)]
+            self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins)+1)]
+            self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "RecontructedTruth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins)+1)]
             self.fEfficiency1D = []
             self.fEfficiency1DRatios = []
-        else:
-            self.fResponseMatrix1D = None
-            self.fTruth1D = None
-            self.fMeasured1D = None
-            self.fReconstructedTruth1D = None
-            self.fEfficiency1D = None
-            self.fEfficiency1DRatios = None
+
+    def SetupStatistics(self, axis):
+        varName = "({0}-{1}) / {1}".format(axis.fDetectorAxis.GetVariableName(), axis.fTruthAxis.GetVariableName())
+        sname = "{0}_DetectorResponse".format(self.fName)
+        self.fStatistics = DMesonJetUtils.StatisticMultiSet(sname, axis.fTruthAxis, varName)
+
+    @classmethod
+    def fromfile(cls, name, jetName, axis, cuts, weightEff, file):
+        resp = cls(name, jetName, axis, cuts, weightEff)
+        resp.LoadFromRootFile(file)
 
     def GenerateResolution(self):
         if not self.fStatistics:
@@ -72,6 +85,25 @@ class DetectorResponse:
         hist = self.GenerateHistogram(axis, "{0}_{1}".format(name, binName))
         hist.SetTitle(binTitle)
         return hist
+
+    def LoadFromRootFile(self, file):
+        print("LoadFromRootFile: not yet implemented!")
+#         rlist = file.Get(self.fName)
+#         self.fResponseMatrix
+#         self.fEfficiency
+#         self.fReconstructedTruth
+#         self.fTruth
+#         self.fMeasured
+#         if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName:
+#             self.fResolution
+#             self.fEnergyScaleShift
+#             self.fEnergyScaleShiftMedian
+#         if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName:
+#             self.fEfficiency1D.append()
+#             self.fTruth1D.append()
+#             self.fMeasured1D.append()
+#             self.fReconstructedTruth1D.append()
+#             self.fResponseMatrix1D.append()
 
     def GenerateRootList(self):
         rlist = ROOT.TList()
@@ -229,10 +261,10 @@ class DetectorResponse:
             return histo.SetBinError(coord, v)
 
     def GeneratePartialMultiEfficiency(self):
-        if not self.fTruth1D or not self.fReconstructedTruth1D:
+        if not self.fTruth1D or not self.fReconstructedTruth1D or not self.fAxis[0].fCoarseResponseAxis:
             return
         for bin,(truth,recoTruth) in enumerate(zip(self.fTruth1D, self.fReconstructedTruth1D)):
-            eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], self.fAxis[0].fTruthAxis, bin, truth, recoTruth)
+            eff = self.GeneratePartialMultiEfficiencyForBin(self.fAxis[1], bin, truth, recoTruth)
             self.fEfficiency1D.append(eff)
             ratio = self.MakeComparisonRatio(eff, self.fEfficiency1D[0])
             self.fEfficiency1DRatios.append(ratio)
@@ -244,7 +276,7 @@ class DetectorResponse:
         ratio.GetYaxis().SetTitle("ratio")
         return ratio
 
-    def GeneratePartialMultiEfficiencyForBin(self, axis, axisProj, bin, truth, recoTruth):
+    def GeneratePartialMultiEfficiencyForBin(self, axis, bin, truth, recoTruth):
         hname = truth.GetName().replace("Truth", "Efficiency")
         #eff = ROOT.TGraphAsymmErrors(recoTruthProj, truthProj, "b(1,1) mode")
         #eff.SetName("{0}_{1}".format(binName, name))
@@ -370,14 +402,14 @@ class DetectorResponse:
             self.FillResponseMatrix([a.fDetectorAxis.fName for a in self.fAxis], self.fResponseMatrix, recoDmeson, truthDmeson, recoJet, truthJet, w)
 
         if self.fResponseMatrix1D:
-            self.FillResponseMatrix([self.fAxis[1].fDetectorAxis.fName], self.fResponseMatrix1D[self.fResponseMatrix.GetAxis(0).GetNbins()+1], recoDmeson, truthDmeson, recoJet, truthJet, w)
+            self.FillResponseMatrix([self.fAxis[1].fDetectorAxis.fName], self.fResponseMatrix1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins()+1], recoDmeson, truthDmeson, recoJet, truthJet, w)
             if self.fAxis[0].fTruthAxis.fName == "jet_pt":
-                bin = self.fResponseMatrix.GetAxis(len(self.fAxis)).FindBin(truthJet.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthJet.fPt)
             elif self.fAxis[0].fTruthAxis.fName == "d_pt":
-                bin = self.fResponseMatrix.GetAxis(len(self.fAxis)).FindBin(truthDmeson.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthDmeson.fPt)
             else:
                 bin = 0
-            if bin >= 1 and bin <= self.fResponseMatrix.GetAxis(0).GetNbins():
+            if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
                 self.FillResponseMatrix([self.fAxis[1].fDetectorAxis.fName], self.fResponseMatrix1D[bin], recoDmeson, truthDmeson, recoJet, truthJet, w)
                 self.FillResponseMatrix([self.fAxis[1].fDetectorAxis.fName], self.fResponseMatrix1D[0], recoDmeson, truthDmeson, recoJet, truthJet, w)
 
@@ -386,14 +418,14 @@ class DetectorResponse:
             self.FillSpectrum([a.fDetectorAxis.fName for a in self.fAxis], self.fMeasured, dmeson, jet, w)
 
         if self.fMeasured1D:
-            self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fMeasured1D[self.fMeasured.GetNbinsX()+1], dmeson, jet, w)
+            self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fMeasured1D[self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.GetNbins()+1], dmeson, jet, w)
             if self.fAxis[0].fDetectorAxis.fName == "jet_pt":
-                bin = self.fMeasured.GetXaxis().FindBin(jet.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(jet.fPt)
             elif self.fAxis[0].fDetectorAxis.fName == "d_pt":
-                bin = self.fMeasured.GetXaxis().FindBin(dmeson.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(dmeson.fPt)
             else:
                 bin = 0
-            if bin >= 1 and bin <= self.fMeasured.GetNbinsX():
+            if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.GetNbins():
                 self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fMeasured1D[0], dmeson, jet, w)
                 self.FillSpectrum([self.fAxis[1].fDetectorAxis.fName], self.fMeasured1D[bin], dmeson, jet, w)
 
@@ -402,14 +434,14 @@ class DetectorResponse:
             self.FillSpectrum([a.fTruthAxis.fName for a in self.fAxis], self.fTruth, dmeson, jet, w)
 
         if self.fTruth1D:
-            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fTruth1D[self.fTruth.GetNbinsX()+1], dmeson, jet, w)
+            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fTruth1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins()+1], dmeson, jet, w)
             if self.fAxis[0].fTruthAxis.fName == "jet_pt":
-                bin = self.fTruth.GetXaxis().FindBin(jet.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(jet.fPt)
             elif self.fAxis[0].fTruthAxis.fName == "d_pt":
-                bin = self.fTruth.GetXaxis().FindBin(dmeson.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(dmeson.fPt)
             else:
                 bin = 0
-            if bin >= 1 and bin <= self.fTruth.GetNbinsX():
+            if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
                 self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fTruth1D[bin], dmeson, jet, w)
                 self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fTruth1D[0], dmeson, jet, w)
 
@@ -418,14 +450,14 @@ class DetectorResponse:
             self.FillSpectrum([a.fTruthAxis.fName for a in self.fAxis], self.fReconstructedTruth, dmeson, jet, w)
 
         if self.fReconstructedTruth1D:
-            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[self.fReconstructedTruth.GetNbinsX()+1], dmeson, jet, w)
+            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins()+1], dmeson, jet, w)
             if self.fAxis[0].fTruthAxis.fName == "jet_pt":
-                bin = self.fReconstructedTruth.GetXaxis().FindBin(jet.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(jet.fPt)
             elif self.fAxis[0].fTruthAxis.fName == "d_pt":
-                bin = self.fReconstructedTruth.GetXaxis().FindBin(dmeson.fPt)
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(dmeson.fPt)
             else:
                 bin = 0
-            if bin >= 1 and bin <= self.fReconstructedTruth.GetNbinsX():
+            if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
                 self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[bin], dmeson, jet, w)
                 self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[0], dmeson, jet, w)
 
@@ -457,18 +489,31 @@ class ResponseAxis:
     def __init__(self, detector, truth):
         self.fDetectorAxis = detector
         self.fTruthAxis = truth
+        self.fCoarseResponseAxis = None
+
+    def SetCoarseAxis(self, detector, truth):
+        self.fCoarseResponseAxis = ResponseAxis(detector, truth)
 
 class Axis:
     def __init__(self, name, bins, label = ""):
         self.fName = name
         self.fBins = bins
         self.fLabel = label
-        
+
+    @classmethod
+    def fromLimits(cls, name, start, stop, step, label = ""):
+        bins = []
+        bins.extend(numpy.linspace(start, stop, (stop-start)/step, True))
+        return cls(name, bins, label)
+
     def FindBin(self, x):
         for i,(min,max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
             if x > min and x < max:
                 return i
         return -1
+
+    def GetNbins(self):
+        return len(self.fBins)-1
 
     def GetTitle(self, label = ""):
         varName = self.GetVariableName(label)
