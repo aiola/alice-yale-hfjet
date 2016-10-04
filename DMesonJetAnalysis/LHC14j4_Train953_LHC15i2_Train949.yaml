@@ -25,6 +25,9 @@ analysis:
     iter_min: 1,
     iter_max: 6,
     iter_step: 1
+    },
+  BinByBin: {
+    default_reg: null
     }
   }
 -
@@ -46,5 +49,7 @@ analysis:
     iter_min: 1,
     iter_max: 6,
     iter_step: 1
+    },
+  BinByBin: {
     }
   }
