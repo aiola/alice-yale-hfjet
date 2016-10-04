@@ -12,6 +12,35 @@ from collections import OrderedDict
 
 globalList = []
 
+class ResponseMatrix:
+    def __init__(self, name, rooUnfoldResponse, response, truth, prior, normResp):
+        self.fName = name
+        self.fRooUnfoldResponse = rooUnfoldResponse
+        self.fResponse = response
+        self.fNormResponse = normResp
+        self.fTruth = truth
+        self.fPrior = prior
+        self.GenerateEfficiencies()
+
+    def GenerateEfficiencies(self):
+        # total efficiency
+        self.fTotalEfficiency =  self.fResponse.ProjectionY("{0}_TotalEfficiency".format(self.fName), 1, self.fResponse.GetXaxis().GetNbins())
+        self.fTotalEfficiency.Divide(self.fTruth)
+        self.fTotalEfficiency.SetTitle("Total Efficiency")
+        self.fTotalEfficiency.GetYaxis().SetTitle("Total Efficiency")
+
+        # reconstruction efficiency
+        self.fRecoEfficiency =  self.fResponse.ProjectionY("{0}_RecoEfficiency".format(self.fName), 0, -1)
+        self.fRecoEfficiency.Divide(self.fTruth)
+        self.fRecoEfficiency.SetTitle("Reconstruction Efficiency")
+        self.fRecoEfficiency.GetYaxis().SetTitle("Reconstruction Efficiency")
+        
+        # kinematic efficiency
+        self.fKineEfficiency =  self.fResponse.ProjectionY("{0}_KineEfficiency".format(self.fName), 1, self.fResponse.GetXaxis().GetNbins())
+        self.fKineEfficiency.Divide(self.fResponse.ProjectionY("temp", 0, -1))
+        self.fKineEfficiency.SetTitle("Kinematic Efficiency")
+        self.fKineEfficiency.GetYaxis().SetTitle("Kinematic Efficiency")
+
 class DMesonJetUnfoldingEngine:
     def __init__(self, config):
         self.fDMeson = config["d_meson"]
@@ -58,16 +87,18 @@ class DMesonJetUnfoldingEngine:
         if eff:
             self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
         else:
-            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName), 0, -1)
         return True
 
     def Start(self):
-        self.GenerateRooUnfoldResponse()
+        self.GenerateResponse()
         for method, config in self.UnfoldingConfig.iteritems():
             if method == "Svd":
                 self.UnfoldSvd()
             elif method == "Bayes":
                 self.UnfoldBayes(config["iter_min"], config["iter_max"], config["iter_step"])
+            elif method == "BinByBin":
+                self.UnfoldBinByBin()
             else:
                 print("Unfolding method {0} not known!".format(method))
         self.GeneratePearsonMatrices()
@@ -89,12 +120,77 @@ class DMesonJetUnfoldingEngine:
             self.fPearsonMatrices[id] = pearson
 
     def Plot(self):
+        ROOT.gStyle.SetPalette(55,ROOT.nullptr)
         if len(self.UnfoldingConfig) > 1 or self.fTruthSpectrum:
             self.CompareMethods()
         self.UnfoldingSummary()
         self.PlotPearsonMatrices()
         self.PlotSvdDvectors()
-    
+        self.PlotResponses()
+
+    def PlotResponses(self):
+        for name, resp in self.fResponseMatrices.iteritems():
+            cname = "Response_{0}".format(name)
+            c = ROOT.TCanvas(cname, cname, 850, 750)
+            globalList.append(c)
+            c.Divide(2,2)
+
+            pad = c.cd(1)
+            pad.SetLogz()
+            pad.SetLeftMargin(0.16)
+            pad.SetRightMargin(0.24)
+            pad.SetBottomMargin(0.15)
+            rm = resp.fNormResponse.DrawCopy("col2z")
+            rm.GetXaxis().SetTitleFont(43)
+            rm.GetXaxis().SetTitleSize(19)
+            rm.GetXaxis().SetTitleOffset(2.6)
+            rm.GetXaxis().SetLabelFont(43)
+            rm.GetXaxis().SetLabelSize(16)
+            rm.GetYaxis().SetTitleFont(43)
+            rm.GetYaxis().SetTitleSize(19)
+            rm.GetYaxis().SetTitleOffset(2.6)
+            rm.GetYaxis().SetLabelFont(43)
+            rm.GetYaxis().SetLabelSize(16)
+            rm.GetZaxis().SetTitleFont(43)
+            rm.GetZaxis().SetTitleSize(16)
+            rm.GetZaxis().SetTitleOffset(2.8)
+            rm.GetZaxis().SetLabelFont(43)
+            rm.GetZaxis().SetLabelSize(15)
+            rm.SetMaximum(1)
+            globalList.append(rm)
+
+            pad = c.cd(2)
+            pad.SetLeftMargin(0.14)
+            pad.SetBottomMargin(0.15)
+            self.PlotEfficiency(resp.fTotalEfficiency)
+
+            pad = c.cd(3)
+            pad.SetLeftMargin(0.14)
+            pad.SetBottomMargin(0.15)
+            self.PlotEfficiency(resp.fRecoEfficiency)
+
+            pad = c.cd(4)
+            pad.SetLeftMargin(0.14)
+            pad.SetBottomMargin(0.15)
+            self.PlotEfficiency(resp.fKineEfficiency)
+
+    def PlotEfficiency(self, eff):
+        eff_copy = eff.DrawCopy("hist")
+        if eff_copy.GetMinimum() > 0.99: # fix ugly plotting when the efficiency is 1
+            eff_copy.SetMaximum(1.2)
+            eff_copy.SetMinimum(0.8)
+        eff_copy.GetXaxis().SetTitleFont(43)
+        eff_copy.GetXaxis().SetTitleSize(19)
+        eff_copy.GetXaxis().SetTitleOffset(2.6)
+        eff_copy.GetXaxis().SetLabelFont(43)
+        eff_copy.GetXaxis().SetLabelSize(16)
+        eff_copy.GetYaxis().SetTitleFont(43)
+        eff_copy.GetYaxis().SetTitleSize(19)
+        eff_copy.GetYaxis().SetTitleOffset(2.6)
+        eff_copy.GetYaxis().SetLabelFont(43)
+        eff_copy.GetYaxis().SetLabelSize(16)
+        globalList.append(eff_copy)
+
     def FilterObjectsFromDict(self, objects, method, reg, prior):
         for (methodIt, regIt, priorIt), cov in objects.iteritems():
             if method and not methodIt == method:
@@ -115,9 +211,14 @@ class DMesonJetUnfoldingEngine:
         filteredPearsons = self.FilterObjectsFromDict(self.fPearsonMatrices, method, None, prior)
         for (methodIt, reg, priorIt), cov in filteredPearsons:
             cov_copy = cov.Clone()
-            cov_copy.SetTitle("reg={0}".format(reg))
+            if reg:
+                cov_copy.SetTitle("reg={0}".format(reg))
+            else:
+                cov_copy.SetTitle("No regularization".format(reg))
             pearsons.append(cov_copy)
             globalList.append(cov_copy)
+        if len(pearsons) < 1:
+            return
 
         cname = "Pearson_{0}_{1}_{2}".format(self.fInputSpectrum.GetName(), method, prior)
         rows = int(math.floor(math.sqrt(len(pearsons))))
@@ -206,6 +307,8 @@ class DMesonJetUnfoldingEngine:
             spectrum.SetTitle("Reg = {0}".format(regIt))
             spectra.append(spectrum)
             globalList.append(spectrum)
+        if len(spectra) < 1:
+            return
         r = DMesonJetUtils.CompareSpectra(baseline, spectra, "UnfoldingRegularization_{0}_{1}_{2}".format(method, prior, self.fInputSpectrum.GetName()))
         for obj in r:
             globalList.append(obj)
@@ -339,7 +442,7 @@ class DMesonJetUnfoldingEngine:
         for prior, resp in self.fResponseMatrices.iteritems():
             for reg in range(1, max_reg+1):
                 print("Unfolding {0}, reg={1}, prior={2}".format("SVD", reg, prior))
-                unfold = ROOT.RooUnfoldSvd(resp, self.fInputSpectrum, reg)
+                unfold = ROOT.RooUnfoldSvd(resp.fRooUnfoldResponse, self.fInputSpectrum, reg)
                 unfolded = unfold.Hreco()
                 if not prior in self.fSvdDvectors.keys():
                     dvector = unfold.Impl().GetD().Clone("SvdDvector_{0}_{1}".format(self.fInputSpectrum.GetName(), prior))
@@ -354,7 +457,7 @@ class DMesonJetUnfoldingEngine:
                 unfolded.SetName("{0}_{1}_{2}_{3}".format(self.fInputSpectrum.GetName(), "Svd", reg, prior))
                 unfolded.SetTitle("{0}, k={1}, prior={2}".format("Svd", reg, prior))
                 self.fUnfoldedSpectra["Svd", reg, prior] = unfolded
-                refolded = resp.ApplyToTruth(unfolded)
+                refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
                 refolded.SetName("{0}_{1}_{2}_{3}_Refolded".format(self.fInputSpectrum.GetName(), "Svd", reg, prior))
                 refolded.SetTitle("{0}, k={1}, prior={2}".format("Svd", reg, prior))
                 self.fRefoldedSpectra["Svd", reg, prior] = refolded
@@ -363,7 +466,7 @@ class DMesonJetUnfoldingEngine:
         for prior, resp in self.fResponseMatrices.iteritems():
             for reg in range(iter_min, iter_max+1, iter_step):
                 print("Unfolding {0}, reg={1}, prior={2}".format("Bayes", reg, prior))
-                unfold = ROOT.RooUnfoldBayes(resp, self.fInputSpectrum, reg)
+                unfold = ROOT.RooUnfoldBayes(resp.fRooUnfoldResponse, self.fInputSpectrum, reg)
                 unfolded = unfold.Hreco()
                 cov = ROOT.TH2D(unfold.Ereco())
                 cov.SetName("CovMat_{0}_{1}_{2}_{3}".format(self.fInputSpectrum.GetName(), "Bayes", reg, prior))
@@ -373,21 +476,39 @@ class DMesonJetUnfoldingEngine:
                 unfolded.SetName("{0}_{1}_{2}_{3}".format(self.fInputSpectrum.GetName(), "Bayes", reg, prior))
                 unfolded.SetTitle("{0}, iter={1}, prior={2}".format("Bayes", reg, prior))
                 self.fUnfoldedSpectra["Bayes", reg, prior] = unfolded
-                refolded = resp.ApplyToTruth(unfolded)
-                refolded.SetName("{0}_{1}_{2}_{3}_Refolded".format(self.fInputSpectrum.GetName(), "Svd", reg, prior))
-                refolded.SetTitle("{0}, k={1}, prior={2}".format("Svd", reg, prior))
+                refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
+                refolded.SetName("{0}_{1}_{2}_{3}_Refolded".format(self.fInputSpectrum.GetName(), "Bayes", reg, prior))
+                refolded.SetTitle("{0}, iter={1}, prior={2}".format("Bayes", reg, prior))
                 self.fRefoldedSpectra["Bayes", reg, prior] = refolded
 
-    def GenerateRooUnfoldResponse(self):
+    def UnfoldBinByBin(self):
+        for prior, resp in self.fResponseMatrices.iteritems():
+            print("Unfolding {0}, prior={1}".format("BinByBin", prior))
+            unfold = ROOT.RooUnfoldBinByBin(resp.fRooUnfoldResponse, self.fInputSpectrum)
+            unfolded = unfold.Hreco()
+            cov = ROOT.TH2D(unfold.Ereco())
+            cov.SetName("CovMat_{0}_{1}_{2}".format(self.fInputSpectrum.GetName(), "BinByBin", prior))
+            cov.GetXaxis().SetTitle("bin number")
+            cov.GetYaxis().SetTitle("bin number")
+            self.fCovarianceMatrices["BinByBin", None, prior] = cov
+            unfolded.SetName("{0}_{1}_{2}".format(self.fInputSpectrum.GetName(), "BinByBin", prior))
+            unfolded.SetTitle("{0}, prior={1}".format("BinByBin", prior))
+            self.fUnfoldedSpectra["BinByBin", None, prior] = unfolded
+            refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
+            refolded.SetName("{0}_{1}_{2}_Refolded".format(self.fInputSpectrum.GetName(), "BinByBin", prior))
+            refolded.SetTitle("{0}, prior={1}".format("BinByBin", prior))
+            self.fRefoldedSpectra["BinByBin", None, prior] = refolded
+
+    def GenerateResponse(self):
         for prior in self.fPriors:
             (detResp, trainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
-            print(detResp)
-            print(trainTruth)
+            detResp.GetZaxis().SetTitle("yield")
             rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
             priorSpectrum = trainTruth.Clone("Prior_{0}".format(prior))
             priorSpectrum.Scale(1. / priorSpectrum.Integral())
-            self.fPriorSpectra[prior] = priorSpectrum
-            self.fResponseMatrices[prior] = rooUnfoldResp
+            detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior())
+            detRespNorm.GetZaxis().SetTitle("Probability Density")
+            self.fResponseMatrices[prior] = ResponseMatrix(prior, rooUnfoldResp, detResp, trainTruth, priorSpectrum, detRespNorm)
 
     def NormalizeAndRebinResponseMatrix(self, prior): 
         (normResp, priorHist) = self.NormalizeResponseMatrix(prior)
@@ -436,9 +557,33 @@ class DMesonJetUnfoldingEngine:
     def NormalizeResponseMatrix(self, prior):
         if prior == "train_truth":
             return self.fDetectorResponse, self.fDetectorTrainTruth
+        elif prior == "flat":
+            priorHist = self.GenerateFlatPrior()
         else:
             print("Only train_truth prior implemented!!")
             return None # will fail
+
+        resp = self.Normalize2D(self.fDetectorResponse, priorHist)
+
+        return resp, priorHist
+
+    def GenerateFlatPrior(self):
+        priorHist = self.fDetectorTrainTruth.Clone("myprior")
+        for ibin in range(0, priorHist.GetNbinsX()+2):
+            priorHist.SetBinContent(ibin, 1)
+            priorHist.SetBinError(ibin, 0)
+        return priorHist
+
+    def Normalize2D(self, hist, norm):
+        resp = hist.Clone("myresp")
+        for ybin in range(0, resp.GetYaxis().GetNbins()+2):
+            inty = resp.Integral(0, resp.GetXaxis().GetNbins(), ybin, ybin)
+            if inty == 0:
+                continue
+            scaling = norm.GetBinContent(ybin)/inty
+            for xbin in range(0, resp.GetXaxis().GetNbins()+2):
+                resp.SetBinContent(xbin, ybin, resp.GetBinContent(xbin, ybin)*scaling)
+        return resp
 
 class DMesonJetUnfolding:
     def __init__(self, name, input_path, dataTrain, data, responseTrain, response):
