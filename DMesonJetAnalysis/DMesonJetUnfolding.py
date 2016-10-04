@@ -94,16 +94,64 @@ class DMesonJetUnfoldingEngine:
         self.UnfoldingSummary()
         self.PlotPearsonMatrices()
         self.PlotSvdDvectors()
+    
+    def FilterObjectsFromDict(self, objects, method, reg, prior):
+        for (methodIt, regIt, priorIt), cov in objects.iteritems():
+            if method and not methodIt == method:
+                continue
+            if prior and not priorIt == prior:
+                continue
+            if reg and not regIt == reg:
+                continue
+            yield (methodIt, regIt, priorIt), cov
 
     def PlotPearsonMatrices(self):
-        for (method, reg, prior), cov in self.fPearsonMatrices.iteritems():
-            cname = cov.GetName()
-            c = ROOT.TCanvas(cname, cname) 
-            c.cd()
-            globalList.append(c)
-            cov_copy = cov.DrawCopy("colz")
-            cov_copy.GetZaxis().SetRangeUser(-1,1)
+        for method, config in self.UnfoldingConfig.iteritems():
+            for prior in self.fPriors:
+                self.PlotPearsonMatricesForMethod(method, prior)
+
+    def PlotPearsonMatricesForMethod(self, method, prior):
+        pearsons = []
+        filteredPearsons = self.FilterObjectsFromDict(self.fPearsonMatrices, method, None, prior)
+        for (methodIt, reg, priorIt), cov in filteredPearsons:
+            cov_copy = cov.Clone()
+            cov_copy.SetTitle("reg={0}".format(reg))
+            pearsons.append(cov_copy)
             globalList.append(cov_copy)
+
+        cname = "Pearson_{0}_{1}_{2}".format(self.fInputSpectrum.GetName(), method, prior)
+        rows = int(math.floor(math.sqrt(len(pearsons))))
+        cols = int(math.ceil(len(pearsons) / rows))
+        c = ROOT.TCanvas(cname, cname, 360*cols, 350*rows)
+        globalList.append(c)
+        c.Divide(cols, rows)
+
+        for i, cov in enumerate(pearsons):
+            c.cd(i+1)
+            cov.GetXaxis().SetTitleFont(43)
+            cov.GetXaxis().SetTitleSize(16)
+            cov.GetXaxis().SetTitleOffset(2)
+            cov.GetXaxis().SetLabelFont(43)
+            cov.GetXaxis().SetLabelSize(15)
+            cov.GetYaxis().SetTitleFont(43)
+            cov.GetYaxis().SetTitleSize(16)
+            cov.GetYaxis().SetTitleOffset(2)
+            cov.GetYaxis().SetLabelFont(43)
+            cov.GetYaxis().SetLabelSize(15)
+            if i % cols == cols-1:
+                cov.Draw("col2z")
+            else:
+                cov.Draw("col2")
+            cov.GetZaxis().SetRangeUser(-1,1)
+            pave = ROOT.TPaveText(0, 1, 1, 0.9, "NB NDC")
+            pave.SetBorderSize(0)
+            pave.SetFillStyle(0)
+            pave.SetTextFont(43)
+            pave.SetTextSize(17)
+            pave.SetTextAlign(22)
+            pave.AddText(cov.GetTitle())
+            pave.Draw()
+            globalList.append(pave)
 
     def PlotSvdDvectors(self):
         for prior, d in self.fSvdDvectors.iteritems():
@@ -290,6 +338,7 @@ class DMesonJetUnfoldingEngine:
         max_reg = self.fInputSpectrum.GetNbinsX()
         for prior, resp in self.fResponseMatrices.iteritems():
             for reg in range(1, max_reg+1):
+                print("Unfolding {0}, reg={1}, prior={2}".format("SVD", reg, prior))
                 unfold = ROOT.RooUnfoldSvd(resp, self.fInputSpectrum, reg)
                 unfolded = unfold.Hreco()
                 if not prior in self.fSvdDvectors.keys():
@@ -312,7 +361,8 @@ class DMesonJetUnfoldingEngine:
     
     def UnfoldBayes(self, iter_min, iter_max, iter_step):
         for prior, resp in self.fResponseMatrices.iteritems():
-            for reg in range(iter_min, iter_max, iter_step):
+            for reg in range(iter_min, iter_max+1, iter_step):
+                print("Unfolding {0}, reg={1}, prior={2}".format("Bayes", reg, prior))
                 unfold = ROOT.RooUnfoldBayes(resp, self.fInputSpectrum, reg)
                 unfolded = unfold.Hreco()
                 cov = ROOT.TH2D(unfold.Ereco())

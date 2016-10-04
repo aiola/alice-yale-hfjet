@@ -23,7 +23,7 @@ analysis:
   Bayes: {
     default_reg: 3,
     iter_min: 1,
-    iter_max: 10,
+    iter_max: 6,
     iter_step: 1
     }
   }
@@ -44,7 +44,7 @@ analysis:
   Bayes: {
     default_reg: 3,
     iter_min: 1,
-    iter_max: 10,
+    iter_max: 6,
     iter_step: 1
     }
   }
