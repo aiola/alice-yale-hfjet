@@ -22,8 +22,8 @@ def main(config, format):
         if anaConfig["active"]:
             ana.StartUnfolding(anaConfig, config["efficiency"])
 
-    #ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
-    #ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
+    ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["name"]))
+    ana.SavePlots("{0}/{1}".format(config["input_path"], config["name"]), format)
 
 if __name__ == '__main__':
     
