@@ -541,9 +541,9 @@ class Axis:
 
         if self.fName == "jet_pt":
             if label:
-                title = "#it{{p}}_{{T,ch jet}}^{{ch,{0}}}".format(label)
+                title = "#it{{p}}_{{T,ch jet}}^{{{0}}}".format(label)
             else:
-                title = "#it{p}_{T,jet}^{ch}"
+                title = "#it{p}_{T,ch jet}"
         elif self.fName == "d_pt":
             if label:
                 title = "#it{{p}}_{{T,D}}^{{{0}}}".format(label)

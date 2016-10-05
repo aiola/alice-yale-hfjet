@@ -15,18 +15,18 @@ analysis:
   spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
-  default_prior: train_truth
-  priors: [train_truth, flat]
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, Flat]
   default_method: Svd
   methods:
     Svd:
       default_reg:
-        train_truth: 3
-        flat: 6
+        ResponseTruth: 3
+        Flat: 6
     Bayes:
       default_reg:
-        train_truth: 3
-        flat: 6
+        ResponseTruth: 3
+        Flat: 6
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -41,18 +41,18 @@ analysis:
   spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
-  default_prior: train_truth
-  priors: [train_truth, flat]
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, Flat]
   default_method: Svd
   methods:
     Svd:
       default_reg:
-        train_truth: 3
-        flat: 6
+        ResponseTruth: 3
+        Flat: 6
     Bayes:
       default_reg:
-        train_truth: 3
-        flat: 6
+        ResponseTruth: 3
+        Flat: 6
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -67,18 +67,18 @@ analysis:
   spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20_LikeSign
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
-  default_prior: train_truth
-  priors: [train_truth, flat]
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, Flat]
   default_method: Svd
   methods:
     Svd:
       default_reg:
-        train_truth: 3
-        flat: 6
+        ResponseTruth: 3
+        Flat: 6
     Bayes:
       default_reg:
-        train_truth: 3
-        flat: 6
+        ResponseTruth: 3
+        Flat: 6
       iter_min: 1
       iter_max: 6
       iter_step: 1
