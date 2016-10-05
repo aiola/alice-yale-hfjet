@@ -61,6 +61,7 @@ class DMesonJetUnfoldingEngine:
         self.fDMesonResponse = config["d_meson_response"]
         self.fJetDefinition = config["jet"]
         self.fSpectrumName = config["spectrum"]
+        self.fSpectrumResponseName = config["spectrum_response"]
         self.fPriors = config["priors"]
         self.UnfoldingConfig = config["methods"]
         self.DefaultPrior = config["default_prior"]
@@ -124,16 +125,16 @@ class DMesonJetUnfoldingEngine:
         else:
             self.fTruthSpectrum = None
 
-        responseListName = "{0}_{1}_{2}".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName)
+        responseListName = "{0}_{1}_{2}".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumResponseName)
         responseList = responseFile.Get(responseListName)
         if not responseList:
             print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
             return False
-        self.fDetectorResponse = responseList.FindObject("{0}_{1}_{2}_DetectorResponse".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+        self.fDetectorResponse = responseList.FindObject("{0}_{1}_{2}_DetectorResponse".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumResponseName))
         if eff:
-            self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName))
+            self.fDetectorTrainTruth = responseList.FindObject("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumResponseName))
         else:
-            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumName), 0, -1)
+            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumResponseName), 0, -1)
         return True
 
     def Start(self):
