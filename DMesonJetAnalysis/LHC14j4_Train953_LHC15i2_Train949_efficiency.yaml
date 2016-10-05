@@ -1,4 +1,4 @@
-name: LHC14j4_Train953_LHC15i2_Train949
+name: LHC14j4_Train953_LHC15i2_Train949_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 data_train: Jets_EMC_pp_MC_953_954_955_956
 data: LHC14j4_Train953_efficiency
@@ -7,6 +7,7 @@ response: LHC15i2_Train949_efficiency
 efficiency: no  # apply effieciency correction?
 analysis:
 -
+  name: SignalOnly
   active: yes
   d_meson: D0_kSignalOnly
   d_meson_response: D0
@@ -14,43 +15,44 @@ analysis:
   jet: Jet_AKTChargedR040_pt_scheme
   spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: train_truth
-  priors: [train_truth]
+  priors: [train_truth, flat]
   default_method: Svd
-  methods: {
-  Svd: {
-    default_reg: 3
-    },
-  Bayes: {
-    default_reg: 3,
-    iter_min: 1,
-    iter_max: 6,
-    iter_step: 1
-    },
-  BinByBin: {
-    default_reg: null
-    }
-  }
+  methods:
+    Svd:
+      default_reg:
+        train_truth: 3
+        flat: 6
+    Bayes:
+      default_reg:
+        train_truth: 3
+        flat: 6
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
 -
-  active: no
+  name: InvMassFit
+  active: yes
   d_meson: D0
   d_meson_response: D0
   d_meson_truth: D0_MCTruth
   jet: Jet_AKTChargedR040_pt_scheme
   spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: train_truth
-  priors: [train_truth]
+  priors: [train_truth, flat]
   default_method: Svd
-  methods: {
-  Svd: {
-    default_reg: 3
-    },
-  Bayes: {
-    default_reg: 3,
-    iter_min: 1,
-    iter_max: 6,
-    iter_step: 1
-    },
-  BinByBin: {
-    default_reg: null
-    }
-  }
+  methods:
+    Svd:
+      default_reg:
+        train_truth: 3
+        flat: 6
+    Bayes:
+      default_reg:
+        train_truth: 3
+        flat: 6
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
