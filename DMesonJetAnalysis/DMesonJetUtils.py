@@ -193,7 +193,7 @@ def find_file(path, file_name):
             if file == file_name:
                 yield os.path.join(root, file)
 
-def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
+def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio"):
     results = []
     baselineRatio = None
     maxRatio = 0
@@ -269,7 +269,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio=""):
 
         cRatio.cd()
         hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
-        hRatio.GetYaxis().SetTitle("ratio")
+        hRatio.GetYaxis().SetTitle(yaxisRatio)
         if not baselineRatio:
             baselineRatio = hRatio
         if "hist" in optRatio:
