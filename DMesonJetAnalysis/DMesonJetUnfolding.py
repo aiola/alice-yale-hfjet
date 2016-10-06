@@ -82,6 +82,7 @@ class DMesonJetUnfoldingEngine:
         self.fCovarianceMatrices = OrderedDict()
         self.fSvdDvectors = OrderedDict()
         self.fPearsonMatrices = OrderedDict()
+        self.fBinByBinCorrectionFactors = OrderedDict()
         self.fCanvases = []
 
     def SavePlots(self, path, format):
@@ -114,6 +115,8 @@ class DMesonJetUnfoldingEngine:
             unfoldingHistos["Svd"].Add(h)
         for (method,reg,prior),h in self.fPearsonMatrices.iteritems():
             unfoldingHistos[method].Add(h)
+        for h in self.fBinByBinCorrectionFactors.itervalues():
+            unfoldingHistos["BinByBin"].Add(h)
         return rlist
 
     def LoadData(self, dataFile, responseFile, eff):
@@ -209,6 +212,59 @@ class DMesonJetUnfoldingEngine:
         self.PlotPearsonMatrices()
         self.PlotSvdDvectors()
         self.PlotResponses()
+        self.PlotPriors()
+        self.PlotBinByBinCorrectionFactors()
+
+    def PlotBinByBinCorrectionFactors(self):
+        baselineId = self.fDefaultPrior
+        baseline = self.fBinByBinCorrectionFactors[baselineId].Clone("{0}_copy".format(self.fBinByBinCorrectionFactors[baselineId].GetName()))
+        baseline.SetTitle(self.fDefaultPrior)
+        yaxisRatio = "Prior x / {0}".format(self.fDefaultPrior)
+        globalList.append(baseline)
+        spectra = []
+        for priorIt, corrFact in self.fBinByBinCorrectionFactors.iteritems():
+            if baselineId == priorIt:
+                continue
+            cf = corrFact.Clone("{0}_copy".format(corrFact.GetName()))
+            cf.SetTitle(priorIt)
+            spectra.append(cf)
+            globalList.append(cf)
+        if len(spectra) < 1:
+            return
+        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_BinByBinCorrectionFactors".format(self.fName), "hist", "hist", yaxisRatio, False)
+        for obj in r:
+            globalList.append(obj)
+            if isinstance(obj, ROOT.TCanvas):
+                self.fCanvases.append(obj)
+
+    def PlotPriors(self):
+        if self.fTruthSpectrum:
+            baselineId = None
+            baseline = self.fTruthSpectrum.Clone("{0}_copy".format(self.fTruthSpectrum.GetName()))
+            baseline.Scale(1. / baseline.Integral())
+            baseline.SetTitle("MC Truth")
+            yaxisRatio = "Prior / Truth"
+        else:
+            baselineId = self.fDefaultPrior
+            baseline = self.fResponseMatrices[baselineId].fPrior.Clone("{0}_copy".format(self.fResponseMatrices[baselineId].fPrior.GetName()))
+            baseline.SetTitle(self.fDefaultPrior)
+            yaxisRatio = "Prior x / {0}".format(self.fDefaultPrior)
+        globalList.append(baseline)
+        spectra = []
+        for priorIt, resp in self.fResponseMatrices.iteritems():
+            if baselineId == priorIt:
+                continue
+            spectrum = resp.fPrior.Clone("{0}_copy".format(resp.fPrior.GetName()))
+            spectrum.SetTitle(priorIt)
+            spectra.append(spectrum)
+            globalList.append(spectrum)
+        if len(spectra) < 1:
+            return
+        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_Priors".format(self.fName), "hist", "hist", yaxisRatio, True)
+        for obj in r:
+            globalList.append(obj)
+            if isinstance(obj, ROOT.TCanvas):
+                self.fCanvases.append(obj)
 
     def PlotResponses(self):
         for name, resp in self.fResponseMatrices.iteritems():
@@ -636,6 +692,10 @@ class DMesonJetUnfoldingEngine:
     def UnfoldBinByBin(self):
         for prior, resp in self.fResponseMatrices.iteritems():
             print("Unfolding {0}, prior={1}".format("BinByBin", prior))
+            binBybinCorrFactors = resp.fResponse.ProjectionY("{0}_BinByBinCorrectionFactors_Prior{1}".format(self.fName, prior))
+            binBybinCorrFactors.SetTitle("{0} Correction Factors, prior={1}".format("BinByBin", prior))
+            binBybinCorrFactors.Divide(resp.fResponse.ProjectionX())
+            self.fBinByBinCorrectionFactors[prior] = binBybinCorrFactors
             unfold = ROOT.RooUnfoldBinByBin(resp.fRooUnfoldResponse, self.fInputSpectrum)
             unfolded = unfold.Hreco()
             cov = ROOT.TH2D(unfold.Ereco())
@@ -647,6 +707,8 @@ class DMesonJetUnfoldingEngine:
             unfolded.SetTitle("{0}, prior={1}".format("BinByBin", prior))
             self.fUnfoldedSpectra["BinByBin", None, prior] = unfolded
             refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
+            #refolded = unfolded.Clone("refolded")
+            #refolded.Divide(binBybinCorrFactors)
             refolded.SetName("{0}_RefoldedSpectrum_{1}_Prior{2}".format(self.fName, "BinByBin", prior))
             refolded.SetTitle("{0}, prior={1}".format("BinByBin", prior))
             self.fRefoldedSpectra["BinByBin", None, prior] = refolded
@@ -711,6 +773,8 @@ class DMesonJetUnfoldingEngine:
             return self.fDetectorResponse, self.fDetectorTrainTruth
         elif prior == "Flat":
             priorHist = self.GenerateFlatPrior()
+        elif "PowerLaw" in prior:
+            priorHist = self.GeneratePowerLawPrior(-int(prior.replace("PowerLaw_","")))
         else:
             print("Prior {0} not implemented!!".format(prior))
             return None # will fail
@@ -722,6 +786,19 @@ class DMesonJetUnfoldingEngine:
         resp = self.Normalize2D(self.fDetectorResponse, priorEffHist)
 
         return resp, priorHist
+
+    def GeneratePowerLawPrior(self, a):
+        print("Generating power law prior with index {0}".format(a))
+        priorHist = self.fDetectorTrainTruth.Clone("myprior")
+        priorHist.Reset()
+        minX = priorHist.GetXaxis().GetXmin()
+        if minX == 0:
+            minX = 1
+        f = ROOT.TF1("f", "[0]*x^[1]", minX, priorHist.GetXaxis().GetXmax())
+        f.SetParameter(1, a)
+        f.SetParameter(0, minX**(a+1))
+        priorHist.Add(f, 1, "i")
+        return priorHist
 
     def GenerateFlatPrior(self):
         priorHist = self.fDetectorTrainTruth.Clone("myprior")
