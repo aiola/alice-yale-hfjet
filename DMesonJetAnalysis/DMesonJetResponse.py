@@ -34,6 +34,7 @@ class DMesonJetResponseEngine:
         self.ProjectResponse()
         self.GenerateEfficiency()
         self.GenerateResolution()
+        self.GenerateResponseUncertainty()
         self.PlotResponse()
 
     def GenerateEfficiency(self):
@@ -44,9 +45,14 @@ class DMesonJetResponseEngine:
         for resp in self.fResponses.itervalues():
             resp.GenerateResolution()
 
+    def GenerateResponseUncertainty(self):
+        for resp in self.fResponses.itervalues():
+            resp.GenerateResponseUncertainty()
+
     def PlotResponse(self):
         for resp in self.fResponses.itervalues():
             self.PlotResponseMatrix(resp)
+            self.PlotResponseMatrixUncertainty(resp)
             self.PlotEfficiency(resp)
             self.PlotResolution(resp)
             self.PlotEnergyScaleShift(resp)
@@ -216,6 +222,38 @@ class DMesonJetResponseEngine:
             c.SetLeftMargin(0.12)
             c.SetLogz()
             h = resp.fResponseMatrix.DrawCopy("colz")
+            h.GetXaxis().SetTitleFont(43)
+            h.GetXaxis().SetTitleOffset(1.3)
+            h.GetXaxis().SetTitleSize(21)
+            h.GetXaxis().SetLabelFont(43)
+            h.GetXaxis().SetLabelOffset(0.009)
+            h.GetXaxis().SetLabelSize(19)
+            h.GetYaxis().SetTitleFont(43)
+            h.GetYaxis().SetTitleOffset(1.2)
+            h.GetYaxis().SetTitleSize(21)
+            h.GetYaxis().SetLabelFont(43)
+            h.GetYaxis().SetLabelOffset(0.009)
+            h.GetYaxis().SetLabelSize(19)
+            h.GetZaxis().SetTitleFont(43)
+            h.GetZaxis().SetTitleOffset(1.2)
+            h.GetZaxis().SetTitleSize(21)
+            h.GetZaxis().SetLabelFont(43)
+            h.GetZaxis().SetLabelOffset(0.009)
+            h.GetZaxis().SetLabelSize(19)
+            globalList.append(h)
+            globalList.append(c)
+            self.fCanvases.append(c)
+
+    def PlotResponseMatrixUncertainty(self, resp):
+        if resp.fResponseMatrixUncertainty:
+            c = ROOT.TCanvas("{0}_canvas".format(resp.fResponseMatrixUncertainty.GetName()), resp.fResponseMatrixUncertainty.GetTitle())
+            c.cd()
+            c.SetRightMargin(0.17)
+            c.SetTopMargin(0.08)
+            c.SetBottomMargin(0.14)
+            c.SetLeftMargin(0.12)
+            c.SetLogz()
+            h = resp.fResponseMatrixUncertainty.DrawCopy("colz")
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.3)
             h.GetXaxis().SetTitleSize(21)
