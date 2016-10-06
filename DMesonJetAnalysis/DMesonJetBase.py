@@ -37,9 +37,15 @@ class DetectorResponse:
         self.fReconstructedTruth1D = None
         self.fEfficiency1D = None
         self.fEfficiency1DRatios = None
+        self.fResponseMatrixUncertainty = None
     
     def GenerateHistograms(self):
         self.fResponseMatrix = self.GenerateResponseMatrix(self.fAxis)
+        if len(self.fAxis) == 1:
+            self.fResponseMatrixUncertainty = self.GenerateResponseMatrix(self.fAxis)
+            self.fResponseMatrixUncertainty.SetName(self.fResponseMatrixUncertainty.GetName().replace("DetectorResponse", "DetectorResponseUncertainty"))
+            self.fResponseMatrixUncertainty.SetTitle(self.fResponseMatrixUncertainty.GetTitle().replace("DetectorResponse", "DetectorResponseUncertainty"))
+            self.fResponseMatrixUncertainty.GetZaxis().SetTitle("relative statistical uncertainty")
         self.fTruth = self.GenerateTruth(self.fAxis)
         self.fMeasured = self.GenerateMeasured(self.fAxis)
         self.fReconstructedTruth = self.GenerateTruth(self.fAxis, "RecontructedTruth")
@@ -70,6 +76,15 @@ class DetectorResponse:
         self.fEnergyScaleShift = self.fStatistics.GenerateMeanHistogram("EnergyScaleShift")
         self.fResolution = self.fStatistics.GenerateStdDevHistogram("Resolution")
         self.fEnergyScaleShiftMedian = self.fStatistics.GenerateMedianHistogram("EnergyScaleShiftMedian")
+
+    def GenerateResponseUncertainty(self):
+        if not self.fResponseMatrixUncertainty:
+            return
+        for x in range(0, self.fResponseMatrix.GetXaxis().GetNbins()+2):
+            for y in range(0, self.fResponseMatrix.GetYaxis().GetNbins()+2):
+                if self.fResponseMatrix.GetBinContent(x,y) == 0:
+                    continue
+                self.fResponseMatrixUncertainty.SetBinContent(x, y, self.fResponseMatrix.GetBinError(x,y) / self.fResponseMatrix.GetBinContent(x,y))
 
     def GenerateLowerDimensionHistogram(self, axisProj, axis, bin, name):
         if bin >= 0 and bin < len(axisProj.fBins):
@@ -109,6 +124,8 @@ class DetectorResponse:
         rlist = ROOT.TList()
         rlist.SetName(self.fName)
         rlist.Add(self.fResponseMatrix)
+        if self.fResponseMatrixUncertainty:
+            rlist.Add(self.fResponseMatrixUncertainty)
         rlist.Add(self.fEfficiency)
         rlist.Add(self.fReconstructedTruth)
         rlist.Add(self.fTruth)
