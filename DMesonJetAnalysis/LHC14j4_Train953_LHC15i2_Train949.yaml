@@ -16,17 +16,21 @@ analysis:
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
-  priors: [ResponseTruth, Flat]
+  priors: [ResponseTruth, PowerLaw_1, PowerLaw_3, PowerLaw_5]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 3
-        Flat: 6
+        PowerLaw_1: 5
+        PowerLaw_3: 4
+        PowerLaw_5: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        Flat: 6
+        PowerLaw_1: 4
+        PowerLaw_3: 3
+        PowerLaw_5: 3
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -34,7 +38,7 @@ analysis:
       default_reg: null
 -
   name: InvMassFit
-  active: yes
+  active: no
   jet: Jet_AKTChargedR040_pt_scheme
   d_meson_truth: D0_MCTruth
   d_meson: D0
@@ -42,17 +46,21 @@ analysis:
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
-  priors: [ResponseTruth, Flat]
+  priors: [ResponseTruth, PowerLaw_1, PowerLaw_3, PowerLaw_5]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 3
-        Flat: 6
+        PowerLaw_1: 5
+        PowerLaw_3: 4
+        PowerLaw_5: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        Flat: 6
+        PowerLaw_1: 4
+        PowerLaw_3: 3
+        PowerLaw_5: 3
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -60,7 +68,7 @@ analysis:
       default_reg: null
 -
   name: LikeSign
-  active: yes
+  active: no
   jet: Jet_AKTChargedR040_pt_scheme
   d_meson_truth: D0_MCTruth
   d_meson: D0
@@ -68,17 +76,21 @@ analysis:
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
-  priors: [ResponseTruth, Flat]
+  priors: [ResponseTruth, PowerLaw_1, PowerLaw_3, PowerLaw_5]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 3
-        Flat: 6
+        PowerLaw_1: 5
+        PowerLaw_3: 4
+        PowerLaw_5: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        Flat: 6
+        PowerLaw_1: 4
+        PowerLaw_3: 3
+        PowerLaw_5: 3
       iter_min: 1
       iter_max: 6
       iter_step: 1

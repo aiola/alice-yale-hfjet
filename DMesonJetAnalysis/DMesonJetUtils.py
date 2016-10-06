@@ -193,7 +193,7 @@ def find_file(path, file_name):
             if file == file_name:
                 yield os.path.join(root, file)
 
-def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio"):
+def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", logRatio=False):
     results = []
     baselineRatio = None
     maxRatio = 0
@@ -206,7 +206,15 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
 
     colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2]
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
-    lines = range(2,11)
+    lines = [2, 9, 5, 7, 10, 4]
+
+    leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+    results.append(leg)
+    leg.SetFillStyle(0)
+    leg.SetBorderSize(0)
+    leg.SetTextFont(43)
+    leg.SetTextSize(16)
+
     c = ROOT.TCanvas(comparisonName, comparisonName)
     results.append(c)
     c.cd()
@@ -215,27 +223,24 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         baseline.SetLineColor(ROOT.kBlack)
         baseline.SetLineWidth(2)
         baseline.SetLineStyle(1)
+        leg.AddEntry(baseline, baseline.GetTitle(), "l")
     else: 
         baseline.SetMarkerColor(ROOT.kBlack)
         baseline.SetLineColor(ROOT.kBlack)
         baseline.SetMarkerStyle(ROOT.kOpenCircle)
         baseline.SetMarkerSize(1.2)
+        leg.AddEntry(baseline, baseline.GetTitle(), "pe")
 
     minY = baseline.GetMinimum()
     maxY = baseline.GetMaximum()
-    baseline.Draw()
+    baseline.Draw(opt)
 
     cname = "{0}_Ratio".format(comparisonName)
     cRatio = ROOT.TCanvas(cname, cname)
     results.append(cRatio)
     cRatio.cd()
-    leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
-    results.append(leg)
-    leg.SetFillStyle(0)
-    leg.SetBorderSize(0)
-    leg.SetTextFont(43)
-    leg.SetTextSize(16)
-    leg.AddEntry(baseline, baseline.GetTitle(), "pe")
+    if logRatio:
+        cRatio.SetLogy()
 
     legRatio = ROOT.TLegend(0.55, 0.87-0.04*len(spectra), 0.85, 0.87)
     results.append(legRatio)
@@ -257,7 +262,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         h.Draw(opt)
         if "hist" in opt:
             h.SetLineColor(color)
-            h.SetLineWidth(2)
+            h.SetLineWidth(3)
             h.SetLineStyle(line)
             leg.AddEntry(h, h.GetTitle(), "l")
         else:
@@ -274,7 +279,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
             baselineRatio = hRatio
         if "hist" in optRatio:
             hRatio.SetLineColor(color)
-            hRatio.SetLineWidth(2)
+            hRatio.SetLineWidth(3)
             hRatio.SetLineStyle(line)
             legRatio.AddEntry(hRatio, h.GetTitle(), "l")
         else:
@@ -295,13 +300,21 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         optRatio.replace("same","")
     c.cd()
 
-    maxRatio *= 1.5
-    if minRatio < 0.2:
-        minRatio = 0
+    if logRatio:
+        maxRatio *= 10
+        minRatio /= 5
     else:
-        minRatio *= 0.6
+        maxRatio *= 1.5
+        if minRatio < 0.2:
+            minRatio = 0
+        else:
+            minRatio *= 0.6
+    maxY *= 10
+    minY /= 5
     baselineRatio.SetMinimum(minRatio)
     baselineRatio.SetMaximum(maxRatio)
+    baseline.SetMinimum(minY)
+    baseline.SetMaximum(maxY)
     leg.Draw()
     
     cRatio.cd()
