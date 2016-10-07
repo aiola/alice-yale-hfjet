@@ -16,20 +16,18 @@ analysis:
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_1, PowerLaw_3, PowerLaw_5]
+  priors: [ResponseTruth, PowerLaw_2, PowerLaw_5]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_1: 5
-        PowerLaw_3: 4
+        PowerLaw_2: 4
         PowerLaw_5: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_1: 4
-        PowerLaw_3: 3
+        PowerLaw_2: 3
         PowerLaw_5: 3
       iter_min: 1
       iter_max: 6
@@ -46,20 +44,18 @@ analysis:
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_1, PowerLaw_3, PowerLaw_5]
+  priors: [ResponseTruth, PowerLaw_2, PowerLaw_5]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_1: 5
-        PowerLaw_3: 4
+        PowerLaw_2: 4
         PowerLaw_5: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_1: 4
-        PowerLaw_3: 3
+        PowerLaw_2: 3
         PowerLaw_5: 3
       iter_min: 1
       iter_max: 6
@@ -76,20 +72,20 @@ analysis:
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_1, PowerLaw_3, PowerLaw_5]
+  priors: [ResponseTruth, PowerLaw_1, PowerLaw_2, PowerLaw_5]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 3
         PowerLaw_1: 5
-        PowerLaw_3: 4
+        PowerLaw_2: 4
         PowerLaw_5: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
         PowerLaw_1: 4
-        PowerLaw_3: 3
+        PowerLaw_2: 3
         PowerLaw_5: 3
       iter_min: 1
       iter_max: 6
