@@ -32,6 +32,17 @@ class ResponseMatrix:
 
         self.GenerateEfficiencies()
 
+        self.GenerateResponseUncertainty()
+
+    def GenerateResponseUncertainty(self):
+        self.fResponseUncertainty = ROOT.TH2D("{0}_ResponseMatrixUncertainty".format(self.fName), "{0} Response Matrix Uncertainty".format(self.fName), self.fResponse.GetNbinsX(), self.fResponse.GetXaxis().GetXbins().GetArray(), self.fResponse.GetNbinsY(), self.fResponse.GetYaxis().GetXbins().GetArray())
+        self.fResponseUncertainty.GetXaxis().SetTitle(self.fResponse.GetXaxis().GetTitle())
+        self.fResponseUncertainty.GetYaxis().SetTitle(self.fResponse.GetYaxis().GetTitle())
+        self.fResponseUncertainty.GetZaxis().SetTitle("relative statistical uncertainty")
+        for x in range(0, self.fResponseUncertainty.GetNbinsX()+2):
+            for y in range(0, self.fResponseUncertainty.GetNbinsY()+2):
+                self.fResponseUncertainty.SetBinContent(x,y,self.fResponse.GetBinError(x,y) / self.fResponse.GetBinContent(x,y))
+
     def GenerateEfficiencies(self):
         # total efficiency
         self.fTotalEfficiency =  self.fResponse.ProjectionY("{0}_TotalEfficiency".format(self.fName), 1, self.fResponse.GetXaxis().GetNbins())
@@ -55,6 +66,7 @@ class ResponseMatrix:
         rlist = ROOT.TList()
         rlist.SetName("Response_{0}".format(self.fName))
         rlist.Add(self.fResponse)
+        rlist.Add(self.fResponseUncertainty)
         rlist.Add(self.fNormResponse)
         rlist.Add(self.fTruth)
         rlist.Add(self.fPrior)
@@ -715,6 +727,7 @@ class DMesonJetUnfoldingEngine:
 
     def GenerateResponse(self):
         for prior in self.fPriors:
+            print("Generating response for prior {0}".format(prior))
             (detResp, trainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
             detResp.GetZaxis().SetTitle("counts")
             rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
@@ -766,6 +779,21 @@ class DMesonJetUnfoldingEngine:
                 binError = math.sqrt(hist.GetBinError(xbin, ybin)**2 + r.GetBinError(rxbin, rybin)**2)
                 r.SetBinContent(rxbin, rybin, binValue)
                 r.SetBinError(rxbin, rybin, binError)
+                
+        for xbin in range(0, r.GetXaxis().GetNbins()+2):
+            for ybin in range(0, r.GetYaxis().GetNbins()+2):
+                binValue = r.GetBinContent(xbin, ybin)
+                binError = r.GetBinError(xbin, ybin)
+                if binValue > 0:
+                    relErr = binError / binValue
+                    if relErr > 0.9:
+                        print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin,ybin,relErr))
+                    if relErr > 0.98:
+                        binValue -= binError
+                        binError = 0
+                        print("Bin ({0},{1}) has rel stat err = {2}. This bin will be set to {3} (instead of {4})!".format(xbin,ybin,relErr,binValue,r.GetBinContent(xbin, ybin)))
+                        r.SetBinContent(xbin, ybin, binValue)
+                        r.SetBinError(xbin, ybin, binError)
         return r
 
     def NormalizeResponseMatrix(self, prior):
@@ -815,7 +843,10 @@ class DMesonJetUnfoldingEngine:
                 continue
             scaling = norm.GetBinContent(ybin)/inty
             for xbin in range(0, resp.GetXaxis().GetNbins()+2):
-                resp.SetBinContent(xbin, ybin, resp.GetBinContent(xbin, ybin)*scaling)
+                binValue = resp.GetBinContent(xbin, ybin)*scaling
+                binErr = resp.GetBinError(xbin, ybin)*scaling
+                resp.SetBinContent(xbin, ybin, binValue)
+                resp.SetBinError(xbin, ybin, binErr)
         return resp
 
 class DMesonJetUnfolding:
