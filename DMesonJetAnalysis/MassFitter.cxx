@@ -77,7 +77,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   switch (m) {
   case kDzeroKpi:
     fPDGMass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-    fMaxAllowedWidth = 0.03;
+    fMaxAllowedWidth = 0.025;
     fMaxAllowedMeanShift = 0.005;
     fMassFitTypeSig = kGaus;
     fMassFitTypeBkg = kExpo;
@@ -85,7 +85,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
 
   case kDstarKpipi:
     fPDGMass = TDatabasePDG::Instance()->GetParticle(413)->Mass();
-    fMaxAllowedWidth = 0.03;
+    fMaxAllowedWidth = 0.025;
     fMaxAllowedMeanShift = 0.005;
     fMassFitTypeSig = kGaus;
     fMassFitTypeBkg = kExpoPower;
@@ -228,7 +228,7 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
       Printf("Marking fit as unsuccessful because mean = %f is far from PDG mass %f", fMean, fPDGMass);
       fFitSuccessfull = kFALSE;
     }
-    if (fWidth - 3*fWidthError > fMaxAllowedWidth) {
+    if (fWidth > fMaxAllowedWidth) {
       Printf("Marking fit as unsuccessful because width = %f +/- %f is larger than %f", fWidth, fWidthError, fMaxAllowedWidth);
       fFitSuccessfull = kFALSE;
     }
