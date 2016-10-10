@@ -14,7 +14,7 @@ from collections import OrderedDict
 globalList = []
 
 class ResponseMatrix:
-    def __init__(self, name, rooUnfoldResponse, response, truth, prior, normResp):
+    def __init__(self, name, rooUnfoldResponse, response, truth, smallBinResponse, smallBinTruth, normResp):
         self.fName = name
         self.fRooUnfoldResponse = rooUnfoldResponse
 
@@ -27,8 +27,11 @@ class ResponseMatrix:
         self.fTruth = truth.Clone("{0}_Truth".format(self.fName))
         self.fTruth.SetTitle("{0} Truth".format(self.fName))
 
-        self.fPrior = prior.Clone("{0}_Prior".format(self.fName))
-        self.fPrior.SetTitle("{0} Prior".format(self.fName))
+        self.fSmallBinResponse = smallBinResponse.Clone("{0}_SmallBinResponseMatrix".format(self.fName))
+        self.fSmallBinResponse.SetTitle("{0} Small-Bin Response Matrix".format(self.fName))
+
+        self.fSmallBinTruth = smallBinTruth.Clone("{0}_SmallBinTruth".format(self.fName))
+        self.fSmallBinTruth.SetTitle("{0} Small-Bin Truth".format(self.fName))
 
         self.GenerateEfficiencies()
 
@@ -66,10 +69,11 @@ class ResponseMatrix:
         rlist = ROOT.TList()
         rlist.SetName("Response_{0}".format(self.fName))
         rlist.Add(self.fResponse)
-        rlist.Add(self.fResponseUncertainty)
         rlist.Add(self.fNormResponse)
+        rlist.Add(self.fResponseUncertainty)
         rlist.Add(self.fTruth)
-        rlist.Add(self.fPrior)
+        rlist.Add(self.fSmallBinResponse)
+        rlist.Add(self.fSmallBinTruth)
         rlist.Add(self.fTotalEfficiency)
         rlist.Add(self.fRecoEfficiency)
         rlist.Add(self.fKineEfficiency)
@@ -253,20 +257,21 @@ class DMesonJetUnfoldingEngine:
         if self.fTruthSpectrum:
             baselineId = None
             baseline = self.fTruthSpectrum.Clone("{0}_copy".format(self.fTruthSpectrum.GetName()))
-            baseline.Scale(1. / baseline.Integral())
             baseline.SetTitle("MC Truth")
             yaxisRatio = "Prior / Truth"
         else:
             baselineId = self.fDefaultPrior
-            baseline = self.fResponseMatrices[baselineId].fPrior.Clone("{0}_copy".format(self.fResponseMatrices[baselineId].fPrior.GetName()))
+            baseline = self.fResponseMatrices[baselineId].fTruth.Clone("{0}_copy".format(self.fResponseMatrices[baselineId].fTruth.GetName()))
             baseline.SetTitle(self.fDefaultPrior)
             yaxisRatio = "Prior x / {0}".format(self.fDefaultPrior)
+        baseline.Scale(1. / baseline.Integral())
         globalList.append(baseline)
         spectra = []
         for priorIt, resp in self.fResponseMatrices.iteritems():
             if baselineId == priorIt:
                 continue
-            spectrum = resp.fPrior.Clone("{0}_copy".format(resp.fPrior.GetName()))
+            spectrum = resp.fTruth.Clone("{0}_copy".format(resp.fTruth.GetName()))
+            spectrum.Scale(1. / spectrum.Integral())
             spectrum.SetTitle(priorIt)
             spectra.append(spectrum)
             globalList.append(spectrum)
@@ -728,20 +733,18 @@ class DMesonJetUnfoldingEngine:
     def GenerateResponse(self):
         for prior in self.fPriors:
             print("Generating response for prior {0}".format(prior))
-            (detResp, trainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
+            (detResp, trainTruth), (smallBinDetResp, smallBinTrainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
             detResp.GetZaxis().SetTitle("counts")
             rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
-            priorSpectrum = trainTruth.Clone("Prior_{0}".format(prior))
-            priorSpectrum.Scale(1. / priorSpectrum.Integral())
             detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior())
             detRespNorm.GetZaxis().SetTitle("Probability Density")
-            self.fResponseMatrices[prior] = ResponseMatrix("Prior{0}".format(prior), rooUnfoldResp, detResp, trainTruth, priorSpectrum, detRespNorm)
+            self.fResponseMatrices[prior] = ResponseMatrix("Prior{0}".format(prior), rooUnfoldResp, detResp, trainTruth, smallBinDetResp, smallBinTrainTruth, detRespNorm)
 
     def NormalizeAndRebinResponseMatrix(self, prior): 
         (normResp, priorHist) = self.NormalizeResponseMatrix(prior)
         coarseResp = self.Rebin(normResp)
         coarsePrior = self.Rebin(priorHist)
-        return coarseResp, coarsePrior
+        return (coarseResp, coarsePrior), (normResp, priorHist)
 
     def Rebin(self, hist):
         if isinstance(hist, ROOT.TH2):
@@ -788,12 +791,6 @@ class DMesonJetUnfoldingEngine:
                     relErr = binError / binValue
                     if relErr > 0.9:
                         print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin,ybin,relErr))
-                    if relErr > 0.98:
-                        binValue -= binError
-                        binError = 0
-                        print("Bin ({0},{1}) has rel stat err = {2}. This bin will be set to {3} (instead of {4})!".format(xbin,ybin,relErr,binValue,r.GetBinContent(xbin, ybin)))
-                        r.SetBinContent(xbin, ybin, binValue)
-                        r.SetBinError(xbin, ybin, binError)
         return r
 
     def NormalizeResponseMatrix(self, prior):
@@ -807,6 +804,7 @@ class DMesonJetUnfoldingEngine:
             print("Prior {0} not implemented!!".format(prior))
             return None # will fail
 
+        priorHist.Scale(self.fDetectorTrainTruth.Integral() / priorHist.Integral())
         priorEffHist = priorHist.Clone("priorEffHist")
         priorEffHist.Multiply(self.fDetectorResponse.ProjectionY())
         priorEffHist.Divide(self.fDetectorTrainTruth)
@@ -815,16 +813,17 @@ class DMesonJetUnfoldingEngine:
 
         return resp, priorHist
 
-    def GeneratePowerLawPrior(self, a):
+    def GeneratePowerLawPrior(self, a, peak=3):
         print("Generating power law prior with index {0}".format(a))
         priorHist = self.fDetectorTrainTruth.Clone("myprior")
         priorHist.Reset()
-        minX = priorHist.GetXaxis().GetXmin()
-        if minX == 0:
-            minX = 1
-        f = ROOT.TF1("f", "[0]*x^[1]", minX, priorHist.GetXaxis().GetXmax())
-        f.SetParameter(1, a)
-        f.SetParameter(0, minX**(a+1))
+        #this is a modified power law, where at low pT an exponential dumps the function to zero, to avoid infinities
+        #other protections are added via the [2] parameter to avoid intermediate infinities in the function evaluation
+        #the resulting modified power law has a local maximum, which is set to 3 GeV/c by default
+        f = ROOT.TF1("f", "(x>[2])*TMath::Max([2],x)^[0]*TMath::Exp([1]/TMath::Max([2],x))", 0, priorHist.GetXaxis().GetXmax()*2)
+        f.SetParameter(0, a)
+        f.SetParameter(1, a*peak)
+        f.SetParameter(2, 1e-6)
         priorHist.Add(f, 1, "i")
         return priorHist
 
