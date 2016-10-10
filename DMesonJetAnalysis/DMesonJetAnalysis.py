@@ -459,7 +459,7 @@ class DMesonJetAnalysisEngine:
                     mean = s.fBackupMean                   
                 binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
                 binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
-                
+
                 if s.fAnalysisType == AnalysisType.LikeSign:
                     if s.fAxis[0].fName == bin.fBinCountAnalysisAxis.fName:
                         sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_UnlikeSign_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
