@@ -136,6 +136,7 @@ class DMesonJetUnfoldingEngine:
         return rlist
 
     def LoadData(self, dataFile, responseFile, eff):
+        print("Now loading data")
         dataListName = "{0}_{1}".format(self.fDMeson, self.fSpectrumName)
         dataList = dataFile.Get(dataListName)
         if not dataList:
@@ -639,7 +640,7 @@ class DMesonJetUnfoldingEngine:
                 reg = config["default_reg"][self.fDefaultPrior]
             else:
                 reg = config["default_reg"]
-            baselineId = (self.fDefaultMethod, reg, self.fDefaultPrior)
+            baselineId = (method, reg, self.fDefaultPrior)
             baseline = self.fUnfoldedSpectra[baselineId].Clone("{0}_copy".format(self.fUnfoldedSpectra[baselineId].GetName()))
             yaxisRatio = "Prior = x / Prior = {0}".format(self.fDefaultPrior)
         globalList.append(baseline)
