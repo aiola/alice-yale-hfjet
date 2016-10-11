@@ -35,8 +35,36 @@ analysis:
     BinByBin:
       default_reg: null
 -
+  name: SideBand
+  active: no
+  jet: Jet_AKTChargedR040_pt_scheme
+  d_meson_truth: no
+  d_meson: D0
+  spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20_SideBand
+  d_meson_response: D0
+  spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 4
+        PowerLaw_3: 5
+        PowerLaw_7: 4
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_3: 4
+        PowerLaw_7: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
+-
   name: LikeSign
-  active: yes
+  active: no
   jet: Jet_AKTChargedR040_pt_scheme
   d_meson_truth: no
   d_meson: D0

@@ -193,7 +193,7 @@ def find_file(path, file_name):
             if file == file_name:
                 yield os.path.join(root, file)
 
-def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", logRatio=False):
+def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary"):
     results = []
     baselineRatio = None
     maxRatio = 0
@@ -208,115 +208,142 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
     lines = [2, 9, 5, 7, 10, 4]
 
-    leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
-    results.append(leg)
-    leg.SetFillStyle(0)
-    leg.SetBorderSize(0)
-    leg.SetTextFont(43)
-    leg.SetTextSize(16)
-
-    c = ROOT.TCanvas(comparisonName, comparisonName)
-    results.append(c)
-    c.cd()
-    c.SetLogy()
-    if "hist" in opt:
-        baseline.SetLineColor(ROOT.kBlack)
-        baseline.SetLineWidth(2)
-        baseline.SetLineStyle(1)
-        leg.AddEntry(baseline, baseline.GetTitle(), "l")
-    else: 
-        baseline.SetMarkerColor(ROOT.kBlack)
-        baseline.SetLineColor(ROOT.kBlack)
-        baseline.SetMarkerStyle(ROOT.kOpenCircle)
-        baseline.SetMarkerSize(1.2)
-        leg.AddEntry(baseline, baseline.GetTitle(), "pe")
-
-    minY = baseline.GetMinimum()
-    maxY = baseline.GetMaximum()
-    baseline.Draw(opt)
-
-    cname = "{0}_Ratio".format(comparisonName)
-    cRatio = ROOT.TCanvas(cname, cname)
-    results.append(cRatio)
-    cRatio.cd()
-    if logRatio:
-        cRatio.SetLogy()
-
-    legRatio = ROOT.TLegend(0.55, 0.87-0.04*len(spectra), 0.85, 0.87)
-    results.append(legRatio)
-    legRatio.SetFillStyle(0)
-    legRatio.SetBorderSize(0)
-    legRatio.SetTextFont(43)
-    legRatio.SetTextSize(16)
-
-    if not "same" in opt:
-        opt += "same"
-    if not "same" in optRatio:
-        optRatio += "same"
-    for color, marker, line, h in zip(colors, markers, lines, spectra):
+    if doSpectra:
+        c = ROOT.TCanvas(comparisonName, comparisonName)
+        results.append(c)
         c.cd()
-        if minY > h.GetMinimum():
-            minY = h.GetMinimum()
-        if maxY < h.GetMaximum():
-            maxY = h.GetMaximum()
-        h.Draw(opt)
+        if doSpectra == "logy":
+            c.SetLogy()
+
+        leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+        results.append(leg)
+        leg.SetFillStyle(0)
+        leg.SetBorderSize(0)
+        leg.SetTextFont(43)
+        leg.SetTextSize(16)
+
         if "hist" in opt:
-            h.SetLineColor(color)
-            h.SetLineWidth(3)
-            h.SetLineStyle(line)
-            leg.AddEntry(h, h.GetTitle(), "l")
-        else:
-            h.SetMarkerColor(color)
-            h.SetLineColor(color)
-            h.SetMarkerStyle(marker)
-            h.SetMarkerSize(1.2)
-            leg.AddEntry(h, h.GetTitle(), "pe")
+            baseline.SetLineColor(ROOT.kBlack)
+            baseline.SetLineWidth(2)
+            baseline.SetLineStyle(1)
+            leg.AddEntry(baseline, baseline.GetTitle(), "l")
+        else: 
+            baseline.SetMarkerColor(ROOT.kBlack)
+            baseline.SetLineColor(ROOT.kBlack)
+            baseline.SetMarkerStyle(ROOT.kOpenCircle)
+            baseline.SetMarkerSize(1.2)
+            leg.AddEntry(baseline, baseline.GetTitle(), "pe")
 
+        minY = baseline.GetMinimum()
+        maxY = baseline.GetMaximum()
+        baseline.Draw(opt)
+        if not "same" in opt:
+            opt += "same"
+
+    if doRatio:
+        cname = "{0}_Ratio".format(comparisonName)
+        cRatio = ROOT.TCanvas(cname, cname)
+        results.append(cRatio)
         cRatio.cd()
-        hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
-        hRatio.GetYaxis().SetTitle(yaxisRatio)
-        if not baselineRatio:
-            baselineRatio = hRatio
-        if "hist" in optRatio:
-            hRatio.SetLineColor(color)
-            hRatio.SetLineWidth(3)
-            hRatio.SetLineStyle(line)
-            legRatio.AddEntry(hRatio, h.GetTitle(), "l")
-        else:
-            hRatio.SetMarkerColor(color)
-            hRatio.SetLineColor(color)
-            hRatio.SetMarkerStyle(marker)
-            hRatio.SetMarkerSize(1.2)
-            legRatio.AddEntry(hRatio, h.GetTitle(), "pe")
-        results.append(hRatio)
-        hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
-        hRatio.Divide(baseline)
-        if minRatio > hRatio.GetMinimum():
-            minRatio = hRatio.GetMinimum()
-        if maxRatio < hRatio.GetMaximum():
-            maxRatio = hRatio.GetMaximum()
-        hRatio.Draw(optRatio)
-        opt.replace("same","")
-        optRatio.replace("same","")
-    c.cd()
+        if doRatio == "logy":
+            cRatio.SetLogy()
 
-    if logRatio:
-        maxRatio *= 10
-        minRatio /= 5
-    else:
-        maxRatio *= 1.5
-        if minRatio < 0.2:
-            minRatio = 0
+        legRatio = ROOT.TLegend(0.55, 0.87-0.04*len(spectra), 0.85, 0.87)
+        results.append(legRatio)
+        legRatio.SetFillStyle(0)
+        legRatio.SetBorderSize(0)
+        legRatio.SetTextFont(43)
+        legRatio.SetTextSize(16)
+
+    for color, marker, line, h in zip(colors, markers, lines, spectra):
+        if doSpectra:
+            c.cd()
+            if minY > h.GetMinimum():
+                minY = h.GetMinimum()
+            if maxY < h.GetMaximum():
+                maxY = h.GetMaximum()
+            h.Draw(opt)
+            if "hist" in opt:
+                h.SetLineColor(color)
+                h.SetLineWidth(3)
+                h.SetLineStyle(line)
+                leg.AddEntry(h, h.GetTitle(), "l")
+            else:
+                h.SetMarkerColor(color)
+                h.SetLineColor(color)
+                h.SetMarkerStyle(marker)
+                h.SetMarkerSize(1.2)
+                leg.AddEntry(h, h.GetTitle(), "pe")
+
+        if doRatio:
+            cRatio.cd()
+            hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
+            hRatio.GetYaxis().SetTitle(yaxisRatio)
+            if not baselineRatio:
+                baselineRatio = hRatio
+            if "hist" in optRatio:
+                hRatio.SetLineColor(color)
+                hRatio.SetLineWidth(3)
+                hRatio.SetLineStyle(line)
+                legRatio.AddEntry(hRatio, h.GetTitle(), "l")
+            else:
+                hRatio.SetMarkerColor(color)
+                hRatio.SetLineColor(color)
+                hRatio.SetMarkerStyle(marker)
+                hRatio.SetMarkerSize(1.2)
+                legRatio.AddEntry(hRatio, h.GetTitle(), "pe")
+            results.append(hRatio)
+            hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
+            hRatio.Divide(baseline)
+            if minRatio > hRatio.GetMinimum():
+                minRatio = hRatio.GetMinimum()
+            if maxRatio < hRatio.GetMaximum():
+                maxRatio = hRatio.GetMaximum()
+            hRatio.Draw(optRatio)
+            if not "same" in optRatio:
+                optRatio += "same"
+
+    if doRatio:
+        if doRatio == "logy":
+            maxRatio *= 10
+            minRatio /= 5
         else:
-            minRatio *= 0.6
-    maxY *= 10
-    minY /= 5
-    baselineRatio.SetMinimum(minRatio)
-    baselineRatio.SetMaximum(maxRatio)
-    baseline.SetMinimum(minY)
-    baseline.SetMaximum(maxY)
-    leg.Draw()
-    
-    cRatio.cd()
-    legRatio.Draw()
+            maxRatio *= 1.5
+            if minRatio < 0.2:
+                minRatio = 0
+            else:
+                minRatio *= 0.6
+        baselineRatio.SetMinimum(minRatio)
+        baselineRatio.SetMaximum(maxRatio)
+        cRatio.cd()
+        legRatio.Draw()
+
+    if doSpectra:
+        if doSpectra == "logy":
+            maxY *= 10
+            minY /= 5
+        else:
+            maxY *= 1.5
+            if minY < 0.2:
+                minY = 0
+            else:
+                minY *= 0.6
+        baseline.SetMinimum(minY)
+        baseline.SetMaximum(maxY)
+        c.cd()
+        leg.Draw()
+
     return results
+
+def DivideNoErrors(ratio, den):
+    if not ratio.GetNbinsX() == den.GetNbinsX():
+        print("DMesonJetUtils.DivideNoErrors: histgrams have different number of bins!")
+        return False
+
+    for ibin in range(0, ratio.GetNbinsX()+2):
+        if den.GetBinContent(ibin) == 0:
+            ratio.SetBinContent(ibin, 0)
+        else:
+            ratio.SetBinContent(ibin, ratio.GetBinContent(ibin)/den.GetBinContent(ibin))
+
+    return True
