@@ -5,6 +5,7 @@ data: LHC14j4_Train953_efficiency
 response_train: Jets_EMC_pp_MC_949_950_951_952
 response: LHC15i2_Train949_efficiency
 efficiency: no  # apply effieciency correction?
+use_overflow: yes # use overflow bins?
 analysis:
 -
   name: SignalOnly
