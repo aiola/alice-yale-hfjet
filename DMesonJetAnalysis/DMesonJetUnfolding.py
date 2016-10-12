@@ -225,8 +225,8 @@ class DMesonJetUnfoldingEngine:
 
     def GenerateMeasuredUncertainty(self):
         self.fInputSpectrumErrors = ROOT.TH1D("{0}_Errors".format(self.fInputSpectrum.GetName()), "{0} Errors".format(self.fInputSpectrum.GetTitle()), self.fInputSpectrum.GetNbinsX(), self.fInputSpectrum.GetXaxis().GetXbins().GetArray())
-        self.fInputSpectrumErrors.GetXaxis().SetTitle("relative statistical uncertainty")
-        self.fInputSpectrumErrors.GetYaxis().SetTitle(self.fInputSpectrum.GetXaxis().GetTitle())
+        self.fInputSpectrumErrors.GetXaxis().SetTitle(self.fInputSpectrum.GetXaxis().GetTitle())
+        self.fInputSpectrumErrors.GetYaxis().SetTitle("relative statistical uncertainty")
         for ibin in range(self.fInputSpectrum.GetNbinsX()+2):
             if self.fInputSpectrum.GetBinContent(ibin) == 0:
                 continue
