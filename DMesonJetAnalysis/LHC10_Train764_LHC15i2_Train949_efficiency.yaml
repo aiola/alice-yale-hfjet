@@ -36,7 +36,7 @@ analysis:
       default_reg: null
 -
   name: SideBand
-  active: no
+  active: yes
   jet: Jet_AKTChargedR040_pt_scheme
   d_meson_truth: no
   d_meson: D0
