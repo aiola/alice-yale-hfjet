@@ -36,7 +36,7 @@ analysis:
       min: 2.0
   -
     name: JetPtBins_ZJet_01
-    active: no
+    active: yes
     efficiency: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
@@ -103,7 +103,7 @@ analysis:
   -
     name: D_Tagged_Jet_Pt_Spectrum_ZJet_01
     title: "Inv.Mass Fit, #it{z}_{||,D} > 0.1"
-    active: no
+    active: yes
     bins: [JetPtBins_ZJet_01]
     axis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
@@ -167,7 +167,7 @@ analysis:
   -
     name: D_Tagged_Jet_Pt_Spectrum_ZJet_01_SideBand
     title: "SB method, #it{z}_{||,D} > 0.1"
-    active: no
+    active: yes
     side_band:
       min_sigmas: 4
       max_sigmas: 8

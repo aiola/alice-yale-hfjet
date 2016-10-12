@@ -44,6 +44,8 @@ class ResponseMatrix:
         self.fResponseUncertainty.GetZaxis().SetTitle("relative statistical uncertainty")
         for x in range(0, self.fResponseUncertainty.GetNbinsX()+2):
             for y in range(0, self.fResponseUncertainty.GetNbinsY()+2):
+                if self.fResponse.GetBinContent(x,y) == 0:
+                    continue
                 self.fResponseUncertainty.SetBinContent(x,y,self.fResponse.GetBinError(x,y) / self.fResponse.GetBinContent(x,y))
 
     def GenerateEfficiencies(self):
@@ -140,7 +142,8 @@ class DMesonJetUnfoldingEngine:
             unfoldingHistos["BinByBin"].Add(h)
         return rlist
 
-    def LoadData(self, dataFile, responseFile, eff):
+    def LoadData(self, dataFile, responseFile, eff, use_overflow):
+        self.fUseOverflow = use_overflow
         print("Now loading data")
         dataListName = "{0}_{1}".format(self.fDMeson, self.fSpectrumName)
         dataList = dataFile.Get(dataListName)
@@ -183,6 +186,7 @@ class DMesonJetUnfoldingEngine:
             return False
         self.fDetectorResponse = detectorResponse.Clone("{0}_DetectorResponse".format(self.fName))
         self.fDetectorResponse.SetTitle("{0} Detector Response".format(self.fName))
+
         if eff:
             detTrainTruthName = "{0}_{1}_{2}_Truth".format(self.fDMesonResponse, self.fJetDefinition, self.fSpectrumResponseName)
             detTrainTruth = responseList.FindObject(detTrainTruthName)
@@ -193,6 +197,15 @@ class DMesonJetUnfoldingEngine:
         else:
             self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_ResponseTruth".format(self.fName), 0, -1)
         self.fDetectorTrainTruth.SetTitle("{0} Response Truth".format(self.fName))
+
+        if use_overflow:
+            # if using overflow bins, need to reset the content of the measured axis overflow bins (not measured)
+            for xbin in range(0,self.fDetectorResponse.GetNbinsX()+2):
+                if self.fDetectorResponse.GetXaxis().GetBinLowEdge(xbin) >= self.fInputSpectrum.GetXaxis().GetBinLowEdge(1) and self.fDetectorResponse.GetXaxis().GetBinUpEdge(xbin) <= self.fInputSpectrum.GetXaxis().GetBinUpEdge(self.fInputSpectrum.GetNbinsX()):
+                    continue
+                for ybin in range(0,self.fDetectorResponse.GetNbinsY()+2):
+                    self.fDetectorResponse.SetBinContent(xbin,ybin,0)
+                    self.fDetectorResponse.SetBinError(xbin,ybin,0)
         return True
 
     def Start(self):
@@ -910,6 +923,7 @@ class DMesonJetUnfoldingEngine:
             (detResp, trainTruth), (smallBinDetResp, smallBinTrainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
             detResp.GetZaxis().SetTitle("counts")
             rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
+            rooUnfoldResp.UseOverflow(self.fUseOverflow)
             detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior())
             detRespNorm.GetZaxis().SetTitle("Probability Density")
             self.fResponseMatrices[prior] = ResponseMatrix("Prior{0}".format(prior), rooUnfoldResp, detResp, trainTruth, smallBinDetResp, smallBinTrainTruth, detRespNorm)
@@ -1037,10 +1051,10 @@ class DMesonJetUnfolding:
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fDataTrain, self.fData))
         self.fResponseFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fResponseTrain, self.fResponse))
 
-    def StartUnfolding(self, config, eff):
+    def StartUnfolding(self, config, eff, use_overflow):
         eng = DMesonJetUnfoldingEngine(config)
         self.fUnfoldingEngine.append(eng)
-        r = eng.LoadData(self.fDataFile, self.fResponseFile, eff)
+        r = eng.LoadData(self.fDataFile, self.fResponseFile, eff, use_overflow)
         if r:
             eng.Start()
 
