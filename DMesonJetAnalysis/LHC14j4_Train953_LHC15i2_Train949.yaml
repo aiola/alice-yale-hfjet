@@ -90,3 +90,31 @@ analysis:
       iter_step: 1
     BinByBin:
       default_reg: null
+-
+  name: SideBand
+  active: no
+  jet: Jet_AKTChargedR040_pt_scheme
+  d_meson_truth: D0_MCTruth
+  d_meson: D0
+  spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20_SideBand
+  d_meson_response: D0
+  spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_2, PowerLaw_8]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_2: 6
+        PowerLaw_8: 6
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_2: 3
+        PowerLaw_8: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
