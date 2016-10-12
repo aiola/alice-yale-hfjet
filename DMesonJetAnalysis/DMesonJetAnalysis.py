@@ -646,7 +646,10 @@ class DMesonJetAnalysisEngine:
                 else:
                     w = 1
                 if "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
-                    sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                    if bin.fBinCountAnalysisHisto:
+                        sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), 0, -1, "e")
+                    else:
+                        sig = self.BuildSpectrum1D(s, "{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), "counts")
                     sig.SetTitle(bin.GetTitle())
                     if w != 1:
                         sig.Scale(w)
