@@ -344,9 +344,11 @@ class DMesonJetAnalysisEngine:
     def GenerateSpectrum1DInvMassFit(self, s):
         s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
         s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-        s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
-        s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
-        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
+        if not ("MCTruth" in self.fDMeson or "BackgroundOnly" in self.fDMeson):
+            s.fMass = self.BuildSpectrum1D(s, "{0}_Mass".format(s.fName), "D^{0} mass (GeV/#it{c}^{2})")
+            s.fMassWidth = self.BuildSpectrum1D(s, "{0}_MassWidth".format(s.fName), "D^{0} mass width (GeV/#it{c}^{2})")
+        if not ("MCTruth" in self.fDMeson or "SignalOnly" in self.fDMeson or "BackgroundOnly" in self.fDMeson):
+            s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
         if s.fAnalysisType == AnalysisType.InvMassFit:
             for binSetName in s.fBins:
                 for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
@@ -389,13 +391,16 @@ class DMesonJetAnalysisEngine:
         s.fHistogram.SetBinError(xbin, signal_unc)
 
         if bin.fMassFitter:
-            s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
-            s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
+            if s.fBackground:
+                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
+                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
             s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
-            s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
-            s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
-            s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
-            s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+            if s.fMass:
+                s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
+                s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
+            if s.fMassWidth:
+                s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
+                s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
     def GenerateSpectrum1DLikeSignMethod(self, s):
         if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
@@ -405,7 +410,8 @@ class DMesonJetAnalysisEngine:
             s.fMassWidth = None
             s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
             s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-            s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
+            if not ("MCTruth" in self.fDMeson or "SignalOnly" in self.fDMeson or "BackgroundOnly" in self.fDMeson):
+                s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
             s.fLikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_LikeSignTotal".format(s.fName), "counts")
             s.fUnlikeSignTotalHistogram = self.BuildSpectrum1D(s, "{0}_UnlikeSignTotal".format(s.fName), "counts")
         binSetName = s.fBins[0]
@@ -604,7 +610,8 @@ class DMesonJetAnalysisEngine:
         if s.fAnalysisType == AnalysisType.LikeSign or "SignalOnly" in self.fDMeson or "MCTruth" in self.fDMeson:
             s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
             s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
-            s.fBackground.Add(s.fLikeSignTotalHistogram)
+            if s.fBackground:
+                s.fBackground.Add(s.fLikeSignTotalHistogram)
     
             for xbin in range(0, s.fHistogram.GetNbinsX()+2):
                 if s.fHistogram.GetBinContent(xbin) > 0:
@@ -636,7 +643,8 @@ class DMesonJetAnalysisEngine:
         s.fMassWidth = None
         s.fHistogram = self.BuildSpectrum1D(s, s.fName, "counts")
         s.fUncertainty = self.BuildSpectrum1D(s, "{0}_Unc".format(s.fName), "relative statistical uncertainty")
-        s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
+        if not ("MCTruth" in self.fDMeson or "SignalOnly" in self.fDMeson or "BackgroundOnly" in self.fDMeson):
+            s.fBackground = self.BuildSpectrum1D(s, "{0}_Bkg".format(s.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(s.fBinCountSignalSigmas)))
         s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
         s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
         for binSetName in s.fBins:
@@ -729,7 +737,8 @@ class DMesonJetAnalysisEngine:
 
         s.fHistogram.Add(s.fSignalWindowTotalHistogram)
         s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
-        s.fBackground.Add(s.fSideBandWindowTotalHistogram)
+        if s.fBackground:
+            s.fBackground.Add(s.fSideBandWindowTotalHistogram)
 
         for xbin in range(0, s.fHistogram.GetNbinsX()+2):
             if s.fHistogram.GetBinContent(xbin) > 0:

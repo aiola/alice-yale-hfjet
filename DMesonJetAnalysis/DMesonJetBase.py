@@ -712,7 +712,8 @@ class Spectrum:
                     axisTitle += " ({0})^{{-2}}".format(units1)
             self.fNormHistogram.GetZaxis().SetTitle(axisTitle)
 
-        self.fNormHistogram.Scale(1. / events, "width")
+        if events > 0:
+            self.fNormHistogram.Scale(1. / events, "width")
 
 class DMesonJetCuts:
     def __init__(self, cutList):
