@@ -234,7 +234,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
             baseline.SetMarkerSize(1.2)
             leg.AddEntry(baseline, baseline.GetTitle(), "pe")
 
-        minY = baseline.GetMinimum()
+        minY = baseline.GetMinimum(0)
         maxY = baseline.GetMaximum()
         baseline.Draw(opt)
         if not "same" in opt:
@@ -258,8 +258,8 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
     for color, marker, line, h in zip(colors, markers, lines, spectra):
         if doSpectra:
             c.cd()
-            if minY > h.GetMinimum():
-                minY = h.GetMinimum()
+            if minY > h.GetMinimum(0):
+                minY = h.GetMinimum(0)
             if maxY < h.GetMaximum():
                 maxY = h.GetMaximum()
             h.Draw(opt)
