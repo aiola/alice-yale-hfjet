@@ -389,12 +389,13 @@ class DMesonJetAnalysisEngine:
         signal_unc *= w
         s.fHistogram.SetBinContent(xbin, signal)
         s.fHistogram.SetBinError(xbin, signal_unc)
+        if signal > 0:
+            s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
 
         if bin.fMassFitter:
             if s.fBackground:
                 s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground()*w)
                 s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError()*w)
-            s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
             if s.fMass:
                 s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
