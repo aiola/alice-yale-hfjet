@@ -1,7 +1,7 @@
-name: FastSim_PyCharm_local
+name: FastSimAnalysis_pythia_charm_local
 input_path: /Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/fastSimulation
 train: ""
-file_name: AnalysisResults_FastSim_PyCharm.root
+file_name: AnalysisResults_FastSim_pythia_charm.root
 task_name: AliAnalysisTaskDmesonJets
 figure_title: "ALICE Work In Progress"
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
