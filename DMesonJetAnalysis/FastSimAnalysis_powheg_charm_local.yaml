@@ -1,7 +1,7 @@
-name: FastSimAnalysis_powheg_charm_local
+name: FastSimAnalysis_powheg_charm_1478079449_local
 input_path: /Users/sa639/Documents/Work/ALICE/alice-yale-hfjet/fastSimulation
 train: ""
-file_name: AnalysisResults_FastSim_powheg_charm.root
+file_name: AnalysisResults_FastSim_powheg_charm_1478079449.root
 task_name: AliAnalysisTaskDmesonJets
 figure_title: "ALICE Work In Progress"
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
@@ -23,7 +23,7 @@ analysis:
     active: yes
     efficiency: no
     bins:
-      jet_pt: [1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
     cuts:
     -
       object: jet
@@ -42,22 +42,64 @@ analysis:
       variable: fEta
       min: -0.5
       max: 0.5
+  -
+    name: JetPtBins_PtD_2
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 2.0
+  -
+    name: DPtBins_JetPt_5
+    active: yes
+    efficiency: no
+    bins:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
     -
       object: jet
       variable: fPt
-      min: 1.0
+      min: 5.0
   spectra:
   -
     name: D_Tagged_Jet_Pt_Spectrum
-    title: "#it{p}_{T,D} > 0 GeV/#it{c}"
+    title: "#it{p}_{T,D} > 0 GeV/#it{c}, |#eta_{jet}| > 0.5"
     active: yes
     bins: [JetPtBins]
     axis:
-      jet_pt: [1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
   -
     name: D_Pt_Spectrum
-    title: "#it{p}_{T,ch jet} > 1 GeV/#it{c}"
+    title: "#it{p}_{T,ch jet} > 0 GeV/#it{c}, |#eta_{jet}| > 0.5"
     active: yes
     bins: [DPtBins]
+    axis:
+      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+  -
+    name: D_Tagged_Jet_Pt_Spectrum_PtD_2
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    active: yes
+    bins: [JetPtBins_PtD_2]
+    axis:
+      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+  -
+    name: D_Pt_Spectrum_JetPt_5
+    title: "#it{p}_{T,ch jet} > 5 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    active: yes
+    bins: [DPtBins_JetPt_5]
     axis:
       d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
