@@ -243,6 +243,8 @@ class DMesonJetDataProjector:
             for jetDef in jetDefinitions:
                 jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
                 jet = getattr(dmesonEvent, jetName)
+                if jet.fPt == 0:
+                    continue
 
                 bins = binSet.FindBin(dmeson, jet)
                 for bin,weight in bins:
