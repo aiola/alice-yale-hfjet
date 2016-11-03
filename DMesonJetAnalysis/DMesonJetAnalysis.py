@@ -31,20 +31,20 @@ class DMesonJetAnalysisEngine:
                 continue
             name = "{0}_{1}".format(self.fDMeson, s["name"])
             self.fSpectra[s["name"]] = Spectrum(s, name, self.fBinMultiSet.fBinSets)
-            
+
     def CompareSpectra(self):
+        self.CompareSpectraForAxis("jet_pt")
+        self.CompareSpectraForAxis("d_pt")
+
+    def CompareSpectraForAxis(self, axisName):
         spectraToCompare = []
-        axisBaseline = None
         for name,s in self.fSpectra.iteritems():
             if not s.fNormHistogram:
                 continue
             if len(s.fAxis) != 1:
                 continue
-            if axisBaseline:
-                if axisBaseline.fName != s.fAxis[0].fName:
-                    continue
-            else:
-                axisBaseline = s.fAxis[0]
+            if axisName != s.fAxis[0].fName:
+                continue
             h = s.fNormHistogram.Clone("{0}_copy".format(s.fNormHistogram.GetName()))
             if s.fTitle:
                 h.SetTitle(s.fTitle)
@@ -52,7 +52,7 @@ class DMesonJetAnalysisEngine:
             spectraToCompare.append(h)
         if len(spectraToCompare) < 2:
             return
-        results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], "{0}_SpectraComparison".format(self.fDMeson), "", "hist")
+        results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], "{0}_{1}_SpectraComparison".format(self.fDMeson, axisName), "", "hist")
         for obj in results:
             if obj and isinstance(obj, ROOT.TCanvas):
                 self.fCanvases.append(obj)
