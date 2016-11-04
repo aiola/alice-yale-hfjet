@@ -23,7 +23,7 @@ analysis:
     active: yes
     efficiency: no
     bins:
-      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
     cuts:
     -
       object: jet
@@ -35,7 +35,7 @@ analysis:
     active: yes
     efficiency: no
     bins:
-      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
     cuts:
     -
       object: jet
@@ -47,7 +47,7 @@ analysis:
     active: yes
     efficiency: no
     bins:
-      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
     cuts:
     -
       object: jet
@@ -59,11 +59,27 @@ analysis:
       variable: fPt
       min: 2.0
   -
+    name: DPtBins_JetPt_2
+    active: yes
+    efficiency: no
+    bins:
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 2.0
+  -
     name: DPtBins_JetPt_5
     active: yes
     efficiency: no
     bins:
-      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
     cuts:
     -
       object: jet
@@ -74,6 +90,22 @@ analysis:
       object: jet
       variable: fPt
       min: 5.0
+  -
+    name: DPtBins_JetPt_8
+    active: yes
+    efficiency: no
+    bins:
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 8.0
   spectra:
   -
     name: D_Tagged_Jet_Pt_Spectrum
@@ -81,25 +113,39 @@ analysis:
     active: yes
     bins: [JetPtBins]
     axis:
-      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Pt_Spectrum
     title: "#it{p}_{T,ch jet} > 0 GeV/#it{c}, |#eta_{jet}| > 0.5"
     active: yes
     bins: [DPtBins]
     axis:
-      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Tagged_Jet_Pt_Spectrum_PtD_2
     title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| > 0.5"
     active: yes
     bins: [JetPtBins_PtD_2]
     axis:
-      jet_pt: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
+  -
+    name: D_Pt_Spectrum_JetPt_2
+    title: "#it{p}_{T,ch jet} > 2 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    active: yes
+    bins: [DPtBins_JetPt_2]
+    axis:
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Pt_Spectrum_JetPt_5
     title: "#it{p}_{T,ch jet} > 5 GeV/#it{c}, |#eta_{jet}| > 0.5"
     active: yes
     bins: [DPtBins_JetPt_5]
     axis:
-      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
+  -
+    name: D_Pt_Spectrum_JetPt_8
+    title: "#it{p}_{T,ch jet} > 8 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    active: yes
+    bins: [DPtBins_JetPt_8]
+    axis:
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
