@@ -193,7 +193,7 @@ def find_file(path, file_name):
             if file == file_name:
                 yield os.path.join(root, file)
 
-def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary"):
+def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary", c=None, cRatio=None, leg=None, legRatio=None, styles=None):
     results = []
     baselineRatio = None
     maxRatio = 0
@@ -204,33 +204,44 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
     for s in spectra:
         print(s.GetName())
 
-    colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2]
-    markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
-    lines = [2, 9, 5, 7, 10, 4]
+    if styles:
+        colors = styles["colors"]
+        markers = styles["markers"]
+        lines = styles["lines"]        
+    else:
+        colors = [ROOT.kBlack, ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2]
+        markers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
+        lines = [1, 2, 9, 5, 7, 10, 4]
 
     if doSpectra:
-        c = ROOT.TCanvas(comparisonName, comparisonName)
+        if not c:
+            c = ROOT.TCanvas(comparisonName, comparisonName)
         results.append(c)
         c.cd()
         if doSpectra == "logy":
             c.SetLogy()
 
-        leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+        if leg:
+            leg.SetY1(leg.GetY1()-0.04*(len(spectra)+1))
+        else:
+            leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+            leg.SetName("{0}_legend".format(c.GetName()))
+            leg.SetFillStyle(0)
+            leg.SetBorderSize(0)
+            leg.SetTextFont(43)
+            leg.SetTextSize(16)
+
         results.append(leg)
-        leg.SetFillStyle(0)
-        leg.SetBorderSize(0)
-        leg.SetTextFont(43)
-        leg.SetTextSize(16)
 
         if "hist" in opt:
-            baseline.SetLineColor(ROOT.kBlack)
+            baseline.SetLineColor(colors[0])
             baseline.SetLineWidth(2)
-            baseline.SetLineStyle(1)
+            baseline.SetLineStyle(lines[0])
             leg.AddEntry(baseline, baseline.GetTitle(), "l")
         else: 
-            baseline.SetMarkerColor(ROOT.kBlack)
-            baseline.SetLineColor(ROOT.kBlack)
-            baseline.SetMarkerStyle(ROOT.kOpenCircle)
+            baseline.SetMarkerColor(colors[0])
+            baseline.SetLineColor(colors[0])
+            baseline.SetMarkerStyle(markers[0])
             baseline.SetMarkerSize(1.2)
             leg.AddEntry(baseline, baseline.GetTitle(), "pe")
 
@@ -242,20 +253,26 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
 
     if doRatio:
         cname = "{0}_Ratio".format(comparisonName)
-        cRatio = ROOT.TCanvas(cname, cname)
+        if not cRatio:
+            cRatio = ROOT.TCanvas(cname, cname)
         results.append(cRatio)
         cRatio.cd()
         if doRatio == "logy":
             cRatio.SetLogy()
 
-        legRatio = ROOT.TLegend(0.55, 0.87-0.04*len(spectra), 0.85, 0.87)
-        results.append(legRatio)
-        legRatio.SetFillStyle(0)
-        legRatio.SetBorderSize(0)
-        legRatio.SetTextFont(43)
-        legRatio.SetTextSize(16)
+        if legRatio:
+            legRatio.SetY1(legRatio.GetY1()-0.04*(len(spectra)))
+        else:
+            legRatio = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+            legRatio.SetName("{0}_legend".format(cRatio.GetName()))
+            legRatio.SetFillStyle(0)
+            legRatio.SetBorderSize(0)
+            legRatio.SetTextFont(43)
+            legRatio.SetTextSize(16)
 
-    for color, marker, line, h in zip(colors, markers, lines, spectra):
+        results.append(legRatio)
+
+    for color, marker, line, h in zip(colors[1:], markers[1:], lines[1:], spectra):
         if doSpectra:
             c.cd()
             if minY > h.GetMinimum(0):
