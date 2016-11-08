@@ -134,7 +134,7 @@ class DMesonJetDataProjector:
         trials  = hlist.FindObject("fHistTrialsAfterSel")
         
         if not trials or not xsection:
-            print("Could not find trail and x-section information!")
+            print("Could not find trial and x-section information (not necessarily a bad thing)!")
             hlist.Print() 
             self.fWeight = 1
             return
@@ -145,8 +145,11 @@ class DMesonJetDataProjector:
         if valNTRIALS > 0:
             self.fWeight = valXSEC/valNTRIALS;
 
-    def RecalculateWeight(self):
-        listName = "{0}_histos".format(self.fTaskName)
+    def RecalculateWeight(self, trigger):
+        if trigger:
+            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+        else:
+            listName = "{0}_histos".format(self.fTaskName)
         hlist = self.fChain.GetCurrentFile().Get(listName)
 
         if not hlist:
@@ -183,7 +186,7 @@ class DMesonJetDataProjector:
 
         self.ExtractCurrentFileInfo()
         self.RecalculateEvents(DMesonDef, trigger)
-        self.RecalculateWeight()
+        self.RecalculateWeight(trigger)
 
     def RecalculateEvents(self, DMesonDef, trigger):
         if trigger:

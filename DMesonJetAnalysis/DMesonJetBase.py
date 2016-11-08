@@ -603,6 +603,7 @@ class Spectrum:
         self.fAxis = []
         self.fSideBandWindowInvMassHistos = dict()
         self.fSignalWindowInvMassHistos = dict()
+        self.fSkipBins = None
 
         # S-B analysis
         self.fSideBandHistograms = None
@@ -628,6 +629,8 @@ class Spectrum:
             self.fBinCountSignalSigmas = config["side_band"]["max_signal_sigmas"]
             self.fBackupSigma = config["side_band"]["backup_sigma"]
             self.fBackupMean = config["side_band"]["backup_mean"]
+            if "skip_bins" in config["side_band"]:
+                self.fSkipBins = config["side_band"]["skip_bins"]
         elif "like_sign" in config:
             if config["like_sign"]["mode"] == "bin_count":
                 self.fAnalysisType = AnalysisType.LikeSign
@@ -640,9 +643,12 @@ class Spectrum:
             self.fBackupSigma = config["like_sign"]["backup_sigma"]
             self.fBackupMean = config["like_sign"]["backup_mean"]
             self.fLikeSignTree = config["like_sign"]["name"]
+            if "skip_bins" in config["like_sign"]:
+                self.fSkipBins = config["like_sign"]["skip_bins"]
         else:
             self.fAnalysisType = AnalysisType.InvMassFit
-        if self.fAnalysisType ==  AnalysisType.SideBand and binSet:
+
+        if (self.fAnalysisType == AnalysisType.SideBand or self.fAnalysisType == AnalysisType.LikeSign or self.fAnalysisType == AnalysisType.LikeSignFit) and binSet:
             self.fAxis.append(binSet[self.fBins[0]].fBinCountAnalysisAxis)
         else:
             for axisName, axisBins in config["axis"].iteritems():
