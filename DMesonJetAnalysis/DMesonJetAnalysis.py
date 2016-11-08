@@ -146,8 +146,8 @@ class DMesonJetAnalysisEngine:
         pave.SetTextSize(15)
         pave.AddText(self.fFigureTitle)
         pave.AddText(self.fCollision)
-        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
-        pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        #pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
+        #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
         pave.AddText(s.fTitle)
         pave.Draw()
 
@@ -173,8 +173,8 @@ class DMesonJetAnalysisEngine:
         pave.SetTextSize(15)
         pave.AddText(self.fFigureTitle)
         pave.AddText(self.fCollision)
-        pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
-        pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+        #pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
+        #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
         pave.AddText(s.fTitle)
         pave.Draw()
 
@@ -201,7 +201,7 @@ class DMesonJetAnalysisEngine:
             pave.SetTextFont(43)
             pave.SetTextSize(15)
             pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
-            pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+            #pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
             pave.AddText(s.fTitle)
             pave.Draw()
             
@@ -235,7 +235,7 @@ class DMesonJetAnalysisEngine:
             pave.SetTextFont(43)
             pave.SetTextSize(15)
             pave.AddText("{0} {1}".format(self.fFigureTitle, self.fCollision))
-            pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
+            #pave.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4 with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
             pave.AddText(s.fTitle)
             pave.Draw()
     
@@ -456,7 +456,9 @@ class DMesonJetAnalysisEngine:
             s.fLikeSignNormalizedBinSet = copy.deepcopy(eng_LS.fBinMultiSet.fBinSets[binSetName])
             s.fLikeSignNormalizedBinSet.fName = "{0}_Normalized_{1}".format(s.fLikeSignNormalizedBinSet.fName, s.fName)
 
-            for (LS_sub_bin, LSbin, bin) in zip(s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignNormalizedBinSet.fBins, self.fBinMultiSet.fBinSets[binSetName].fBins):
+            for ibin, (LS_sub_bin, LSbin, bin) in enumerate(zip(s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignNormalizedBinSet.fBins, self.fBinMultiSet.fBinSets[binSetName].fBins)):
+                if s.fSkipBins and ibin in s.fSkipBins:
+                    continue
                 # Calculate the projections in the peak area for L-S and U-S
                 if bin.fMassFitter.FitSuccessfull():
                     sigma = bin.fMassFitter.GetSignalWidth()
@@ -649,7 +651,9 @@ class DMesonJetAnalysisEngine:
         s.fSideBandWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SideBandWindowTotal".format(s.fName), "counts")
         s.fSignalWindowTotalHistogram = self.BuildSpectrum1D(s, "{0}_SignalWindowTotal".format(s.fName), "counts")
         for binSetName in s.fBins:
-            for bin in self.fBinMultiSet.fBinSets[binSetName].fBins:
+            for ibin,bin in enumerate(self.fBinMultiSet.fBinSets[binSetName].fBins):
+                if s.fSkipBins and ibin in s.fSkipBins:
+                    continue
                 if self.fBinMultiSet.fBinSets[binSetName].fApplyEfficiencyToSpectrum:
                     w = self.fBinMultiSet.fBinSets[binSetName].fWeightEfficiency.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
                 else:
