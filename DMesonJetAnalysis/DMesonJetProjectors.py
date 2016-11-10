@@ -121,6 +121,7 @@ class DMesonJetDataProjector:
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
 
+        print("Looking for file {0} in path {1}".format(self.fFileName, path))
         files = DMesonJetUtils.find_file(path, self.fFileName)
 
         self.fChain = ROOT.TChain(treeName)

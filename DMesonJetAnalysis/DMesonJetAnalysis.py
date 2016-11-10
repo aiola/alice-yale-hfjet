@@ -35,10 +35,13 @@ class DMesonJetAnalysisEngine:
     def CompareSpectra(self):
         self.CompareSpectraForAxis("jet_pt")
         self.CompareSpectraForAxis("d_pt")
+        self.CompareSpectraForAxis("d_z")
 
     def CompareSpectraForAxis(self, axisName):
         spectraToCompare = []
         for name,s in self.fSpectra.iteritems():
+            if not s.fCompare:
+                continue
             if not s.fNormHistogram:
                 continue
             if len(s.fAxis) != 1:

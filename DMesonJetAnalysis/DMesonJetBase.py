@@ -621,7 +621,13 @@ class Spectrum:
         if "title" in config:
             self.fTitle = config["title"]
         else:
-            self.fTitle = "" 
+            self.fTitle = ""
+
+        if "compare" in config:
+            self.fCompare = config["compare"]
+        else:
+            self.fCompare = True
+
         if "side_band" in config:
             self.fAnalysisType = AnalysisType.SideBand
             self.fSideBandMinSigmas = config["side_band"]["min_sigmas"]
