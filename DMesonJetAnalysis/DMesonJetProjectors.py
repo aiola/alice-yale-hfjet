@@ -296,7 +296,7 @@ class DMesonJetResponseProjector:
         trials  = hlist.FindObject("fHistTrials")
         
         if not trials or not xsection:
-            print("Could not find trail and x-section information!")
+            print("Could not find trial and x-section information!")
             hlist.Print() 
             self.fWeight = 1
             return
