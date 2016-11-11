@@ -105,6 +105,7 @@ class DMesonJetAnalysisEngine:
                                             self.fBinMultiSet, self.fNMassBins, self.fMinMass, self.fMaxMass)
 
         self.fEvents = self.fProjector.fTotalEvents
+        self.fIsWeighted = not (self.fProjector.fWeight == 1)
 
     def Start(self, engines):
         self.fEngines = engines
@@ -335,7 +336,10 @@ class DMesonJetAnalysisEngine:
                 self.GenerateSpectrum3D(s)
             else:
                 print("Not able to generate spectra with dim > 3!")
-            s.GenerateNormalizedSpectrum(self.fEvents)
+            if self.fIsWeighted:
+                s.GenerateNormalizedSpectrum(1)
+            else:
+                s.GenerateNormalizedSpectrum(self.fEvents)
 
     def BuildSpectrum1D(self, s, name, yaxis):
         hist = ROOT.TH1D(name, name, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins))
