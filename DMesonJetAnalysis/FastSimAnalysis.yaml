@@ -1,7 +1,7 @@
-name: FastSimAnalysis_powheg_charm_1478278609
-input_path: /Volumes/DATA/ALICE/JetResults/FastSim_powheg_charm_1478278609/stage_1/output
+name: FastSimAnalysis_{0}
+input_path: /Volumes/DATA/ALICE/JetResults/FastSim_{0}/stage_1/output
 train: ""
-file_name: AnalysisResults_FastSim_powheg_charm_1478278609.root
+file_name: AnalysisResults_FastSim_{0}.root
 task_name: AliAnalysisTaskDmesonJets
 figure_title: "ALICE Work In Progress"
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
@@ -238,70 +238,70 @@ analysis:
   spectra:
   -
     name: D_Tagged_Jet_Pt_Spectrum
-    title: "#it{p}_{T,D} > 0 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,D} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [JetPtBins]
     axis:
       jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Tagged_Jet_Pt_Spectrum_PtD_2
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [JetPtBins_PtD_2]
     axis:
       jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Tagged_Jet_Z_Spectrum
-    title: "#it{p}_{T,ch jet} > 0 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,ch jet} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: no
     bins: [DZBins]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Tagged_Jet_Z_Spectrum_PtJet_0_5
-    title: "0 < #it{p}_{T,ch jet} < 5 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "0 < #it{p}_{T,ch jet} < 5 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DZBins_JetPt_0_5]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Tagged_Jet_Z_Spectrum_PtJet_5_10
-    title: "5 < #it{p}_{T,ch jet} < 10 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "5 < #it{p}_{T,ch jet} < 10 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DZBins_JetPt_5_10]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Tagged_Jet_Z_Spectrum_PtJet_10_15
-    title: "10 < #it{p}_{T,ch jet} < 15 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "10 < #it{p}_{T,ch jet} < 15 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DZBins_JetPt_10_15]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Tagged_Jet_Z_Spectrum_PtJet_15_20
-    title: "15 < #it{p}_{T,ch jet} < 20 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "15 < #it{p}_{T,ch jet} < 20 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DZBins_JetPt_15_20]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Tagged_Jet_Z_Spectrum_PtJet_20_25
-    title: "20 < #it{p}_{T,ch jet} < 25 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "20 < #it{p}_{T,ch jet} < 25 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DZBins_JetPt_20_25]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Tagged_Jet_Z_Spectrum_PtJet_25
-    title: "#it{p}_{T,ch jet} > 25 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,ch jet} > 25 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DZBins_JetPt_25]
     axis:
       d_z: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   -
     name: D_Pt_Spectrum
-    title: "|#eta_{D}| > 1 (no jet requirement)"
+    title: "|#eta_{D}| < 1 (no jet requirement)"
     compare: no
     active: yes
     bins: [DPtBins]
@@ -309,28 +309,28 @@ analysis:
       d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Pt_Spectrum_JetPt_0
-    title: "#it{p}_{T,ch jet} > 0 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,ch jet} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DPtBins_JetPt_0]
     axis:
       d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Pt_Spectrum_JetPt_2
-    title: "#it{p}_{T,ch jet} > 2 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,ch jet} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DPtBins_JetPt_2]
     axis:
       d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Pt_Spectrum_JetPt_5
-    title: "#it{p}_{T,ch jet} > 5 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,ch jet} > 5 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DPtBins_JetPt_5]
     axis:
       d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30]
   -
     name: D_Pt_Spectrum_JetPt_8
-    title: "#it{p}_{T,ch jet} > 8 GeV/#it{c}, |#eta_{jet}| > 0.5"
+    title: "#it{p}_{T,ch jet} > 8 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active: yes
     bins: [DPtBins_JetPt_8]
     axis:
