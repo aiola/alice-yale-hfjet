@@ -216,6 +216,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
     if doSpectra:
         if not c:
             c = ROOT.TCanvas(comparisonName, comparisonName)
+
         results.append(c)
         c.cd()
         if doSpectra == "logy":
@@ -248,6 +249,9 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         minY = baseline.GetMinimum(0)
         maxY = baseline.GetMaximum()
         baseline.Draw(opt)
+        if "frac" in baseline.GetYaxis().GetTitle():
+            c.SetLeftMargin(0.12)
+            baseline.GetYaxis().SetTitleOffset(1.4)
         if not "same" in opt:
             opt += "same"
 
