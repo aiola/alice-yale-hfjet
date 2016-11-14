@@ -709,9 +709,9 @@ class Spectrum:
             if weighted:
                 axisTitle = "#frac{{d#sigma}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
                 if self.fAxis[0].GetVariableUnits():
-                    axisTitle += " [pb ({0})^{{-1}}]".format(self.fAxis[0].GetVariableUnits())
+                    axisTitle += " [mb ({0})^{{-1}}]".format(self.fAxis[0].GetVariableUnits())
                 else:
-                    axisTitle += " (pb)"
+                    axisTitle += " (mb)"
             else:
                 axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
                 if self.fAxis[0].GetVariableUnits():
@@ -723,7 +723,7 @@ class Spectrum:
             if weighted:
                 axisTitle = "#frac{{d^{{2}}##sigma}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
                 if units1 != units2:
-                    axisTitle += " [pb"
+                    axisTitle += " [mb"
                     if units1:
                         axisTitle += " ({0})^{{-1}}".format(units1)
                     if units2:
@@ -731,7 +731,7 @@ class Spectrum:
                     axisTitle += "]"
                 else:
                     if units1:
-                        axisTitle += "[pb ({0})^{{-2}}]".format(units1)
+                        axisTitle += "[mb ({0})^{{-2}}]".format(units1)
             else:
                 axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^{{2}}#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
                 if units1 != units2:
@@ -744,7 +744,7 @@ class Spectrum:
                         axisTitle += " ({0})^{{-2}}".format(units1)
             self.fNormHistogram.GetZaxis().SetTitle(axisTitle)
 
-        if weighted and events > 0:
+        if not weighted and events > 0:
             self.fNormHistogram.Scale(1. / events, "width")
         else:
             self.fNormHistogram.Scale(1, "width")
