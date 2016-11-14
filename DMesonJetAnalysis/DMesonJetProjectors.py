@@ -117,6 +117,7 @@ class DMesonJetDataProjector:
         self.fPeriod = None
         self.fWeight = 1
         self.fTotalEvents = 0
+        self.fNFiles = 0
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -129,6 +130,7 @@ class DMesonJetDataProjector:
         for file in files:
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
+            self.fNFiles += 1
         
     def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsectionAfterSel")
@@ -145,6 +147,11 @@ class DMesonJetDataProjector:
         scalingFactor = 0;
         if valNTRIALS > 0:
             self.fWeight = valXSEC/valNTRIALS;
+
+        tempFixFactor = 1. / self.fNFiles
+        if self.fMaxEvents > 0:
+            tempFixFactor *= self.fChain.GetEntries() / self.fMaxEvents
+        self.fWeight *= tempFixFactor
 
     def RecalculateWeight(self, trigger):
         if trigger:
