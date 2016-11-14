@@ -24,7 +24,7 @@ class FONLL:
         prevLine = None
         for line in lines:
             line = line.strip()
-            print(line)
+            #print(line)
             if line[0] == "#":
                 prevLine = line
                 continue
@@ -71,43 +71,64 @@ class MCGEN:
 
 def MakeUniform(g,h):
     xval = []
+    xerr = []
     yval = []
     yerr = []
     ibin = 1
     while ibin <= h.GetNbinsX():
         xval.append(h.GetXaxis().GetBinCenter(ibin))
+        xerr.append((h.GetXaxis().GetBinUpEdge(ibin)-h.GetXaxis().GetBinLowEdge(ibin))/2)
         yval.append(h.GetBinContent(ibin))
         yerr.append(h.GetBinError(ibin))
         ibin += 1
 
     h_new = ROOT.TGraphErrors(len(xval), array.array('d', xval), array.array('d', yval), 
-                              ROOT.nullptr, array.array('d', yerr))
+                              array.array('d', xerr), array.array('d', yerr))
 
     gxval = []
     gyval = []
-    gyerr = []
+    gyerrup = []
+    gyerrdown = []
     i = 0
     while i < g.GetN():
         if g.GetX()[i] < 9:
             gxval.append(g.GetX()[i])
             gyval.append(g.GetY()[i])
-            gyerr.append(g.GetErrorY(i))
+            gyerrup.append(g.GetEYhigh()[i])
+            gyerrdown.append(g.GetEYlow()[i])
             i = i+1
         elif g.GetX()[i] < 16:
             gxval.append((g.GetX()[i] + g.GetX()[i+1]) / 2)
             gyval.append((g.GetY()[i] + g.GetY()[i+1]) / 2)
-            gyerr.append(math.sqrt(g.GetErrorY(i)**2+g.GetErrorY(i+1)**2)/2)
+            gyerrup.append(math.sqrt(g.GetEYhigh()[i]**2+g.GetEYhigh()[i+1]**2)/2)
+            gyerrdown.append(math.sqrt(g.GetEYlow()[i]**2+g.GetEYlow()[i+1]**2)/2)
             i = i+2
         else:
             gxval.append((g.GetX()[i] + g.GetX()[i+1] + g.GetX()[i+2] + g.GetX()[i+3]) / 4)
             gyval.append((g.GetY()[i] + g.GetY()[i+1] + g.GetY()[i+2] + g.GetY()[i+3]) / 4)
-            gyerr.append(math.sqrt(g.GetErrorY(i)**2+g.GetErrorY(i+1)**2+g.GetErrorY(i+2)**2+g.GetErrorY(i+3)**2)/4)
+            gyerrup.append(math.sqrt(g.GetEYhigh()[i]**2+g.GetEYhigh()[i+1]**2+g.GetEYhigh()[i+2]**2+g.GetEYhigh()[i+3]**2)/4)
+            gyerrdown.append(math.sqrt(g.GetEYlow()[i]**2+g.GetEYlow()[i+1]**2+g.GetEYlow()[i+2]**2+g.GetEYlow()[i+3]**2)/4)
             i = i+4
 
-    g_new = ROOT.TGraphErrors(len(gxval), array.array('d', gxval), array.array('d', gyval), 
-                              ROOT.nullptr, array.array('d', gyerr))
+    g_new = ROOT.TGraphAsymmErrors(len(gxval), array.array('d', gxval), array.array('d', gyval), 
+                              ROOT.nullptr, ROOT.nullptr, array.array('d', gyerrdown), array.array('d', gyerrup))
 
     return g_new,h_new
+
+def MakeRatio(g, h):
+    i = 0
+    j = 0
+    ratio = []
+    ratioerrup = []
+    ratioerrdown = []
+    while i < g.GetN() and j < h.GetN():
+        if g.GetX()[i] < h.GetX()[j]:
+            i += 1
+            continue
+        if g.GetX()[i] > h.GetX()[j]:
+            j += 1
+            continue
+        ratio.append(h.GetX()[j] / g.GetX()[j])
 
 def main(fonll_file, spectrum, gen, proc, ts, compare):
     ROOT.TH1.AddDirectory(False)
@@ -129,9 +150,10 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         g.SetMarkerSize(0.9)
         g.SetMarkerColor(ROOT.kBlue+2)
         g.SetLineColor(ROOT.kBlue+2)
+        g.SetFillColor(ROOT.kCyan+2)
         g.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
         g.GetYaxis().SetTitle("d#sigma / d#it{p}_{T} [pb (GeV/#it{c})^{-1}]")
-        g.Draw("AP")
+        g.Draw("A3")
     elif compare == "fastsim":
         print("Compare with fastsim")
         file_name = " /Volumes/DATA/ALICE/JetResults/FastSim_{gen}_{proc}_{ts}/stage_1/output/FastSimAnalysis_{gen}_{proc}_{ts}.root".format(gen=gen, proc=proc, ts=ts)
@@ -149,15 +171,17 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         g_new.SetMarkerSize(0.9)
         g_new.SetMarkerColor(ROOT.kBlue+2)
         g_new.SetLineColor(ROOT.kBlue+2)
+        g_new.SetFillColor(ROOT.kCyan+1)
         h_new.SetMarkerStyle(ROOT.kOpenCircle)
         h_new.SetMarkerSize(0.9)
         h_new.SetMarkerColor(ROOT.kRed+2)
         h_new.SetLineColor(ROOT.kRed+2)
-        g_new.Draw("AP")
+        g_new.Draw("A3")
         h_new.Draw("P")
 
+        MakeRatio(g_new, h_new)
+
 if __name__ == '__main__':
-    
     parser = argparse.ArgumentParser(description='Comparison between FONLL and POWHEG.')
     parser.add_argument('fonll_file', metavar='fonll.dat',
                         help='Data file with FONLL calculations')
