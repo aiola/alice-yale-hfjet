@@ -699,33 +699,55 @@ class Spectrum:
             rlist.Add(LSlist)
         return rlist
 
-    def GenerateNormalizedSpectrum(self, events):
+    def GenerateNormalizedSpectrum(self, events, weighted=False):
         if not self.fHistogram:
             return
         hname = "{0}_Normalized".format(self.fHistogram.GetName())
         self.fNormHistogram = self.fHistogram.Clone(hname)
         self.fNormHistogram.SetTitle(hname)
         if len(self.fAxis) == 1:
-            axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
-            if self.fAxis[0].GetVariableUnits():
-                axisTitle += " ({0})^{{-1}}".format(self.fAxis[0].GetVariableUnits())
+            if weighted:
+                axisTitle = "#frac{{d#sigma}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
+                if self.fAxis[0].GetVariableUnits():
+                    axisTitle += " [pb ({0})^{{-1}}]".format(self.fAxis[0].GetVariableUnits())
+                else:
+                    axisTitle += " (pb)"
+            else:
+                axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
+                if self.fAxis[0].GetVariableUnits():
+                    axisTitle += " ({0})^{{-1}}".format(self.fAxis[0].GetVariableUnits())
             self.fNormHistogram.GetYaxis().SetTitle(axisTitle)
         elif len(self.fAxis) == 2:
-            axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^{{2}}#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
             units1 = self.fAxis[0].GetVariableUnits()
             units2 = self.fAxis[1].GetVariableUnits()
-            if units1 != units2:
-                if units1:
-                    axisTitle += " ({0})^{{-1}}".format(units1)
-                if units2:
-                    axisTitle += " ({0})^{{-1}}".format(units2)
+            if weighted:
+                axisTitle = "#frac{{d^{{2}}##sigma}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
+                if units1 != units2:
+                    axisTitle += " [pb"
+                    if units1:
+                        axisTitle += " ({0})^{{-1}}".format(units1)
+                    if units2:
+                        axisTitle += " ({0})^{{-1}}".format(units2)
+                    axisTitle += "]"
+                else:
+                    if units1:
+                        axisTitle += "[pb ({0})^{{-2}}]".format(units1)
             else:
-                if units1:
-                    axisTitle += " ({0})^{{-2}}".format(units1)
+                axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^{{2}}#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
+                if units1 != units2:
+                    if units1:
+                        axisTitle += " ({0})^{{-1}}".format(units1)
+                    if units2:
+                        axisTitle += " ({0})^{{-1}}".format(units2)
+                else:
+                    if units1:
+                        axisTitle += " ({0})^{{-2}}".format(units1)
             self.fNormHistogram.GetZaxis().SetTitle(axisTitle)
 
-        if events > 0:
+        if weighted and events > 0:
             self.fNormHistogram.Scale(1. / events, "width")
+        else:
+            self.fNormHistogram.Scale(1, "width")
 
 class DMesonJetCuts:
     def __init__(self, cutList):

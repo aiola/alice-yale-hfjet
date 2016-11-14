@@ -336,10 +336,7 @@ class DMesonJetAnalysisEngine:
                 self.GenerateSpectrum3D(s)
             else:
                 print("Not able to generate spectra with dim > 3!")
-            if self.fIsWeighted:
-                s.GenerateNormalizedSpectrum(1)
-            else:
-                s.GenerateNormalizedSpectrum(self.fEvents)
+            s.GenerateNormalizedSpectrum(self.fEvents, self.fIsWeighted)
 
     def BuildSpectrum1D(self, s, name, yaxis):
         hist = ROOT.TH1D(name, name, len(s.fAxis[0].fBins)-1, array.array('d',s.fAxis[0].fBins))
