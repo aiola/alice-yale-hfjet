@@ -53,7 +53,7 @@ class MCGEN:
         self.spectrum_name = spectrum_name
         self.name = name
         self.title = title
-        self.xsec = 1e9/2
+        self.xsec = 1e9 # mb -> pb
         self.LoadSpectrum()
 
     def LoadSpectrum(self):
@@ -118,9 +118,12 @@ def MakeUniform(g,h):
 def MakeRatio(g, h):
     i = 0
     j = 0
+    xval = []
+    xerr = []
     ratio = []
-    ratioerrup = []
-    ratioerrdown = []
+    ratioerr = []
+    unc_up = []
+    unc_down = []
     while i < g.GetN() and j < h.GetN():
         if g.GetX()[i] < h.GetX()[j]:
             i += 1
@@ -128,7 +131,22 @@ def MakeRatio(g, h):
         if g.GetX()[i] > h.GetX()[j]:
             j += 1
             continue
-        ratio.append(h.GetX()[j] / g.GetX()[j])
+        xval.append(h.GetX()[j])
+        xerr.append((h.GetEX()[j]))
+        ratio.append(h.GetY()[j] / g.GetY()[j])
+        ratioerr.append(h.GetEY()[j] / g.GetY()[j])
+        unc_up.append(g.GetEYhigh()[j] / g.GetY()[j])
+        unc_down.append(g.GetEYlow()[j] / g.GetY()[j])
+        i += 1
+        j += 1
+    ratio_h = ROOT.TGraphErrors(len(xval), array.array('d', xval), array.array('d', ratio), 
+                                array.array('d', xerr), array.array('d', ratioerr))
+    unc_g = ROOT.TGraphAsymmErrors(len(xval), array.array('d', xval), array.array('d', [1]*len(xval)), 
+                                   array.array('d', xerr), array.array('d', xerr), 
+                                   array.array('d', unc_down), array.array('d', unc_up))
+    
+    return unc_g, ratio_h
+    
 
 def main(fonll_file, spectrum, gen, proc, ts, compare):
     ROOT.TH1.AddDirectory(False)
@@ -165,7 +183,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         globalList.append(g_new)
         globalList.append(h_new)
 
-        g_new.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+        g_new.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
         g_new.GetYaxis().SetTitle("d#sigma / d#it{p}_{T} [pb (GeV/#it{c})^{-1}]")
         g_new.SetMarkerStyle(ROOT.kFullCircle)
         g_new.SetMarkerSize(0.9)
@@ -179,7 +197,35 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         g_new.Draw("A3")
         h_new.Draw("P")
 
-        MakeRatio(g_new, h_new)
+        leg = ROOT.TLegend(0.6, 0.7, 0.9, 0.85)
+        leg.SetBorderSize(0)
+        leg.AddEntry(g_new, "FONLL", "f")
+        leg.AddEntry(h_new, "POWHEG+PYTHIA", "pe")
+        leg.Draw()
+        globalList.append(leg)
+
+        (unc_g, ratio_h) = MakeRatio(g_new, h_new)
+        print("Ratio ok")
+        globalList.append(unc_g)
+        globalList.append(ratio_h)
+        cRatio = ROOT.TCanvas("{0}_ratio".format(fonll_file),"{0}_ratio".format(fonll_file))
+        globalList.append(cRatio)
+        cRatio.cd()
+
+        unc_g.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
+        unc_g.GetYaxis().SetTitle("POWHEG+PYTHIA / FONLL")
+        unc_g.SetMarkerStyle(ROOT.kFullCircle)
+        unc_g.SetMarkerSize(0.9)
+        unc_g.SetMarkerColor(ROOT.kBlue+2)
+        unc_g.SetLineColor(ROOT.kBlue+2)
+        unc_g.SetFillColor(ROOT.kCyan+1)
+        ratio_h.SetMarkerStyle(ROOT.kOpenCircle)
+        ratio_h.SetMarkerSize(0.9)
+        ratio_h.SetMarkerColor(ROOT.kRed+2)
+        ratio_h.SetLineColor(ROOT.kRed+2)
+        unc_g.Draw("A3")
+        ratio_h.Draw("P")
+        
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Comparison between FONLL and POWHEG.')
