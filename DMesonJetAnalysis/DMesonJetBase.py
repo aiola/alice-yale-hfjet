@@ -9,6 +9,8 @@ import copy
 import DMesonJetUtils
 import numpy
 from enum import Enum
+import collections
+from collections import OrderedDict
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -589,11 +591,12 @@ class AnalysisType(Enum):
     SideBand = 2
     LikeSign = 3
     LikeSignFit = 4
+    Truth = 5
 
 class Spectrum:
-    def __init__(self, config, name, binSet=None):
+    def __init__(self, config, name, binSet):
         self.fName = name
-        self.fBins = config["bins"]
+        self.fBinSet = binSet
         self.fHistogram = None
         self.fNormHistogram = None
         self.fUncertainty = None
@@ -618,17 +621,18 @@ class Spectrum:
         self.fLikeSignTotalHistogram = None
         self.fUnlikeSignTotalHistogram = None
 
-        if "title" in config:
-            self.fTitle = config["title"]
-        else:
-            self.fTitle = ""
+        self.fTitle = config["title"]
+        if binSet.fTitle:
+            if self.fTitle:
+                self.fTitle += ", "
+            self.fTitle += binSet.fTitle
 
         if "compare" in config:
             self.fCompare = config["compare"]
         else:
             self.fCompare = True
 
-        if "side_band" in config:
+        if config["type"] == "side_band":
             self.fAnalysisType = AnalysisType.SideBand
             self.fSideBandMinSigmas = config["side_band"]["min_sigmas"]
             self.fSideBandMaxSigmas = config["side_band"]["max_sigmas"]
@@ -637,7 +641,7 @@ class Spectrum:
             self.fBackupMean = config["side_band"]["backup_mean"]
             if "skip_bins" in config["side_band"]:
                 self.fSkipBins = config["side_band"]["skip_bins"]
-        elif "like_sign" in config:
+        elif config["type"] == "like_sign":
             if config["like_sign"]["mode"] == "bin_count":
                 self.fAnalysisType = AnalysisType.LikeSign
             elif config["like_sign"]["mode"] == "fit":
@@ -651,14 +655,20 @@ class Spectrum:
             self.fLikeSignTree = config["like_sign"]["name"]
             if "skip_bins" in config["like_sign"]:
                 self.fSkipBins = config["like_sign"]["skip_bins"]
-        else:
+        elif config["type"] == "inv_mass_fit":
             self.fAnalysisType = AnalysisType.InvMassFit
-
-        if (self.fAnalysisType == AnalysisType.SideBand or self.fAnalysisType == AnalysisType.LikeSign or self.fAnalysisType == AnalysisType.LikeSignFit) and binSet:
-            self.fAxis.append(binSet[self.fBins[0]].fBinCountAnalysisAxis)
+        elif config["type"] == "truth":
+            self.fAnalysisType = AnalysisType.Truth
         else:
-            for axisName, axisBins in config["axis"].iteritems():
-                self.fAxis.append(Axis(axisName, axisBins))
+            print("Analysis type {0} not recognized!".format(config["type"]))
+
+        if (self.fAnalysisType == AnalysisType.SideBand or self.fAnalysisType == AnalysisType.LikeSign or self.fAnalysisType == AnalysisType.LikeSignFit):
+            self.fAxis.append(binSet.fBinCountAnalysisAxis)
+        else:
+            for axis in binSet.fAxis:
+                self.fAxis.append(axis)
+
+        self.BuildHistograms()
 
     def GenerateRootList(self):
         rlist = ROOT.TList()
@@ -749,6 +759,78 @@ class Spectrum:
         else:
             self.fNormHistogram.Scale(1, "width")
 
+    def BuildHistograms(self):
+        if len(self.fAxis) == 1:
+            self.fHistogram = self.BuildHistogram1D(self.fName, "counts")
+            self.fUncertainty = self.BuildHistogram1D("{0}_Unc".format(self.fName), "relative statistical uncertainty")
+            if self.fAnalysisType == AnalysisType.SideBand:
+                self.fSideBandHistograms = []
+                self.fSignalHistograms = []
+                self.fMass = None
+                self.fMassWidth = None
+                self.fBackground = self.BuildHistogram1D("{0}_Bkg".format(self.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(self.fBinCountSignalSigmas)))
+                self.fSideBandWindowTotalHistogram = self.BuildHistogram1D("{0}_SideBandWindowTotal".format(self.fName), "counts")
+                self.fSignalWindowTotalHistogram = self.BuildHistogram1D("{0}_SignalWindowTotal".format(self.fName), "counts")
+            elif self.fAnalysisType == AnalysisType.LikeSign:
+                self.fLikeSignHistograms = []
+                self.fUnlikeSignHistograms = []
+                self.fMass = None
+                self.fMassWidth = None
+                self.fBackground = self.BuildHistogram1D("{0}_Bkg".format(self.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(self.fBinCountSignalSigmas)))
+                self.fLikeSignTotalHistogram = self.BuildHistogram1D("{0}_LikeSignTotal".format(self.fName), "counts")
+                self.fUnlikeSignTotalHistogram = self.BuildHistogram1D("{0}_UnlikeSignTotal".format(self.fName), "counts")
+            elif self.fAnalysisType == AnalysisType.InvMassFit or self.fAnalysisType == AnalysisType.LikeSignFit:
+                self.fMass = self.BuildHistogram1D("{0}_Mass".format(self.fName), "D^{0} mass (GeV/#it{c}^{2})")
+                self.fMassWidth = self.BuildHistogram1D("{0}_MassWidth".format(self.fName), "D^{0} mass width (GeV/#it{c}^{2})")
+                self.fBackground = self.BuildHistogram1D("{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
+        elif len(self.fAxis) == 2:
+            self.fHistogram = self.BuildHistogram2D(self.fName, "counts")
+            self.fUncertainty = self.BuildHistogram2D("{0}_Unc".format(self.fName), "relative statistical uncertainty")
+            self.fMass = self.BuildHistogram2D("{0}_Mass".format(self.fName), "mass")
+            self.fBackground = self.BuildHistogram2D("{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
+        else:
+            print("Cannot handle spectra with more than two axis!")
+            return
+
+    def BuildHistogram1D(self, name, yaxis):
+        hist = ROOT.TH1D(name, name, len(self.fAxis[0].fBins)-1, array.array('d',self.fAxis[0].fBins))
+        hist.GetXaxis().SetTitle(self.fAxis[0].GetTitle())
+        hist.GetYaxis().SetTitle(yaxis)
+        hist.Sumw2()
+        return hist
+
+    def BuildHistogram2D(self, name, zaxis):
+        hist = ROOT.TH2D(name, name, len(self.fAxis[0].fBins)-1, array.array('d',self.fAxis[0].fBins), len(self.fAxis[1].fBins)-1, array.array('d',self.fAxis[1].fBins))
+        hist.GetXaxis().SetTitle(self.fAxis[0].GetTitle())
+        hist.GetYaxis().SetTitle(self.fAxis[1].GetTitle())
+        hist.GetZaxis().SetTitle(zaxis)
+        hist.Sumw2()
+        return hist
+
+    def Fill(self, dmeson, jet, w):
+        values = []
+        for axis in self.fAxis:
+            if axis.fName == "jet_pt":
+                values.append(jet.fPt)
+            elif axis.fName == "jet_eta":
+                values.append(jet.fEta)
+            elif axis.fName == "jet_phi":
+                values.append(jet.fPhi)
+            elif axis.fName == "d_z":
+                values.append(jet.fZ)
+            elif axis.fName == "d_pt":
+                values.append(dmeson.fPt)
+            elif axis.fName == "d_eta":
+                values.append(dmeson.fEta)
+            elif axis.fName == "d_phi":
+                values.append(dmeson.fPhi)
+        if len(values) == 1:
+            self.fHistogram.Fill(values[0], w)
+        elif len(values) == 2:
+            self.fHistogram.Fill(values[0], values[1], w)
+        else:
+            print("Cannot handle histograms with more than two axis!")
+
 class DMesonJetCuts:
     def __init__(self, cutList):
         self.fCuts = cutList
@@ -771,7 +853,7 @@ class DMesonJetCuts:
 
 class BinMultiSet:
     def __init__(self):
-        self.fBinSets = dict()
+        self.fBinSets = OrderedDict()
 
     def GenerateInvMassRootLists(self):
         for binSet in self.fBinSets.itervalues():
@@ -780,31 +862,64 @@ class BinMultiSet:
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fName] = binSet
         
-    def SetWeightEfficiency(self, weight, applyToSpectrum):
+    def GenerateSpectraObjects(self, dmeson):
+        for binSet in self.fBinSets.itervalues():
+            binSet.GenerateSpectraObjects(dmeson)
+
+    def SetWeightEfficiency(self, weight):
         for binSet in self.fBinSets.itervalues():
             binSet.fWeightEfficiency = weight
-            binSet.fApplyEfficiencyToSpectrum = applyToSpectrum
 
-    def FindBin(self, dmeson, jet):
+    def FindBin(self, dmeson, jet, dmesonDef):
         for binSet in self.fBinSets.itervalues():
+            if not dmesonDef in binSet.fNeedInvMass:
+                continue
             bins = binSet.FindBin(dmeson, jet)
             for bin, w in bins:
                 yield bin, w
 
+    def FindSpectra(self, dmeson, jet):
+        for binSet in self.fBinSets.itervalues():
+            if not binSet.fCuts.ApplyCuts(dmeson, jet):
+                continue
+            for s in binSet.fSpectra.itervalues():
+                if s.fAnalysisType != AnalysisType.Truth:
+                    continue
+                yield s, binSet.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet)
+
+    def FindAllSpectra(self):
+        for binSet in self.fBinSets.itervalues():
+            for s in binSet.fSpectra.itervalues():
+                yield s
+
 class BinSet:
-    def __init__(self, name, limitSetList, cutList=[], bin_count_axis=None, weight=None, effToSpectrum=False, fitOptions=""):
+    def __init__(self, name, title, need_inv_mass, limitSetList, spectra, axis, cutList=[], bin_count_axis=None, weight=None, fitOptions=""):
         self.fName = name
+        self.fTitle = title
         self.fBins = []
+        self.fSpectraConfigs = spectra
+        self.fSpectra = collections.OrderedDict()
+        self.fAxis = axis
         self.fCuts = DMesonJetCuts(cutList)
         self.fFitOptions = fitOptions
         self.fWeightEfficiency = weight
-        self.fApplyEfficiencyToSpectrum = effToSpectrum
+        self.fNeedInvMass = need_inv_mass
         if bin_count_axis:
             self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0])
         else:
             self.fBinCountAnalysisAxis = None
         limits = dict()
         self.AddBinsRecursive(limitSetList, limits)
+        
+    def GenerateSpectraObjects(self, dmeson):
+        for s in self.fSpectraConfigs:
+            if not dmeson in s["active_mesons"]:
+                continue
+            if "suffix" in s and s["suffix"]:
+                name = "{0}_{1}_{2}".format(dmeson, s["name"], s["suffix"])
+            else:
+                name = "{0}_{1}".format(dmeson, s["name"])
+            self.fSpectra[s["name"]] = Spectrum(s, name, self)
 
     def GenerateInvMassRootList(self):
         rlist = ROOT.TList()
@@ -830,8 +945,6 @@ class BinSet:
     def FindBin(self, dmeson, jet):
         if not self.fCuts.ApplyCuts(dmeson, jet):
             return
-        if self.fApplyEfficiencyToSpectrum:
-            w = 1.
         else:
             w = self.fWeightEfficiency.GetEfficiencyWeight(dmeson, jet)
         for bin in self.fBins:

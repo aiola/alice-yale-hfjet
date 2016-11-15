@@ -39,7 +39,7 @@ def main(config, maxEvents, format, gen, proc, ts):
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
-        ana.StartAnalysis(config["figure_title"], config["collision_system"], anaConfig)
+        ana.StartAnalysis(config["collision_system"], anaConfig)
 
     ana.SaveRootFile("{0}/{1}".format(input_path, config["train"]))
     ana.SavePlots("{0}/{1}".format(input_path, config["train"]), format)
