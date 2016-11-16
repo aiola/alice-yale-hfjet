@@ -13,8 +13,24 @@ class FONLL:
     def __init__(self, fonll_file):
         self.name = fonll_file
         self.n = 0
-        self.values = dict()
-        self.OpenFONLL(fonll_file)
+        if ".root" in fonll_file:
+            self.LoadD2HGraph(fonll_file, "D0Kpiprediction")
+        else:
+            self.values = dict()
+            self.OpenFONLL(fonll_file)
+            self.GenerateGraph("pt", "central", "max", "min")
+
+    def LoadD2HGraph(self, filename, gname):
+        file = ROOT.TFile(filename)
+        if not file or file.IsZombie():
+            print("Could not open file {0}".format(filename))
+            exit(1)
+        g = file.Get(gname)
+        if not g:
+            print("Could not get graph {0}".format(gname))
+            exit(1)
+        self.n = g.GetN()
+        self.fGraph = g.Clone()
 
     def OpenFONLL(self, fonll_file):
         with open(fonll_file, "r") as myfile:
@@ -42,10 +58,9 @@ class FONLL:
             prevLine = line
     
     def GenerateGraph(self, x, y, yerrup, yerrdown):
-        g = ROOT.TGraphAsymmErrors(self.n, array.array('d', self.values[x]), array.array('d', self.values[y]), ROOT.nullptr, ROOT.nullptr, 
-                                    array.array('d', [v-down for down,v in zip(self.values[yerrdown], self.values[y])]),
-                                    array.array('d', [up-v for up,v in zip(self.values[yerrup], self.values[y])]))
-        return g
+        self.fGraph = ROOT.TGraphAsymmErrors(self.n, array.array('d', self.values[x]), array.array('d', self.values[y]), ROOT.nullptr, ROOT.nullptr, 
+                                             array.array('d', [v-down for down,v in zip(self.values[yerrdown], self.values[y])]),
+                                             array.array('d', [up-v for up,v in zip(self.values[yerrup], self.values[y])]))
 
 class MCGEN:
     def __init__(self, name, title, file_name, spectrum_name):
@@ -54,6 +69,8 @@ class MCGEN:
         self.name = name
         self.title = title
         self.xsec = 1e9 # mb -> pb
+        self.xsec /= 2 # normalize to particle (antiparticle)
+        #self.xsec *= 3.93e-2 # decay D0->Kpi
         self.LoadSpectrum()
 
     def LoadSpectrum(self):
@@ -70,6 +87,7 @@ class MCGEN:
         self.spectrum.Scale(self.xsec)
 
 def MakeUniform(g,h):
+    g.Dump()
     xval = []
     xerr = []
     yval = []
@@ -84,34 +102,45 @@ def MakeUniform(g,h):
 
     h_new = ROOT.TGraphErrors(len(xval), array.array('d', xval), array.array('d', yval), 
                               array.array('d', xerr), array.array('d', yerr))
-
+    h_new.Dump()
     gxval = []
     gyval = []
     gyerrup = []
     gyerrdown = []
     i = 0
-    while i < g.GetN():
-        if g.GetX()[i] < 9:
-            gxval.append(g.GetX()[i])
-            gyval.append(g.GetY()[i])
-            gyerrup.append(g.GetEYhigh()[i])
-            gyerrdown.append(g.GetEYlow()[i])
-            i = i+1
-        elif g.GetX()[i] < 16:
-            gxval.append((g.GetX()[i] + g.GetX()[i+1]) / 2)
-            gyval.append((g.GetY()[i] + g.GetY()[i+1]) / 2)
-            gyerrup.append(math.sqrt(g.GetEYhigh()[i]**2+g.GetEYhigh()[i+1]**2)/2)
-            gyerrdown.append(math.sqrt(g.GetEYlow()[i]**2+g.GetEYlow()[i+1]**2)/2)
-            i = i+2
-        else:
-            gxval.append((g.GetX()[i] + g.GetX()[i+1] + g.GetX()[i+2] + g.GetX()[i+3]) / 4)
-            gyval.append((g.GetY()[i] + g.GetY()[i+1] + g.GetY()[i+2] + g.GetY()[i+3]) / 4)
-            gyerrup.append(math.sqrt(g.GetEYhigh()[i]**2+g.GetEYhigh()[i+1]**2+g.GetEYhigh()[i+2]**2+g.GetEYhigh()[i+3]**2)/4)
-            gyerrdown.append(math.sqrt(g.GetEYlow()[i]**2+g.GetEYlow()[i+1]**2+g.GetEYlow()[i+2]**2+g.GetEYlow()[i+3]**2)/4)
-            i = i+4
+    j = 0
+    myXval = 0
+    myYval = 0
+    myerrup2 = 0
+    myerrdown2 = 0
+    nsum = 0
+    while i < g.GetN() and j < h_new.GetN():
+        if nsum == 0 or myXval/nsum <= h_new.GetX()[j]:
+            print("Adding {0}".format(g.GetX()[i]))
+            myXval += g.GetX()[i]
+            myYval += g.GetY()[i]
+            myerrup2 += g.GetEYhigh()[i]**2
+            myerrdown2 += g.GetEYlow()[i]**2
+            nsum += 1
+        if nsum > 0 and myXval/nsum - h_new.GetX()[j] > 1e-6:
+            print("Something wrong...")
+        if nsum > 0 and math.fabs(myXval/nsum - h_new.GetX()[j]) < 1e-6:
+            j += 1
+            print("Bin X {0}".format(myXval/nsum))
+            gxval.append(round(myXval/nsum,2))
+            gyval.append(myYval/nsum)
+            gyerrup.append(math.sqrt(myerrup2)/nsum)
+            gyerrdown.append(math.sqrt(myerrdown2)/nsum)
+            myXval = 0
+            myYval = 0
+            myerrup2 = 0
+            myerrdown2 = 0
+            nsum = 0
+        i += 1
 
+    print(gxval)
     g_new = ROOT.TGraphAsymmErrors(len(gxval), array.array('d', gxval), array.array('d', gyval), 
-                              ROOT.nullptr, ROOT.nullptr, array.array('d', gyerrdown), array.array('d', gyerrup))
+                                   ROOT.nullptr, ROOT.nullptr, array.array('d', gyerrdown), array.array('d', gyerrup))
 
     return g_new,h_new
 
@@ -154,7 +183,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
     ROOT.gStyle.SetOptStat(0)
 
     FONLL_ntuple = FONLL(fonll_file)
-    g = FONLL_ntuple.GenerateGraph("pt", "central", "max", "min")
+    g = FONLL_ntuple.fGraph
     globalList.append(g)
 
     c = ROOT.TCanvas(fonll_file,fonll_file)
@@ -168,7 +197,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         g.SetMarkerSize(0.9)
         g.SetMarkerColor(ROOT.kBlue+2)
         g.SetLineColor(ROOT.kBlue+2)
-        g.SetFillColor(ROOT.kCyan+2)
+        g.SetFillColor(ROOT.kCyan+1)
         g.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
         g.GetYaxis().SetTitle("d#sigma / d#it{p}_{T} [pb (GeV/#it{c})^{-1}]")
         g.Draw("A3")
@@ -199,6 +228,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
 
         leg = ROOT.TLegend(0.6, 0.7, 0.9, 0.85)
         leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
         leg.AddEntry(g_new, "FONLL", "f")
         leg.AddEntry(h_new, "POWHEG+PYTHIA", "pe")
         leg.Draw()
