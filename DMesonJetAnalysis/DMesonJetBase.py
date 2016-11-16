@@ -646,6 +646,9 @@ class Spectrum:
                 self.fAnalysisType = AnalysisType.LikeSign
             elif config["like_sign"]["mode"] == "fit":
                 self.fAnalysisType = AnalysisType.LikeSignFit
+            else:
+                print("Like Sign mode {0} not recognized!!".format(config["like_sign"]["mode"]))
+                exit(1)
             self.fSideBandMinSigmas = config["like_sign"]["min_sigmas"]
             self.fSideBandMaxSigmas = config["like_sign"]["max_sigmas"]
             self.fBinCountSignalSigmas = config["like_sign"]["max_signal_sigmas"]
@@ -668,6 +671,7 @@ class Spectrum:
             for axis in binSet.fAxis:
                 self.fAxis.append(axis)
 
+        print("Spectrum {0} with analysis type {1} added".format(self.fName, self.fAnalysisType.name))
         self.BuildHistograms()
 
     def GenerateRootList(self):
@@ -919,7 +923,7 @@ class BinSet:
                 name = "{0}_{1}_{2}".format(dmeson, s["name"], s["suffix"])
             else:
                 name = "{0}_{1}".format(dmeson, s["name"])
-            self.fSpectra[s["name"]] = Spectrum(s, name, self)
+            self.fSpectra[name] = Spectrum(s, name, self)
 
     def GenerateInvMassRootList(self):
         rlist = ROOT.TList()

@@ -35,7 +35,7 @@ def main(config, maxEvents, format, gen, proc, ts):
         input_path = input_path.format(suffix)
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, config["train"], file_name, config["task_name"], maxEvents)
+    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, config["train"], file_name, config["task_name"], config["merging_type"], maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
