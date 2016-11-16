@@ -77,7 +77,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   switch (m) {
   case kDzeroKpi:
     fPDGMass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-    fMaxAllowedWidth = 0.030;
+    fMaxAllowedWidth = 0.050;
     fMaxAllowedMeanShift = 0.005;
     fMassFitTypeSig = kGaus;
     fMassFitTypeBkg = kExpo;
@@ -85,7 +85,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
 
   case kDstarKpipi:
     fPDGMass = TDatabasePDG::Instance()->GetParticle(413)->Mass();
-    fMaxAllowedWidth = 0.030;
+    fMaxAllowedWidth = 0.050;
     fMaxAllowedMeanShift = 0.005;
     fMassFitTypeSig = kGaus;
     fMassFitTypeBkg = kExpoPower;

@@ -226,7 +226,6 @@ class DMesonJetAnalysisEngine:
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.9)
             h.SetLineColor(ROOT.kBlue+2)
-            #h.GetYaxis().SetRangeUser(1.84, 1.91)
     
             pave = ROOT.TPaveText(0.10, 0.88, 0.8, 0.68, "NB NDC")
             pave.SetFillStyle(0)
@@ -578,7 +577,6 @@ class DMesonJetAnalysisEngine:
         return signalWindowInvMassHisto, sideBandWindowInvMassHisto 
 
     def GenerateSpectrum1DSideBandMethod(self, s):
-        print("Side Band method")
         for ibin,bin in enumerate(s.fBinSet.fBins):
             if s.fSkipBins and ibin in s.fSkipBins:
                 print("Skipping bin {0} as requested".format(bin.GetTitle()))
@@ -670,6 +668,9 @@ class DMesonJetAnalysisEngine:
         for ibin in range(0, s.fHistogram.GetNbinsX()+2):
             if not s.fHistogram.GetBinContent(ibin) > 0:
                 continue
+            w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetXaxis().GetBinCenter(ibin))
+            s.fHistogram.SetBinContent(ibin, s.fHistogram.GetBinContent(ibin) * w)
+            s.fHistogram.SetBinError(ibin, s.fHistogram.GetBinError(ibin) * w)
             s.fUncertainty.SetBinContent(ibin, s.fHistogram.GetBinError(ibin) / s.fHistogram.GetBinContent(ibin))
 
     def GenerateSpectrum1D(self, s):
