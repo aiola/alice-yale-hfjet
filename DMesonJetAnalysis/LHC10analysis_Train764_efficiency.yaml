@@ -2,8 +2,8 @@ name: LHC10_Train764_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_764_765_766_767
 file_name: AnalysisResults.root
+merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
-figure_title: "ALICE Work In Progress"
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
@@ -19,13 +19,14 @@ analysis:
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: JetPtBins_PtD_20
-    active: yes
+    name: Jet_Pt_Bins_PtD_20
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    active_mesons: [D0, 2ProngLikeSign]
+    need_inv_mass: [D0, 2ProngLikeSign]
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
       object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
-      apply_to_final_spectrum: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
@@ -38,14 +39,22 @@ analysis:
       object: d
       variable: fPt
       min: 2.0
+    spectra:
+    -
+      name: Jet_Pt_Spectrum_PtD_20
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      type: inv_mass_fit
+      active_mesons: [D0]
   -
-    name: JetPtBins_PtD_30
-    active: yes
+    name: Jet_Pt_Bins_PtD_30
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    active_mesons: [D0, 2ProngLikeSign]
+    need_inv_mass: [D0, 2ProngLikeSign]
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
       object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
-      apply_to_final_spectrum: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
@@ -58,14 +67,47 @@ analysis:
       object: d
       variable: fPt
       min: 3.0
+    spectra:
+    -
+      name: Jet_Pt_Spectrum_PtD_30
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      type: inv_mass_fit
+      active_mesons: [D0]
   -
-    name: DPtBins_PtJet_5_24
-    active: yes
+    name: Jet_Pt_Bins_PtD_40
+    title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    active_mesons: [D0, 2ProngLikeSign]
+    need_inv_mass: [D0, 2ProngLikeSign]
     efficiency:
       file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
       object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
-      apply_to_final_spectrum: yes
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 4.0
+    spectra:
+    -
+      name: Jet_Pt_Spectrum_PtD_40
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      type: inv_mass_fit
+      active_mesons: [D0]
+  -
+    name: DPtBins_JetPt_5_24
+    title: ""
+    active_mesons: [D0, 2ProngLikeSign]
+    need_inv_mass: [D0, 2ProngLikeSign]
+    efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
     cuts:
@@ -81,78 +123,148 @@ analysis:
       max: 24
     bin_count_analysis:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
-  spectra:
+    spectra:
+    -
+      name: D_Pt_Spectrum_JetPt_5_24
+      suffix: InvMassFit
+      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: inv_mass_fit
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+    -
+      name: Jet_Pt_Spectrum_PtD_20
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: Jet_Pt_Spectrum_PtD_20
+      suffix: LikeSign
+      title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: like_sign
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+      like_sign:
+        mode: bin_count
+        name: 2ProngLikeSign
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        max_signal_norm_sigmas: 0
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: Jet_Pt_Spectrum_PtD_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+      skip_bins: [0]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: Jet_Pt_Spectrum_PtD_30
+      suffix: LikeSign
+      title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: like_sign
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+      skip_bins: [0]
+      like_sign:
+        mode: bin_count
+        name: 2ProngLikeSign
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        max_signal_norm_sigmas: 0
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: Jet_Pt_Spectrum_PtD_40
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+      skip_bins: [0,1]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: Jet_Pt_Spectrum_PtD_40
+      suffix: LikeSign
+      title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: like_sign
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+      active_mesons: [D0]
+      skip_bins: [0,1]
+      like_sign:
+        mode: bin_count
+        name: 2ProngLikeSign
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        max_signal_norm_sigmas: 0
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: D_Pt_Spectrum_PtJet_5_24
-    title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}"
-    active: yes
-    bins: [DPtBins_PtJet_5_24]
-    axis:
+    name: DPtBins
+    title: ""
+    active_mesons: [D0, 2ProngLikeSign]
+    need_inv_mass: [D0, 2ProngLikeSign]
+    efficiency: no
+    bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
-  -
-    name: D_Tagged_Jet_Pt_Spectrum_PtD_20_InvMassFit
-    title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}"
-    active: yes
-    bins: [JetPtBins_PtD_20]
-    axis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-  -
-    name: D_Tagged_Jet_Pt_Spectrum_PtD_20_SideBand
-    title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
-    active: yes
-    bins: [DPtBins_PtJet_5_24]
-    side_band:
-      min_sigmas: 4
-      max_sigmas: 8
-      max_signal_sigmas: 2
-      backup_mean: 1.86484
-      backup_sigma: 0.015
-  -
-    name: D_Tagged_Jet_Pt_Spectrum_PtD_20_LikeSign
-    title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
-    active: yes
-    bins: [DPtBins_PtJet_5_24]
-    like_sign:
-      mode: bin_count
-      name: 2ProngLikeSign
-      min_sigmas: 4
-      max_sigmas: 8
-      max_signal_sigmas: 2
-      max_signal_norm_sigmas: 0
-      backup_mean: 1.86484
-      backup_sigma: 0.015
-  -
-    name: D_Tagged_Jet_Pt_Spectrum_PtD_30_InvMassFit
-    title: "Inv.Mass Fit, #it{p}_{T,D} > 3 GeV/#it{c}"
-    active: yes
-    bins: [JetPtBins_PtD_30]
-    axis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-  -
-    name: D_Tagged_Jet_Pt_Spectrum_PtD_30_SideBand
-    title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
-    active: yes
-    bins: [DPtBins_PtJet_5_24]
-    side_band:
-      min_sigmas: 4
-      max_sigmas: 8
-      max_signal_sigmas: 2
-      backup_mean: 1.86484
-      backup_sigma: 0.015
-      skip_bins: [0]
-  -
-    name: D_Tagged_Jet_Pt_Spectrum_PtD_30_LikeSign
-    title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}"
-    active: yes
-    bins: [DPtBins_PtJet_5_24]
-    like_sign:
-      mode: bin_count
-      name: 2ProngLikeSign
-      min_sigmas: 4
-      max_sigmas: 8
-      max_signal_sigmas: 2
-      max_signal_norm_sigmas: 0
-      backup_mean: 1.86484
-      backup_sigma: 0.015
-      skip_bins: [0]
-      
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    spectra:
+    -
+      name: D_Pt_Spectrum
+      suffix: InvMassFit
+      title: "Inv.Mass Fit, |#eta_{D}| < 0.5"
+      type: inv_mass_fit
+      efficiency:
+        file_name: Jets_EMC_pp_MC_949_950_951_952/LHC15i2_Train949.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_NoJet
+      active_mesons: [D0]

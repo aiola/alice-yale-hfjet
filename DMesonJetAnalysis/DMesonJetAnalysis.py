@@ -345,7 +345,9 @@ class DMesonJetAnalysisEngine:
             for bin in s.fLikeSignSubtractedBinSet.fBins:
                 self.ProcessInvMassFitSpectrumBin(s, bin, s.fLikeSignSubtractedBinSet)
 
-    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet):         
+    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet): 
+        w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+
         xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
         if bin.fMassFitter is None:
             print("The bin printed below does not have a mass fitter!")
@@ -355,8 +357,8 @@ class DMesonJetAnalysisEngine:
             print("The bin printed below does not have a successful invariant mass fit!")
             bin.Print()
             return   
-        signal = bin.fMassFitter.GetSignal()
-        signal_unc = bin.fMassFitter.GetSignalError()
+        signal = bin.fMassFitter.GetSignal()*w
+        signal_unc = bin.fMassFitter.GetSignalError()*w
 
         s.fHistogram.SetBinContent(xbin, signal)
         s.fHistogram.SetBinError(xbin, signal_unc)
@@ -523,6 +525,13 @@ class DMesonJetAnalysisEngine:
 
             LSbin.fInvMassHisto.Scale(bkgNorm)
 
+            w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+            if w != 1:
+                if LStotal:
+                    LStotal.Scale(w)
+                if sig:
+                    sig.Scale(w)
+
             if LStotal:
                 LStotal.SetTitle(bin.GetTitle())
                 s.fLikeSignHistograms.append(LStotal)
@@ -543,7 +552,7 @@ class DMesonJetAnalysisEngine:
             s.fHistogram.Add(s.fLikeSignTotalHistogram, -1)
             if s.fBackground:
                 s.fBackground.Add(s.fLikeSignTotalHistogram)
-    
+
             for xbin in range(0, s.fHistogram.GetNbinsX()+2):
                 if s.fHistogram.GetBinContent(xbin) > 0:
                     s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
@@ -629,6 +638,11 @@ class DMesonJetAnalysisEngine:
             integralError = ROOT.Double(0.)
             integral = sbTotal.IntegralAndError(0, -1, integralError)
             print("The total normalized side-band background is {0} +/- {1}".format(integral, integralError))
+
+            w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+            if w != 1:
+                sbTotal.Scale(w)
+                sig.Scale(w)
 
             sbTotal.SetTitle(bin.GetTitle())
             s.fSideBandHistograms.append(sbTotal)
@@ -897,7 +911,7 @@ class DMesonJetAnalysis:
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
                 binset_copy = copy.deepcopy(binMultiSet)
-                binset_copy.GenerateSpectraObjects(d_meson)
+                binset_copy.GenerateSpectraObjects(d_meson, self.fProjector.fInputPath)
                 if trigger:
                     print("Projecting trigger {0}, D meson {1}".format(trigger, d_meson))
                 else:

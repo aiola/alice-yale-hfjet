@@ -4,7 +4,6 @@ train: Jets_EMC_pp_MC_953_954_955_956
 file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
-figure_title: "ALICE Work In Progress"
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
@@ -40,15 +39,22 @@ analysis:
     spectra:
     -
       name: Jet_Pt_Spectrum_PtD_20
+      suffix: Truth
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+    -
+      name: Jet_Pt_Spectrum_PtD_20
+      suffix: SignalOnly
+      title: ""
+      type: truth
+      active_mesons: [D0_kSignalOnly]
+    -
+      name: Jet_Pt_Spectrum_PtD_20
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
-    -
-      name: Jet_Pt_Spectrum_PtD_20
-      title: ""
-      type: truth
-      active_mesons: [D0_kSignalOnly, D0_MCTruth]
   -
     name: Jet_Pt_Bins_PtD_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
@@ -70,15 +76,22 @@ analysis:
     spectra:
     -
       name: Jet_Pt_Spectrum_PtD_30
+      suffix: Truth
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+    -
+      name: Jet_Pt_Spectrum_PtD_30
+      suffix: SignalOnly
+      title: ""
+      type: truth
+      active_mesons: [D0_kSignalOnly]
+    -
+      name: Jet_Pt_Spectrum_PtD_30
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
-    -
-      name: Jet_Pt_Spectrum_PtD_30
-      title: ""
-      type: truth
-      active_mesons: [D0_kSignalOnly, D0_MCTruth]
   -
     name: Jet_Pt_Bins_PtD_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
@@ -100,15 +113,22 @@ analysis:
     spectra:
     -
       name: Jet_Pt_Spectrum_PtD_40
+      suffix: Truth
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+    -
+      name: Jet_Pt_Spectrum_PtD_40
+      suffix: SignalOnly
+      title: ""
+      type: truth
+      active_mesons: [D0_kSignalOnly]
+    -
+      name: Jet_Pt_Spectrum_PtD_40
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
-    -
-      name: Jet_Pt_Spectrum_PtD_40
-      title: ""
-      type: truth
-      active_mesons: [D0_kSignalOnly, D0_MCTruth]
   -
     name: DPtBins_JetPt_5_24
     title: ""
@@ -133,9 +153,16 @@ analysis:
     spectra:
     -
       name: D_Pt_Spectrum_JetPt_5_24
+      suffix: Truth
       title: "5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: truth
-      active_mesons: [D0_kSignalOnly, D0_MCTruth]
+      active_mesons: [D0_MCTruth]
+    -
+      name: D_Pt_Spectrum_JetPt_5_24
+      suffix: SignalOnly
+      title: "5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: truth
+      active_mesons: [D0_kSignalOnly]
     -
       name: D_Pt_Spectrum_JetPt_5_24
       suffix: InvMassFit
@@ -244,9 +271,16 @@ analysis:
     spectra:
     -
       name: D_Pt_Spectrum
+      suffix: Truth
       title: "|#eta_{D}| < 0.5"
       type: truth
-      active_mesons: [D0_kSignalOnly, D0_MCTruth]
+      active_mesons: [D0_MCTruth]
+    -
+      name: D_Pt_Spectrum
+      suffix: SignalOnly
+      title: "|#eta_{D}| < 0.5"
+      type: truth
+      active_mesons: [D0_kSignalOnly]
     -
       name: D_Pt_Spectrum
       suffix: InvMassFit
