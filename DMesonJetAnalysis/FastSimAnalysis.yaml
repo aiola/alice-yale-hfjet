@@ -3,6 +3,7 @@ input_path: /Volumes/DATA/ALICE/JetResults/FastSim_{0}/stage_1/output
 train: ""
 file_name: AnalysisResults_FastSim_{0}.root
 task_name: AliAnalysisTaskDmesonJets
+merging_type: average
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 

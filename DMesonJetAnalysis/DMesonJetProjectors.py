@@ -104,7 +104,7 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
 class DMesonJetDataProjector:
-    def __init__(self, inputPath, train, fileName, taskName, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, merging_type, maxEvents):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -118,6 +118,7 @@ class DMesonJetDataProjector:
         self.fWeight = 1
         self.fTotalEvents = 0
         self.fNFiles = 0
+        self.fMergingType = merging_type
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -148,25 +149,29 @@ class DMesonJetDataProjector:
         if valNTRIALS > 0:
             self.fWeight = valXSEC/valNTRIALS;
 
-        tempFixFactor = 1. / self.fNFiles
-        if self.fMaxEvents > 0:
-            tempFixFactor *= self.fChain.GetEntries() / self.fMaxEvents
-        self.fWeight *= tempFixFactor
-
     def RecalculateWeight(self, trigger):
-        if trigger:
-            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+        if self.fMergingType == "simple_sum":
+            self.fWeight = 1
         else:
-            listName = "{0}_histos".format(self.fTaskName)
-        hlist = self.fChain.GetCurrentFile().Get(listName)
+            if trigger:
+                listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+            else:
+                listName = "{0}_histos".format(self.fTaskName)
+            hlist = self.fChain.GetCurrentFile().Get(listName)
+    
+            if not hlist:
+                print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
+                self.fWeight = 1
 
-        if not hlist:
-            print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
-            return 1
+            self.ExtractWeightFromHistogramList(hlist)
 
-        self.ExtractWeightFromHistogramList(hlist)
+            if self.fMergingType == "average":
+                averageFactor = 1. / self.fNFiles
+                if self.fMaxEvents > 0:
+                    averageFactor *= self.fChain.GetEntries() / self.fMaxEvents
+                self.fWeight *= averageFactor
 
-        print("File: {0}\nWeight: {1}".format(self.fCurrentFileName, self.fWeight))
+        print("File: {0}\nWeight: {1} (merging type = {2})".format(self.fCurrentFileName, self.fWeight, self.fMergingType))
 
     def ExtractCurrentFileInfo(self):
         fname = self.fChain.GetCurrentFile().GetName()
@@ -174,7 +179,7 @@ class DMesonJetDataProjector:
         secondLastSlash = fname.rfind('/',0,lastSlash-1)
         thirdLastSlash = fname.rfind('/',0,secondLastSlash-1)
         self.fPeriod = fname[thirdLastSlash+1:secondLastSlash]
-        
+
     def ExtractEventsFromHistogramList(self, hlist):
         eventsHist = hlist.FindObject("fHistNEvents")
         
