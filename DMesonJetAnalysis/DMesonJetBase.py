@@ -7,10 +7,10 @@ import os
 import math
 import copy
 import DMesonJetUtils
+import DMesonJetProjectors
 import numpy
 from enum import Enum
 import collections
-from collections import OrderedDict
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -594,7 +594,7 @@ class AnalysisType(Enum):
     Truth = 5
 
 class Spectrum:
-    def __init__(self, config, name, binSet):
+    def __init__(self, config, name, binSet, effWeight):
         self.fName = name
         self.fBinSet = binSet
         self.fHistogram = None
@@ -607,6 +607,7 @@ class Spectrum:
         self.fSideBandWindowInvMassHistos = dict()
         self.fSignalWindowInvMassHistos = dict()
         self.fSkipBins = None
+        self.fEfficiencyWeight = effWeight
 
         # S-B analysis
         self.fSideBandHistograms = None
@@ -857,7 +858,7 @@ class DMesonJetCuts:
 
 class BinMultiSet:
     def __init__(self):
-        self.fBinSets = OrderedDict()
+        self.fBinSets = collections.OrderedDict()
 
     def GenerateInvMassRootLists(self):
         for binSet in self.fBinSets.itervalues():
@@ -866,9 +867,9 @@ class BinMultiSet:
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fName] = binSet
         
-    def GenerateSpectraObjects(self, dmeson):
+    def GenerateSpectraObjects(self, dmeson, inputPath):
         for binSet in self.fBinSets.itervalues():
-            binSet.GenerateSpectraObjects(dmeson)
+            binSet.GenerateSpectraObjects(dmeson, inputPath)
 
     def SetWeightEfficiency(self, weight):
         for binSet in self.fBinSets.itervalues():
@@ -915,7 +916,7 @@ class BinSet:
         limits = dict()
         self.AddBinsRecursive(limitSetList, limits)
         
-    def GenerateSpectraObjects(self, dmeson):
+    def GenerateSpectraObjects(self, dmeson, inputPath):
         for s in self.fSpectraConfigs:
             if not dmeson in s["active_mesons"]:
                 continue
@@ -923,7 +924,11 @@ class BinSet:
                 name = "{0}_{1}_{2}".format(dmeson, s["name"], s["suffix"])
             else:
                 name = "{0}_{1}".format(dmeson, s["name"])
-            self.fSpectra[name] = Spectrum(s, name, self)
+            if "efficiency" in s and s["efficiency"]:
+                effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(inputPath, s["efficiency"]["file_name"]), s["efficiency"]["list_name"], s["efficiency"]["object_name"])
+            else:
+                effWeight = DMesonJetProjectors.SimpleWeight()
+            self.fSpectra[name] = Spectrum(s, name, self, effWeight)
 
     def GenerateInvMassRootList(self):
         rlist = ROOT.TList()

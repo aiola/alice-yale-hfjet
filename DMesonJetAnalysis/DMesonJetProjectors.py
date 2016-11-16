@@ -9,7 +9,9 @@ from DMesonJetBase import *
 
 class SimpleWeight:
     def GetEfficiencyWeight(self, dmeson, jet):
-        return 1.
+        return 1
+    def GetEfficiencyWeightTH1ForPt(self, pt):
+        return 1
 
 class EfficiencyWeightCalculator:
     def __init__(self, filename="", listname="", objectname=""):
