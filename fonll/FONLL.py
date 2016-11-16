@@ -10,11 +10,11 @@ import math
 globalList = []
 
 class FONLL:
-    def __init__(self, fonll_file):
+    def __init__(self, fonll_file, gname="D0Kpiprediction"):
         self.name = fonll_file
         self.n = 0
         if ".root" in fonll_file:
-            self.LoadD2HGraph(fonll_file, "D0Kpiprediction")
+            self.LoadD2HGraph(fonll_file, gname)
         else:
             self.values = dict()
             self.OpenFONLL(fonll_file)
@@ -86,8 +86,7 @@ class MCGEN:
         self.spectrum.SetTitle(self.title)
         self.spectrum.Scale(self.xsec)
 
-def MakeUniform(g,h):
-    g.Dump()
+def GenerateGraphFromHist(h):
     xval = []
     xerr = []
     yval = []
@@ -102,7 +101,9 @@ def MakeUniform(g,h):
 
     h_new = ROOT.TGraphErrors(len(xval), array.array('d', xval), array.array('d', yval), 
                               array.array('d', xerr), array.array('d', yerr))
-    h_new.Dump()
+    return h_new
+
+def MakeUniform(g,h_new, scaling=1):
     gxval = []
     gyval = []
     gyerrup = []
@@ -128,9 +129,9 @@ def MakeUniform(g,h):
             j += 1
             print("Bin X {0}".format(myXval/nsum))
             gxval.append(round(myXval/nsum,2))
-            gyval.append(myYval/nsum)
-            gyerrup.append(math.sqrt(myerrup2)/nsum)
-            gyerrdown.append(math.sqrt(myerrdown2)/nsum)
+            gyval.append(myYval/nsum*scaling)
+            gyerrup.append(math.sqrt(myerrup2)/nsum*scaling)
+            gyerrdown.append(math.sqrt(myerrdown2)/nsum*scaling)
             myXval = 0
             myYval = 0
             myerrup2 = 0
@@ -142,7 +143,7 @@ def MakeUniform(g,h):
     g_new = ROOT.TGraphAsymmErrors(len(gxval), array.array('d', gxval), array.array('d', gyval), 
                                    ROOT.nullptr, ROOT.nullptr, array.array('d', gyerrdown), array.array('d', gyerrup))
 
-    return g_new,h_new
+    return g_new
 
 def MakeRatio(g, h):
     i = 0
@@ -161,9 +162,9 @@ def MakeRatio(g, h):
             j += 1
             continue
         xval.append(h.GetX()[j])
-        xerr.append((h.GetEX()[j]))
+        xerr.append((h.GetErrorX(j)))
         ratio.append(h.GetY()[j] / g.GetY()[j])
-        ratioerr.append(h.GetEY()[j] / g.GetY()[j])
+        ratioerr.append(h.GetErrorY(j) / g.GetY()[j])
         unc_up.append(g.GetEYhigh()[j] / g.GetY()[j])
         unc_down.append(g.GetEYlow()[j] / g.GetY()[j])
         i += 1
@@ -177,7 +178,7 @@ def MakeRatio(g, h):
     return unc_g, ratio_h
     
 
-def main(fonll_file, spectrum, gen, proc, ts, compare):
+def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
@@ -208,7 +209,8 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         h = MCGEN_data.spectrum
         globalList.append(h)
 
-        (g_new, h_new) = MakeUniform(g, h)
+        h_new = GenerateGraphFromHist(h)
+        g_new = MakeUniform(g, h_new)
         globalList.append(g_new)
         globalList.append(h_new)
 
@@ -255,6 +257,59 @@ def main(fonll_file, spectrum, gen, proc, ts, compare):
         ratio_h.SetLineColor(ROOT.kRed+2)
         unc_g.Draw("A3")
         ratio_h.Draw("P")
+
+    elif compare == "fonll":
+        print("Compare with FONLL")
+        FONLL_ntuple2 = FONLL(fonll_file_2)
+        g2 = FONLL_ntuple2.fGraph
+        globalList.append(g2)
+
+        g_new = MakeUniform(g, g2, 1./3.93e-2)
+        globalList.append(g_new)
+
+        g_new.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
+        g_new.GetYaxis().SetTitle("d#sigma / d#it{p}_{T} [pb (GeV/#it{c})^{-1}]")
+        g_new.SetMarkerStyle(ROOT.kFullCircle)
+        g_new.SetMarkerSize(0.9)
+        g_new.SetMarkerColor(ROOT.kBlue+2)
+        g_new.SetLineColor(ROOT.kBlue+2)
+        g_new.SetFillColor(ROOT.kCyan+1)
+        g2.SetMarkerStyle(ROOT.kOpenCircle)
+        g2.SetMarkerSize(0.9)
+        g2.SetMarkerColor(ROOT.kRed+2)
+        g2.SetLineColor(ROOT.kRed+2)
+        g_new.Draw("AP")
+        g2.Draw("P")
+
+        leg = ROOT.TLegend(0.6, 0.7, 0.9, 0.85)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.AddEntry(g_new, "FONLL 1", "pe")
+        leg.AddEntry(g2, "FONLL 2", "pe")
+        leg.Draw()
+        globalList.append(leg)
+
+        (unc_g, ratio_g2) = MakeRatio(g_new, g2)
+        print("Ratio ok")
+        globalList.append(unc_g)
+        globalList.append(ratio_g2)
+        cRatio = ROOT.TCanvas("{0}_ratio".format(fonll_file),"{0}_ratio".format(fonll_file))
+        globalList.append(cRatio)
+        cRatio.cd()
+
+        unc_g.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
+        unc_g.GetYaxis().SetTitle("FONLL 2 / FONLL 1")
+        unc_g.SetMarkerStyle(ROOT.kFullCircle)
+        unc_g.SetMarkerSize(0.9)
+        unc_g.SetMarkerColor(ROOT.kBlue+2)
+        unc_g.SetLineColor(ROOT.kBlue+2)
+        unc_g.SetFillColor(ROOT.kCyan+1)
+        ratio_g2.SetMarkerStyle(ROOT.kOpenCircle)
+        ratio_g2.SetMarkerSize(0.9)
+        ratio_g2.SetMarkerColor(ROOT.kRed+2)
+        ratio_g2.SetLineColor(ROOT.kRed+2)
+        #unc_g.Draw("APX")
+        ratio_g2.Draw("APX")
         
 
 if __name__ == '__main__':
@@ -271,8 +326,10 @@ if __name__ == '__main__':
                         default="charm")
     parser.add_argument('--ts', metavar='TS',
                         default="local")
+    parser.add_argument('--fonll2', metavar='fonll.dat',
+                        default=None)
     args = parser.parse_args()
 
-    main(args.fonll_file, args.spectrum, args.gen, args.proc, args.ts, args.compare)
+    main(args.fonll_file, args.spectrum, args.gen, args.proc, args.ts, args.compare, args.fonll2)
 
     IPython.embed()
