@@ -196,8 +196,10 @@ def find_file(path, file_name):
 def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary", c=None, cRatio=None, leg=None, legRatio=None, styles=None):
     results = []
     baselineRatio = None
+    mainRatioHist = None
     maxRatio = 0
     minRatio = 999
+    mainHist = None
     
     print("CompareSpectra: {0}".format(comparisonName))
     print(baseline.GetName())
@@ -246,14 +248,22 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
             baseline.SetMarkerSize(1.2)
             leg.AddEntry(baseline, baseline.GetTitle(), "pe")
 
-        minY = baseline.GetMinimum(0)
-        maxY = baseline.GetMaximum()
         baseline.Draw(opt)
         if "frac" in baseline.GetYaxis().GetTitle():
             c.SetLeftMargin(0.12)
             baseline.GetYaxis().SetTitleOffset(1.4)
         if not "same" in opt:
             opt += "same"
+
+        for obj in c.GetListOfPrimitives():
+            if isinstance(obj, ROOT.TH1):
+                mainHist = obj
+                mainHist.SetMinimum(-1111)
+                mainHist.SetMaximum(-1111)
+                print("Main histogram is: {0}".format(mainHist.GetName()))
+                break
+        minY = min(mainHist.GetMinimum(0), baseline.GetMinimum(0))
+        maxY = max(mainHist.GetMaximum(), baseline.GetMaximum())
 
     if doRatio:
         cname = "{0}_Ratio".format(comparisonName)
@@ -316,11 +326,22 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
             results.append(hRatio)
             hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
             hRatio.Divide(baseline)
-            if minRatio > hRatio.GetMinimum():
-                minRatio = hRatio.GetMinimum()
+            hRatio.Draw(optRatio)
+            if not mainRatioHist:
+                for obj in cRatio.GetListOfPrimitives():
+                    if isinstance(obj, ROOT.TH1):
+                        mainRatioHist = obj
+                        print("Main ratio histogram is: {0}".format(mainRatioHist.GetName()))
+                        mainRatioHist.SetMinimum(-1111)
+                        mainRatioHist.SetMaximum(-1111)
+                        minRatio = mainRatioHist.GetMinimum(0)
+                        maxRatio = mainRatioHist.GetMaximum()
+                        break
+            if minRatio > hRatio.GetMinimum(0):
+                minRatio = hRatio.GetMinimum(0)
             if maxRatio < hRatio.GetMaximum():
                 maxRatio = hRatio.GetMaximum()
-            hRatio.Draw(optRatio)
+
             if not "same" in optRatio:
                 optRatio += "same"
 
@@ -334,8 +355,8 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
                 minRatio = 0
             else:
                 minRatio *= 0.6
-        baselineRatio.SetMinimum(minRatio)
-        baselineRatio.SetMaximum(maxRatio)
+        mainRatioHist.SetMinimum(minRatio)
+        mainRatioHist.SetMaximum(maxRatio)
         cRatio.cd()
         legRatio.Draw()
 
@@ -349,8 +370,8 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
                 minY = 0
             else:
                 minY *= 0.6
-        baseline.SetMinimum(minY)
-        baseline.SetMaximum(maxY)
+        mainHist.SetMinimum(minY)
+        mainHist.SetMaximum(maxY)
         c.cd()
         leg.Draw()
 

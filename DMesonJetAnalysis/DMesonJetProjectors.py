@@ -237,7 +237,7 @@ class DMesonJetDataProjector:
 
         print("Period: {0}\nEvents: {1}".format(self.fPeriod, events))
 
-    def StartProjection(self, trigger, DMesonDef, jetDefinitions, binSet, nMassBins, minMass, maxMass):
+    def StartProjection(self, trigger, DMesonDef, jetDefinitions, binSets, nMassBins, minMass, maxMass):
         self.fTotalEvents = 0
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
@@ -264,13 +264,13 @@ class DMesonJetDataProjector:
                 if jet.fPt == 0:
                     continue
 
-                bins = binSet.FindBin(dmeson, jet, DMesonDef)
+                bins = binSets[jetDef["type"], jetDef["radius"]].FindBin(dmeson, jet, DMesonDef)
                 for bin,weight in bins:
                     if bin.fCounts == 0:
                         bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
                     bin.FillInvariantMass(dmeson, jet, weight * self.fWeight)
                     
-                spectra = binSet.FindSpectra(dmeson, jet)
+                spectra = binSets[jetDef["type"], jetDef["radius"]].FindSpectra(dmeson, jet)
                 for spectrum,weight in spectra:
                     spectrum.Fill(dmeson, jet, weight * self.fWeight)
 
