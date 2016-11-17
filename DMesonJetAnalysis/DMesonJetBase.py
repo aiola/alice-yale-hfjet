@@ -514,16 +514,17 @@ class ResponseAxis:
         self.fCoarseResponseAxis = ResponseAxis(detector, truth)
 
 class Axis:
-    def __init__(self, name, bins, label = ""):
+    def __init__(self, name, bins, label = "", charged_jet = True):
         self.fName = name
         self.fBins = bins
         self.fLabel = label
+        self.fChargedJet = charged_jet
 
     @classmethod
-    def fromLimits(cls, name, start, stop, step, label = ""):
+    def fromLimits(cls, name, start, stop, step, label = "", charged_jet = True):
         bins = []
         bins.extend(numpy.linspace(start, stop, (stop-start)/step, True))
-        return cls(name, bins, label)
+        return cls(name, bins, label, charged_jet)
 
     def FindBin(self, x):
         for i,(min,max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
@@ -558,11 +559,16 @@ class Axis:
         if label == "nolabel":
             label = ""
 
+        if self.fChargedJet:
+            jetLabel = "ch jet"
+        else:
+            jetLabel = "jet"
+
         if self.fName == "jet_pt":
             if label:
-                title = "#it{{p}}_{{T,ch jet}}^{{{0}}}".format(label)
+                title = "#it{{p}}_{{T,{jetLabel}}}^{{{label}}}".format(jetLabel=jetLabel, label=label)
             else:
-                title = "#it{p}_{T,ch jet}"
+                title = "#it{{p}}_{{T,{jetLabel}}}".format(jetLabel=jetLabel)
         elif self.fName == "d_pt":
             if label:
                 title = "#it{{p}}_{{T,D}}^{{{0}}}".format(label)
@@ -580,9 +586,9 @@ class Axis:
                 title = "#it{#eta}_{D}"
         elif self.fName == "d_z":
             if label:
-                title = "#it{{z}}_{{||,D}}^{{ch,{0}}}".format(label)
+                title = "#it{{z}}_{{||,D}}^{{{jetLabel},{label}}}".format(jetLabel=jetLabel, label=label)
             else:
-                title = "#it{z}_{||,D}^{ch}"
+                title = "#it{{z}}_{{||,D}}^{{{jetLabel}}}".format(jetLabel=jetLabel)
 
         return title
 
@@ -594,8 +600,15 @@ class AnalysisType(Enum):
     Truth = 5
 
 class Spectrum:
-    def __init__(self, config, name, binSet, effWeight):
-        self.fName = name
+    def __init__(self, config, dmeson, jtype, jradius, jtitle, binSet, effWeight):
+        self.fDMeson = dmeson
+        self.fJetType = jtype
+        self.fJetRadius = jradius
+        self.fJetTitle = jtitle
+        if "suffix" in config and config["suffix"]:
+            self.fName = "{0}_{1}_{2}_{3}_{4}".format(self.fDMeson, self.fJetType, self.fJetRadius, config["name"], config["suffix"])
+        else:
+            self.fName = "{0}_{1}_{2}_{3}".format(self.fDMeson, self.fJetType, self.fJetRadius, config["name"])
         self.fBinSet = binSet
         self.fHistogram = None
         self.fNormHistogram = None
@@ -736,7 +749,7 @@ class Spectrum:
             units1 = self.fAxis[0].GetVariableUnits()
             units2 = self.fAxis[1].GetVariableUnits()
             if weighted:
-                axisTitle = "#frac{{d^{{2}}##sigma}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
+                axisTitle = "#frac{{d^{{2}}#sigma}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
                 if units1 != units2:
                     axisTitle += " [mb"
                     if units1:
@@ -746,7 +759,7 @@ class Spectrum:
                     axisTitle += "]"
                 else:
                     if units1:
-                        axisTitle += "[mb ({0})^{{-2}}]".format(units1)
+                        axisTitle += " [mb ({0})^{{-2}}]".format(units1)
             else:
                 axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^{{2}}#it{{N}}}}{{d{var1} d{var2}}}".format(var1=self.fAxis[0].GetVariableName(), var2=self.fAxis[1].GetVariableName())
                 if units1 != units2:
@@ -791,8 +804,9 @@ class Spectrum:
         elif len(self.fAxis) == 2:
             self.fHistogram = self.BuildHistogram2D(self.fName, "counts")
             self.fUncertainty = self.BuildHistogram2D("{0}_Unc".format(self.fName), "relative statistical uncertainty")
-            self.fMass = self.BuildHistogram2D("{0}_Mass".format(self.fName), "mass")
-            self.fBackground = self.BuildHistogram2D("{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
+            if self.fAnalysisType == AnalysisType.InvMassFit:
+                self.fMass = self.BuildHistogram2D("{0}_Mass".format(self.fName), "mass")
+                self.fBackground = self.BuildHistogram2D("{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
         else:
             print("Cannot handle spectra with more than two axis!")
             return
@@ -867,9 +881,12 @@ class BinMultiSet:
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fName] = binSet
         
-    def GenerateSpectraObjects(self, dmeson, inputPath):
+    def GenerateSpectraObjects(self, dmeson, jtype, jradius, jtitle, inputPath):
+        self.fDMeson = dmeson
+        self.fJetType = jtype
+        self.fJetRadius = jradius
         for binSet in self.fBinSets.itervalues():
-            binSet.GenerateSpectraObjects(dmeson, inputPath)
+            binSet.GenerateSpectraObjects(dmeson, jtype, jradius, jtitle, inputPath)
 
     def SetWeightEfficiency(self, weight):
         for binSet in self.fBinSets.itervalues():
@@ -910,25 +927,27 @@ class BinSet:
         self.fWeightEfficiency = weight
         self.fNeedInvMass = need_inv_mass
         if bin_count_axis:
-            self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0])
+            self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0], "", True)
         else:
             self.fBinCountAnalysisAxis = None
         limits = dict()
         self.AddBinsRecursive(limitSetList, limits)
         
-    def GenerateSpectraObjects(self, dmeson, inputPath):
+    def GenerateSpectraObjects(self, dmeson, jtype, jradius, jtitle, inputPath):
+        if jtype == "Full":
+            if self.fBinCountAnalysisAxis:
+                self.fBinCountAnalysisAxis.fChargedJet = False
+            for a in self.fAxis:
+                a.fChargedJet = False
         for s in self.fSpectraConfigs:
             if not dmeson in s["active_mesons"]:
                 continue
-            if "suffix" in s and s["suffix"]:
-                name = "{0}_{1}_{2}".format(dmeson, s["name"], s["suffix"])
-            else:
-                name = "{0}_{1}".format(dmeson, s["name"])
             if "efficiency" in s and s["efficiency"]:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(inputPath, s["efficiency"]["file_name"]), s["efficiency"]["list_name"], s["efficiency"]["object_name"])
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
-            self.fSpectra[name] = Spectrum(s, name, self, effWeight)
+            spectrum = Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
+            self.fSpectra[spectrum.fName] = spectrum
 
     def GenerateInvMassRootList(self):
         rlist = ROOT.TList()

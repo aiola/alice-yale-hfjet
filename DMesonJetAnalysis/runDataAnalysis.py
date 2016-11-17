@@ -22,6 +22,16 @@ def main(config, maxEvents, format, gen, proc, ts):
 
     suffix = "{0}_{1}_{2}".format(gen, proc, ts)
 
+    if gen == "powheg":
+        collision = "POWHEG+PYTHIA6 "
+    else:
+        collision = ""
+    if proc == "charm":
+        collision += "(c#bar{c}) "
+    elif proc == "beauty":
+        collision += "(b#bar{b}) "
+    collision += config["collision_system"]
+
     name = config["name"]
     if "{0}" in name:
         name = name.format(suffix)
@@ -39,7 +49,7 @@ def main(config, maxEvents, format, gen, proc, ts):
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
-        ana.StartAnalysis(config["collision_system"], anaConfig)
+        ana.StartAnalysis(collision, anaConfig)
 
     ana.SaveRootFile("{0}/{1}".format(input_path, config["train"]))
     ana.SavePlots("{0}/{1}".format(input_path, config["train"]), format)
