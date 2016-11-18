@@ -64,11 +64,11 @@ if __name__ == '__main__':
     parser.add_argument('--format', metavar='pdf',
                         default="pdf")
     parser.add_argument('--gen', metavar='GEN',
-                        default="powheg")
+                        default=None)
     parser.add_argument('--proc', metavar='PROC',
-                        default="charm")
+                        default=None)
     parser.add_argument('--ts', metavar='TS',
-                        default="local")
+                        default=None)
 
     args = parser.parse_args()
 
