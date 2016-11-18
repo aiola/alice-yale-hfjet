@@ -27,8 +27,12 @@ class DMesonJetAnalysisEngine:
         
         for jetDef in self.fJetDefinitions:
             binset_copy = copy.deepcopy(binSet)
-            binset_copy.GenerateSpectraObjects(self.fDMeson, jetDef["type"], jetDef["radius"], jetDef["title"], self.fProjector.fInputPath)
+            binset_copy.Initialize(self.fDMeson, jetDef["type"], jetDef["radius"], jetDef["title"], self.fProjector.fInputPath)
             self.fBinMultiSets[jetDef["type"], jetDef["radius"]] = binset_copy
+
+        binset_copy = copy.deepcopy(binSet)
+        binset_copy.Initialize(self.fDMeson, None, None, None, self.fProjector.fInputPath)
+        self.fBinMultiSets[None, None] = binset_copy
 
     def CompareSpectra(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
@@ -67,7 +71,7 @@ class DMesonJetAnalysisEngine:
                 pave.SetTextFont(43)
                 pave.SetTextSize(15)
                 pave.AddText(self.fCollision)
-                pave.AddText(s.fJetTitle)
+                if s.fJetTitle: pave.AddText(s.fJetTitle)
                 pave.AddText(self.fDMeson)
                 pave.Draw()
                 globalList.append(pave)
@@ -78,8 +82,11 @@ class DMesonJetAnalysisEngine:
         rlist.SetName(self.fDMeson)
 
         for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
-            jlist = ROOT.TList()
-            jlist.SetName("{0}_{1}".format(jtype, jradius))
+            if jtype or jradius:
+                jlist = ROOT.TList()
+                jlist.SetName("_".join(obj for obj in [jtype, jradius] if obj))
+            else:
+                jlist = rlist
             for invmasslist in binMultiSet.GenerateInvMassRootLists():
                 if invmasslist.GetEntries() > 0:
                     invmasslist.SetName("{0}_{1}_{2}_{3}".format(self.fDMeson, jtype, jradius, invmasslist.GetName()))
@@ -91,7 +98,7 @@ class DMesonJetAnalysisEngine:
                 slist = s.GenerateRootList()
                 if slist.GetEntries() > 0:
                     jlist.Add(slist)
-            if jlist.GetEntries() > 0:
+            if jlist is not rlist and jlist.GetEntries() > 0:
                 rlist.Add(jlist)
 
         if rlist.GetEntries() > 0:
@@ -127,7 +134,7 @@ class DMesonJetAnalysisEngine:
         return fitter
 
     def DoProjections(self):
-        self.fProjector.StartProjection(self.fTrigger, self.fDMeson, self.fJetDefinitions, 
+        self.fProjector.StartProjection(self.fTrigger, self.fDMeson, 
                                         self.fBinMultiSets, self.fNMassBins, self.fMinMass, self.fMaxMass)
 
         self.fEvents = self.fProjector.fTotalEvents
@@ -177,7 +184,7 @@ class DMesonJetAnalysisEngine:
         pave.SetTextFont(43)
         pave.SetTextSize(15)
         pave.AddText(self.fCollision)
-        pave.AddText(s.fJetTitle)
+        if s.fJetTitle: pave.AddText(s.fJetTitle)
         #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
         pave.AddText(self.fDMeson)
         pave.AddText(s.fTitle)
@@ -204,7 +211,7 @@ class DMesonJetAnalysisEngine:
         pave.SetTextFont(43)
         pave.SetTextSize(15)
         pave.AddText(self.fCollision)
-        pave.AddText(s.fJetTitle)
+        if s.fJetTitle: pave.AddText(s.fJetTitle)
         #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
         pave.AddText(self.fDMeson)
         pave.AddText(s.fTitle)
@@ -233,7 +240,7 @@ class DMesonJetAnalysisEngine:
             pave.SetTextFont(43)
             pave.SetTextSize(15)
             pave.AddText(self.fCollision)
-            pave.AddText(s.fJetTitle)
+            if s.fJetTitle: pave.AddText(s.fJetTitle)
             #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
             pave.AddText(self.fDMeson)
             pave.AddText(s.fTitle)
@@ -268,7 +275,7 @@ class DMesonJetAnalysisEngine:
             pave.SetTextFont(43)
             pave.SetTextSize(15)
             pave.AddText(self.fCollision)
-            pave.AddText(s.fJetTitle)
+            if s.fJetTitle: pave.AddText(s.fJetTitle)
             #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
             pave.AddText(self.fDMeson)
             pave.AddText(s.fTitle)
@@ -1064,7 +1071,7 @@ class DMesonJetAnalysis:
                         pave.SetTextFont(43)
                         pave.SetTextSize(15)
                         pave.AddText(self.fCollision)
-                        pave.AddText(s.fJetTitle)
+                        if s.fJetTitle: pave.AddText(s.fJetTitle)
                         pave.Draw()
                         globalList.append(pave)
                     globalList.append(obj)

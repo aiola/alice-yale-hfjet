@@ -69,6 +69,7 @@ if __name__ == '__main__':
                         default="charm")
     parser.add_argument('--ts', metavar='TS',
                         default="local")
+
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
@@ -76,5 +77,5 @@ if __name__ == '__main__':
     f.close()
 
     main(config, args.events, args.format, args.gen, args.proc, args.ts)
-    
+
     IPython.embed()

@@ -63,11 +63,9 @@ class FONLL:
                                              array.array('d', [up-v for up,v in zip(self.values[yerrup], self.values[y])]))
 
 class MCGEN:
-    def __init__(self, name, title, file_name, jet_type, jet_radius, spectrum_name):
+    def __init__(self, name, title, file_name, spectrum_name):
         self.file_name = file_name
         self.spectrum_name = spectrum_name
-        self.jet_type = jet_type
-        self.jet_radius = jet_radius
         self.name = name
         self.title = title
         self.xsec = 1e9 # mb -> pb
@@ -85,14 +83,9 @@ class MCGEN:
         if not mesonlist:
             print("Could not get list {0} from file {1}".format(mesonlistname, self.file_name))
             return
-        jetlistname = "{0}_{1}".format(self.jet_type, self.jet_radius)
-        jetlist = mesonlist.FindObject(jetlistname)
-        if not jetlist:
-            print("Could not get list {0} from list {1} in file {2}".format(jetlistname, mesonlistname, self.file_name))
-            return
-        spectrum = jetlist.FindObject(self.spectrum_name)
+        spectrum = mesonlist.FindObject(self.spectrum_name)
         if not spectrum:
-            print("Could not get histogram {0} from list {1}/{2} in file {3}".format(self.spectrum_name, mesonlistname, jetlistname, self.file_name))
+            print("Could not get histogram {0} from list {1} in file {2}".format(self.spectrum_name, mesonlistname, self.file_name))
             return
         self.spectrum = spectrum.Clone(self.name)
         self.spectrum.SetTitle(self.title)
@@ -190,7 +183,7 @@ def MakeRatio(g, h):
     return unc_g, ratio_h
     
 
-def main(fonll_file, spectrum, gen, proc, ts, jet_type, jet_radius, compare, fonll_file_2):
+def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
@@ -217,7 +210,7 @@ def main(fonll_file, spectrum, gen, proc, ts, jet_type, jet_radius, compare, fon
     elif compare == "fastsim":
         print("Compare with fastsim")
         file_name = " /Volumes/DATA/ALICE/JetResults/FastSim_{gen}_{proc}_{ts}/stage_1/output/FastSimAnalysis_{gen}_{proc}_{ts}.root".format(gen=gen, proc=proc, ts=ts)
-        MCGEN_data = MCGEN("POWHEG_7TeV", "POWHEG_7TeV", file_name, jet_type, jet_radius, spectrum)
+        MCGEN_data = MCGEN("POWHEG_7TeV", "POWHEG_7TeV", file_name, spectrum)
         h = MCGEN_data.spectrum
         globalList.append(h)
 
@@ -331,21 +324,17 @@ if __name__ == '__main__':
     parser.add_argument("--compare", metavar='COMP',
                         default=None)
     parser.add_argument('--spectrum', metavar='spectrum',
-                        default="D0_MCTruth_Charged_R040_D_Pt_Spectrum_Normalized")
+                        default="D0_MCTruth_D_Pt_Spectrum_Normalized")
     parser.add_argument('--gen', metavar='GEN',
                         default="powheg")
     parser.add_argument('--proc', metavar='PROC',
                         default="charm")
-    parser.add_argument('--jet-type', metavar='TYPE',
-                        default="Charged")
-    parser.add_argument('--jet-radius', metavar='RADIUS',
-                        default="R040")
     parser.add_argument('--ts', metavar='TS',
                         default="local")
     parser.add_argument('--fonll2', metavar='fonll.dat',
                         default=None)
     args = parser.parse_args()
 
-    main(args.fonll_file, args.spectrum, args.gen, args.proc, args.ts, args.jet_type, args.jet_radius, args.compare, args.fonll2)
+    main(args.fonll_file, args.spectrum, args.gen, args.proc, args.ts, args.compare, args.fonll2)
 
     IPython.embed()
