@@ -315,7 +315,6 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         ratio_g2.SetLineColor(ROOT.kRed+2)
         #unc_g.Draw("APX")
         ratio_g2.Draw("APX")
-        
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Comparison between FONLL and POWHEG.')

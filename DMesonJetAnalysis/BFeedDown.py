@@ -32,9 +32,30 @@ class QuarkSetting:
 def main(charm_ts, beauty_ts, jet_type, jet_radius):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
+    ROOT.gStyle.SetOptStat(0)
     generators = ["powheg"]
     for gen in generators:
         analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius)
+
+def generate_correction_factors(quarks, jet_type, jet_radius):
+    for quark in quarks.itervalues():
+        quark.histogram = GetSpectrum(quark.file, jet_type, jet_radius, "D0_MCTruth_{0}_{1}_Jet_Pt_D_Pt_Spectrum_Normalized".format(jet_type, jet_radius))
+        quark.histogram.SetName("{0}_{1}".format(quark.name, quark.histogram.GetName()))
+    denominator = quarks["beauty"].histogram.Clone("corr_fact_den")
+    denominator.Add(quarks["charm"].histogram)
+    numerator = quarks["charm"].histogram.Clone("corr_fact_num")
+    corr_fact = numerator.Clone("corr_fact")
+    corr_fact.Divide(denominator)
+    corr_fact.GetZaxis().SetTitle("(c #rightarrow D^{0}) / (c,b #rightarrow D^{0})")
+    corr_fact_err = ROOT.TH2D("corr_fact_err", "corr_fact_err", corr_fact.GetNbinsX(), corr_fact.GetXaxis().GetXbins().GetArray(), corr_fact.GetNbinsY(), corr_fact.GetYaxis().GetXbins().GetArray())
+    corr_fact_err.GetXaxis().SetTitle(corr_fact.GetXaxis().GetTitle())
+    corr_fact_err.GetYaxis().SetTitle(corr_fact.GetYaxis().GetTitle())
+    corr_fact_err.GetZaxis().SetTitle("rel. stat. unc. of FD corr. factors")
+    for xbin in range(0, corr_fact.GetNbinsX()+2):
+        for ybin in range(0, corr_fact.GetNbinsY()+2):
+            if corr_fact.GetBinContent(xbin, ybin) == 0: continue
+            corr_fact_err.SetBinContent(xbin, ybin, corr_fact.GetBinError(xbin, ybin) / corr_fact.GetBinContent(xbin, ybin))
+    return corr_fact, corr_fact_err
 
 def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
     rootPath = "/Volumes/DATA/ALICE/JetResults"
@@ -50,6 +71,10 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
     for quark in quarks.itervalues():
         quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_1/output".format(rootPath, gen, quark.name, quark.ts)
         quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        quark.file = ROOT.TFile(quark.filename)
+        if not quark.file or quark.file.IsZombie():
+            print("Could not open file {0}".format(quark.filename))
+            exit(1)
 
     ptD = SpectraSet("BFeedDownVsPtD_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,D}")
     ptD.add(SpectrumDef("D0_MCTruth_{0}_{1}_D_Pt_Spectrum_JetPt_0_Normalized".format(jet_type, jet_radius), "#it{p}_{T,ch jet} > 0", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
@@ -84,7 +109,7 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
         for spectrumDef in spectraSet.spectra:
             histos = []
             for quark in quarks.itervalues():
-                h = GetSpectrum(quark.filename, jet_type, jet_radius, spectrumDef.name)
+                h = GetSpectrum(quark.file, jet_type, jet_radius, spectrumDef.name)
                 h.SetName("{0}_{1}".format(quark.name, h.GetName()))
                 h.SetTitle("{0} #rightarrow D^{{0}}, {1}".format(quark.name[0], spectrumDef.title))
                 histos.append(h)
@@ -108,27 +133,44 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
         c.SaveAs("{0}/{1}.pdf".format(rootPath, c.GetName()))
         cRatio.SaveAs("{0}/{1}.pdf".format(rootPath,cRatio.GetName()))
 
-def GetSpectrum(filename, jet_type, jet_radius, spectrum):
-    file = ROOT.TFile(filename)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(filename))
-        return
+    corr_fact, corr_fact_err = generate_correction_factors(quarks, jet_type, jet_radius)
+    globalList.append(corr_fact)
+    globalList.append(corr_fact_err)
+
+    cname = "BFeedDown_CorrFact_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts)
+    c = ROOT.TCanvas(cname, cname)
+    c.cd()
+    globalList.append(c)
+    corr_fact.SetMaximum(1)
+    corr_fact.Draw("colz")
+    c.SetRightMargin(0.15)
+    c.SaveAs("{0}/{1}.pdf".format(rootPath, c.GetName()))
+    
+    cname = "BFeedDown_CorrFactUnc_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts)
+    c = ROOT.TCanvas(cname, cname)
+    c.cd()
+    globalList.append(c)
+    corr_fact_err.Draw("colz")
+    c.SetRightMargin(0.15)
+    c.SaveAs("{0}/{1}.pdf".format(rootPath, c.GetName()))
+
+def GetSpectrum(file, jet_type, jet_radius, spectrum):
     mesonlistname = "D0_MCTruth"
     mesonlist = file.Get(mesonlistname)
     if not mesonlist:
-        print("Could not get list {0} from file {1}".format(mesonlistname, filename))
+        print("Could not get list {0} from file {1}".format(mesonlistname, file.GetName()))
+        file.ls()
         return
     jetlistname = "{0}_{1}".format(jet_type, jet_radius)
     jetlist = mesonlist.FindObject(jetlistname)
     if not jetlist:
-        print("Could not get list {0} from list {1} in file {2}".format(jetlistname, mesonlistname, filename))
+        print("Could not get list {0} from list {1} in file {2}".format(jetlistname, mesonlistname, file.GetName()))
         return
     h = jetlist.FindObject(spectrum)
     if not h:
-        print("Could not find object {0} in list {1}/{2} in file {3}".format(spectrum, mesonlistname, jetlistname, filename))
+        print("Could not find object {0} in list {1}/{2} in file {3}".format(spectrum, mesonlistname, jetlistname, file.GetName()))
         exit(1)
     h_copy = h.Clone("{0}_copy".format(spectrum))
-    file.Close()
     return h_copy
 
 if __name__ == '__main__':
