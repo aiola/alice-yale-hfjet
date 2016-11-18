@@ -448,10 +448,12 @@ class DMesonJetAnalysisEngine:
         s.fLikeSignNormalizedBinSet.fName = "{0}_Normalized_{1}".format(s.fLikeSignNormalizedBinSet.fName, s.fName)
 
         for ibin, (LS_sub_bin, LSbin, bin) in enumerate(zip(s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignNormalizedBinSet.fBins, s.fBinSet.fBins)):
+            if not bin.fInvMassHisto:
+                continue
             if s.fSkipBins and ibin in s.fSkipBins:
                 continue
             # Calculate the projections in the peak area for L-S and U-S
-            if bin.fMassFitter.FitSuccessfull():
+            if bin.fMassFitter and bin.fMassFitter.FitSuccessfull():
                 sigma = bin.fMassFitter.GetSignalWidth()
                 mean = bin.fMassFitter.GetSignalMean()
             else:
@@ -636,7 +638,7 @@ class DMesonJetAnalysisEngine:
             if s.fSkipBins and ibin in s.fSkipBins:
                 print("Skipping bin {0} as requested".format(bin.GetTitle()))
                 continue
-            if not bin.fMassFitter.FitSuccessfull():
+            if not bin.fMassFitter or not bin.fMassFitter.FitSuccessfull():
                 print("Skipping bin {0} because fit was unsuccessful".format(bin.GetTitle()))
                 continue
 
@@ -960,6 +962,7 @@ class DMesonJetAnalysis:
         self.fProjector = projector
         
     def StartAnalysis(self, collision, config):
+        self.fCollision = collision
         self.fJets = config["jets"]
         binMultiSet = BinMultiSet()
         for binLists in config["binLists"]:
@@ -1010,6 +1013,12 @@ class DMesonJetAnalysis:
         for jetDef in self.fJets:
             self.CompareDMesons(config["binLists"], jetDef)
 
+        jetDef = dict()
+        jetDef["type"] = None
+        jetDef["radius"] = None
+        jetDef["title"] = None
+        self.CompareDMesons(config["binLists"], jetDef)
+
     def CompareDMesons(self, binLists, jetDef):
         if len(self.fAnalysisEngine) <= 1:
             return
@@ -1025,6 +1034,8 @@ class DMesonJetAnalysis:
             spectraToCompare = []
             for eng in self.fAnalysisEngine:
                 for binList in binLists:
+                    if not binList["name"] in eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets:
+                        continue
                     if len(binList["active_mesons"]) == 0:
                         continue
                     if len(binList["bins"]) != 1:
@@ -1036,11 +1047,13 @@ class DMesonJetAnalysis:
                             continue
                         if not eng.fDMeson in s["active_mesons"]:
                             continue
-                        if "suffix" in s and s["suffix"]:
-                            sname = "{0}_{1}_{2}".format(eng.fDMeson, s["name"], s["suffix"])
+                        if "suffix" in s:
+                            suffix = s["suffix"]
                         else:
-                            sname = "{0}_{1}".format(eng.fDMeson, s["name"])
-                        h = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]].fSpectra[sname].fHistogram
+                            suffix = None 
+                        sname = '_'.join(obj for obj in [eng.fDMeson, jetDef["type"], jetDef["radius"], s["name"], suffix] if obj)
+                        binSet = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]]
+                        h = binSet.fSpectra[sname].fHistogram
                         if not h:
                             continue
                         if "MCTruth" in eng.fDMeson:
@@ -1059,7 +1072,8 @@ class DMesonJetAnalysis:
                         globalList.append(h_copy)
                         spectraToCompare.append(h_copy)
             if len(spectraToCompare) > 1:
-                results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], "{0}_{1}_{2}_SpectraComparison".format(jetDef[0], jetDef[1], spectrum_name))
+                cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name, "SpectraComparison"] if obj)
+                results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], cname)
                 for obj in results:
                     if isinstance(obj, ROOT.TCanvas):
                         self.fCanvases.append(obj)
@@ -1071,7 +1085,7 @@ class DMesonJetAnalysis:
                         pave.SetTextFont(43)
                         pave.SetTextSize(15)
                         pave.AddText(self.fCollision)
-                        if s.fJetTitle: pave.AddText(s.fJetTitle)
+                        if jetDef["title"]: pave.AddText(jetDef["title"])
                         pave.Draw()
                         globalList.append(pave)
                     globalList.append(obj)
