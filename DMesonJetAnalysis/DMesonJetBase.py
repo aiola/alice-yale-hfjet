@@ -11,6 +11,7 @@ import DMesonJetProjectors
 import numpy
 from enum import Enum
 import collections
+import sys
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -605,10 +606,11 @@ class Spectrum:
         self.fJetType = jtype
         self.fJetRadius = jradius
         self.fJetTitle = jtitle
-        if "suffix" in config and config["suffix"]:
-            self.fName = "{0}_{1}_{2}_{3}_{4}".format(self.fDMeson, self.fJetType, self.fJetRadius, config["name"], config["suffix"])
+        if "suffix" in config:
+            suffix = config["suffix"]
         else:
-            self.fName = "{0}_{1}_{2}_{3}".format(self.fDMeson, self.fJetType, self.fJetRadius, config["name"])
+            suffix = None 
+        self.fName = '_'.join(obj for obj in [self.fDMeson, self.fJetType, self.fJetRadius, config["name"], suffix] if obj)
         self.fBinSet = binSet
         self.fHistogram = None
         self.fNormHistogram = None
@@ -853,21 +855,114 @@ class Spectrum:
 class DMesonJetCuts:
     def __init__(self, cutList):
         self.fCuts = cutList
+        self.InitializeCuts()
+
+    def Dummy(self, obj, min, max):
+        return True
+
+    def CutJet(self, dmeson, jet, varname, min, max):
+        v = getattr(jet, varname)
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutJetPt(self, dmeson, jet, dummy, min, max):
+        v = jet.fPt
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutJetEta(self, dmeson, jet, dummy, min, max):
+        v = jet.fEta
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutJetPhi(self, dmeson, jet, dummy, min, max):
+        v = jet.fPhi
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutJetZ(self, dmeson, jet, dummy, min, max):
+        v = jet.fZ
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutD(self, dmeson, jet, varname, min, max): 
+        v = getattr(dmeson, varname)
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutDPt(self, dmeson, jet, dummy, min, max):
+        v = dmeson.fPt
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutDEta(self, dmeson, jet, dummy, min, max):
+        v = dmeson.fEta
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def CutDPhi(self, dmeson, jet, dummy, min, max):
+        v = dmeson.fPhi
+        if v < min:
+            return False
+        if v > max:
+            return False
+        return True
+
+    def InitializeCuts(self):
+        self.fFastCuts = []
+        for cut in self.fCuts:
+            if "min" in cut: min = cut["min"]
+            else: min = -sys.float_info.max
+            if "max" in cut: max = cut["max"]
+            else: max = +sys.float_info.max
+            if cut["object"] == "d":
+                if cut["variable"] == "fPt":
+                    self.fFastCuts.append((self.CutDPt, None, min, max))
+                elif cut["variable"] == "fEta":
+                    self.fFastCuts.append((self.CutDEta, None, min, max))
+                elif cut["variable"] == "fPhi":
+                    self.fFastCuts.append((self.CutDPhi, None, min, max))
+                else:
+                    self.fFastCuts.append((self.CutD, cut["variable"], min, max))
+            elif cut["object"] == "jet":
+                if cut["variable"] == "fPt":
+                    self.fFastCuts.append((self.CutJetPt, None, min, max))
+                elif cut["variable"] == "fEta":
+                    self.fFastCuts.append((self.CutJetEta, None, min, max))
+                elif cut["variable"] == "fPhi":
+                    self.fFastCuts.append((self.CutJetPhi, None, min, max))
+                elif cut["variable"] == "fZ":
+                    self.fFastCuts.append((self.CutJetZ, None, min, max))
+                else:
+                    self.fFastCuts.append((self.CutJet, cut["variable"], min, max))
 
     def ApplyCuts(self, dmeson, jet):
-        for cut in self.fCuts:
-            if cut["object"] == "d" and dmeson:
-                v = getattr(dmeson, cut["variable"])
-                if "min" in cut and v < cut["min"]:
-                    return False
-                if "max" in cut and v > cut["max"]:
-                    return False
-            if cut["object"] == "jet" and jet:
-                v = getattr(jet, cut["variable"])
-                if "min" in cut and v < cut["min"]:
-                    return False
-                if "max" in cut and v > cut["max"]:
-                    return False
+        for funct,var,min,max in self.fFastCuts:
+            if not funct(dmeson, jet, var, min, max): return False
         return True
 
 class BinMultiSet:
@@ -881,12 +976,14 @@ class BinMultiSet:
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fName] = binSet
         
-    def GenerateSpectraObjects(self, dmeson, jtype, jradius, jtitle, inputPath):
+    def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
         self.fDMeson = dmeson
         self.fJetType = jtype
         self.fJetRadius = jradius
-        for binSet in self.fBinSets.itervalues():
-            binSet.GenerateSpectraObjects(dmeson, jtype, jradius, jtitle, inputPath)
+        for k, binSet in self.fBinSets.items():
+            r = binSet.Initialize(dmeson, jtype, jradius, jtitle, inputPath)
+            if not r:
+                del self.fBinSets[k]
 
     def SetWeightEfficiency(self, weight):
         for binSet in self.fBinSets.itervalues():
@@ -932,8 +1029,26 @@ class BinSet:
             self.fBinCountAnalysisAxis = None
         limits = dict()
         self.AddBinsRecursive(limitSetList, limits)
-        
-    def GenerateSpectraObjects(self, dmeson, jtype, jradius, jtitle, inputPath):
+
+    def AmIJetDependent(self):
+        for axis in self.fAxis:
+            if "jet" in axis.fName or axis.fName == "d_z":
+                return True
+        if self.fBinCountAnalysisAxis and ("jet" in self.fBinCountAnalysisAxis.fName or self.fBinCountAnalysisAxis.fName == "d_z"):
+            return True
+        for cut in self.fCuts.fCuts:
+            if cut["object"] == "jet":
+                return True
+        return False
+
+    def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
+        jetDep = self.AmIJetDependent()
+        if jtype or jradius:
+            if not jetDep:
+                return False
+        else:
+            if jetDep:
+                return False
         if jtype == "Full":
             if self.fBinCountAnalysisAxis:
                 self.fBinCountAnalysisAxis.fChargedJet = False
@@ -948,6 +1063,7 @@ class BinSet:
                 effWeight = DMesonJetProjectors.SimpleWeight()
             spectrum = Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
             self.fSpectra[spectrum.fName] = spectrum
+        return True
 
     def GenerateInvMassRootList(self):
         rlist = ROOT.TList()

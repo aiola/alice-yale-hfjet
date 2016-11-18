@@ -237,7 +237,7 @@ class DMesonJetDataProjector:
 
         print("Period: {0}\nEvents: {1}".format(self.fPeriod, events))
 
-    def StartProjection(self, trigger, DMesonDef, jetDefinitions, binSets, nMassBins, minMass, maxMass):
+    def StartProjection(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
         self.fTotalEvents = 0
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
@@ -253,26 +253,27 @@ class DMesonJetDataProjector:
         for i,dmesonEvent in enumerate(self.fChain):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
-                if self.fMaxEvents > 0 and i > self.fMaxEvents:
+                if self.fMaxEvents > 0 and i >= self.fMaxEvents:
                     print("Stopping the analysis.")
                     break
             dmeson = dmesonEvent.DmesonJet
             self.OnFileChange(DMesonDef, trigger)
-            for jetDef in jetDefinitions:
-                jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-                jet = getattr(dmesonEvent, jetName)
-                if jet.fPt == 0:
-                    continue
+            for (jtype, jradius),binMultiSet in binMultiSets.iteritems():
+                if jtype or jradius:
+                    jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+                    jet = getattr(dmesonEvent, jetName)
+                    if jet.fPt == 0:
+                        continue
+                else:
+                    jet = None
 
-                bins = binSets[jetDef["type"], jetDef["radius"]].FindBin(dmeson, jet, DMesonDef)
+                bins = binMultiSet.FindBin(dmeson, jet, DMesonDef)
                 for bin,weight in bins:
-                    if bin.fCounts == 0:
-                        bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
+                    if bin.fCounts == 0: bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
                     bin.FillInvariantMass(dmeson, jet, weight * self.fWeight)
-                    
-                spectra = binSets[jetDef["type"], jetDef["radius"]].FindSpectra(dmeson, jet)
-                for spectrum,weight in spectra:
-                    spectrum.Fill(dmeson, jet, weight * self.fWeight)
+
+                spectra = binMultiSet.FindSpectra(dmeson, jet)
+                for spectrum,weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
 
         print("Total number of events: {0}".format(self.fTotalEvents))
 
