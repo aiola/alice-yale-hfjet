@@ -24,7 +24,7 @@ class DMesonJetAnalysisEngine:
         self.fMinMass = minMass
         self.fMaxMass = maxMass
         self.fCanvases = []
-        
+
         for jetDef in self.fJetDefinitions:
             binset_copy = copy.deepcopy(binSet)
             binset_copy.Initialize(self.fDMeson, jetDef["type"], jetDef["radius"], jetDef["title"], self.fProjector.fInputPath)
@@ -83,13 +83,14 @@ class DMesonJetAnalysisEngine:
 
         for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
             if jtype or jradius:
+                jetName = "_".join(obj for obj in [jtype, jradius] if obj)
                 jlist = ROOT.TList()
-                jlist.SetName("_".join(obj for obj in [jtype, jradius] if obj))
+                jlist.SetName(jetName)
             else:
+                jetName = None
                 jlist = rlist
             for invmasslist in binMultiSet.GenerateInvMassRootLists():
                 if invmasslist.GetEntries() > 0:
-                    invmasslist.SetName("{0}_{1}_{2}_{3}".format(self.fDMeson, jtype, jradius, invmasslist.GetName()))
                     jlist.Add(invmasslist)
             spectra = binMultiSet.FindAllSpectra()
             for s in spectra:
@@ -431,7 +432,7 @@ class DMesonJetAnalysisEngine:
                 s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
     def GenerateSpectrum1DLikeSignMethod(self, s):
-        binSetName = s.fBinSet.fName
+        binSetName = s.fBinSet.fBinSetName
 
         eng_LS = None
         for engTest in self.fEngines:
@@ -869,7 +870,7 @@ class DMesonJetAnalysisEngine:
     def PlotInvMassPlots(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
-                self.PlotInvMassPlotsBinSet(binSet.fName,binSet.fBins)
+                self.PlotInvMassPlotsBinSet(binSet.fName, binSet.fBins)
 
     def PlotInvMassLikeSign(self, bin):
         hls = bin.fInvMassHisto.DrawCopy("hist same")
