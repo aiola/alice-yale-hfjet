@@ -10,10 +10,10 @@ analysis:
 -
   name: InvMassFit
   active: yes
-  jet: Jet_AKTChargedR040_pt_scheme
-  d_meson_truth: no
+  jet_type: Charged
+  jet_radius: R040
   d_meson: D0
-  spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20
+  spectrum: Jet_Pt_Spectrum_PtD_20_InvMassFit
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
@@ -38,10 +38,10 @@ analysis:
 -
   name: SideBand
   active: yes
-  jet: Jet_AKTChargedR040_pt_scheme
-  d_meson_truth: no
+  jet_type: Charged
+  jet_radius: R040
   d_meson: D0
-  spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20_SideBand
+  spectrum: Jet_Pt_Spectrum_PtD_20_SideBand
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
@@ -66,10 +66,10 @@ analysis:
 -
   name: LikeSign
   active: no
-  jet: Jet_AKTChargedR040_pt_scheme
-  d_meson_truth: no
+  jet_type: Charged
+  jet_radius: R040
   d_meson: D0
-  spectrum: D_Tagged_Jet_Pt_Spectrum_PtD_20_LikeSign
+  spectrum: Jet_Pt_Spectrum_PtD_20_LikeSign
   d_meson_response: D0
   spectrum_response: D_Tagged_Jet_Pt_Spectrum_PtD_20
   default_prior: ResponseTruth
