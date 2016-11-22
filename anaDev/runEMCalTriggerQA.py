@@ -8,23 +8,22 @@ import os
 import yaml
 
 def GenerateConfig(args):
-             
     f = open(args.configYAML, 'r')
     config = yaml.load(f)
     f.close()
-    
+
     if args.file_list:
         config["file_list"] = args.file_list
-        
+
     if args.run_period:
         config["run_period"] = args.run_period
-                
+
     if args.mode:
         config["mode"] = args.mode
 
     if args.bad_fastor:
         config["bad_fastor"] = args.bad_fastor
-            
+
     if args.task_name:
         config["task_name"] = args.task_name
 
@@ -37,7 +36,7 @@ def GenerateConfig(args):
     config["cluster_qa"] = args.cluster_qa
     config["trigger_qa"] = args.trigger_qa
     config["debug_level"] = args.debug_level
-        
+
     return config
 
 def AddTriggerQATasks(config, trigger, physSel):
@@ -63,7 +62,10 @@ def AddTriggerQATasks(config, trigger, physSel):
     
     #Trigger QA
     if config["trigger_qa"]:
-        if config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
+        if config["run_period"] == "LHC16q":
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask.EnableDCal(True)
+        elif config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
             pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC16c":
@@ -132,15 +134,14 @@ def AddTriggerQATasks(config, trigger, physSel):
         jetCont.SetLeadingHadronType(1)
 
 def main(config):
-
     ROOT.gSystem.Load("libCGAL")
-    
+
     ROOT.gInterpreter.ProcessLine(os.path.expandvars('.L $ALICE_ROOT/include/AliEMCALTriggerConstants.h'))
 
     physSel = 0
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])
-    
+
     mode = None
     if config["mode"] == "AOD":
         mode = helperFunctions.AnaMode.AOD
@@ -165,20 +166,18 @@ def main(config):
         helperFunctions.AddAODHandler()
     elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
-        
+
+    #CDB connect
+    #pCDBConnect = ROOT.AddTaskCDBconnect()
+    pCDBConnect = ROOT.AliTaskCDBconnect("CDBconnect", "cvmfs://", 0)
+    mgr.AddTask(pCDBConnect)
+    cinput1 = mgr.GetCommonInputContainer()    
+    mgr.ConnectInput(pCDBConnect,  0, cinput1)
+    pCDBConnect.SetFallBackToRaw(True)
+
     #Physics selection task
     if mode is helperFunctions.AnaMode.ESD and physSel:
         ROOT.AddTaskPhysicsSelection()
-
-    #Setup task
-    OCDBpath = "local:///Volumes/DATA/ALICE/OCDB/2016"
-    #OCDBpath = "raw://"
-    pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask")
-    pSetupTask.SetNoOCDB(1)
-    mgr.AddTask(pSetupTask)
-    cinput = mgr.GetCommonInputContainer()
-    mgr.ConnectInput(pSetupTask, 0,  cinput)
-    pSetupTask.SetOcdbPath(OCDBpath)
     
     if config["run_period"] == "LHC15o":
         ROOT.AddTaskMultSelection(False)
@@ -195,8 +194,10 @@ def main(config):
         
         if config.has_key("bad_fastor"):
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(config["bad_fastor"])
-            
-        if config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
+
+        if config["run_period"] == "LHC16q":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
+        elif config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif config["run_period"] == "LHC16c":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
@@ -247,7 +248,7 @@ def main(config):
         isPP = False
     else:
         isPP = True
-    
+
     tasks = mgr.GetTasks()
     for task in tasks:
         if isinstance(task, ROOT.AliAnalysisTaskEmcal) or isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
@@ -260,14 +261,14 @@ def main(config):
     if not res:
         print "Error initializing the analysis!"
         exit(1)
-    
+
     mgr.PrintStatus()
 
     outFile = ROOT.TFile("train.root","RECREATE")
     outFile.cd()
     mgr.Write()
     outFile.Close()
-    
+
     chain = None
     if mode is helperFunctions.AnaMode.AOD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
@@ -275,17 +276,17 @@ def main(config):
     elif mode is helperFunctions.AnaMode.ESD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
         chain = ROOT.CreateESDChain(config["file_list"], config["n_files"], 0, False)
-        
+
     if config["debug_level"] == 0:
         mgr.SetUseProgressBar(1, 250)
     else:
         mgr.SetUseProgressBar(0, 0)
-        
+
     mgr.SetDebugLevel(config["debug_level"])
 
     #To have more debug info
     #pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
-    
+
     #start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, config["n_events"])
@@ -340,9 +341,9 @@ if __name__ == '__main__':
                         default=0,
                         type=int,
                         help='Debug level')
-    
+
     args = parser.parse_args()
-    
+
     config = GenerateConfig(args)
-    
+
     main(config)
