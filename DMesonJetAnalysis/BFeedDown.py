@@ -76,17 +76,17 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
             print("Could not open file {0}".format(quark.filename))
             exit(1)
 
-    ptD = SpectraSet("BFeedDownVsPtD_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,D}")
+    ptD = SpectraSet("BFeedDownVsPtD_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,D}")
     ptD.add(SpectrumDef("D0_MCTruth_{0}_{1}_D_Pt_Spectrum_JetPt_0_Normalized".format(jet_type, jet_radius), "#it{p}_{T,ch jet} > 0", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     ptD.add(SpectrumDef("D0_MCTruth_{0}_{1}_D_Pt_Spectrum_JetPt_2_Normalized".format(jet_type, jet_radius), "#it{p}_{T,ch jet} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     ptD.add(SpectrumDef("D0_MCTruth_{0}_{1}_D_Pt_Spectrum_JetPt_5_Normalized".format(jet_type, jet_radius), "#it{p}_{T,ch jet} > 5 GeV/#it{c}", dict(colors=[ROOT.kAzure+2,ROOT.kCyan+2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
     ptD.add(SpectrumDef("D0_MCTruth_{0}_{1}_D_Pt_Spectrum_JetPt_8_Normalized".format(jet_type, jet_radius), "#it{p}_{T,ch jet} > 8 GeV/#it{c}", dict(colors=[ROOT.kMagenta+2,ROOT.kPink+2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
 
-    ptJet = SpectraSet("BFeedDownVsPtJet_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,ch jet}")
+    ptJet = SpectraSet("BFeedDownVsPtJet_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,ch jet}")
     ptJet.add(SpectrumDef("D0_MCTruth_{0}_{1}_Jet_Pt_Spectrum_PtD_0_Normalized".format(jet_type, jet_radius), "#it{p}_{T,D} > 0", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     ptJet.add(SpectrumDef("D0_MCTruth_{0}_{1}_Jet_Pt_Spectrum_PtD_2_Normalized".format(jet_type, jet_radius), "#it{p}_{T,D} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     
-    zJet = SpectraSet("BFeedDownVsZ_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{z}_{||,D}^{ch jet}")
+    zJet = SpectraSet("BFeedDownVsZ_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{z}_{||,D}^{ch jet}")
     zJet.add(SpectrumDef("D0_MCTruth_{0}_{1}_Jet_Z_Spectrum_PtJet_0_5_Normalized".format(jet_type, jet_radius), "0 < #it{p}_{T,D} < 5 GeV/#it{c}", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     zJet.add(SpectrumDef("D0_MCTruth_{0}_{1}_Jet_Z_Spectrum_PtJet_5_10_Normalized".format(jet_type, jet_radius), "5 < #it{p}_{T,D} < 10 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     zJet.add(SpectrumDef("D0_MCTruth_{0}_{1}_Jet_Z_Spectrum_PtJet_10_15_Normalized".format(jet_type, jet_radius), "10 < #it{p}_{T,D} < 15 GeV/#it{c}", dict(colors=[ROOT.kAzure+2,ROOT.kCyan+2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
@@ -99,7 +99,7 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
     ratioAxis = "({0} #rightarrow D^{{0}}) / ({1} #rightarrow D^{{0}})".format(quarks.values()[1].name[0], quarks.values()[0].name[0])
 
     for spectraSet in spectraSets:
-        cname = "BFeedDown_{0}_{1}".format(gen, spectraSet.name)
+        cname = spectraSet.name
         opt = ""
         optRatio = ""
         c = None
@@ -137,7 +137,7 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
     globalList.append(corr_fact)
     globalList.append(corr_fact_err)
 
-    cname = "BFeedDown_CorrFact_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts)
+    cname = "BFeedDown_CorrFact_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts)
     c = ROOT.TCanvas(cname, cname)
     c.cd()
     globalList.append(c)
@@ -146,7 +146,7 @@ def analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
     c.SetRightMargin(0.15)
     c.SaveAs("{0}/{1}.pdf".format(rootPath, c.GetName()))
     
-    cname = "BFeedDown_CorrFactUnc_{0}_{1}_{2}".format(gen, charmQuark.ts, beautyQuark.ts)
+    cname = "BFeedDown_CorrFactUnc_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts)
     c = ROOT.TCanvas(cname, cname)
     c.cd()
     globalList.append(c)
