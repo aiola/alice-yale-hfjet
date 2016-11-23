@@ -122,7 +122,7 @@ def MakeUniform(g,h_new, scaling=1):
     nsum = 0
     while i < g.GetN() and j < h_new.GetN():
         if nsum == 0 or myXval/nsum <= h_new.GetX()[j]:
-            print("Adding {0}".format(g.GetX()[i]))
+            #print("Adding {0}".format(g.GetX()[i]))
             myXval += g.GetX()[i]
             myYval += g.GetY()[i]
             myerrup2 += g.GetEYhigh()[i]**2
@@ -132,7 +132,7 @@ def MakeUniform(g,h_new, scaling=1):
             print("Something wrong...")
         if nsum > 0 and math.fabs(myXval/nsum - h_new.GetX()[j]) < 1e-6:
             j += 1
-            print("Bin X {0}".format(myXval/nsum))
+            #print("Bin X {0}".format(myXval/nsum))
             gxval.append(round(myXval/nsum,2))
             gyval.append(myYval/nsum*scaling)
             gyerrup.append(math.sqrt(myerrup2)/nsum*scaling)
@@ -242,7 +242,6 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         globalList.append(leg)
 
         (unc_g, ratio_h) = MakeRatio(g_new, h_new)
-        print("Ratio ok")
         globalList.append(unc_g)
         globalList.append(ratio_h)
         cRatio = ROOT.TCanvas("{0}_ratio".format(fonll_file),"{0}_ratio".format(fonll_file))
@@ -315,6 +314,9 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         ratio_g2.SetLineColor(ROOT.kRed+2)
         #unc_g.Draw("APX")
         ratio_g2.Draw("APX")
+    for obj in globalList:
+        if isinstance(obj, ROOT.TCanvas):
+            obj.SaveAs("~/{0}.pdf".format(obj.GetName()))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Comparison between FONLL and POWHEG.')
