@@ -196,18 +196,19 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
     ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_2_Normalized", "#it{p}_{T,ch jet} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_5_Normalized", "#it{p}_{T,ch jet} > 5 GeV/#it{c}", dict(colors=[ROOT.kAzure+2,ROOT.kCyan+2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
     ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_8_Normalized", "#it{p}_{T,ch jet} > 8 GeV/#it{c}", dict(colors=[ROOT.kMagenta+2,ROOT.kPink+2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
+    ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_15_Normalized", "#it{p}_{T,ch jet} > 15 GeV/#it{c}", dict(colors=[ROOT.kTeal+2,ROOT.kSpring+2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
 
     ptJet = SpectraSet("BFeedDownVsPtJet_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,ch jet}")
     ptJet.add(SpectrumDef("Jet_Pt_Spectrum_PtD_0_Normalized", "#it{p}_{T,D} > 0", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     ptJet.add(SpectrumDef("Jet_Pt_Spectrum_PtD_2_Normalized", "#it{p}_{T,D} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     
     zJet = SpectraSet("BFeedDownVsZ_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{z}_{||,D}^{ch jet}")
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_0_5_Normalized", "0 < #it{p}_{T,D} < 5 GeV/#it{c}", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_5_10_Normalized", "5 < #it{p}_{T,D} < 10 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_10_15_Normalized", "10 < #it{p}_{T,D} < 15 GeV/#it{c}", dict(colors=[ROOT.kAzure+2,ROOT.kCyan+2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_15_20_Normalized", "15 < #it{p}_{T,D} < 20 GeV/#it{c}", dict(colors=[ROOT.kMagenta+2,ROOT.kPink+2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_20_25_Normalized", "20 < #it{p}_{T,D} < 25 GeV/#it{c}", dict(colors=[ROOT.kTeal+2,ROOT.kSpring+2], markers=[ROOT.kStar, ROOT.kStar], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_25_Normalized", "#it{p}_{T,D} > 25 GeV/#it{c}", dict(colors=[ROOT.kViolet+2,ROOT.kYellow+2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
+    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_0_5_Normalized", "0 < #it{p}_{T,ch jet} < 5 GeV/#it{c}", dict(colors=[ROOT.kBlue+2,ROOT.kGreen+2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
+    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_5_10_Normalized", "5 < #it{p}_{T,ch jet} < 10 GeV/#it{c}", dict(colors=[ROOT.kRed+2,ROOT.kOrange+2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
+    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_10_15_Normalized", "10 < #it{p}_{T,ch jet} < 15 GeV/#it{c}", dict(colors=[ROOT.kAzure+2,ROOT.kCyan+2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
+    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_15_20_Normalized", "15 < #it{p}_{T,ch jet} < 20 GeV/#it{c}", dict(colors=[ROOT.kMagenta+2,ROOT.kPink+2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
+    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_20_25_Normalized", "20 < #it{p}_{T,ch jet} < 25 GeV/#it{c}", dict(colors=[ROOT.kTeal+2,ROOT.kSpring+2], markers=[ROOT.kStar, ROOT.kStar], lines=[None, None])))
+    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_25_Normalized", "#it{p}_{T,ch jet} > 25 GeV/#it{c}", dict(colors=[ROOT.kViolet+2,ROOT.kYellow+2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
     
     spectraSets = [ptD, ptJet, zJet]
 
