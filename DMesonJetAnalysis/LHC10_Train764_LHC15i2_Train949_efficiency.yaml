@@ -8,7 +8,7 @@ efficiency: no  # apply effieciency correction?
 use_overflow: yes # use overflow bins?
 analysis:
 -
-  name: InvMassFit
+  name: InvMassFit_PtD_20
   active: yes
   jet_type: Charged
   jet_radius: R040
@@ -22,7 +22,7 @@ analysis:
   methods:
     Svd:
       default_reg:
-        ResponseTruth: 5
+        ResponseTruth: 4
         PowerLaw_3: 5
         PowerLaw_7: 4
     Bayes:
@@ -36,7 +36,7 @@ analysis:
     BinByBin:
       default_reg: null
 -
-  name: SideBand
+  name: SideBand_PtD_20
   active: yes
   jet_type: Charged
   jet_radius: R040
@@ -64,7 +64,7 @@ analysis:
     BinByBin:
       default_reg: null
 -
-  name: LikeSign
+  name: LikeSign_PtD_20
   active: no
   jet_type: Charged
   jet_radius: R040

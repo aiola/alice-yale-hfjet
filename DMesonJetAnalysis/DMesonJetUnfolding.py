@@ -115,6 +115,7 @@ class DMesonJetUnfoldingEngine:
     def GenerateRootList(self):
         rlist = ROOT.TList()
         rlist.SetName(self.fName)
+        rlist.Add(self.fEvents)
         rlist.Add(self.fInputSpectrum)
         if self.fTruthSpectrum:
             rlist.Add(self.fTruthSpectrum)
@@ -141,10 +142,24 @@ class DMesonJetUnfoldingEngine:
         for (method,reg,prior),(h1,h2,h3) in self.fUnfoldedSpectraErrors.iteritems():
             unfoldingHistos[method].Add(h1)
             unfoldingHistos[method].Add(h2)
-            unfoldingHistos[method].Add(h3)    
+            unfoldingHistos[method].Add(h3)
         for h in self.fBinByBinCorrectionFactors.itervalues():
             unfoldingHistos["BinByBin"].Add(h)
         return rlist
+
+    def LoadNumberOfEvents(self, dataList, inputSpectrumName):
+        normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
+        normInputSpectrum = dataList.FindObject(normInputSpectrumName)
+        if not normInputSpectrum:
+            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, dataList.GetName()))
+            dataList.Print()
+            exit(1)
+        temp = self.fInputSpectrum.Clone("temp")
+        temp.Scale(1, "width")
+        temp.Divide(normInputSpectrum)
+        self.fNumberOfEvents = temp.GetBinContent(1)
+        self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
+        self.fEvents.SetBinContent(1, self.fNumberOfEvents)
 
     def LoadData(self, dataFile, responseFile, eff, use_overflow):
         self.fUseOverflow = use_overflow
@@ -152,47 +167,48 @@ class DMesonJetUnfoldingEngine:
         dataMesonList = dataFile.Get(self.fDMeson)
         if not dataMesonList:
             print("Could not find list {0} in file {1}". format(self.fDMeson, dataFile.GetName()))
-            return False
+            exit(1)
         dataJetListName = "_".join([self.fJetType, self.fJetRadius])
         dataJetList = dataMesonList.FindObject(dataJetListName)
         if not dataJetList:
             print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, dataFile.GetName()))
             dataMesonList.Print()
-            return False
+            exit(1)
         dataListName = "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName)
         dataList = dataJetList.FindObject(dataListName)
         if not dataList:
             print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, dataFile.GetName()))
             dataJetList.Print()
-            return False
+            exit(1)
         inputSpectrumName = "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName)
         inputSpectrum = dataList.FindObject(inputSpectrumName)
         if not inputSpectrum:
             print("Could not find histogrm {0} in list {1} in file {2}". format(inputSpectrumName, dataListName, dataFile.GetName()))
-            return False
+            exit(1)
         self.fInputSpectrum = inputSpectrum.Clone("{0}_InputSpectrum".format(self.fName))
         self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
+        self.LoadNumberOfEvents(dataJetList, inputSpectrumName)
 
         if self.fDMesonTruth:
             dataTruthMesonList = dataFile.Get(self.fDMesonTruth)
             if not dataTruthMesonList:
                 print("Could not find list {0} in file {1}". format(self.fDMesonTruth, dataFile.GetName()))
-                return False
+                exit(1)
             dataTruthJetListName = "_".join([self.fJetType, self.fJetRadius])
             dataTruthJetList = dataTruthMesonList.FindObject(dataTruthJetListName)
             if not dataTruthJetList:
                 print("Could not find list {0}/{1} in file {2}". format(self.fDMesonTruth, dataTruthJetListName, dataFile.GetName()))
-                return False
+                exit(1)
             dataTruthListName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
             dataTruthList = dataTruthJetList.FindObject(dataTruthListName)
             if not dataTruthList:
                 print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMesonTruth, dataTruthJetListName, dataTruthListName, dataFile.GetName()))
-                return False
+                exit(1)
             truthSpectrumName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
             truthSpectrum = dataTruthList.FindObject(truthSpectrumName)
             if not truthSpectrum:
                 print("Could not find histogrm {0} in list {1} in file {2}". format(truthSpectrumName, dataTruthListName, dataFile.GetName()))
-                return False
+                exit(1)
             self.fTruthSpectrum = truthSpectrum.Clone("{0}_TruthSpectrum".format(self.fName))
             self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
         else:
@@ -202,12 +218,12 @@ class DMesonJetUnfoldingEngine:
         responseList = responseFile.Get(responseListName)
         if not responseList:
             print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
-            return False
+            exit(1)
         detectorResponseName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_DetectorResponse".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
         detectorResponse = responseList.FindObject(detectorResponseName)
         if not detectorResponse:
             print("Could not find histogrm {0} in list {1} in file {2}". format(detectorResponseName, responseListName, responseFile.GetName()))
-            return False
+            exit(1)
         self.fDetectorResponse = detectorResponse.Clone("{0}_DetectorResponse".format(self.fName))
         self.fDetectorResponse.SetTitle("{0} Detector Response".format(self.fName))
 
@@ -216,7 +232,7 @@ class DMesonJetUnfoldingEngine:
             detTrainTruth = responseList.FindObject(detTrainTruthName)
             if not detTrainTruth:
                 print("Could not find histogrm {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, responseFile.GetName()))
-                return False
+                exit(1)
             self.fDetectorTrainTruth = detTrainTruth.Clone("{0}_ResponseTruth".format(self.fName))
         else:
             self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_ResponseTruth".format(self.fName), 0, -1)
