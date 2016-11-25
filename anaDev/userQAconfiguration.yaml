@@ -1,0 +1,25 @@
+period: "noPeriod"
+pass: ""
+CellEnergy:
+    enabled: false
+    createHistos: false
+CellBadChannel:
+    enabled: true
+    createHistos: false
+CellTimeCalib:
+    enabled: false
+    createHistos: false
+Clusterizer:
+    enabled: true
+    createHistos: false
+    cellTimeMin: 400e-9                    # Min cell time (s)
+ClusterExotics:
+    enabled: true
+    createHistos: false
+ClusterNonLinearity:
+    enabled: true
+    createHistos: false
+ClusterTrackMatcher:
+    enabled: false
+ClusterHadronicCorrection:
+    enabled: false
