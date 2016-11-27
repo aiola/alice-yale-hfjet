@@ -1,1 +1,1 @@
-/Volumes/DATA/ALICE/Data/2016/LHC16q/000265424/muon_calo_pass1/AOD/001/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2016/LHC16q/000265424/muon_calo_pass1/AOD/001/aod_archive.zip#AliAOD.root
