@@ -4,5 +4,11 @@ mode: AOD
 file_list: fileLists/files_LHC16q_muon_calo_pass1_AOD.txt
 triggers:
 - 
-  label: CINT7
+  label: INT7
   accept: [CINT7-B]
+- 
+  label: EMC7
+  accept: [CEMC7-B]
+- 
+  label: DMC7
+  accept: [CDMC7-B]
