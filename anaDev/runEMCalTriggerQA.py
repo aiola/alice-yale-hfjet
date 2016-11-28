@@ -106,6 +106,7 @@ def AddTriggerQATasks(config, trigger, physSel):
         #pTriggerQATask.EnableHistogramsByTimeStamp(120)
         pTriggerQATask.SetADCperBin(8)
         pTriggerQATask.SetMinAmplitude(0)
+        pTriggerQATask.SetCorrelationPlots(True)
         pTriggerQATask.SelectCollisionCandidates(physSel)
 
     if config["charged_jets"] or config["full_jets"] or config["neutral_jets"]:
@@ -168,7 +169,6 @@ def main(config):
         helperFunctions.AddESDHandler()
 
     #CDB connect
-    #pCDBConnect = ROOT.AddTaskCDBconnect()
     pCDBConnect = ROOT.AliTaskCDBconnect("CDBconnect", "cvmfs://", 0)
     mgr.AddTask(pCDBConnect)
     cinput1 = mgr.GetCommonInputContainer()    
@@ -184,24 +184,21 @@ def main(config):
 
     # EMCal prep
     if config["cluster_qa"] or config["trigger_qa"]:
-        helperFunctions.PrepareEMCAL(physSel, True, True, config["cluster_qa"] or config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"])
+        helperFunctions.PrepareEMCAL("userQAconfiguration.yaml")
+        #helperFunctions.PrepareEMCAL_old(physSel, True, True, config["cluster_qa"] or config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"])
 
     #Trigger QA
     if config["trigger_qa"]:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
         pTriggerMakerTask.SelectCollisionCandidates(physSel)
         pTriggerMakerTask.GetTriggerMaker().SetFastORandCellThresholds(0, 0, 0)
-        
+
         if config.has_key("bad_fastor"):
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(config["bad_fastor"])
 
         if config["run_period"] == "LHC16q":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
-        elif config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
-        elif config["run_period"] == "LHC16c":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
-        elif config["run_period"] == "LHC16b":
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2016()
+        elif config["run_period"] == "LHC16b" or config["run_period"] == "LHC16c" or config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif config["run_period"] == "LHC15o":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPbPb2015()
