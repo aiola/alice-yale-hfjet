@@ -6,6 +6,7 @@ class AnaMode(Enum):
     AOD = 2
 
 def LoadMacros():
+    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C")
@@ -15,14 +16,15 @@ def LoadMacros():
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetQA.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDmesonJets.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDmesonJetsDetectorResponse.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerQA.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMakerNew.C")
+    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C")
+    #old emcal framework
+    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C")
 
 def AddESDHandler():
     mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
@@ -105,7 +107,13 @@ def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, 
 
     return pidTask
 
-def PrepareEMCAL(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True, doClusterMaker=True, doClusTrackMatcher=True, doHadCorr=True) :
+def PrepareEMCAL(yamlFile):
+    task = ROOT.AddTaskEmcalCorrectionTask()
+    task.SetRunPeriod("noPeriod")
+    task.SetUserConfigurationFilename(yamlFile)
+    task.Initialize()
+
+def PrepareEMCAL_old(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True, doClusterMaker=True, doClusTrackMatcher=True, doHadCorr=True) :
     # Tender
     if doTender:
         bDistBC         = False #switch for recalculation cluster position from bad channel
