@@ -58,7 +58,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
         pSetupTask.SetOcdbPath(OCDBpath)
         
     if config["full_jets"]:
-        helperFunctions.PrepareEMCAL(physSel)
+        helperFunctions.PrepareEMCAL("userQAconfiguration.yaml")
 
     if config["MC"]:
         print "Running on a MC production"
@@ -131,14 +131,12 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
                     pDMesonJetsTask.SetNeedEmcalGeom(True)
                 else:
                     pDMesonJetsTask = ROOT.AddTaskDmesonJetsDetectorResponse("usedefault", "", "usedefault", 2)
-                    pDMesonJetsTask.SetNeedEmcalGeom(False)
             else:
                 if config["full_jets"]:
                     pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "usedefault", "usedefault", nOutputTrees)
                     pDMesonJetsTask.SetNeedEmcalGeom(True)
                 else:
                     pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "usedefault", nOutputTrees)
-                    pDMesonJetsTask.SetNeedEmcalGeom(False)
                 pDMesonJetsTask.SetOutputType(ROOT.AliAnalysisTaskDmesonJets.kTreeOutput)
         else:
             if config["full_jets"]:
@@ -146,10 +144,10 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
                 pDMesonJetsTask.SetNeedEmcalGeom(True)
             else:
                 pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "", nOutputTrees)
-                pDMesonJetsTask.SetNeedEmcalGeom(False)
             
         pDMesonJetsTask.SelectCollisionCandidates(physSel)
-        
+        pDMesonJetsTask.SetApplyKinematicCuts(False)
+
         if doRecLevel:
             # D0
             if config["charged_jets"]:
@@ -161,7 +159,8 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
-        
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpiLikeSign, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpiLikeSign, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
             # D*
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
@@ -251,7 +250,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
 if __name__ == '__main__':
     # runJetDmeson.py executed as script
-    
+
     parser = argparse.ArgumentParser(description='Jet D meson analysis.')
     parser.add_argument('config',
                         help='YAML configuration file')
