@@ -144,11 +144,11 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
                 pDMesonJetsTask.SetNeedEmcalGeom(True)
             else:
                 pDMesonJetsTask = ROOT.AddTaskDmesonJets("usedefault", "", "", nOutputTrees)
-            
+
         pDMesonJetsTask.SelectCollisionCandidates(physSel)
         pDMesonJetsTask.SetApplyKinematicCuts(False)
 
-        if doRecLevel:
+        if doRecLevel and not doResponse:
             # D0
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
@@ -208,7 +208,6 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
 
-    
     tasks = mgr.GetTasks()
     for task in tasks:
         if isinstance(task, ROOT.AliAnalysisTaskEmcal) or isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
@@ -219,14 +218,14 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     if not res:
         print "Error initializing the analysis!"
         exit(1)
-    
+
     mgr.PrintStatus()
 
     outFile = ROOT.TFile("train.root","RECREATE")
     outFile.cd()
     mgr.Write()
     outFile.Close()
-    
+
     chain = None
     if mode is helperFunctions.AnaMode.AOD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
@@ -237,16 +236,15 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
         
     if debugLevel == 0:
         mgr.SetUseProgressBar(1, 250)
-        
+
     mgr.SetDebugLevel(debugLevel)
 
     #To have more debug info
     #mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug+100)
-    
+
     #start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, nEvents)
-
 
 if __name__ == '__main__':
     # runJetDmeson.py executed as script
@@ -285,6 +283,6 @@ if __name__ == '__main__':
                         type=int,
                         help='Debug level')
     args = parser.parse_args()
-    
+
     main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response, args.no_incl_jets,
          args.task_name, args.debug_level)
