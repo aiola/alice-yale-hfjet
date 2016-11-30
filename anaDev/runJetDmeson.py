@@ -122,7 +122,12 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
         
     if config["MC"] and doMCTruth:
         nOutputTrees += 2
-        
+
+    if doResponse == "c":
+        rejectOrigin = ROOT.AliAnalysisTaskDmesonJets.kFromBottom
+    elif doResponse == "b":
+        rejectOrigin = ROOT.AliAnalysisTaskDmesonJets.kAnyOrigin & ~ROOT.AliAnalysisTaskDmesonJets.kFromBottom
+
     if nOutputTrees > 0:
         if config["MC"]:
             if doResponse:
@@ -272,9 +277,9 @@ if __name__ == '__main__':
     parser.add_argument('--no-incl-jets', action='store_const',
                         default=False, const=True,
                         help='No inclusive jets')
-    parser.add_argument('--response', action='store_const',
-                        default=False, const=True,
-                        help='MC truth analysis')
+    parser.add_argument('--response',
+                        default=False,
+                        help='Run response matrix')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
