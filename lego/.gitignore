@@ -8,3 +8,5 @@ globalvariables.C
 handlers.C
 env.sh
 outputs_valid
+generator_customization.C
+gdb-backtrace*
