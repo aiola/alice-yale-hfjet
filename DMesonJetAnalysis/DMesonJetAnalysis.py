@@ -8,7 +8,6 @@ from DMesonJetBase import *
 import array
 import copy
 import DMesonJetUtils
-import DMesonJetFDCorrection
 import collections
 
 globalList = []
@@ -142,9 +141,8 @@ class DMesonJetAnalysisEngine:
         self.fEvents = self.fProjector.fTotalEvents
         self.fIsWeighted = not (self.fProjector.fWeight == 1)
 
-    def Start(self, ana):
-        self.fEngines = ana.fAnalysisEngine
-        self.fFDCorrection = ana.fFDCorrection
+    def Start(self, engines):
+        self.fEngines = engines
         if not "MCTruth" in self.fDMeson:
             self.FitInvMassPlots()
         if not "BackgroundOnly" in self.fDMeson:
@@ -963,10 +961,7 @@ class DMesonJetAnalysis:
 
     def SetProjector(self, projector):
         self.fProjector = projector
-
-    def SetFDCorrection(self, FD):
-        self.fFDCorrection = FD
-
+        
     def StartAnalysis(self, collision, config):
         self.fCollision = collision
         self.fJets = config["jets"]
@@ -1013,7 +1008,7 @@ class DMesonJetAnalysis:
 
         for eng in self.fAnalysisEngine:
             if not "LikeSign" in eng.fDMeson:
-                eng.Start(self)
+                eng.Start(self.fAnalysisEngine)
                 eng.CompareSpectra()
 
         for jetDef in self.fJets:
