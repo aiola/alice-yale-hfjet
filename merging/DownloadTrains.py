@@ -116,7 +116,7 @@ def main(TrainNumbers, config, Overwrite=0):
 if __name__ == '__main__':
     # FinalMergeLocal.py executed as script
     
-    parser = argparse.ArgumentParser(description='Local final merging for MC production in pT hard bins.')
+    parser = argparse.ArgumentParser(description='Script to download results from LEGO trains.')
     parser.add_argument('trainNumber', metavar='trainNumber',
                         help='Train numbers to be downloaded and merged. Use ":" to define a range, and "," for a list')
     parser.add_argument('--yaml', metavar='config.yaml',
