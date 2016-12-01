@@ -730,10 +730,14 @@ class Spectrum:
         return rlist
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
-        if not self.fHistogram:
-            return
-        hname = "{0}_Normalized".format(self.fHistogram.GetName())
-        self.fNormHistogram = self.fHistogram.Clone(hname)
+        if self.fHistogram:
+            self.GenerateNormalizedSpectrumForHistogram(self.fHistogram, events, weighted)
+        if self.fFDCorrHistogram:
+            self.GenerateNormalizedSpectrumForHistogram(self.fFDCorrHistogram, events, weighted)
+
+    def GenerateNormalizedSpectrumForHistogram(self, hist, events, weighted):
+        hname = "{0}_Normalized".format(hist.GetName())
+        self.fNormHistogram = hist.Clone(hname)
         self.fNormHistogram.SetTitle(hname)
         if len(self.fAxis) == 1:
             if weighted:
