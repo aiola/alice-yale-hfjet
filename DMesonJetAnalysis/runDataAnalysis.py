@@ -6,6 +6,7 @@ import yaml
 import IPython
 import DMesonJetAnalysis
 import DMesonJetProjectors
+import DMesonJetFDCorrection
 import subprocess
 import ROOT
 
@@ -47,6 +48,9 @@ def main(config, maxEvents, format, gen, proc, ts):
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
     projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, config["train"], file_name, config["task_name"], config["merging_type"], maxEvents)
     ana.SetProjector(projector)
+
+    FD = DMesonJetFDCorrection.DMesonJetFDCorrection(config["FD"])
+    ana.SetFDCorrection(FD)
 
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(collision, anaConfig)
