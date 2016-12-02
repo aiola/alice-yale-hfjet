@@ -389,3 +389,23 @@ def DivideNoErrors(ratio, den):
             ratio.SetBinContent(ibin, ratio.GetBinContent(ibin)/den.GetBinContent(ibin))
 
     return True
+
+def BuildHistogram(axis, name, yaxis):
+    if len(axis) == 1:
+        hist = ROOT.TH1D(name, name, len(axis[0].fBins)-1, array.array('d',axis[0].fBins))
+        hist.GetXaxis().SetTitle(axis[0].GetTitle())
+        hist.GetYaxis().SetTitle(yaxis)
+        hist.Sumw2()
+    elif len(axis) == 2:
+        hist = ROOT.TH2D(name, name, len(axis[0].fBins)-1, array.array('d',axis[0].fBins), len(axis[1].fBins)-1, array.array('d',axis[1].fBins))
+        hist.GetXaxis().SetTitle(axis[0].GetTitle())
+        hist.GetYaxis().SetTitle(axis[1].GetTitle())
+        hist.GetZaxis().SetTitle(zaxis)
+        hist.Sumw2()
+    else:
+        hist = ROOT.TH2D(name, name, len(axis[0].fBins)-1, array.array('d',axis[0].fBins), len(axis[1].fBins)-1, array.array('d',axis[1].fBins), len(axis[2].fBins)-1, array.array('d',axis[2].fBins))
+        hist.GetXaxis().SetTitle(axis[0].GetTitle())
+        hist.GetYaxis().SetTitle(axis[1].GetTitle())
+        hist.GetZaxis().SetTitle(axis[2].GetTitle())
+        hist.Sumw2()
+    return hist
