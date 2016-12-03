@@ -731,7 +731,14 @@ class Spectrum:
         return rlist
 
     def GenerateFDCorrectedSpectrum(self, FDCorrection, events, isWeighted):
-        pass
+        crossSection = 62.3 #mb CINT1
+        branchingRatio = 0.0388 # D0->Kpi
+        fdhist = FDCorrection.GetFDhistogram(self.fAxis)
+        self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
+        if not isWeighted:
+            self.fFDHistogram.Scale(events / crossSection * branchingRatio)
+        self.fFDCorrHistogram = self.fHistogram.Clone("{0}_FDCorr".format(self.fHistogram.GetName()))
+        self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
         if self.fHistogram:
