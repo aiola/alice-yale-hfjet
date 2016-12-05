@@ -223,7 +223,7 @@ class DMesonJetAnalysisEngine:
         globalList.append(c)
         globalList.append(h)
         globalList.append(pave)
-        
+
         # Mass
         if s.fMass:
             c = ROOT.TCanvas("{0}_canvas".format(s.fMass.GetName()), s.fMass.GetName())

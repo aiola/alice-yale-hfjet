@@ -44,11 +44,20 @@ class DMesonJetFDCorrection:
             print("Histogram {0} loaded".format(self.fSpectrumName))
         self.fFDHistogram = h.Clone("FD")
 
-    def GetFDcountsDummy(self, jetpt):
+    def GetFDcountsDummy(self, minjetpt, maxjetpt):
         return 0., 0.
 
-    def GetFDcountsInternal(self, jetpt):
-        return 0., 0.
+    def GetFDcountsInternal(self, minjetpt, maxjetpt):
+        counts = 0
+        err = 0
+        for xbin in range(1, self.fFDHistogram.GetNbinsX()+1):
+            if self.fFDHistogram.GetXaxis().GetBinCenter(xbin) < minjetpt:
+                continue
+            if self.fFDHistogram.GetXaxis().GetBinCenter(xbin) >= maxjetpt:
+                break
+            counts += self.fFDHistogram.GetBinContent(xbin)
+            err += self.fFDHistogram.GetBinError(xbin)**2
+        return counts, math.sqrt(err)
 
     def GetFDhistogram(self, axis):
         key = "_".join([axis.fName]+axis.fBins)
@@ -70,6 +79,6 @@ class DMesonJetFDCorrection:
 
     def Fill1D(self, h, cuts):
         for xbin in range(1, h.GetNbinsX()+1):
-            v,e = self.GetFDcounts(h.GetXaxis().GetBinCenter(xbin))
+            v,e = self.GetFDcounts(h.GetXaxis().GetBinLowEdge(xbin), h.GetXaxis().GetBinUpEdge(xbin))
             h.SetBinContent(xbin, v)
             h.SetBinError(xbin, e)
