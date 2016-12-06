@@ -9,7 +9,7 @@ import subprocess
 
 globalList = []
 
-def main(configs):
+def main(input_files):
     
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -22,17 +22,33 @@ def main(configs):
     baselineName = None
 
     files = dict()
-    for config in configs:
-        fname = "{input_path}/{train}/{analysis}.root".format(input_path=config["input_path"], train=config["train"], analysis=config["name"])
+    for input_file in input_files:
+        if ".yaml" in input_file:
+            f = open(yamlFileName, 'r')
+            config = yaml.load(f)
+            f.close()
+            configs.append(config)
+            fname = "{input_path}/{train}/{analysis}.root".format(input_path=config["input_path"], train=config["train"], analysis=config["name"])
+            anaName = config["name"]
+        elif ".root" in input_file:
+            fname = input_file
+            anaName = fname[fname.rfind("/")+1:fname.rfind(".")]
+        else:
+            print("Skipping file {0} because its type was not recognized".format(input_file))
+            continue
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Skipping file {0}, since it was not open successfully".format(fname))
             continue
         if not baseline:
             baseline = file
-            baselineName = config["name"]
+            baselineName = anaName
+            print("Base line is {0}".format(baselineName))
+            inputPath = fname[0:fname.rfind("/")]
+            print("Input path is {0}".format(inputPath))
         else:
-            files[config["name"]] = file
+            print("Adding file {0}".format(anaName))
+            files[anaName] = file
 
     if len(files) < 1:
         print(files)
@@ -40,8 +56,8 @@ def main(configs):
         exit(0)
 
     mylist = CompareObjects(baseline, files)
-    outputFileName = "_".join([config["name"] for config in configs])
-    outputFileName = "{0}/Comparison_{1}.root".format(configs[0]["input_path"], outputFileName)
+    outputFileName = "_".join([baselineName]+files.keys())
+    outputFileName = "{0}/Comparison_{1}.root".format(inputPath, outputFileName)
     outputFile = ROOT.TFile(outputFileName, "recreate")
     outputFile.cd()
     rlist = GenerateRootList(mylist)
@@ -110,18 +126,11 @@ def CompareObjects(baseline, inputObjects):
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='D meson jet analysis for 2010 pp data.')
-    parser.add_argument('yaml', metavar='config.yaml', nargs='+',
-                        help='YAML configuration file')
+    parser.add_argument('files', metavar='file.yaml', nargs='+',
+                        help='Files to compare (can be a YAML or directly root file)')
 
     args = parser.parse_args()
 
-    configs = []
-    for yamlFileName in args.yaml:
-        f = open(yamlFileName, 'r')
-        config = yaml.load(f)
-        f.close()
-        configs.append(config)
-
-    main(configs)
+    main(args.files)
 
     IPython.embed()
