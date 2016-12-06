@@ -124,13 +124,15 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
 
     quarks = dict()
 
-    charmQuark = QuarkSetting("charm")
-    charmQuark.ts = charm_ts
-    quarks["charm"] = charmQuark
+    if charm_ts:
+        charmQuark = QuarkSetting("charm")
+        charmQuark.ts = charm_ts
+        quarks["charm"] = charmQuark
 
-    beautyQuark = QuarkSetting("beauty")
-    beautyQuark.ts = beauty_ts 
-    quarks["beauty"] = beautyQuark
+    if beauty_ts:
+        beautyQuark = QuarkSetting("beauty")
+        beautyQuark.ts = beauty_ts 
+        quarks["beauty"] = beautyQuark
 
     for quark in quarks.itervalues():
         quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_1/output".format(rootPath, gen, quark.name, quark.ts)
@@ -157,7 +159,7 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
     spectra = []
     spectra.append(DataSpectrumDef("InvMassFit_PtD_20", "Svd", "Reg4", "PriorResponseTruth"))
 
-    cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts, data])
+    cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius] + [quark.ts for quark in quarks.itervalues()] + [data])
     ratioAxis = "data / theory"
     histos = []
     for spectrum in spectra:
@@ -166,6 +168,8 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
 
     MCspectrumRebinned = MCspectrum.Rebin(histos[0].GetNbinsX(), "{0}_Rebinned".format(MCspectrum.GetName()), histos[0].GetXaxis().GetXbins().GetArray())
     MCspectrumRebinned.Scale(1., "width")
+    globalList.append(MCspectrumRebinned)
+    globalList.extend(histos)
     r = DMesonJetUtils.CompareSpectra(MCspectrumRebinned, histos, cname, "", "", ratioAxis, "logy", "lineary")
     for obj in r:
         globalList.append(obj)
@@ -293,9 +297,9 @@ def GetSpectrum(file, meson_name, jet_type, jet_radius, spectrum):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='B feed-down.')
     parser.add_argument('--charm', metavar='CHARM',
-                        default="local")
+                        default=None)
     parser.add_argument('--beauty', metavar='CHARM',
-                        default="local")
+                        default=None)
     parser.add_argument('--jet-type', metavar='TYPE',
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
