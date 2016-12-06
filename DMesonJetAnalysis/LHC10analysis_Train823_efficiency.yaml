@@ -1,4 +1,4 @@
-name: LHC10_Train823
+name: LHC10_Train823_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_823_824_825_826
 file_name: AnalysisResults.root
@@ -23,7 +23,10 @@ analysis:
     title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
@@ -49,13 +52,16 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_jetpt_PtD_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_efficiency_jetpt_PtD_20_detector
   -
     name: Jet_Pt_Bins_PtD_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
@@ -80,7 +86,10 @@ analysis:
     title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
     bins:
       jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
@@ -127,12 +136,20 @@ analysis:
       suffix: InvMassFit
       title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: inv_mass_fit
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
     -
       name: Jet_Pt_Spectrum_PtD_20
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
       FD:
         train: FastSim
@@ -140,7 +157,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_jetpt_PtD_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_efficiency_jetpt_PtD_20_detector
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -152,6 +169,10 @@ analysis:
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
       FD:
         train: FastSim
@@ -159,7 +180,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_jetpt_PtD_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_efficiency_jetpt_PtD_20_detector
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign
@@ -174,6 +195,10 @@ analysis:
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
       skip_bins: [0]
       side_band:
@@ -187,6 +212,10 @@ analysis:
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
       skip_bins: [0]
       like_sign:
@@ -203,6 +232,10 @@ analysis:
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
       skip_bins: [0,1]
       side_band:
@@ -216,6 +249,10 @@ analysis:
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
       active_mesons: [D0]
       skip_bins: [0,1]
       like_sign:
@@ -247,6 +284,10 @@ analysis:
       suffix: InvMassFit
       title: "Inv.Mass Fit, |#eta_{D}| < 0.5"
       type: inv_mass_fit
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_NoJet
       active_mesons: [D0]
       FD:
         train: FastSim
@@ -254,4 +295,4 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: D_Pt_Spectrum_bEff
+        spectrum: D_Pt_Spectrum_bEff_efficiency

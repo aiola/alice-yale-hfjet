@@ -1,0 +1,107 @@
+# Response b->D0
+# Use c->D0 efficiency (this is what it is done in data)
+name: LHC15i2_Train973_efficiency
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_MC_973_974_975_976
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJetsDetectorResponse
+analysis:
+- 
+  d_meson: [D0]
+  jets:
+  -
+    type: Charged
+    radius: R040
+  response:
+  -
+    name: Jet_Pt_Spectrum_PtD_20
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+    active: yes
+    bins:
+      jet_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [5, 6, 8, 10, 14, 18, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 2.0
+  -
+    name: Jet_Eta_Spectrum_PtD_20
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+    active: no
+    bins:
+      jet_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [5, 6, 8, 10, 14, 18, 24]
+      jet_eta:
+        min: -1
+        max: 1
+        width: 0.1
+    cuts:
+    -
+      object: d
+      variable: fPt
+      min: 2.0
+  -
+    name: Jet_PtZ_Spectrum
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+    active: no
+    bins:
+      jet_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [5, 6, 8, 10, 14, 18, 24]
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+  -
+    name: D_Pt_Spectrum
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_D_Pt_Spectrum_Efficiency_JetPt_500_2400
+    active: yes
+    bins:
+      jet_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [5, 6, 8, 10, 14, 18, 24]
+      d_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
