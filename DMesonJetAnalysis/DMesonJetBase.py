@@ -12,6 +12,7 @@ import numpy
 from enum import Enum
 import collections
 import sys
+import DMesonJetFDCorrection
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -601,11 +602,12 @@ class AnalysisType(Enum):
     Truth = 5
 
 class Spectrum:
-    def __init__(self, config, dmeson, jtype, jradius, jtitle, binSet, effWeight):
+    def __init__(self, config, dmeson, jtype, jradius, jtitle, binSet, effWeight, FD):
         self.fDMeson = dmeson
         self.fJetType = jtype
         self.fJetRadius = jradius
         self.fJetTitle = jtitle
+        self.fFDCorrection = FD
         if "suffix" in config:
             suffix = config["suffix"]
         else:
@@ -624,6 +626,7 @@ class Spectrum:
         self.fSkipBins = None
         self.fEfficiencyWeight = effWeight
         self.fFDCorrHistogram = None
+        self.fFDHistogram = None
 
         # S-B analysis
         self.fSideBandHistograms = None
@@ -696,6 +699,10 @@ class Spectrum:
         rlist.SetName(self.fName)
         if self.fHistogram:
             rlist.Add(self.fHistogram)
+        if self.fFDHistogram:
+            rlist.Add(self.fFDHistogram)
+        if self.fFDCorrHistogram:
+            rlist.Add(self.fFDCorrHistogram)
         if self.fUncertainty:    
             rlist.Add(self.fUncertainty)
         if self.fMass:    
@@ -730,15 +737,16 @@ class Spectrum:
             rlist.Add(LSlist)
         return rlist
 
-    def GenerateFDCorrectedSpectrum(self, FDCorrection, events, isWeighted):
-        crossSection = 62.3 #mb CINT1
-        branchingRatio = 0.0388 # D0->Kpi
-        fdhist = FDCorrection.GetFDhistogram(self.fAxis)
-        self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
-        if not isWeighted:
-            self.fFDHistogram.Scale(events / crossSection * branchingRatio)
+    def GenerateFDCorrectedSpectrum(self, events, isWeighted):
         self.fFDCorrHistogram = self.fHistogram.Clone("{0}_FDCorr".format(self.fHistogram.GetName()))
-        self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
+        if self.fFDCorrection.fFDHistogram:
+            crossSection = 62.3 #mb CINT1
+            branchingRatio = 0.0388 # D0->Kpi
+            fdhist = self.fFDCorrection.fFDHistogram
+            self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
+            if not isWeighted:
+                self.fFDHistogram.Scale(events / crossSection * branchingRatio)
+            self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
         if self.fHistogram:
@@ -819,7 +827,7 @@ class Spectrum:
                 self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "D^{0} mass width (GeV/#it{c}^{2})")
                 self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
         elif len(self.fAxis) == 2:
-            self.fHistogram = sDMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "counts")
+            self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "counts")
             self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "relative statistical uncertainty")
             if self.fAnalysisType == AnalysisType.InvMassFit:
                 self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "mass")
@@ -1062,7 +1070,11 @@ class BinSet:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(inputPath, s["efficiency"]["file_name"]), s["efficiency"]["list_name"], s["efficiency"]["object_name"])
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
-            spectrum = Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
+            if "FD" in s and s["FD"]:
+                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(s["FD"], inputPath, dmeson, jtype, jradius)
+            else:
+                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(None)
+            spectrum = Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight, FD)
             self.fSpectra[spectrum.fName] = spectrum
         if "MCTruth" in dmeson and not isinstance(self.fWeightEfficiency , DMesonJetProjectors.SimpleWeight):
             self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
