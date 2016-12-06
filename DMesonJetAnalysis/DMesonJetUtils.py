@@ -400,7 +400,7 @@ def BuildHistogram(axis, name, yaxis):
         hist = ROOT.TH2D(name, name, len(axis[0].fBins)-1, array.array('d',axis[0].fBins), len(axis[1].fBins)-1, array.array('d',axis[1].fBins))
         hist.GetXaxis().SetTitle(axis[0].GetTitle())
         hist.GetYaxis().SetTitle(axis[1].GetTitle())
-        hist.GetZaxis().SetTitle(zaxis)
+        hist.GetZaxis().SetTitle(yaxis)
         hist.Sumw2()
     else:
         hist = ROOT.TH2D(name, name, len(axis[0].fBins)-1, array.array('d',axis[0].fBins), len(axis[1].fBins)-1, array.array('d',axis[1].fBins), len(axis[2].fBins)-1, array.array('d',axis[2].fBins))
