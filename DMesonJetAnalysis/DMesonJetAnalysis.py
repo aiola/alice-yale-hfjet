@@ -94,8 +94,6 @@ class DMesonJetAnalysisEngine:
                     jlist.Add(invmasslist)
             spectra = binMultiSet.FindAllSpectra()
             for s in spectra:
-                if s.fNormHistogram:
-                    jlist.Add(s.fNormHistogram)
                 slist = s.GenerateRootList()
                 if slist.GetEntries() > 0:
                     jlist.Add(slist)

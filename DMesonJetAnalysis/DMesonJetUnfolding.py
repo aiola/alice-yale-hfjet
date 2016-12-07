@@ -187,7 +187,7 @@ class DMesonJetUnfoldingEngine:
             exit(1)
         self.fInputSpectrum = inputSpectrum.Clone("{0}_InputSpectrum".format(self.fName))
         self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
-        self.LoadNumberOfEvents(dataJetList, inputSpectrumName)
+        self.LoadNumberOfEvents(dataList, inputSpectrumName)
 
         if self.fDMesonTruth:
             dataTruthMesonList = dataFile.Get(self.fDMesonTruth)
