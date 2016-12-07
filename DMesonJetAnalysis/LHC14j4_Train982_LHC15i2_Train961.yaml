@@ -1,0 +1,129 @@
+name: LHC14j4_Train982_LHC15i2_Train961
+input_path: /Volumes/DATA/ALICE/JetResults
+data_train: Jets_EMC_pp_MC_982_983_984_985
+data: LHC14j4_Train982
+response_train: Jets_EMC_pp_MC_961_962_963_964
+response: LHC15i2_Train961
+efficiency: yes  # apply efficiency correction?
+use_overflow: yes # use overflow bins?
+analysis:
+-
+  name: SignalOnly_DPt_20
+  active: yes
+  jet_type: Charged
+  jet_radius: R040
+  d_meson_truth: D0_MCTruth
+  spectrum_truth: JetPtSpectrum_DPt_20_Truth
+  d_meson: D0_kSignalOnly
+  spectrum: JetPtSpectrum_DPt_20_SignalOnly
+  d_meson_response: D0
+  spectrum_response: JetPtSpectrum_DPt_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 5
+        PowerLaw_3: 5
+        PowerLaw_7: 5
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_3: 3
+        PowerLaw_7: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
+-
+  name: InvMassFit_DPt_20
+  active: no
+  jet_type: Charged
+  jet_radius: R040
+  d_meson_truth: D0_MCTruth
+  spectrum_truth: JetPtSpectrum_DPt_20_Truth
+  d_meson: D0
+  spectrum: JetPtSpectrum_DPt_20_InvMassFit
+  d_meson_response: D0
+  spectrum_response: JetPtSpectrum_DPt_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 5
+        PowerLaw_3: 5
+        PowerLaw_7: 5
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_3: 3
+        PowerLaw_7: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
+-
+  name: SideBand_DPt_20
+  active: no
+  jet_type: Charged
+  jet_radius: R040
+  d_meson_truth: D0_MCTruth
+  spectrum_truth: JetPtSpectrum_DPt_20_Truth
+  d_meson: D0
+  spectrum: JetPtSpectrum_DPt_20_SideBand
+  d_meson_response: D0
+  spectrum_response: JetPtSpectrum_DPt_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 5
+        PowerLaw_3: 5
+        PowerLaw_7: 5
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_3: 3
+        PowerLaw_7: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
+-
+  name: LikeSign_DPt_20
+  active: no
+  jet_type: Charged
+  jet_radius: R040
+  d_meson_truth: D0_MCTruth
+  spectrum_truth: JetPtSpectrum_DPt_20_Truth
+  d_meson: D0
+  spectrum: JetPtSpectrum_DPt_20_LikeSign
+  d_meson_response: D0
+  spectrum_response: JetPtSpectrum_DPt_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 5
+        PowerLaw_3: 5
+        PowerLaw_7: 5
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_3: 3
+        PowerLaw_7: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
