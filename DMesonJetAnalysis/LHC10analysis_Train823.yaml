@@ -19,13 +19,13 @@ analysis:
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: Jet_Pt_Bins_PtD_20
+    name: JetPtBins_DPt_20
     title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -38,7 +38,7 @@ analysis:
       min: 2.0
     spectra:
     -
-      name: Jet_Pt_Spectrum_PtD_20
+      name: JetPtSpectrum_DPt_20
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
@@ -49,15 +49,15 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_jetpt_PtD_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
   -
-    name: Jet_Pt_Bins_PtD_30
+    name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -70,19 +70,19 @@ analysis:
       min: 3.0
     spectra:
     -
-      name: Jet_Pt_Spectrum_PtD_30
+      name: JetPtSpectrum_DPt_30
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
   -
-    name: Jet_Pt_Bins_PtD_40
+    name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -95,19 +95,19 @@ analysis:
       min: 4.0
     spectra:
     -
-      name: Jet_Pt_Spectrum_PtD_40
+      name: JetPtSpectrum_DPt_40
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
   -
-    name: DPtBins_JetPt_5_24
+    name: DPtBins_JetPt_5_30
     title: ""
     active_mesons: [D0, 2ProngLikeSign]
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 22, 30]
     cuts:
     -
       object: jet
@@ -118,18 +118,18 @@ analysis:
       object: jet
       variable: fPt
       min: 5
-      max: 24
+      max: 30
     bin_count_analysis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     spectra:
     -
-      name: D_Pt_Spectrum_JetPt_5_24
+      name: DPtSpectrum_JetPt_5_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 24 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: inv_mass_fit
       active_mesons: [D0]
     -
-      name: Jet_Pt_Spectrum_PtD_20
+      name: JetPtSpectrum_DPt_20
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: side_band
@@ -140,7 +140,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_jetpt_PtD_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -148,7 +148,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
-      name: Jet_Pt_Spectrum_PtD_20
+      name: JetPtSpectrum_DPt_20
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
@@ -159,7 +159,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_Coarse_bEff_jetpt_PtD_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign
@@ -170,7 +170,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
-      name: Jet_Pt_Spectrum_PtD_30
+      name: JetPtSpectrum_DPt_30
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: side_band
@@ -183,7 +183,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
-      name: Jet_Pt_Spectrum_PtD_30
+      name: JetPtSpectrum_DPt_30
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
@@ -199,7 +199,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
-      name: Jet_Pt_Spectrum_PtD_40
+      name: JetPtSpectrum_DPt_40
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: side_band
@@ -212,7 +212,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
-      name: Jet_Pt_Spectrum_PtD_40
+      name: JetPtSpectrum_DPt_40
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
@@ -234,7 +234,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 22, 30]
     cuts:
     -
       object: d
@@ -243,7 +243,7 @@ analysis:
       max: 0.5
     spectra:
     -
-      name: D_Pt_Spectrum
+      name: DPtSpectrum
       suffix: InvMassFit
       title: "Inv.Mass Fit, |#eta_{D}| < 0.5"
       type: inv_mass_fit
