@@ -379,7 +379,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
 
 def DivideNoErrors(ratio, den):
     if not ratio.GetNbinsX() == den.GetNbinsX():
-        print("DMesonJetUtils.DivideNoErrors: histgrams have different number of bins!")
+        print("DMesonJetUtils.DivideNoErrors: histograms have different number of bins!")
         return False
 
     for ibin in range(0, ratio.GetNbinsX()+2):
@@ -389,6 +389,12 @@ def DivideNoErrors(ratio, den):
             ratio.SetBinContent(ibin, ratio.GetBinContent(ibin)/den.GetBinContent(ibin))
 
     return True
+
+def V2TH1(vect):
+    result = ROOT.TH1D("vect", "vect", len(vect)-2, 1, len(vect)-2)
+    for ibin in range(0, result.GetNbinsX()+2):
+        result.SetBinContent(ibin, vect[ibin])
+    return result
 
 def BuildHistogram(axis, name, yaxis):
     if len(axis) == 1:
