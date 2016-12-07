@@ -207,7 +207,7 @@ class DMesonJetUnfoldingEngine:
             truthSpectrumName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
             truthSpectrum = dataTruthList.FindObject(truthSpectrumName)
             if not truthSpectrum:
-                print("Could not find histogrm {0} in list {1} in file {2}". format(truthSpectrumName, dataTruthListName, dataFile.GetName()))
+                print("Could not find histogram {0} in list {1} in file {2}". format(truthSpectrumName, dataTruthListName, dataFile.GetName()))
                 exit(1)
             self.fTruthSpectrum = truthSpectrum.Clone("{0}_TruthSpectrum".format(self.fName))
             self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
@@ -222,7 +222,7 @@ class DMesonJetUnfoldingEngine:
         detectorResponseName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_DetectorResponse".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
         detectorResponse = responseList.FindObject(detectorResponseName)
         if not detectorResponse:
-            print("Could not find histogrm {0} in list {1} in file {2}". format(detectorResponseName, responseListName, responseFile.GetName()))
+            print("Could not find histogram {0} in list {1} in file {2}". format(detectorResponseName, responseListName, responseFile.GetName()))
             exit(1)
         self.fDetectorResponse = detectorResponse.Clone("{0}_DetectorResponse".format(self.fName))
         self.fDetectorResponse.SetTitle("{0} Detector Response".format(self.fName))
@@ -231,21 +231,13 @@ class DMesonJetUnfoldingEngine:
             detTrainTruthName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_Truth".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
             detTrainTruth = responseList.FindObject(detTrainTruthName)
             if not detTrainTruth:
-                print("Could not find histogrm {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, responseFile.GetName()))
+                print("Could not find histogram {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, responseFile.GetName()))
                 exit(1)
             self.fDetectorTrainTruth = detTrainTruth.Clone("{0}_ResponseTruth".format(self.fName))
         else:
             self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_ResponseTruth".format(self.fName), 0, -1)
         self.fDetectorTrainTruth.SetTitle("{0} Response Truth".format(self.fName))
 
-        if use_overflow:
-            # if using overflow bins, need to reset the content of the measured axis overflow bins (not measured)
-            for xbin in range(0,self.fDetectorResponse.GetNbinsX()+2):
-                if self.fDetectorResponse.GetXaxis().GetBinLowEdge(xbin) >= self.fInputSpectrum.GetXaxis().GetBinLowEdge(1) and self.fDetectorResponse.GetXaxis().GetBinUpEdge(xbin) <= self.fInputSpectrum.GetXaxis().GetBinUpEdge(self.fInputSpectrum.GetNbinsX()):
-                    continue
-                for ybin in range(0,self.fDetectorResponse.GetNbinsY()+2):
-                    self.fDetectorResponse.SetBinContent(xbin,ybin,0)
-                    self.fDetectorResponse.SetBinError(xbin,ybin,0)
         return True
 
     def Start(self):
@@ -962,7 +954,15 @@ class DMesonJetUnfoldingEngine:
             print("Generating response for prior {0}".format(prior))
             (detResp, trainTruth), (smallBinDetResp, smallBinTrainTruth) = self.NormalizeAndRebinResponseMatrix(prior)
             detResp.GetZaxis().SetTitle("counts")
-            rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detResp)
+            detRespForRooUnfold = detResp.Clone()
+            if self.fUseOverflow:
+                # if using overflow bins, need to reset the content of the measured axis overflow bins (not measured)
+                for ybin in range(0, detRespForRooUnfold.GetNbinsY()+2):
+                    detRespForRooUnfold.SetBinContent(0,ybin,0)
+                    detRespForRooUnfold.SetBinError(0,ybin,0)
+                    detRespForRooUnfold.SetBinContent(self.fDetectorResponse.GetNbinsX()+1,ybin,0)
+                    detRespForRooUnfold.SetBinError(self.fDetectorResponse.GetNbinsX()+1,ybin,0)
+            rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detRespForRooUnfold)
             rooUnfoldResp.UseOverflow(self.fUseOverflow)
             detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior())
             detRespNorm.GetZaxis().SetTitle("Probability Density")
