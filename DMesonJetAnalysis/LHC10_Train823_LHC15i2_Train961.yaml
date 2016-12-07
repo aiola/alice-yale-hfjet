@@ -8,27 +8,27 @@ efficiency: yes  # apply efficiency correction?
 use_overflow: yes # use overflow bins?
 analysis:
 -
-  name: InvMassFit_PtD_20
+  name: InvMassFit_DPt_20
   active: yes
   jet_type: Charged
   jet_radius: R040
   d_meson: D0
-  spectrum: Jet_Pt_Spectrum_PtD_20_InvMassFit
+  spectrum: JetPtSpectrum_DPt_20_InvMassFit
   d_meson_response: D0
-  spectrum_response: Jet_Pt_Spectrum_PtD_20
+  spectrum_response: JetPtSpectrum_DPt_20
   default_prior: ResponseTruth
   priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
   default_method: Svd
   methods:
     Svd:
       default_reg:
-        ResponseTruth: 4
+        ResponseTruth: 5
         PowerLaw_3: 5
-        PowerLaw_7: 4
+        PowerLaw_7: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_3: 4
+        PowerLaw_3: 3
         PowerLaw_7: 3
       iter_min: 1
       iter_max: 6
@@ -36,55 +36,55 @@ analysis:
     BinByBin:
       default_reg: null
 -
-  name: SideBand_PtD_20
-  active: yes
-  jet_type: Charged
-  jet_radius: R040
-  d_meson: D0
-  spectrum: Jet_Pt_Spectrum_PtD_20_SideBand
-  d_meson_response: D0
-  spectrum_response: Jet_Pt_Spectrum_PtD_20
-  default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
-  default_method: Svd
-  methods:
-    Svd:
-      default_reg:
-        ResponseTruth: 4
-        PowerLaw_3: 5
-        PowerLaw_7: 4
-    Bayes:
-      default_reg:
-        ResponseTruth: 3
-        PowerLaw_3: 4
-        PowerLaw_7: 3
-      iter_min: 1
-      iter_max: 6
-      iter_step: 1
-    BinByBin:
-      default_reg: null
--
-  name: LikeSign_PtD_20
+  name: SideBand_DPt_20
   active: no
   jet_type: Charged
   jet_radius: R040
   d_meson: D0
-  spectrum: Jet_Pt_Spectrum_PtD_20_LikeSign
+  spectrum: JetPtSpectrum_DPt_20_SideBand
   d_meson_response: D0
-  spectrum_response: Jet_Pt_Spectrum_PtD_20
+  spectrum_response: JetPtSpectrum_DPt_20
   default_prior: ResponseTruth
   priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
   default_method: Svd
   methods:
     Svd:
       default_reg:
-        ResponseTruth: 4
+        ResponseTruth: 5
         PowerLaw_3: 5
-        PowerLaw_7: 4
+        PowerLaw_7: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_3: 4
+        PowerLaw_3: 3
+        PowerLaw_7: 3
+      iter_min: 1
+      iter_max: 6
+      iter_step: 1
+    BinByBin:
+      default_reg: null
+-
+  name: LikeSign_DPt_20
+  active: no
+  jet_type: Charged
+  jet_radius: R040
+  d_meson: D0
+  spectrum: JetPtSpectrum_DPt_20_LikeSign
+  d_meson_response: D0
+  spectrum_response: JetPtSpectrum_DPt_20
+  default_prior: ResponseTruth
+  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  default_method: Svd
+  methods:
+    Svd:
+      default_reg:
+        ResponseTruth: 5
+        PowerLaw_3: 5
+        PowerLaw_7: 5
+    Bayes:
+      default_reg:
+        ResponseTruth: 3
+        PowerLaw_3: 3
         PowerLaw_7: 3
       iter_min: 1
       iter_max: 6
