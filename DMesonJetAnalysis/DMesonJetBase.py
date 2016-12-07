@@ -616,6 +616,7 @@ class Spectrum:
         self.fBinSet = binSet
         self.fHistogram = None
         self.fNormHistogram = None
+        self.fNormFDCorrHistogram = None
         self.fUncertainty = None
         self.fMass = None
         self.fMassWidth = None
@@ -703,6 +704,10 @@ class Spectrum:
             rlist.Add(self.fFDHistogram)
         if self.fFDCorrHistogram:
             rlist.Add(self.fFDCorrHistogram)
+        if self.fNormHistogram:
+            rlist.Add(self.fNormHistogram)
+        if self.fNormFDCorrHistogram:
+            rlist.Add(self.fNormFDCorrHistogram)
         if self.fUncertainty:    
             rlist.Add(self.fUncertainty)
         if self.fMass:    
@@ -750,14 +755,14 @@ class Spectrum:
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
         if self.fHistogram:
-            self.GenerateNormalizedSpectrumForHistogram(self.fHistogram, events, weighted)
+            self.fNormHistogram = self.GenerateNormalizedSpectrumForHistogram(self.fHistogram, events, weighted)
         if self.fFDCorrHistogram:
-            self.GenerateNormalizedSpectrumForHistogram(self.fFDCorrHistogram, events, weighted)
+            self.fNormFDCorrHistogram = self.GenerateNormalizedSpectrumForHistogram(self.fFDCorrHistogram, events, weighted)
 
     def GenerateNormalizedSpectrumForHistogram(self, hist, events, weighted):
         hname = "{0}_Normalized".format(hist.GetName())
-        self.fNormHistogram = hist.Clone(hname)
-        self.fNormHistogram.SetTitle(hname)
+        result = hist.Clone(hname)
+        result.SetTitle(hname)
         if len(self.fAxis) == 1:
             if weighted:
                 axisTitle = "#frac{{d#sigma}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
@@ -769,7 +774,7 @@ class Spectrum:
                 axisTitle = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fAxis[0].GetVariableName())
                 if self.fAxis[0].GetVariableUnits():
                     axisTitle += " ({0})^{{-1}}".format(self.fAxis[0].GetVariableUnits())
-            self.fNormHistogram.GetYaxis().SetTitle(axisTitle)
+            result.GetYaxis().SetTitle(axisTitle)
         elif len(self.fAxis) == 2:
             units1 = self.fAxis[0].GetVariableUnits()
             units2 = self.fAxis[1].GetVariableUnits()
@@ -795,12 +800,13 @@ class Spectrum:
                 else:
                     if units1:
                         axisTitle += " ({0})^{{-2}}".format(units1)
-            self.fNormHistogram.GetZaxis().SetTitle(axisTitle)
+            result.GetZaxis().SetTitle(axisTitle)
 
         if not weighted and events > 0:
-            self.fNormHistogram.Scale(1. / events, "width")
+            result.Scale(1. / events, "width")
         else:
-            self.fNormHistogram.Scale(1, "width")
+            result.Scale(1, "width")
+        return result
 
     def BuildHistograms(self):
         if len(self.fAxis) == 1:
