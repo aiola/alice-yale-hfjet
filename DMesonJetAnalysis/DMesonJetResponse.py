@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 #python program to generate a D meson jet response
 
-import ROOT
 import math
-import DMesonJetProjectors
-from DMesonJetBase import *
 import os
+
+import ROOT
+
+import DetectorResponse
+import DMesonJetProjectors
+import Axis
 
 globalList = []
 
@@ -402,11 +405,11 @@ class DMesonJetResponse:
             axis_list = []
             for axis_name,bins in resp["bins"].iteritems():
                 if "bins" in bins:
-                    a = ResponseAxis(Axis(axis_name, bins["bins"], "reco"), Axis(axis_name, bins["bins"], "truth"))
+                    a = DetectorResponse.ResponseAxis(Axis.Axis(axis_name, bins["bins"], "reco"), Axis.Axis(axis_name, bins["bins"], "truth"))
                 else:
-                    a = ResponseAxis(Axis.fromLimits(axis_name, bins["min"], bins["max"], bins["width"], "reco"), Axis.fromLimits(axis_name, bins["min"], bins["max"], bins["width"], "truth"))
+                    a = DetectorResponse.ResponseAxis(Axis.Axis.fromLimits(axis_name, bins["min"], bins["max"], bins["width"], "reco"), Axis.Axis.fromLimits(axis_name, bins["min"], bins["max"], bins["width"], "truth"))
                 if "coarse" in bins:
-                    a.SetCoarseAxis(Axis(axis_name, bins["coarse"], "reco"), Axis(axis_name, bins["coarse"], "truth"))
+                    a.SetCoarseAxis(Axis.Axis(axis_name, bins["coarse"], "reco"), Axis.Axis(axis_name, bins["coarse"], "truth"))
                 if axis_name == "jet_pt":
                     axis_list.insert(0, a)
                 else:
