@@ -18,8 +18,8 @@ analysis:
     active: yes
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         min: 0
@@ -41,8 +41,8 @@ analysis:
     active: yes
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         min: 0
@@ -63,8 +63,8 @@ analysis:
     active: yes
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         min: 0
@@ -86,8 +86,8 @@ analysis:
     active: yes
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_NoJet
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_NoJet
     bins:
       jet_pt:
         min: 0

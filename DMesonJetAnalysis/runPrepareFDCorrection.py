@@ -44,7 +44,7 @@ def PrepareFDhist_dpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Opening the b->D0 response matrix file")
     bResponseFile = OpenResponseFile(input_path, bResponse, False)
     print("Loading the response matrix")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "DPtSpectrum", "_NoJet", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum", "_NoJet", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
     result.append(bEfficiency_dpt)
 
     print("Applying the b->D0 reconstruction efficiency")
@@ -55,7 +55,7 @@ def PrepareFDhist_dpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Opening the c->D0 response matrix file")
     cResponseFile = OpenResponseFile(input_path, cResponse, False)
     print("Loading the response matrix")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "DPtSpectrum", "_NoJet", "c", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum", "_NoJet", "c", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
     result.append(cEfficiency_dpt)
 
     print("Applying the correction for the c->D0 reconstruction efficiency")
@@ -78,7 +78,7 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Opening the b->D0 response matrix file")
     bResponseFile = OpenResponseFile(input_path, bResponse, False)
     print("Loading the response matrix")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "DPtSpectrum", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     result.append(bEfficiency_dpt)
 
     print("Applying the b->D0 reconstruction efficiency")
@@ -89,7 +89,7 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Opening the c->D0 response matrix file")
     cResponseFile = OpenResponseFile(input_path, cResponse, False)
     print("Loading the response matrix")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "DPtSpectrum", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     result.append(cEfficiency_dpt)
 
     print("Applying the correction for the c->D0 reconstruction efficiency")
