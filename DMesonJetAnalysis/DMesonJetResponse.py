@@ -8,6 +8,7 @@ import ROOT
 
 import DetectorResponse
 import DMesonJetProjectors
+import DMesonJetUtils
 import Axis
 
 globalList = []

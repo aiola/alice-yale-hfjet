@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 #python base classes and utilities for D Meson jet analysis
 
-import ROOT
 import array
 import copy
-import DMesonJetProjectors
 import collections
+
+import ROOT
+
+import DMesonJetProjectors
 import DMesonJetFDCorrection
+import DMesonJetCuts
+import Axis
+import Spectrum
+from DMesonJetBase import AnalysisType
 
 class BinMultiSet:
     def __init__(self):
@@ -62,12 +68,12 @@ class BinSet:
         self.fSpectraConfigs = spectra
         self.fSpectra = collections.OrderedDict()
         self.fAxis = axis
-        self.fCuts = DMesonJetCuts(cutList)
+        self.fCuts = DMesonJetCuts.DMesonJetCuts(cutList)
         self.fFitOptions = fitOptions
         self.fWeightEfficiency = weight
         self.fNeedInvMass = need_inv_mass
         if bin_count_axis:
-            self.fBinCountAnalysisAxis = Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0], "", True)
+            self.fBinCountAnalysisAxis = Axis.Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0], "", True)
         else:
             self.fBinCountAnalysisAxis = None
         limits = dict()
@@ -109,7 +115,7 @@ class BinSet:
                 FD = DMesonJetFDCorrection.DMesonJetFDCorrection(s["FD"], inputPath, dmeson, jtype, jradius)
             else:
                 FD = DMesonJetFDCorrection.DMesonJetFDCorrection(None)
-            spectrum = Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight, FD)
+            spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight, FD)
             self.fSpectra[spectrum.fName] = spectrum
         if "MCTruth" in dmeson and not isinstance(self.fWeightEfficiency , DMesonJetProjectors.SimpleWeight):
             self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
