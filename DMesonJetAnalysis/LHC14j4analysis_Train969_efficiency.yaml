@@ -147,7 +147,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign, D0_kSignalOnly]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 22, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -206,6 +206,40 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
+      name: JetPtSpectrum_DPt_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
+      active_mesons: [D0]
+      side_band:
+        skip_bins: [0]
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: JetPtSpectrum_DPt_40
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
+      active_mesons: [D0]
+      side_band:
+        skip_bins: [0,1]
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
       name: JetPtSpectrum_DPt_20
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
@@ -226,23 +260,6 @@ analysis:
         backup_sigma: 0.015
     -
       name: JetPtSpectrum_DPt_30
-      suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
-      type: side_band
-      efficiency:
-        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
-      active_mesons: [D0]
-      skip_bins: [0]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-    -
-      name: JetPtSpectrum_DPt_30
       suffix: LikeSign
       title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
       type: like_sign
@@ -251,31 +268,14 @@ analysis:
         list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
         object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
       active_mesons: [D0]
-      skip_bins: [0]
       like_sign:
+        skip_bins: [0]
         mode: bin_count
         name: 2ProngLikeSign
         min_sigmas: 4
         max_sigmas: 8
         max_signal_sigmas: 2
         max_signal_norm_sigmas: 0
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-    -
-      name: JetPtSpectrum_DPt_40
-      suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
-      type: side_band
-      efficiency:
-        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
-      active_mesons: [D0]
-      skip_bins: [0,1]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
@@ -288,8 +288,8 @@ analysis:
         list_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum
         object_name: D0_Jet_AKTChargedR040_pt_scheme_DPtSpectrum_Efficiency_JetPt_500_3000
       active_mesons: [D0]
-      skip_bins: [0,1]
       like_sign:
+        skip_bins: [0,1]
         mode: bin_count
         name: 2ProngLikeSign
         min_sigmas: 4
@@ -305,7 +305,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign, D0_kSignalOnly]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 12, 16, 22, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 14, 20, 30]
     cuts:
     -
       object: d
