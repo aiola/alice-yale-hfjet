@@ -24,7 +24,7 @@ class Axis:
     @classmethod
     def fromLimits(cls, name, start, stop, step, label = "", charged_jet = True):
         bins = []
-        bins.extend(numpy.linspace(start, stop, (stop-start)/step, True))
+        bins.extend(numpy.linspace(start, stop, (stop-start)/step+1, True))
         return cls(name, bins, label, charged_jet)
 
     def FindBin(self, x):
