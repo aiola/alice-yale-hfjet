@@ -3,6 +3,7 @@
 
 import ROOT
 import DMesonJetUtils
+from DMesonJetBase import AnalysisType
 
 class Spectrum:
     def __init__(self, config, dmeson, jtype, jradius, jtitle, binSet, effWeight, FD):

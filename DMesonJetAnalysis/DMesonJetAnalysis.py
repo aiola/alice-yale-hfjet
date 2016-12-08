@@ -5,12 +5,15 @@ import math
 import array
 import copy
 import collections
+import os
 
 import ROOT
 
 import DMesonJetProjectors
 import DMesonJetUtils
+from DMesonJetBase import AnalysisType
 import BinSet
+import Axis
 
 globalList = []
 
@@ -636,6 +639,10 @@ class DMesonJetAnalysisEngine:
         return signalWindowInvMassHisto, sideBandWindowInvMassHisto 
 
     def GenerateSpectrum1DSideBandMethod(self, s):
+        if s.fSkipBins:
+            print("I will skip the following bins: {0}".format(s.fSkipBins))
+        else:
+            print("I will not skip any bin")
         for ibin,bin in enumerate(s.fBinSet.fBins):
             if s.fSkipBins and ibin in s.fSkipBins:
                 print("Skipping bin {0} as requested".format(bin.GetTitle()))
@@ -974,7 +981,7 @@ class DMesonJetAnalysis:
             axis = []
             for name, binList in binLists["bins"].iteritems():
                 limitSetList.append((name, binList))
-                axis.append(Axis(name, binList, "", True))
+                axis.append(Axis.Axis(name, binList, "", True))
             if "cuts" in binLists:
                 cuts = binLists["cuts"]
             else:
@@ -993,7 +1000,7 @@ class DMesonJetAnalysis:
                 else:
                     fitOptions = "0 WL S"
 
-            binMultiSet.AddBinSet(BinSet(binLists["name"], binLists["title"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, bin_count_analysis, effWeight, fitOptions))
+            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, bin_count_analysis, effWeight, fitOptions))
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
