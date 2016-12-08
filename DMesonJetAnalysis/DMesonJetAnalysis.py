@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 #python program to perform a D meson jet analysis
 
-import ROOT
 import math
-import DMesonJetProjectors
-from DMesonJetBase import *
 import array
 import copy
-import DMesonJetUtils
 import collections
+
+import ROOT
+
+import DMesonJetProjectors
+import DMesonJetUtils
+import BinSet
 
 globalList = []
 
@@ -964,7 +966,7 @@ class DMesonJetAnalysis:
     def StartAnalysis(self, collision, config):
         self.fCollision = collision
         self.fJets = config["jets"]
-        binMultiSet = BinMultiSet()
+        binMultiSet = BinSet.BinMultiSet()
         for binLists in config["binLists"]:
             if len(binLists["active_mesons"]) == 0:
                 continue
