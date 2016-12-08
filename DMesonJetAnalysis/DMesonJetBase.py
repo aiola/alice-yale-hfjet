@@ -878,7 +878,7 @@ class DMesonJetCuts:
         v = getattr(jet, varname)
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -886,7 +886,7 @@ class DMesonJetCuts:
         v = jet.fPt
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -894,7 +894,7 @@ class DMesonJetCuts:
         v = jet.fEta
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -902,7 +902,7 @@ class DMesonJetCuts:
         v = jet.fPhi
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -910,7 +910,7 @@ class DMesonJetCuts:
         v = jet.fZ
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -918,7 +918,7 @@ class DMesonJetCuts:
         v = getattr(dmeson, varname)
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -926,7 +926,7 @@ class DMesonJetCuts:
         v = dmeson.fPt
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -934,7 +934,7 @@ class DMesonJetCuts:
         v = dmeson.fEta
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
@@ -942,7 +942,7 @@ class DMesonJetCuts:
         v = dmeson.fPhi
         if v < min:
             return False
-        if v > max:
+        if v >= max:
             return False
         return True
 
