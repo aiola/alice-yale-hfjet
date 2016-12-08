@@ -133,36 +133,6 @@ class DMesonJetResponseEngine:
             globalList.append(c)
             self.fCanvases.append(c)
 
-    def PlotCrossCheckEnergyScale(self, resp):
-        if resp.fStatistics and resp.fStatistics.fProfileCrossCheck:
-            c = ROOT.TCanvas("{0}_canvas".format(resp.fStatistics.fProfileCrossCheck.GetName()), resp.fStatistics.fProfileCrossCheck.GetTitle())
-            c.cd()
-            c.SetLeftMargin(0.18)
-            c.SetBottomMargin(0.12)
-            c.SetTopMargin(0.08)
-            c.SetRightMargin(0.08)
-            h = resp.fStatistics.fProfileCrossCheck.DrawCopy("")
-            h.GetYaxis().SetRangeUser(-0.1, 0.08)
-            h.GetXaxis().SetTitleFont(43)
-            h.GetXaxis().SetTitleOffset(1.2)
-            h.GetXaxis().SetTitleSize(19)
-            h.GetXaxis().SetLabelFont(43)
-            h.GetXaxis().SetLabelOffset(0.009)
-            h.GetXaxis().SetLabelSize(18)
-            h.GetYaxis().SetTitleFont(43)
-            h.GetYaxis().SetTitleOffset(1.8)
-            h.GetYaxis().SetTitleSize(19)
-            h.GetYaxis().SetLabelFont(43)
-            h.GetYaxis().SetLabelOffset(0.009)
-            h.GetYaxis().SetLabelSize(18)
-            h.SetMarkerStyle(ROOT.kFullCircle)
-            h.SetMarkerSize(0.8)
-            h.SetMarkerColor(ROOT.kBlue+2)
-            h.SetLineColor(ROOT.kBlue+2)
-            globalList.append(h)
-            globalList.append(c)
-            self.fCanvases.append(c)
-
     def PlotEnergyScaleShift(self, resp):
         if resp.fEnergyScaleShift:
             c = ROOT.TCanvas("{0}_canvas".format(resp.fEnergyScaleShift.GetName()), resp.fEnergyScaleShift.GetTitle())
@@ -210,7 +180,6 @@ class DMesonJetResponseEngine:
             globalList.append(c)
             globalList.append(leg)
             self.fCanvases.append(c)
-        self.PlotCrossCheckEnergyScale(resp)
 
     def PlotResponseMatrix(self, resp):
         if len(resp.fAxis) == 1:
