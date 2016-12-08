@@ -29,7 +29,7 @@ class Axis:
 
     def FindBin(self, x):
         for i,(min,max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
-            if x > min and x < max:
+            if x >= min and x < max:
                 return i
         return -1
 
