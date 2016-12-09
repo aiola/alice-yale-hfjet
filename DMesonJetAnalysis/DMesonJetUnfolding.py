@@ -4,6 +4,7 @@
 import math
 import os
 import collections
+import array
 
 import ROOT
 
@@ -29,6 +30,11 @@ class DMesonJetUnfoldingEngine:
         self.fDefaultPrior = config["default_prior"]
         self.fDefaultMethod = config["default_method"]
         self.fName = config["name"]
+        if self.fName == "__self_unfolding__":
+            self.fNumberOfEvents = config["self_unfolding_events"]
+            self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
+            self.fEvents.SetBinContent(1, self.fNumberOfEvents)
+            self.fBins = config["self_unfolding_bins"]
         self.fResponseMatrices = collections.OrderedDict()
         self.fUnfoldedSpectra = collections.OrderedDict()
         self.fUnfoldedSpectraErrors = collections.OrderedDict()
@@ -95,6 +101,38 @@ class DMesonJetUnfoldingEngine:
     def LoadData(self, dataFile, responseFile, eff, use_overflow):
         self.fUseOverflow = use_overflow
         print("Now loading data")
+
+        responseListName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
+        responseList = responseFile.Get(responseListName)
+        if not responseList:
+            print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
+            exit(1)
+        detectorResponseName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_DetectorResponse".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
+        detectorResponse = responseList.FindObject(detectorResponseName)
+        if not detectorResponse:
+            print("Could not find histogram {0} in list {1} in file {2}". format(detectorResponseName, responseListName, responseFile.GetName()))
+            exit(1)
+        self.fDetectorResponse = detectorResponse.Clone("{0}_DetectorResponse".format(self.fName))
+        self.fDetectorResponse.SetTitle("{0} Detector Response".format(self.fName))
+
+        if eff:
+            detTrainTruthName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_Truth".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
+            detTrainTruth = responseList.FindObject(detTrainTruthName)
+            if not detTrainTruth:
+                print("Could not find histogram {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, responseFile.GetName()))
+                exit(1)
+            self.fDetectorTrainTruth = detTrainTruth.Clone("{0}_ResponseTruth".format(self.fName))
+        else:
+            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_ResponseTruth".format(self.fName), 0, -1)
+        self.fDetectorTrainTruth.SetTitle("{0} Response Truth".format(self.fName))
+
+        if self.fName == "__self_unfolding__":
+            self.fInputSpectrum = self.fDetectorResponse.ProjectionX("temp",1,self.fDetectorResponse.GetNbinsY()).Rebin(len(self.fBins)-1, "{0}_InputSpectrum".format(self.fName), array.array('d', self.fBins))
+            self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
+            self.fTruthSpectrum = self.fDetectorTrainTruth.Rebin(len(self.fBins)-1, "{0}_TruthSpectrum".format(self.fName), array.array('d', self.fBins))
+            self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
+            return True
+
         dataMesonList = dataFile.Get(self.fDMeson)
         if not dataMesonList:
             print("Could not find list {0} in file {1}". format(self.fDMeson, dataFile.GetName()))
@@ -144,30 +182,6 @@ class DMesonJetUnfoldingEngine:
             self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
         else:
             self.fTruthSpectrum = None
-
-        responseListName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
-        responseList = responseFile.Get(responseListName)
-        if not responseList:
-            print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
-            exit(1)
-        detectorResponseName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_DetectorResponse".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
-        detectorResponse = responseList.FindObject(detectorResponseName)
-        if not detectorResponse:
-            print("Could not find histogram {0} in list {1} in file {2}". format(detectorResponseName, responseListName, responseFile.GetName()))
-            exit(1)
-        self.fDetectorResponse = detectorResponse.Clone("{0}_DetectorResponse".format(self.fName))
-        self.fDetectorResponse.SetTitle("{0} Detector Response".format(self.fName))
-
-        if eff:
-            detTrainTruthName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_Truth".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
-            detTrainTruth = responseList.FindObject(detTrainTruthName)
-            if not detTrainTruth:
-                print("Could not find histogram {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, responseFile.GetName()))
-                exit(1)
-            self.fDetectorTrainTruth = detTrainTruth.Clone("{0}_ResponseTruth".format(self.fName))
-        else:
-            self.fDetectorTrainTruth = self.fDetectorResponse.ProjectionY("{0}_ResponseTruth".format(self.fName), 0, -1)
-        self.fDetectorTrainTruth.SetTitle("{0} Response Truth".format(self.fName))
 
         return True
 
@@ -897,7 +911,10 @@ class DMesonJetUnfoldingEngine:
             rooUnfoldResp.UseOverflow(self.fUseOverflow)
             detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior())
             detRespNorm.GetZaxis().SetTitle("Probability Density")
-            self.fResponseMatrices[prior] = UnfoldingResponseMatrix.ResponseMatrix("Prior{0}".format(prior), rooUnfoldResp, detResp, trainTruth, smallBinDetResp, smallBinTrainTruth, detRespNorm)
+            respMatrix = UnfoldingResponseMatrix.ResponseMatrix("Prior{0}".format(prior), rooUnfoldResp, detResp, trainTruth, smallBinDetResp, smallBinTrainTruth, detRespNorm)
+            self.fResponseMatrices[prior] = respMatrix
+            if self.fName == "__self_unfolding__" and not self.fInputSpectrum:
+                respMatrix.SelfUnfoldingData(self)
 
     def NormalizeAndRebinResponseMatrix(self, prior): 
         (normResp, priorHist) = self.NormalizeResponseMatrix(prior)
