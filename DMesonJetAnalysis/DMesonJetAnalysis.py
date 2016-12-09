@@ -77,7 +77,7 @@ class DMesonJetAnalysisEngine:
                 pave.SetTextSize(15)
                 pave.AddText(self.fCollision)
                 if s.fJetTitle: pave.AddText(s.fJetTitle)
-                pave.AddText(self.fDMeson)
+                pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
                 pave.Draw()
                 globalList.append(pave)
             globalList.append(obj)        
@@ -189,8 +189,7 @@ class DMesonJetAnalysisEngine:
         pave.SetTextSize(15)
         pave.AddText(self.fCollision)
         if s.fJetTitle: pave.AddText(s.fJetTitle)
-        #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-        pave.AddText(self.fDMeson)
+        pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
         pave.AddText(s.fTitle)
         pave.Draw()
 
@@ -216,8 +215,7 @@ class DMesonJetAnalysisEngine:
         pave.SetTextSize(15)
         pave.AddText(self.fCollision)
         if s.fJetTitle: pave.AddText(s.fJetTitle)
-        #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-        pave.AddText(self.fDMeson)
+        pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
         pave.AddText(s.fTitle)
         pave.Draw()
 
@@ -245,8 +243,7 @@ class DMesonJetAnalysisEngine:
             pave.SetTextSize(15)
             pave.AddText(self.fCollision)
             if s.fJetTitle: pave.AddText(s.fJetTitle)
-            #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-            pave.AddText(self.fDMeson)
+            pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
             pave.AddText(s.fTitle)
             pave.Draw()
             
@@ -280,8 +277,7 @@ class DMesonJetAnalysisEngine:
             pave.SetTextSize(15)
             pave.AddText(self.fCollision)
             if s.fJetTitle: pave.AddText(s.fJetTitle)
-            #pave.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c.")
-            pave.AddText(self.fDMeson)
+            pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
             pave.AddText(s.fTitle)
             pave.Draw()
     
@@ -291,19 +287,66 @@ class DMesonJetAnalysisEngine:
             globalList.append(line)
 
         if s.fLikeSignTotalHistogram:
-            self.PlotBackgroundVsSignalSpectra("{0}_BkgVsSig".format(s.fUnlikeSignTotalHistogram.GetName()), s.fUnlikeSignTotalHistogram, "Unlike Sign", s.fLikeSignTotalHistogram, "Like Sign")
-            for hSig, hBkg in zip(s.fUnlikeSignHistograms, s.fLikeSignHistograms):
-                self.PlotBackgroundVsSignalSpectra("{0}_BkgVsSig".format(hSig.GetName()), hSig, "Unlike Sign", hBkg, "Like Sign")
+            self.PlotBackgroundVsSignalSpectra("{0}_TotalBkgVsSig".format(s.fName), s.fUnlikeSignTotalHistogram, "Unlike Sign", s.fLikeSignTotalHistogram, "Like Sign")
+        if s.fUnlikeSignHistograms and s.fLikeSignHistograms:
+            self.PlotMultiCanvasBkgVsSigSpectra("{0}_BkgVsSig".format(s.fName), s.fUnlikeSignHistograms, "Unlike Sign", s.fLikeSignHistograms, "Like Sign")
 
         if s.fSideBandWindowTotalHistogram:
-            self.PlotBackgroundVsSignalSpectra("{0}_BkgVsSig".format(s.fSignalWindowTotalHistogram.GetName()), s.fSideBandWindowTotalHistogram, "Signal Window", s.fSignalWindowTotalHistogram, "Side Band Window")
-            for hSig, hBkg in zip(s.fSignalHistograms, s.fSideBandHistograms):
-                self.PlotBackgroundVsSignalSpectra("{0}_BkgVsSig".format(hSig.GetName()), hSig, "Signal Window", hBkg, "Side Band Window")
+            self.PlotBackgroundVsSignalSpectra("{0}_TotalBkgVsSig".format(s.fName), s.fSignalWindowTotalHistogram, "Sig. Window", s.fSideBandWindowTotalHistogram, "SB Window")
+        if s.fSignalHistograms and s.fSideBandHistograms:
+            self.PlotMultiCanvasBkgVsSigSpectra("{0}_BkgVsSig".format(s.fName), s.fSignalHistograms, "Sig. Window", s.fSideBandHistograms, "SB Window")
+
+    def PlotMultiCanvasBkgVsSigSpectra(self, cname, sigHistograms, sigTitle, bkgHistograms, bkgTitle):
+        ncanvases = len(sigHistograms)
+        c = DMesonJetUtils.GenerateMultiCanvas(cname, ncanvases)
+        self.fCanvases.append(c)
+        globalList.append(c)
+        for i,(sig, bkg) in enumerate(zip(sigHistograms, bkgHistograms)):
+            pad = c.cd(i+1)
+            pad.SetLeftMargin(0.12)
+            pad.SetRightMargin(0.05)
+            pad.SetTopMargin(0.08)
+            pad.SetBottomMargin(0.13)
+            (hSig, hBkg, hSub) = self.PlotBackgroundVsSignalSpectra(None, sig, None, bkg, None)
+            hSig.GetXaxis().SetTitleFont(43)
+            hSig.GetXaxis().SetTitleOffset(2.3)
+            hSig.GetXaxis().SetTitleSize(19)
+            hSig.GetXaxis().SetLabelFont(43)
+            hSig.GetXaxis().SetLabelOffset(0.009)
+            hSig.GetXaxis().SetLabelSize(18)
+            hSig.GetYaxis().SetTitleFont(43)
+            hSig.GetYaxis().SetTitleOffset(2.3)
+            hSig.GetYaxis().SetTitleSize(19)
+            hSig.GetYaxis().SetLabelFont(43)
+            hSig.GetYaxis().SetLabelOffset(0.009)
+            hSig.GetYaxis().SetLabelSize(18)
+            htitle = ROOT.TPaveText(0.12, 0.99, 0.95, 0.93, "NB NDC")
+            htitle.SetBorderSize(0)
+            htitle.SetFillStyle(0)
+            htitle.SetTextFont(43)
+            htitle.SetTextSize(18)
+            htitle.AddText(sig.GetTitle())
+            htitle.Draw()
+            globalList.append(htitle)
+        c.cd(1)
+        leg = ROOT.TLegend(0.27, 0.72, 0.72, 0.87, "", "NB NDC")
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(43)
+        leg.SetTextSize(16)
+        leg.SetMargin(0.2)
+        leg.AddEntry(hSig, sigTitle, "pe")
+        leg.AddEntry(hBkg, bkgTitle, "pe")
+        leg.AddEntry(hSub, "{0} - {1}".format(sigTitle, bkgTitle), "pe")
+        leg.Draw()
+        globalList.append(leg)
 
     def PlotBackgroundVsSignalSpectra(self, cname, hSigOrig, hTitleSig, hBkgOrig, hTitleBkg):
-        c = ROOT.TCanvas(cname, cname, 700, 700)
-        c.SetTopMargin(0.05)
-        self.fCanvases.append(c)
+        if cname:
+            c = ROOT.TCanvas(cname, cname, 700, 700)
+            c.SetTopMargin(0.05)
+            self.fCanvases.append(c)
+            globalList.append(c)
 
         hSig = hSigOrig.DrawCopy()
         hSig.SetMarkerColor(ROOT.kBlue+2)
@@ -336,22 +379,24 @@ class DMesonJetAnalysisEngine:
         hSub.SetMarkerSize(0.9)
         hSub.SetLineColor(ROOT.kGreen+2)
 
-        leg = ROOT.TLegend(0.12, 0.84, 0.57, 0.93, "", "NB NDC")
-        leg.SetBorderSize(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(43)
-        leg.SetTextSize(20)
-        leg.SetMargin(0.2)
-        leg.AddEntry(hSig, hTitleSig, "pe")
-        leg.AddEntry(hBkg, hTitleBkg, "pe")
-        leg.AddEntry(hSub, "{0} - {1}".format(hTitleSig, hTitleBkg), "pe")
-        leg.Draw()
+        if hTitleSig and hTitleBkg:
+            leg = ROOT.TLegend(0.42, 0.84, 0.87, 0.93, "", "NB NDC")
+            leg.SetBorderSize(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(43)
+            leg.SetTextSize(20)
+            leg.SetMargin(0.2)
+            leg.AddEntry(hSig, hTitleSig, "pe")
+            leg.AddEntry(hBkg, hTitleBkg, "pe")
+            leg.AddEntry(hSub, "{0} - {1}".format(hTitleSig, hTitleBkg), "pe")
+            leg.Draw()
+            globalList.append(leg)
 
-        globalList.append(leg)
-        globalList.append(c)
         globalList.append(hSig)
         globalList.append(hBkg)
         globalList.append(hSub)
+
+        return hSig, hBkg, hSub
 
     def PlotSpectrum2D(self, s):
         c = ROOT.TCanvas("{0}_canvas".format(s.fNormFDCorrHistogram.GetName()), s.fNormFDCorrHistogram.GetName())
@@ -606,7 +651,7 @@ class DMesonJetAnalysisEngine:
             LS_sub_bin.fInvMassHisto.Add(LSbin.fInvMassHisto, -1)
             LS_sub_bin.fMassFitter = None
 
-        self.PlotInvMassPlotsBinSet(s.fLikeSignNormalizedBinSet.fName, self.fBinMultiSets[s.fJetType, s.fJetRadius].fBinSets[binSetName].fBins, s.fLikeSignNormalizedBinSet.fBins, s)
+        self.PlotInvMassPlotsBinSet(s.fLikeSignNormalizedBinSet.fName, s.fBinSet.fBins, s.fLikeSignNormalizedBinSet.fBins, s)
 
         if s.fAnalysisType == AnalysisType.LikeSign:
             s.fHistogram.Add(s.fUnlikeSignTotalHistogram)
@@ -910,21 +955,27 @@ class DMesonJetAnalysisEngine:
 
         return hsb
 
-    def PlotInvMassPlotsBinSet(self, name, bins, LS_bins=None, SB_spectrum=None):
-        cname = "{0}_{1}".format(self.fDMeson, name)
-        c = DMesonJetUtils.GenerateMultiCanvas(cname, len(bins))
+    def PlotInvMassPlotsBinSet(self, name, bins, LS_bins=None, spectrum=None):
+        cname = name
+        nbins = len(bins)
+        if spectrum and spectrum.fSkipBins:
+            nbins -= len(spectrum.fSkipBins)
+        c = DMesonJetUtils.GenerateMultiCanvas(cname, nbins)
         self.fCanvases.append(c)
         globalList.append(c)
+        icanvas = 1
         for i,bin in enumerate(bins):
+            if spectrum and spectrum.fSkipBins and i in spectrum.fSkipBins:
+                continue
             if not bin.fInvMassHisto:
                 continue
-            pad = c.cd(i+1)
+            pad = c.cd(icanvas)
             pad.SetLeftMargin(0.12)
             pad.SetRightMargin(0.05)
             pad.SetTopMargin(0.08)
             pad.SetBottomMargin(0.13)
-            if SB_spectrum:
-                SB = self.PlotInvMassSideBands(bin, SB_spectrum)
+            if spectrum:
+                SB = self.PlotInvMassSideBands(bin, spectrum)
             else:
                 SB = None
             if SB:
@@ -959,6 +1010,7 @@ class DMesonJetAnalysisEngine:
             self.DrawFitResults(bin)
             if LS_bins:
                 self.PlotInvMassLikeSign(LS_bins[i])
+            icanvas += 1
 
 class DMesonJetAnalysis:
     def __init__(self, name):
@@ -1070,12 +1122,12 @@ class DMesonJetAnalysis:
                         h_copy = h.Clone("{0}_copy".format(h.GetName()))
                         if s["title"]:
                             if binList["title"]:
-                                h_copy.SetTitle("{0}, {1}, {2}".format(eng.fDMeson, s["title"], binList["title"]))
+                                h_copy.SetTitle("{0}, {1}".format(s["title"], binList["title"]))
                             else:
-                                h_copy.SetTitle("{0}, {1}".format(eng.fDMeson, s["title"]))
+                                h_copy.SetTitle("{0}".format(s["title"]))
                         else:
                             if binList["title"]:
-                                h_copy.SetTitle("{0}, {1}".format(eng.fDMeson, binList["title"]))
+                                h_copy.SetTitle("{0}".format(binList["title"]))
                             else:
                                 h_copy.SetTitle(eng.fDMeson)
                         globalList.append(h_copy)
