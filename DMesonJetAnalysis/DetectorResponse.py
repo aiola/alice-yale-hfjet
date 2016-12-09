@@ -10,7 +10,6 @@ import ROOT
 import DMesonJetCuts
 import StatisticSet
 import BinSet
-import DMesonJetUtils
 
 class DetectorResponse:
     def __init__(self, name, jetName, axis, cuts, weightEff):
@@ -70,7 +69,7 @@ class DetectorResponse:
     def SetupStatistics(self, axis):
         varName = "({0}-{1}) / {1}".format(axis.fDetectorAxis.GetVariableName(), axis.fTruthAxis.GetVariableName())
         sname = "{0}_DetectorResponse".format(self.fName)
-        self.fStatistics = DMesonJetUtils.StatisticMultiSet(sname, axis.fTruthAxis, varName)
+        self.fStatistics = StatisticSet.StatisticMultiSet(sname, axis.fTruthAxis, varName)
 
     def GenerateResolution(self):
         if not self.fStatistics:
