@@ -22,6 +22,12 @@ class ResponseMatrix:
 
         self.fSmallBinTruth = smallBinTruth.Clone("{0}_SmallBinTruth".format(self.fName))
         self.fSmallBinTruth.SetTitle("{0} Small-Bin Truth".format(self.fName))
+        
+        self.fReconstructedGenLev = self.fResponse.ProjectionY("{0}_ReconstructedGenLev".format(self.fName), 1, self.fResponse.GetXaxis().GetNbins())
+        self.fReconstructedGenLev.SetTitle("{0} Reconstructed Generator Level".format(self.fName))
+
+        self.fReconstructedDetLev = self.fResponse.ProjectionX("{0}_ReconstructedDetLev".format(self.fName), 1, self.fResponse.GetYaxis().GetNbins())
+        self.fReconstructedDetLev.SetTitle("{0} Reconstructed Detector Level".format(self.fName))
 
         self.GenerateEfficiencies()
 
@@ -40,7 +46,7 @@ class ResponseMatrix:
 
     def GenerateEfficiencies(self):
         # total efficiency
-        self.fTotalEfficiency =  self.fResponse.ProjectionY("{0}_TotalEfficiency".format(self.fName), 1, self.fResponse.GetXaxis().GetNbins())
+        self.fTotalEfficiency =  self.fReconstructedGenLev.Clone("{0}_TotalEfficiency".format(self.fName))
         self.fTotalEfficiency.Divide(self.fTruth)
         self.fTotalEfficiency.SetTitle("Total Efficiency")
         self.fTotalEfficiency.GetYaxis().SetTitle("Total Efficiency")
@@ -52,7 +58,7 @@ class ResponseMatrix:
         self.fRecoEfficiency.GetYaxis().SetTitle("Reconstruction Efficiency")
         
         # kinematic efficiency
-        self.fKineEfficiency =  self.fResponse.ProjectionY("{0}_KineEfficiency".format(self.fName), 1, self.fResponse.GetXaxis().GetNbins())
+        self.fKineEfficiency =  self.fReconstructedGenLev.Clone("{0}_KineEfficiency".format(self.fName))
         self.fKineEfficiency.Divide(self.fResponse.ProjectionY("temp", 0, -1))
         self.fKineEfficiency.SetTitle("Kinematic Efficiency")
         self.fKineEfficiency.GetYaxis().SetTitle("Kinematic Efficiency")
@@ -69,4 +75,6 @@ class ResponseMatrix:
         rlist.Add(self.fTotalEfficiency)
         rlist.Add(self.fRecoEfficiency)
         rlist.Add(self.fKineEfficiency)
+        rlist.Add(self.fReconstructedGenLev)
+        rlist.Add(self.fReconstructedDetLev)
         return rlist
