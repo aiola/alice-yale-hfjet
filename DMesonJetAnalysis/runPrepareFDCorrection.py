@@ -100,7 +100,7 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Opening the b->D0 response matrix file (w/ efficiency)")
     bResponseFile_efficiency = OpenResponseFile(input_path, bResponse, True)
 
-    for ptd in range(2,3):
+    for ptd in range(2,5):
         print("Loading the response matrix for jet pt resolution correction (w/o efficiency) for pt > {0} GeV/c".format(ptd))
         bDetectorResponse_jetpt, temp = LoadResponse(bResponseFile, "JetPtSpectrum_DPt_{0}".format(ptd*10), "", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
         result.append(bDetectorResponse_jetpt)

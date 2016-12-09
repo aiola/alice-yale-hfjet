@@ -33,6 +33,46 @@ analysis:
       variable: fPt
       min: 2.0
   -
+    name: JetPtSpectrum_DPt_30
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+  -
+    name: JetPtSpectrum_DPt_40
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt:
+        min: 0
+        max: 50
+        width: 1
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 4.0
+  -
     name: JetPtEtaSpectrum_DPt_20
     active: yes
     efficiency: no
