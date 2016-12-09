@@ -155,7 +155,13 @@ class Spectrum:
             self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
             if not isWeighted:
                 self.fFDHistogram.Scale(events / crossSection * branchingRatio)
+            print("Trying to add histogram {0} (nbins={1}) with {2} (nbins={3})".format(self.fFDCorrHistogram.GetName(), self.fFDCorrHistogram.GetNbinsX(), self.fFDHistogram.GetName(), self.fFDHistogram.GetNbinsX()))
+            #for ibin in range(0,  self.fFDCorrHistogram.GetNbinsX()+2):
+            #print("Bin = [{0:.2f}, {1:.2f}] vs. [{2:.2f}, {3:.2f}]".format(self.fFDCorrHistogram.GetXaxis().GetBinLowEdge(ibin), self.fFDCorrHistogram.GetXaxis().GetBinUpEdge(ibin),
+            #                                                                   self.fFDHistogram.GetXaxis().GetBinLowEdge(ibin), self.fFDHistogram.GetXaxis().GetBinUpEdge(ibin)))    
             self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
+            print("Histograms added")
+            
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
         if self.fHistogram:

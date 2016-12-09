@@ -35,7 +35,7 @@ def PrepareFDhist_dpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Preparing D pt FD histograms")
     result = []
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 12, 16, 22, 30]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
 
     print("Rebinning the FD original histogram")
     FDhistogram_orig = FDhistogram_old.Rebin(len(dptbins)-1, FDhistogram_old.GetName(), array.array('d', dptbins))
