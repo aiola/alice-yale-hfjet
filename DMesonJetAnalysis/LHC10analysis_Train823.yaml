@@ -75,6 +75,13 @@ analysis:
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
+      FD:
+        train: FastSim
+        gen: powheg
+        proc: beauty
+        ts: 1478869008
+        subdir: stage_1/output
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
   -
     name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}"
@@ -100,6 +107,13 @@ analysis:
       title: "Inv.Mass Fit"
       type: inv_mass_fit
       active_mesons: [D0]
+      FD:
+        train: FastSim
+        gen: powheg
+        proc: beauty
+        ts: 1478869008
+        subdir: stage_1/output
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_40_detector
   -
     name: DPtBins_JetPt_5_30
     title: ""
@@ -153,6 +167,13 @@ analysis:
       title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
+      FD:
+        train: FastSim
+        gen: powheg
+        proc: beauty
+        ts: 1478869008
+        subdir: stage_1/output
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
       side_band:
         skip_bins: [0]
         min_sigmas: 4
@@ -166,6 +187,13 @@ analysis:
       title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
+      FD:
+        train: FastSim
+        gen: powheg
+        proc: beauty
+        ts: 1478869008
+        subdir: stage_1/output
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_40_detector
       side_band:
         skip_bins: [0,1]
         min_sigmas: 4
@@ -201,6 +229,13 @@ analysis:
       title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
+      FD:
+        train: FastSim
+        gen: powheg
+        proc: beauty
+        ts: 1478869008
+        subdir: stage_1/output
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
       like_sign:
         skip_bins: [0]
         mode: bin_count
@@ -217,6 +252,13 @@ analysis:
       title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
+      FD:
+        train: FastSim
+        gen: powheg
+        proc: beauty
+        ts: 1478869008
+        subdir: stage_1/output
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_40_detector
       like_sign:
         skip_bins: [0,1]
         mode: bin_count
