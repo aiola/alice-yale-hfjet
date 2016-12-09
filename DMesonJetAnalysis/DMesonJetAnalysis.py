@@ -51,13 +51,13 @@ class DMesonJetAnalysisEngine:
         for s in spectra:
             if not s.fCompare:
                 continue
-            if not s.fNormHistogram:
+            if not s.fNormFDCorrHistogram:
                 continue
             if len(s.fAxis) != 1:
                 continue
             if axisName != s.fAxis[0].fName:
                 continue
-            h = s.fNormHistogram.Clone("{0}_copy".format(s.fNormHistogram.GetName()))
+            h = s.fNormFDCorrHistogram.Clone("{0}_copy".format(s.fNormFDCorrHistogram.GetName()))
             if s.fTitle:
                 h.SetTitle(s.fTitle)
             globalList.append(h)
@@ -171,11 +171,11 @@ class DMesonJetAnalysisEngine:
 
     def PlotSpectrum1D(self, s):
         # Spectrum
-        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
+        c = ROOT.TCanvas("{0}_canvas".format(s.fNormFDCorrHistogram.GetName()), s.fNormFDCorrHistogram.GetName())
         c.SetLogy()
         self.fCanvases.append(c)
         c.cd()
-        h = s.fNormHistogram.DrawCopy()
+        h = s.fNormFDCorrHistogram.DrawCopy()
 
         h.SetMarkerColor(ROOT.kBlue+2)
         h.SetMarkerStyle(ROOT.kFullCircle)
@@ -354,12 +354,12 @@ class DMesonJetAnalysisEngine:
         globalList.append(hSub)
 
     def PlotSpectrum2D(self, s):
-        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
+        c = ROOT.TCanvas("{0}_canvas".format(s.fNormFDCorrHistogram.GetName()), s.fNormFDCorrHistogram.GetName())
         c.SetRightMargin(0.18)
         c.SetLogz()
         self.fCanvases.append(c)
         c.cd()
-        h = s.fNormHistogram.DrawCopy("colz")
+        h = s.fNormFDCorrHistogram.DrawCopy("colz")
         h.GetZaxis().SetTitleOffset(1.4)
 
         globalList.append(c)
@@ -1062,7 +1062,7 @@ class DMesonJetAnalysis:
                             suffix = None 
                         sname = '_'.join(obj for obj in [eng.fDMeson, jetDef["type"], jetDef["radius"], s["name"], suffix] if obj)
                         binSet = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]]
-                        h = binSet.fSpectra[sname].fHistogram
+                        h = binSet.fSpectra[sname].fFDCorrHistogram
                         if not h:
                             continue
                         if "MCTruth" in eng.fDMeson:
