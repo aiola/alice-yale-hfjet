@@ -27,8 +27,8 @@ analysis:
     title: "Full Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: Jet_Z_Bins
-    title: "#it{p}_{T,jet} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins
+    title: "#it{p}_{T,jet} > 0 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -42,13 +42,13 @@ analysis:
       max: 0.5
     spectra:
     -
-      name: Jet_Z_Spectrum
+      name: JetZSpectrum
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Z_Bins_PtJet_0_5
-    title: "0 < #it{p}_{T,jet} < 5 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins_JetPt_0_5
+    title: "0 < #it{p}_{T,jet} < 5 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -67,13 +67,13 @@ analysis:
       max: 5
     spectra:
     -
-      name: Jet_Z_Spectrum_PtJet_0_5
+      name: JetZSpectrum_JetPt_0_5
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Z_Bins_PtJet_5_10
-    title: "5 < #it{p}_{T,jet} < 10 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins_JetPt_5_10
+    title: "5 < #it{p}_{T,jet} < 10 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -92,13 +92,13 @@ analysis:
       max: 10
     spectra:
     -
-      name: Jet_Z_Spectrum_PtJet_5_10
+      name: JetZSpectrum_JetPt_5_10
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Z_Bins_PtJet_10_15
-    title: "10 < #it{p}_{T,jet} < 15 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins_JetPt_10_15
+    title: "10 < #it{p}_{T,jet} < 15 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -117,13 +117,13 @@ analysis:
       max: 15
     spectra:
     -
-      name: Jet_Z_Spectrum_PtJet_10_15
+      name: JetZSpectrum_JetPt_10_15
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Z_Bins_PtJet_15_20
-    title: "15 < #it{p}_{T,jet} < 20 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins_JetPt_15_20
+    title: "15 < #it{p}_{T,jet} < 20 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -142,13 +142,13 @@ analysis:
       max: 20
     spectra:
     -
-      name: Jet_Z_Spectrum_PtJet_15_20
+      name: JetZSpectrum_JetPt_15_20
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Z_Bins_PtJet_20_25
-    title: "20 < #it{p}_{T,jet} < 25 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins_JetPt_20_25
+    title: "20 < #it{p}_{T,jet} < 25 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -167,13 +167,13 @@ analysis:
       max: 25
     spectra:
     -
-      name: Jet_Z_Spectrum_PtJet_20_25
+      name: JetZSpectrum_JetPt_20_25
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Z_Bins_PtJet_25
-    title: "#it{p}_{T,jet} > 25 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetZBins_JetPt_25
+    title: "#it{p}_{T,jet} > 25 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -191,13 +191,13 @@ analysis:
       min: 25
     spectra:
     -
-      name: Jet_Z_Spectrum_PtJet_25
+      name: JetZSpectrum_JetPt_25
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Pt_Bins_PtD_0
-    title: "#it{p}_{T,D} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetPtBins_DPt_0
+    title: "#it{p}_{T,D} > 0 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -211,13 +211,13 @@ analysis:
       max: 0.5
     spectra:
     -
-      name: Jet_Pt_Spectrum_PtD_0
+      name: JetPtSpectrum_DPt_0
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Pt_Bins_PtD_2
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetPtBins_DPt_2
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -235,12 +235,12 @@ analysis:
       min: 2.0
     spectra:
     -
-      name: Jet_Pt_Spectrum_PtD_2
+      name: JetPtSpectrum_DPt_2
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: D_Pt_Bins
+    name: DPtBins
     title: "|#eta_{D}| < 0.5 (no jet requirement)"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
@@ -255,14 +255,14 @@ analysis:
       max: 0.5
     spectra:
     -
-      name: D_Pt_Spectrum
+      name: DPtSpectrum
       title: ""
       compare: no
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: D_Pt_Bins_JetPt_0
-    title: "#it{p}_{T,jet} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: DPtBins_JetPt_0
+    title: "#it{p}_{T,jet} > 0 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -280,13 +280,13 @@ analysis:
       min: 0.0
     spectra:
     -
-      name: D_Pt_Spectrum_JetPt_0
+      name: DPtSpectrum_JetPt_0
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: D_Pt_Bins_JetPt_2
-    title: "#it{p}_{T,jet} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: DPtBins_JetPt_2
+    title: "#it{p}_{T,jet} > 2 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -304,13 +304,13 @@ analysis:
       min: 2.0
     spectra:
     -
-      name: D_Pt_Spectrum_JetPt_2
+      name: DPtSpectrum_JetPt_2
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: D_Pt_Bins_JetPt_5
-    title: "#it{p}_{T,jet} > 5 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: DPtBins_JetPt_5
+    title: "#it{p}_{T,jet} > 5 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -328,13 +328,13 @@ analysis:
       min: 5.0
     spectra:
     -
-      name: D_Pt_Spectrum_JetPt_5
+      name: DPtSpectrum_JetPt_5
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: D_Pt_Bins_JetPt_8
-    title: "#it{p}_{T,jet} > 8 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: DPtBins_JetPt_8
+    title: "#it{p}_{T,jet} > 8 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -352,13 +352,13 @@ analysis:
       min: 8.0
     spectra:
     -
-      name: D_Pt_Spectrum_JetPt_8
+      name: DPtSpectrum_JetPt_8
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: D_Pt_Bins_JetPt_15
-    title: "#it{p}_{T,jet} > 15 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: DPtBins_JetPt_15
+    title: "#it{p}_{T,jet} > 15 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -376,13 +376,13 @@ analysis:
       min: 15.0
     spectra:
     -
-      name: D_Pt_Spectrum_JetPt_15
+      name: DPtSpectrum_JetPt_15
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: Jet_Pt_D_Pt_Bins
-    title: "#it{p}_{T,D} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    name: JetPtDPtBins
+    title: "#it{p}_{T,D} > 0 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -397,28 +397,7 @@ analysis:
       max: 0.5
     spectra:
     -
-      name: Jet_Pt_D_Pt_Spectrum
-      title: ""
-      type: truth
-      active_mesons: [D0_MCTruth]
-  -
-    name: Jet_Pt_D_Pt_Bins_Coarse
-    title: "#it{p}_{T,D} > 0 GeV/#it{c}, |#eta_{jet}| < 0.5"
-    active_mesons: [D0_MCTruth]
-    need_inv_mass: []
-    efficiency: no
-    bins:
-      d_pt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 24]
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    spectra:
-    -
-      name: Jet_Pt_D_Pt_Spectrum_Coarse
+      name: JetPtDPtSpectrum
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]

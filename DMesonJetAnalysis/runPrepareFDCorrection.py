@@ -221,14 +221,14 @@ def LoadFDHistogram(file_name):
         print("File {0} open".format(file_name))
     dlist = file.Get("D0_MCTruth")
     jlist = dlist.FindObject("Charged_R040")
-    slist = jlist.FindObject("D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum")
-    jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum")
+    slist = jlist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
+    jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
     if not jetpt_hist:
         print("Could not find FD histogram (jet pt)!")
         slist.ls()
         exit(1)
-    slist = dlist.FindObject("D0_MCTruth_D_Pt_Spectrum")
-    dpt_hist = slist.FindObject("D0_MCTruth_D_Pt_Spectrum")
+    slist = dlist.FindObject("D0_MCTruth_DPtSpectrum")
+    dpt_hist = slist.FindObject("D0_MCTruth_DPtSpectrum")
     if not dpt_hist:
         print("Could not find FD histogram (d pt)!")
         slist.ls()
