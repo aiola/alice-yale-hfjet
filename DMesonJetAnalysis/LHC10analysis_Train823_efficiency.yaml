@@ -8,7 +8,7 @@ collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   trigger: ["AnyINT"]
-  d_meson: [D0, 2ProngLikeSign]
+  d_meson: [D0] #, 2ProngLikeSign]
   n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015
@@ -21,8 +21,8 @@ analysis:
   -
     name: JetPtBins_DPt_20
     title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
-    active_mesons: [D0, 2ProngLikeSign]
-    need_inv_mass: [D0, 2ProngLikeSign]
+    active_mesons: [D0]
+    need_inv_mass: [D0]
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
@@ -56,8 +56,8 @@ analysis:
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
-    active_mesons: [D0, 2ProngLikeSign]
-    need_inv_mass: [D0, 2ProngLikeSign]
+    active_mesons: [D0]
+    need_inv_mass: [D0]
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
@@ -84,8 +84,8 @@ analysis:
   -
     name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
-    active_mesons: [D0, 2ProngLikeSign]
-    need_inv_mass: [D0, 2ProngLikeSign]
+    active_mesons: [D0]
+    need_inv_mass: [D0]
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
@@ -207,7 +207,7 @@ analysis:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
         object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
-      active_mesons: [D0]
+      active_mesons: [] #[D0]
       FD:
         train: FastSim
         gen: powheg
@@ -233,7 +233,7 @@ analysis:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
         object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
-      active_mesons: [D0]
+      active_mesons: [] #[D0]
       like_sign:
         skip_bins: [0]
         mode: bin_count
@@ -253,7 +253,7 @@ analysis:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
         object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
-      active_mesons: [D0]
+      active_mesons: [] #[D0]
       like_sign:
         skip_bins: [0,1]
         mode: bin_count
@@ -267,8 +267,8 @@ analysis:
   -
     name: DPtBins
     title: ""
-    active_mesons: [D0, 2ProngLikeSign]
-    need_inv_mass: [D0, 2ProngLikeSign]
+    active_mesons: [D0]
+    need_inv_mass: [D0]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 14, 20, 30]
