@@ -10,6 +10,8 @@ import ROOT
 import DMesonJetUtils
 import UnfoldingResponseMatrix
 
+globalList = []
+
 class DMesonJetUnfoldingEngine:
     def __init__(self, config):
         self.fDMeson = config["d_meson"]
@@ -801,21 +803,21 @@ class DMesonJetUnfoldingEngine:
                 self.fCovarianceMatrices["Bayes", reg, prior] = cov
 
                 #errors
-                unfoldingErr = ROOT.TH1D(unfold.ErecoV(ROOT.RooUnfold.kErrors))
+                unfoldingErr = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kErrors))
                 unfoldingErr.SetName("{0}_UnfoldErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))
                 unfoldingErr.SetTitle("{0} Unfolding Errors {1} Reg={2} Prior={3}".format(self.fName, "Bayes", reg, prior))
                 unfoldingErr.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
                 unfoldingErr.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
                 unfoldingErr.GetYaxis().SetTitle("relative statistical uncertainty")
                 DMesonJetUtils.DivideNoErrors(unfoldingErr, unfolded)
-                diagCov = ROOT.TH1D(unfold.ErecoV(ROOT.RooUnfold.kCovariance))
+                diagCov = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovariance))
                 diagCov.SetName("{0}_DiagCov_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))
                 diagCov.SetTitle("{0} Unfolding Errors (covariance) {1} Reg={2} Prior={3}".format(self.fName, "Bayes", reg, prior))
                 diagCov.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
                 diagCov.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
                 diagCov.GetYaxis().SetTitle("relative statistical uncertainty")
                 DMesonJetUtils.DivideNoErrors(diagCov, unfolded)
-                errToy = ROOT.TH1D(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
+                errToy = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
                 errToy.SetName("{0}_MCToyErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))        
                 errToy.SetTitle("{0} Unfolding Errors (MC-toy) {1} Reg={2} Prior={3}".format(self.fName, "Bayes", reg, prior))
                 errToy.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
@@ -855,21 +857,21 @@ class DMesonJetUnfoldingEngine:
             self.fCovarianceMatrices["BinByBin", None, prior] = cov
 
             #errors
-            unfoldingErr = ROOT.TH1D(unfold.ErecoV(ROOT.RooUnfold.kErrors))
+            unfoldingErr = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kErrors))
             unfoldingErr.SetName("{0}_UnfoldErr_{1}_Prior{2}".format(self.fName, "BinByBin", prior))
             unfoldingErr.SetTitle("{0} Unfolding Errors {1} Prior={2}".format(self.fName, "BinByBin", prior))
             unfoldingErr.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
             unfoldingErr.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
             unfoldingErr.GetYaxis().SetTitle("relative statistical uncertainty")
             DMesonJetUtils.DivideNoErrors(unfoldingErr, unfolded)
-            diagCov = ROOT.TH1D(unfold.ErecoV(ROOT.RooUnfold.kCovariance))
+            diagCov = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovariance))
             diagCov.SetName("{0}_DiagCov_{1}_Prior{2}".format(self.fName, "BinByBin", prior))
             diagCov.SetTitle("{0} Unfolding Errors (covariance) {1} Prior={2}".format(self.fName, "BinByBin", prior))
             diagCov.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
             diagCov.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
             diagCov.GetYaxis().SetTitle("relative statistical uncertainty")
             DMesonJetUtils.DivideNoErrors(diagCov, unfolded)
-            errToy = ROOT.TH1D(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
+            errToy = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
             errToy.SetName("{0}_MCToyErr_{1}_Prior{2}".format(self.fName, "BinByBin", prior))        
             errToy.SetTitle("{0} Unfolding Errors (MC-toy) {1} Prior={2}".format(self.fName, "BinByBin", prior))
             errToy.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
