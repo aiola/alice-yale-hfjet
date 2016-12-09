@@ -20,7 +20,7 @@ analysis:
   binLists:
   -
     name: JetPtBins_DPt_20
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0]
     need_inv_mass: [D0]
     efficiency: no
@@ -52,7 +52,7 @@ analysis:
         spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
   -
     name: JetPtBins_DPt_30
-    title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0]
     need_inv_mass: [D0]
     efficiency: no
@@ -77,7 +77,7 @@ analysis:
       active_mesons: [D0]
   -
     name: JetPtBins_DPt_40
-    title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    title: "#it{p}_{T,D} > 4 GeV/#it{c}"
     active_mesons: [D0]
     need_inv_mass: [D0]
     efficiency: no
@@ -125,13 +125,13 @@ analysis:
     -
       name: DPtSpectrum_JetPt_5_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
       type: inv_mass_fit
       active_mesons: [D0]
     -
       name: JetPtSpectrum_DPt_20
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       FD:
@@ -150,7 +150,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_30
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       side_band:
@@ -163,7 +163,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_40
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       side_band:
@@ -176,7 +176,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_20
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       FD:
@@ -198,7 +198,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_30
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       like_sign:
@@ -214,7 +214,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_40
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       like_sign:
