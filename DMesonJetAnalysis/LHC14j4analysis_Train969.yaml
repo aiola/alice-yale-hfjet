@@ -21,7 +21,7 @@ analysis:
   binLists:
   -
     name: JetPtBins_DPt_20
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0, D0_kSignalOnly, D0_MCTruth]
     need_inv_mass: [D0, D0_kSignalOnly]
     efficiency: no
@@ -41,13 +41,13 @@ analysis:
     -
       name: JetPtSpectrum_DPt_20
       suffix: Truth
-      title: ""
+      title: "MC Truth (gen)"
       type: truth
       active_mesons: [D0_MCTruth]
     -
       name: JetPtSpectrum_DPt_20
       suffix: SignalOnly
-      title: ""
+      title: "MC Truth (det)"
       type: truth
       active_mesons: [D0_kSignalOnly]
     -
@@ -58,7 +58,7 @@ analysis:
       active_mesons: [D0]
   -
     name: JetPtBins_DPt_30
-    title: "#it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0, D0_kSignalOnly, D0_MCTruth]
     need_inv_mass: [D0, D0_kSignalOnly]
     efficiency: no
@@ -78,13 +78,13 @@ analysis:
     -
       name: JetPtSpectrum_DPt_30
       suffix: Truth
-      title: ""
+      title: "MC Truth (gen)"
       type: truth
       active_mesons: [D0_MCTruth]
     -
       name: JetPtSpectrum_DPt_30
       suffix: SignalOnly
-      title: ""
+      title: "MC Truth (det)"
       type: truth
       active_mesons: [D0_kSignalOnly]
     -
@@ -95,7 +95,7 @@ analysis:
       active_mesons: [D0]
   -
     name: JetPtBins_DPt_40
-    title: "#it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+    title: "#it{p}_{T,D} > 4 GeV/#it{c}"
     active_mesons: [D0, D0_kSignalOnly, D0_MCTruth]
     need_inv_mass: [D0, D0_kSignalOnly]
     efficiency: no
@@ -115,13 +115,13 @@ analysis:
     -
       name: JetPtSpectrum_DPt_40
       suffix: Truth
-      title: ""
+      title: "MC Truth (gen)"
       type: truth
       active_mesons: [D0_MCTruth]
     -
       name: JetPtSpectrum_DPt_40
       suffix: SignalOnly
-      title: ""
+      title: "MC Truth (det)"
       type: truth
       active_mesons: [D0_kSignalOnly]
     -
@@ -155,25 +155,25 @@ analysis:
     -
       name: DPtSpectrum_JetPt_5_30
       suffix: Truth
-      title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "MC Truth (gen), 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
       type: truth
       active_mesons: [D0_MCTruth]
     -
       name: DPtSpectrum_JetPt_5_30
       suffix: SignalOnly
-      title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "MC Truth (det), 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
       type: truth
       active_mesons: [D0_kSignalOnly]
     -
       name: DPtSpectrum_JetPt_5_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
       type: inv_mass_fit
       active_mesons: [D0]
     -
       name: JetPtSpectrum_DPt_20
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       side_band:
@@ -185,7 +185,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_30
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       side_band:
@@ -198,7 +198,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_40
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       side_band:
@@ -211,7 +211,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_20
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       like_sign:
@@ -226,7 +226,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_30
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       like_sign:
@@ -242,7 +242,7 @@ analysis:
     -
       name: JetPtSpectrum_DPt_40
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}, |#eta_{jet}| < 0.5"
+      title: "LS method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       like_sign:
@@ -273,13 +273,13 @@ analysis:
     -
       name: DPtSpectrum
       suffix: Truth
-      title: "|#eta_{D}| < 0.5"
+      title: "MC Truth (gen), |#eta_{D}| < 0.5"
       type: truth
       active_mesons: [D0_MCTruth]
     -
       name: DPtSpectrum
       suffix: SignalOnly
-      title: "|#eta_{D}| < 0.5"
+      title: "MC Truth (det), |#eta_{D}| < 0.5"
       type: truth
       active_mesons: [D0_kSignalOnly]
     -
