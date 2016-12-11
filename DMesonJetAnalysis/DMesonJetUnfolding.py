@@ -1052,7 +1052,7 @@ class DMesonJetUnfoldingEngine:
     def Normalize2D(self, hist, norm):
         resp = hist.Clone("myresp")
         for ybin in range(0, resp.GetYaxis().GetNbins()+2):
-            inty = resp.Integral(0, resp.GetXaxis().GetNbins(), ybin, ybin)
+            inty = resp.Integral(0, resp.GetXaxis().GetNbins()+1, ybin, ybin)
             if inty == 0:
                 continue
             scaling = norm.GetBinContent(ybin)/inty
