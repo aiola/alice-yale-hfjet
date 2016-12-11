@@ -99,7 +99,7 @@ def CompareObjects(baseline, inputObjects):
             for name,file in inputObjects.iteritems():
                 obj = file.Get(root_key.GetName())
                 if not obj:
-                    print("{0} not found for analysis {1}".format())
+                    print("{0} not found for analysis {1}".format(baselineObj.GetName(), name))
                     continue
                 objects[name] = obj
             mylist[root_key.GetName()] = CompareObjects(baselineObj, objects)
