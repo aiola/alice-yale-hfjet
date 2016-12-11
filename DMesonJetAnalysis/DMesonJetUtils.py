@@ -46,9 +46,9 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         markers = styles["markers"]
         lines = styles["lines"]        
     else:
-        colors = [ROOT.kBlack, ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2]
-        markers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar]
-        lines = [1, 2, 9, 5, 7, 10, 4]
+        colors = [ROOT.kBlack, ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kAzure+2, ROOT.kMagenta+2, ROOT.kCyan+2, ROOT.kPink+1, ROOT.kTeal+2]
+        markers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
+        lines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
 
     if doSpectra:
         if not c:
@@ -250,3 +250,9 @@ def BuildHistogram(axis, name, yaxis):
         hist.GetZaxis().SetTitle(axis[2].GetTitle())
         hist.Sumw2()
     return hist
+
+def CompareAxis(axis1, axis2):
+    if axis1.GetNbins() != axis2.GetNbins(): return False
+    for ibin in range(0,axis1.GetNbins()+2):
+        if axis1.GetLowEdge(ibin) != axis2.GetLowEdge(ibin): return False
+    return True 
