@@ -55,14 +55,14 @@ class DetectorResponse:
             self.fResponseMatrixUncertainty.GetZaxis().SetTitle("relative statistical uncertainty")
         self.fTruth = self.GenerateTruth(self.fAxis)
         self.fMeasured = self.GenerateMeasured(self.fAxis)
-        self.fReconstructedTruth = self.GenerateTruth(self.fAxis, "RecontructedTruth")
+        self.fReconstructedTruth = self.GenerateTruth(self.fAxis, "ReconstructedTruth")
         if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
             self.SetupStatistics(self.fAxis[0].fCoarseResponseAxis)
         if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
             self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins)+1)]
             self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins)+1)]
             self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins)+1)]
-            self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "RecontructedTruth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins)+1)]
+            self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "ReconstructedTruth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins)+1)]
             self.fEfficiency1D = []
             self.fEfficiency1DRatios = []
 
