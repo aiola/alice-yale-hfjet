@@ -7,6 +7,7 @@ import ROOT
 import array
 import math
 import DMesonJetUnfolding
+import DMesonJetUtils
 
 def main(ts, bResponse, cResponse):
     ROOT.TH1.AddDirectory(False)
@@ -85,7 +86,7 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     cResponseFile_efficiency = OpenResponseFile(input_path, cResponse, True)
 
     print("Rebinning the FD original histogram")
-    FDhistogram_orig = Rebin2D(FDhistogram_old, FDhistogram_old.GetName(), len(jetptbins)-1, array.array('d', jetptbins), FDhistogram_old.GetNbinsY(), FDhistogram_old.GetYaxis().GetXbins().GetArray())
+    FDhistogram_orig = DMesonJetUtils.Rebin2D_fromBins(FDhistogram_old, FDhistogram_old.GetName(), len(jetptbins)-1, array.array('d', jetptbins), FDhistogram_old.GetNbinsY(), FDhistogram_old.GetYaxis().GetXbins().GetArray())
     result.append(FDhistogram_orig)
 
     print("Loading the response matrix")
@@ -148,6 +149,11 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
         FDhistogram_efficiency_jetpt_unfolded = GetUnfoldedSpectrum(FDhistogram_efficiency_jetpt_detector, cResponseFile_efficiency, FDhistogram_fineBins_efficiency_jetpt, spectrumResponseName)
         result.append(FDhistogram_efficiency_jetpt_unfolded)
 
+        print("Unfolding using the b response matrix")
+        FDhistogram_efficiency_jetpt_unfolded_b = GetUnfoldedSpectrum(FDhistogram_efficiency_jetpt_detector, bResponseFile_efficiency, FDhistogram_fineBins_efficiency_jetpt, spectrumResponseName)
+        FDhistogram_efficiency_jetpt_unfolded_b.SetName("{0}_b".format(FDhistogram_efficiency_jetpt_unfolded_b.GetName()))
+        result.append(FDhistogram_efficiency_jetpt_unfolded_b)
+
     return result
 
 def GenerateUnfoldingEngine(name, responseFile, prior, spectrumResponseName):
@@ -190,7 +196,7 @@ def GetUnfoldedSpectrum(histogram, responseFile, prior, spectrumResponseName):
     unf.Start()
     default_reg = unf.GetDefaultRegularization(unf.fDefaultMethod, unf.fDefaultPrior)
     default_unfolded = unf.fUnfoldedSpectra[unf.fDefaultMethod, default_reg, unf.fDefaultPrior]
-    default_unfolded.SetName(default_unfolded.GetName().replace("_detector", "_unfolded"))
+    default_unfolded.SetName(histogram.GetName().replace("_detector", "_unfolded"))
     return default_unfolded
 
 def ApplyEfficiency(hist, efficiency, reverse):
@@ -258,24 +264,10 @@ def LoadResponse(responseFile, spectrumName, suffix_in, suffix_out, detAxisNbins
         print("Could not get histogram {0}".format(respName))
         exit(1)
     resp.SetName("{0}_{1}".format(respName, suffix_out))
-    resp_coarse = Rebin2D(resp, "{0}_coarse_{1}".format(respName, suffix_out), detAxisNbins, detAxisBin, detAxisNbins, detAxisBin)
+    resp_coarse = DMesonJetUtils.Rebin2D_fromBins(resp, "{0}_coarse_{1}".format(respName, suffix_out), detAxisNbins, detAxisBin, detAxisNbins, detAxisBin)
     eff_coarse = resp_coarse.ProjectionY(truth_coarse.GetName().replace("Truth", "Efficiency"))
     eff_coarse.Divide(truth_coarse)
     return resp_coarse, eff_coarse
-
-def Rebin2D(hist, name, nbinsX, binsX, nbinsY, binsY):
-    result = ROOT.TH2D(name, name, nbinsX, binsX, nbinsY, binsY)
-    result.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
-    result.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
-    result.GetZaxis().SetTitle(hist.GetZaxis().GetTitle())
-    result.Sumw2()
-    for xbin in range(0, hist.GetNbinsX()+2):
-        xbinRes = result.GetXaxis().FindBin(hist.GetXaxis().GetBinCenter(xbin))
-        for ybin in range(0, hist.GetNbinsY()+2):
-            ybinRes = result.GetYaxis().FindBin(hist.GetYaxis().GetBinCenter(ybin))
-            result.SetBinContent(xbinRes, ybinRes, result.GetBinContent(xbinRes,ybinRes)+hist.GetBinContent(xbin,ybin))
-            result.SetBinError(xbinRes, ybinRes, math.sqrt(result.GetBinError(xbinRes,ybinRes)**2+hist.GetBinError(xbin,ybin)**2))
-    return result
 
 def LoadFDHistogram(file_name):
     file = ROOT.TFile(file_name)
