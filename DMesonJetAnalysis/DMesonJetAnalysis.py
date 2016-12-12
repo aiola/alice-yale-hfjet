@@ -296,6 +296,29 @@ class DMesonJetAnalysisEngine:
         if s.fSignalHistograms and s.fSideBandHistograms:
             self.PlotMultiCanvasBkgVsSigSpectra("{0}_BkgVsSig".format(s.fName), s.fSignalHistograms, "Sig. Window", s.fSideBandHistograms, "SB Window")
 
+        self.CompareFeedDown(s)
+
+    def CompareFeedDown(self, s):
+        if not s.fFDHistogram: return
+        before = s.fHistogram.Clone("{0}_compareFD".format(s.fHistogram.GetName()))
+        before.SetTitle("Before FD correction")
+        globalList.append(before)
+
+        after = s.fFDCorrHistogram.Clone("{0}_compareFD".format(s.fFDCorrHistogram.GetName()))
+        after.SetTitle("After FD correction")
+        globalList.append(after)
+        
+        fd = s.fFDHistogram.Clone("{0}_compareFD".format(s.fFDHistogram.GetName()))
+        fd.SetTitle("FD correction")
+        globalList.append(fd)
+
+        cname = "{0}_FDCorrection".format(s.fName)
+        r = DMesonJetUtils.CompareSpectra(before, [after, fd], cname)
+        for obj in r:
+            globalList.append(obj)
+            if isinstance(obj, ROOT.TCanvas):
+                self.fCanvases.append(obj)
+
     def PlotMultiCanvasBkgVsSigSpectra(self, cname, sigHistograms, sigTitle, bkgHistograms, bkgTitle):
         ncanvases = len(sigHistograms)
         c = DMesonJetUtils.GenerateMultiCanvas(cname, ncanvases)
@@ -1114,7 +1137,7 @@ class DMesonJetAnalysis:
                             suffix = None 
                         sname = '_'.join(obj for obj in [eng.fDMeson, jetDef["type"], jetDef["radius"], s["name"], suffix] if obj)
                         binSet = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]]
-                        h = binSet.fSpectra[sname].fFDCorrHistogram
+                        h = binSet.fSpectra[sname].fHistogram
                         if not h:
                             continue
                         if "MCTruth" in eng.fDMeson:
