@@ -233,7 +233,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', metavar='path',
                         help='Output path', default='../../DJetAnalysisNote/pp_plots')
     parser.add_argument('-f', metavar='format',
-                        help='Format (pdf, eps, png,...)', default='eps')
+                        help='Format (pdf, eps, png,...)', default='pdf')
     args = parser.parse_args()
 
     main(args.actions, args.o, args.f)
