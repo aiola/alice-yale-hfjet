@@ -947,50 +947,12 @@ class DMesonJetUnfoldingEngine:
 
     def Rebin(self, hist):
         if isinstance(hist, ROOT.TH2):
-            return self.Rebin2D(hist, self.fInputSpectrum.GetXaxis(), self.fInputSpectrum.GetXaxis(), True)
+            return DMesonJetUtils.Rebin2D(hist, self.fInputSpectrum.GetXaxis(), self.fInputSpectrum.GetXaxis(), True)
         elif isinstance(hist, ROOT.TH1):
-            return self.Rebin1D(hist, self.fInputSpectrum.GetXaxis())
+            return DMesonJetUtils.Rebin1D(hist, self.fInputSpectrum.GetXaxis())
         else:
             print("Object {0} of unrecognized type!".format(hist))
             return None # will fail
-
-    def Rebin1D(self, hist, xaxis):
-        r = ROOT.TH1D(hist.GetName(), hist.GetTitle(), xaxis.GetNbins(), xaxis.GetXbins().GetArray())
-        r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
-        r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
-        for xbin in range(0, hist.GetXaxis().GetNbins()+2):
-            xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
-            rxbin = r.GetXaxis().FindBin(xbinCenter)
-            binValue = hist.GetBinContent(xbin) + r.GetBinContent(rxbin)
-            binError = math.sqrt(hist.GetBinError(xbin)**2 + r.GetBinError(rxbin)**2)
-            r.SetBinContent(rxbin, binValue)
-            r.SetBinError(rxbin, binError)
-        return r
-
-    def Rebin2D(self, hist, xaxis, yaxis, warnings):
-        r = ROOT.TH2D(hist.GetName(), hist.GetTitle(), xaxis.GetNbins(), xaxis.GetXbins().GetArray(), yaxis.GetNbins(), yaxis.GetXbins().GetArray())
-        r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
-        r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
-        for xbin in range(0, hist.GetXaxis().GetNbins()+2):
-            for ybin in range(0, hist.GetYaxis().GetNbins()+2):
-                xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
-                ybinCenter = hist.GetYaxis().GetBinCenter(ybin)
-                rxbin = r.GetXaxis().FindBin(xbinCenter)
-                rybin = r.GetYaxis().FindBin(ybinCenter)
-                binValue = hist.GetBinContent(xbin, ybin) + r.GetBinContent(rxbin, rybin)
-                binError = math.sqrt(hist.GetBinError(xbin, ybin)**2 + r.GetBinError(rxbin, rybin)**2)
-                r.SetBinContent(rxbin, rybin, binValue)
-                r.SetBinError(rxbin, rybin, binError)
-                
-        for xbin in range(0, r.GetXaxis().GetNbins()+2):
-            for ybin in range(0, r.GetYaxis().GetNbins()+2):
-                binValue = r.GetBinContent(xbin, ybin)
-                binError = r.GetBinError(xbin, ybin)
-                if binValue > 0:
-                    relErr = binError / binValue
-                    if relErr > 0.9 and warnings:
-                        print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin,ybin,relErr))
-        return r
 
     def NormalizeResponseMatrix(self, prior):
         if prior == "ResponseTruth":
@@ -1007,8 +969,8 @@ class DMesonJetUnfoldingEngine:
             priorHist = self.GetCustomPrior(prior)
             if not DMesonJetUtils.CompareAxis(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis()):
                 print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the response matrix, hopefully things will go well (and you know what you are doing!)")
-                detectorResponse = self.Rebin2D(self.fDetectorResponse, self.fDetectorResponse.GetXaxis(), priorHist.GetXaxis(), False)
-                detectorTrainTruth = self.Rebin1D(self.fDetectorTrainTruth, priorHist.GetXaxis())
+                detectorResponse = DMesonJetUtils.Rebin2D(self.fDetectorResponse, self.fDetectorResponse.GetXaxis(), priorHist.GetXaxis(), False)
+                detectorTrainTruth = DMesonJetUtils.Rebin1D(self.fDetectorTrainTruth, priorHist.GetXaxis())
 
         priorHist.Scale(detectorTrainTruth.Integral() / priorHist.Integral())
         priorEffHist = priorHist.Clone("priorEffHist")

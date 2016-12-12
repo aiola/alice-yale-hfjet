@@ -35,7 +35,7 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
     maxRatio = 0
     minRatio = 999
     mainHist = None
-    
+
     print("CompareSpectra: {0}".format(comparisonName))
     print(baseline.GetName())
     for s in spectra:
@@ -256,3 +256,52 @@ def CompareAxis(axis1, axis2):
     for ibin in range(0,axis1.GetNbins()+2):
         if axis1.GetLowEdge(ibin) != axis2.GetLowEdge(ibin): return False
     return True 
+
+def Rebin1D(hist, xaxis, warnings=False):
+    return Rebin1D_fromBins(hist, hist.GetName(), xaxis.GetNbins(), xaxis.GetXbins().GetArray(), warnings)
+
+def Rebin1D_fromBins(hist, name, nbinsX, binsX, warnings=False):
+    r = ROOT.TH1D(name, name, nbinsX, binsX)
+    r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
+    r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
+    for xbin in range(0, hist.GetXaxis().GetNbins()+2):
+        xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
+        rxbin = r.GetXaxis().FindBin(xbinCenter)
+        binValue = hist.GetBinContent(xbin) + r.GetBinContent(rxbin)
+        binError = math.sqrt(hist.GetBinError(xbin)**2 + r.GetBinError(rxbin)**2)
+        r.SetBinContent(rxbin, binValue)
+        r.SetBinError(rxbin, binError)
+        if binValue > 0:
+            relErr = binError / binValue
+            if relErr > 0.9 and warnings:
+                print("Bin ({0}) has rel stat err = {1}. This is VERY dangerous!".format(xbin,relErr))
+    return r
+
+def Rebin2D(hist, xaxis, yaxis, warnings=False):
+    return Rebin2D_fromBins(hist, hist.GetName(), xaxis.GetNbins(), xaxis.GetXbins().GetArray(), yaxis.GetNbins(), yaxis.GetXbins().GetArray(), warnings)
+
+def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
+    r = ROOT.TH2D(name, name, nbinsX, binsX, nbinsY, binsY)
+    r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
+    r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
+    for xbin in range(0, hist.GetXaxis().GetNbins()+2):
+        for ybin in range(0, hist.GetYaxis().GetNbins()+2):
+            xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
+            ybinCenter = hist.GetYaxis().GetBinCenter(ybin)
+            rxbin = r.GetXaxis().FindBin(xbinCenter)
+            rybin = r.GetYaxis().FindBin(ybinCenter)
+            binValue = hist.GetBinContent(xbin, ybin) + r.GetBinContent(rxbin, rybin)
+            binError = math.sqrt(hist.GetBinError(xbin, ybin)**2 + r.GetBinError(rxbin, rybin)**2)
+            r.SetBinContent(rxbin, rybin, binValue)
+            r.SetBinError(rxbin, rybin, binError)
+            
+    for xbin in range(0, r.GetXaxis().GetNbins()+2):
+        for ybin in range(0, r.GetYaxis().GetNbins()+2):
+            binValue = r.GetBinContent(xbin, ybin)
+            binError = r.GetBinError(xbin, ybin)
+            if binValue > 0:
+                relErr = binError / binValue
+                if relErr > 0.9 and warnings:
+                    print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin,ybin,relErr))
+    return r
+
