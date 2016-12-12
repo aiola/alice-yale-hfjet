@@ -750,7 +750,7 @@ class DMesonJetUnfoldingEngine:
 
     def UnfoldSvd(self):
         max_reg = self.fInputSpectrum.GetNbinsX()
-        if self.fUseOverflow: max_reg += 2
+        #if self.fUseOverflow: max_reg += 2
         for prior, resp in self.fResponseMatrices.iteritems():
             for reg in range(1, max_reg+1):
                 print("Unfolding {0}, reg={1}, prior={2}".format("SVD", reg, prior))
