@@ -18,18 +18,18 @@ analysis:
   spectrum_response: JetPtSpectrum_DPt_20
   default_prior: ResponseTruth
   priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
-  default_method: Svd
+  default_method: Bayes
   methods:
     Svd:
+      default_reg:
+        ResponseTruth: 6
+        PowerLaw_3: 6
+        PowerLaw_7: 6
+    Bayes:
       default_reg:
         ResponseTruth: 4
         PowerLaw_3: 4
         PowerLaw_7: 4
-    Bayes:
-      default_reg:
-        ResponseTruth: 3
-        PowerLaw_3: 3
-        PowerLaw_7: 3
       iter_min: 1
       iter_max: 6
       iter_step: 1
