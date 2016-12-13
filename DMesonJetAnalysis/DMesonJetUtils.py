@@ -62,12 +62,12 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         if leg:
             leg.SetY1(leg.GetY1()-0.04*(len(spectra)+1))
         else:
-            leg = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+            leg = ROOT.TLegend(0.25, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
             leg.SetName("{0}_legend".format(c.GetName()))
             leg.SetFillStyle(0)
             leg.SetBorderSize(0)
             leg.SetTextFont(43)
-            leg.SetTextSize(16)
+            leg.SetTextSize(20)
 
         results.append(leg)
 
@@ -112,12 +112,12 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
         if legRatio:
             legRatio.SetY1(legRatio.GetY1()-0.04*(len(spectra)))
         else:
-            legRatio = ROOT.TLegend(0.55, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
+            legRatio = ROOT.TLegend(0.25, 0.87-0.04*(len(spectra)+1), 0.85, 0.87)
             legRatio.SetName("{0}_legend".format(cRatio.GetName()))
             legRatio.SetFillStyle(0)
             legRatio.SetBorderSize(0)
             legRatio.SetTextFont(43)
-            legRatio.SetTextSize(16)
+            legRatio.SetTextSize(20)
 
         results.append(legRatio)
 
