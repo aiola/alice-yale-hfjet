@@ -157,7 +157,7 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
     MCspectrum = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "Jet_Pt_Spectrum_PtD_2_Normalized", genTitle)
 
     spectra = []
-    spectra.append(DataSpectrumDef("InvMassFit_DPt_20", "Svd", "Reg4", "PriorResponseTruth"))
+    spectra.append(DataSpectrumDef("InvMassFit_DPt_20", "Bayes", "Reg4", "PriorResponseTruth"))
 
     cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius] + [quark.ts for quark in quarks.itervalues()] + [data])
     ratioAxis = "data / theory"
