@@ -76,6 +76,7 @@ public:
     void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
     void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
     void SetDmesonEfficiency(Double_t* effvalues=0x0);
+    void SetRebinSpectrumIfSBApproach(Bool_t rebin) {fRebinDstarSB=rebin;}
 
     void SetSigmaForSignalRegion(Double_t nsigma) {fnSigmaSignReg=nsigma;}
     void SetMaxNTrialsForSidebandMethod(Int_t nmax) {fnMaxTrials=nmax;}
@@ -99,10 +100,12 @@ public:
     Bool_t CombineMultiTrialOutcomes();
 
     Bool_t EvaluateUncertainty();
+    Bool_t EvaluateUncertainty_CoherentTrialChoice();
     Bool_t EvaluateUncertaintyDzeroEffScale();
     Bool_t EvaluateUncertaintyDzeroSideband();
     Bool_t EvaluateUncertaintyDstarEffScale();
     Bool_t EvaluateUncertaintyDstarSideband();
+    Bool_t EvaluateUncertaintyDstarSideband_CoherentTrialChoice();
 
     void SetDebugLevel(Int_t debug) {fDebug=debug;}
     void ClearObjects();
@@ -151,6 +154,7 @@ private:
     Double_t fChi2Cut;			// maximum value of allowed chi2
     Int_t fnMaxTrials;			// max number of random trials for each pT(D) bin to build pT(jet) spectrum variations (sideband approach)
     Bool_t fAllowRepetitions;		// allow repetitions in the extraction of trials in a give pT(D) bin, for sideband approach
+    Bool_t fRebinDstarSB;		// rebin the pt spectrum with user-defined binning, instead of using the binning from the THnSparse projection
 
     TH1D* fMassPlot;		   	// mass spectra to be fitted
     TH1D* fJetYieldCentral;		// central values of the yield of jet spectrum + syst yield uncertainty

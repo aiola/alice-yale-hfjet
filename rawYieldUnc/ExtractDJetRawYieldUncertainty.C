@@ -7,7 +7,6 @@
 //  ExtractDJetRawYieldUncertainty(...) //to build the uncertainty for the various bins of the jet pT spectrum
 // 
 
-
 void EvaluateBinPerBinUncertainty(
    Int_t specie=AliDJetRawYieldUncertainty::kD0toKpi,  //D-meson decay channel
    Int_t method=AliDJetRawYieldUncertainty::kEffScale,  //yield extraction method
@@ -48,6 +47,7 @@ void EvaluateBinPerBinUncertainty(
   return;
 }
 
+//________________________________________
 void ExtractDJetRawYieldUncertainty(
    Int_t specie=AliDJetRawYieldUncertainty::kD0toKpi,  //D-meson decay channel
    Int_t method=AliDJetRawYieldUncertainty::kEffScale,  //yield extraction method
@@ -70,6 +70,36 @@ void ExtractDJetRawYieldUncertainty(
   interface->SetDebugLevel(2); //0 = just do the job; 1 = additional printout; 2 = print individual fits
 
   Bool_t evalunc = interface->EvaluateUncertainty();
+  if(!evalunc) {
+    printf("Error in evaluating the yield uncertainty! Exiting...\n");
+    return;
+  }
+
+  interface->ClearObjects();
+
+  return;
+}
+
+//________________________________________
+void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
+   Int_t specie=AliDJetRawYieldUncertainty::kD0toKpi,  //D-meson decay channel
+   Int_t nTrials=10
+   ) //number of variations is fixed (all the variations in the pT(D) bins, which should match among the various pT(D) bins!)
+{
+
+  AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
+  Bool_t flagSpecie = interface->SetDmesonSpecie(specie);
+  if(!flagSpecie) return;
+  interface->SetYieldMethod(AliDJetRawYieldUncertainty::kSideband);
+  interface->SetMaxNTrialsForSidebandMethod(nTrials); 
+  
+  if(specie==0) SetInputParametersDzero(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+  else if(specie==1) SetInputParametersDstar(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+  else if {printf("Error in setting the D-meson specie! Exiting...\n"); return kFALSE;}
+
+  interface->SetDebugLevel(2); //0 = just do the job; 1 = additional printout; 2 = print individual fits
+
+  Bool_t evalunc = interface->EvaluateUncertainty_CoherentTrialChoice();
   if(!evalunc) {
     printf("Error in evaluating the yield uncertainty! Exiting...\n");
     return;
@@ -143,8 +173,8 @@ void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface){
   //Dstar cfg
   Int_t nDbins = 8;
   Double_t ptDbins[9] = {3,4,5,6,7,8,10,12,24};
-  Int_t nJetbins = 5;
-  Double_t ptJetbins[6] = {6,7,8,10,12,24}; //used for eff.scale approach only (for sideband approach, jet bins are hardcoded in the THnSparses)
+  Int_t nJetbins = 6;
+  Double_t ptJetbins[7] = {4,6,8,10,12,16,24}; //used for eff.scale approach only (for sideband approach, jet bins are hardcoded in the THnSparses)
   Double_t DMesonEff[8] = {0.0274342, 0.06084, 0.104142, 0.164893, 0.209574, 0.288254, 0.316152, 0.372691};
 
   Double_t sigmafixed=0.0006;
@@ -177,6 +207,8 @@ void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface){
   interface->SetDmesonPtBins(nDbins,ptDbins);
   interface->SetJetPtBins(nJetbins,ptJetbins);
   interface->SetDmesonEfficiency(DMesonEff);
+
+  interface->SetRebinSpectrumIfSBApproach(kTRUE); //kTRUE=rebin the jet spectrum with ptJetbins[] vals, otherwise use the binning from THnSparse projection
 
   interface->SetSigmaForSignalRegion(3.); //only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
   interface->SetSigmaToFix(sigmafixed);
