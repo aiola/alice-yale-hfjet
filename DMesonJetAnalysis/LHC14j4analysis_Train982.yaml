@@ -20,8 +20,8 @@ analysis:
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: JetPtBins_DPt_20
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
+    name: JetPtBins_DPt_30
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0, D0_kSignalOnly, D0_MCTruth]
     need_inv_mass: [D0, D0_kSignalOnly]
     efficiency: no
@@ -39,19 +39,19 @@ analysis:
       min: 2.0
     spectra:
     -
-      name: JetPtSpectrum_DPt_20
+      name: JetPtSpectrum_DPt_30
       suffix: Truth
       title: "MC Truth (gen)"
       type: truth
       active_mesons: [D0_MCTruth]
     -
-      name: JetPtSpectrum_DPt_20
+      name: JetPtSpectrum_DPt_30
       suffix: SignalOnly
       title: "MC Truth (det)"
       type: truth
       active_mesons: [D0_kSignalOnly]
     -
-      name: JetPtSpectrum_DPt_20
+      name: JetPtSpectrum_DPt_30
       suffix: InvMassFit
       title: "Inv.Mass Fit"
       type: inv_mass_fit
@@ -62,7 +62,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
   -
     name: DPtBins_JetPt_5_30
     title: ""
@@ -86,9 +86,9 @@ analysis:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     spectra:
     -
-      name: JetPtSpectrum_DPt_20
+      name: JetPtSpectrum_DPt_30
       suffix: SideBand
-      title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: side_band
       active_mesons: [D0]
       FD:
@@ -97,7 +97,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -105,9 +105,9 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
     -
-      name: JetPtSpectrum_DPt_20
+      name: JetPtSpectrum_DPt_30
       suffix: LikeSign
-      title: "LS method, #it{p}_{T,D} > 2 GeV/#it{c}"
+      title: "LS method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: like_sign
       active_mesons: [] #[D0]
       FD:
@@ -116,7 +116,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_20_detector
+        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign

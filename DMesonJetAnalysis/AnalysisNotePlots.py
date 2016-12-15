@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python script to generate plots for the analysis note
+# python script to generate plots for the analysis note
 
 import argparse
 import yaml
@@ -18,8 +18,20 @@ def main(actions, output_path, output_type):
 
     configs = dict()
 
+    f = open("LHC14j4analysis_Train969.yaml", 'r')
+    configs["LHC14j4_cb"] = yaml.load(f)
+    f.close()
+
     f = open("LHC14j4analysis_Train969_efficiency.yaml", 'r')
     configs["LHC14j4_cb_eff"] = yaml.load(f)
+    f.close()
+
+    f = open("LHC14j4analysis_Train982.yaml", 'r')
+    configs["LHC14j4_c_eff"] = yaml.load(f)
+    f.close()
+
+    f = open("LHC14j4analysis_Train982_efficiency.yaml", 'r')
+    configs["LHC14j4_c_eff"] = yaml.load(f)
     f.close()
 
     f = open("LHC15i2analysis_Train961.yaml", 'r')
@@ -46,9 +58,17 @@ def main(actions, output_path, output_type):
     configs["LHC10_eff"] = yaml.load(f)
     f.close()
 
+    f = open("LHC10_Train823_LHC15i2_Train961_efficiency.yaml", 'r')
+    configs["data_unfolding"] = yaml.load(f)
+    f.close()
+
+    f = open("LHC14j4_Train982_LHC15i2_Train961_efficiency.yaml", 'r')
+    configs["mc_unfolding"] = yaml.load(f)
+    f.close()
+
     histograms = dict()
 
-    for name,c in configs.iteritems():
+    for name, c in configs.iteritems():
         file = OpenFile(c)
         histograms[name] = ExtractRootList(file)
 
@@ -66,6 +86,47 @@ def main(actions, output_path, output_type):
 
     for c in canvases:
         c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
+
+    if "data":
+        CopyDataFilesWithoutEff(configs["LHC10"])
+        CopyDataFilesWithEff(configs["LHC10_eff"])
+
+    if "mc":
+        CopyMCFilesWithoutEff(configs["LHC14j4_cb"])
+        CopyMCFilesWithEff(configs["LHC14j4_cb_eff"])
+        CopyMCFilesWithoutEffCharmOnly(configs["LHC14j4_c"])
+        CopyMCFilesWithEffCharmOnly(configs["LHC14j4_c_eff"])
+
+    if "data_unfolding":
+        CopyDataUnfoldingFiles(configs["data_unfolding"])
+
+    if "mc_unfolding":
+        CopyMCUnfoldingFiles(configs["mc_unfolding"])
+
+
+def CopyDataFilesWithoutEff(config):
+    pass
+
+def CopyDataFilesWithEff(config):
+    pass
+
+def CopyMCFilesWithoutEff(config):
+    pass
+
+def CopyMCFilesWithEff(config):
+    pass
+
+def CopyMCFilesWithoutEffCharmOnly(config):
+    pass
+
+def CopyMCFilesWithEffCharmOnly(config):
+    pass
+
+def CopyDataUnfoldingFiles(config):
+    pass
+
+def CopyMCUnfoldingFiles(config):
+    pass
 
 def FD_FoldUnfold_Comparison(histograms):
     baseline = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20"].Clone()
@@ -98,20 +159,20 @@ def EfficiencyComparison(hist_c, hist_b):
     detResp_c = hist_c[prefix]
     detResp_b = hist_b[prefix]
     DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 30]
-    colors = [ROOT.kBlue+2, ROOT.kGreen+2, ROOT.kRed+2, ROOT.kMagenta+2, ROOT.kCyan+2, ROOT.kOrange+2]
+    colors = [ROOT.kBlue + 2, ROOT.kGreen + 2, ROOT.kRed + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kOrange + 2]
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenDiamond, ROOT.kOpenStar]
     lines = [1, 2, 9, 5, 7, 10]
     styles = dict()
-    for i,(minPt,maxPt) in enumerate(zip(jetPtLimits[:-1], jetPtLimits[1:])):
-        styles["colors"] = colors[i*2:(i+1)*2]
-        styles["lines"] = lines[i*2:(i+1)*2]
-        styles["markers"] = markers[i*2:(i+1)*2]
-        recoTruthName = "{0}_RecontructedTruth_JetPt_{1}_{2}".format(prefix, minPt*100, maxPt*100)
-        truthName = "{0}_Truth_JetPt_{1}_{2}".format(prefix, minPt*100, maxPt*100)
-        cRecoTruth = detResp_c[recoTruthName].Rebin(len(DPtBins)-1, "{0}_c_rebin".format(recoTruthName), array.array('d', DPtBins)) 
-        cTruth = detResp_c[truthName].Rebin(len(DPtBins)-1, "{0}_c_rebin".format(truthName), array.array('d', DPtBins))
-        bRecoTruth = detResp_b[recoTruthName].Rebin(len(DPtBins)-1, "{0}_b_rebin".format(recoTruthName), array.array('d', DPtBins))
-        bTruth = detResp_b[truthName].Rebin(len(DPtBins)-1, "{0}_b_rebin".format(truthName), array.array('d', DPtBins))
+    for i, (minPt, maxPt) in enumerate(zip(jetPtLimits[:-1], jetPtLimits[1:])):
+        styles["colors"] = colors[i * 2:(i + 1) * 2]
+        styles["lines"] = lines[i * 2:(i + 1) * 2]
+        styles["markers"] = markers[i * 2:(i + 1) * 2]
+        recoTruthName = "{0}_RecontructedTruth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
+        truthName = "{0}_Truth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
+        cRecoTruth = detResp_c[recoTruthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(recoTruthName), array.array('d', DPtBins))
+        cTruth = detResp_c[truthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(truthName), array.array('d', DPtBins))
+        bRecoTruth = detResp_b[recoTruthName].Rebin(len(DPtBins) - 1, "{0}_b_rebin".format(recoTruthName), array.array('d', DPtBins))
+        bTruth = detResp_b[truthName].Rebin(len(DPtBins) - 1, "{0}_b_rebin".format(truthName), array.array('d', DPtBins))
         c_hist_Ratio = cRecoTruth.Clone(recoTruthName.replace("RecontructedTruth", "Efficiency"))
         c_hist_Ratio.Divide(cTruth)
         c_hist_Ratio.SetTitle("c #rightarrow D^{{0}}, {0}".format(c_hist_Ratio.GetTitle()))
@@ -140,13 +201,13 @@ def JetPtResolutionComparison(hist_c, hist_b):
     listName = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
     detResp_c = hist_c[listName]["DetectorResponse"]
     detResp_b = hist_b[listName]["DetectorResponse"]
-    
+
     canvas = DMesonJetUtils.GenerateMultiCanvas("DetectorJetPtResolutionComparison", len(detResp_c))
     globalList.append(canvas)
     canvases.append(canvas)
-    for i,(c,b) in enumerate(zip(detResp_c.itervalues(), detResp_b.itervalues())):
-        pad = canvas.cd(i+1)
-        #pad.SetLogy()
+    for i, (c, b) in enumerate(zip(detResp_c.itervalues(), detResp_b.itervalues())):
+        pad = canvas.cd(i + 1)
+        # pad.SetLogy()
         pad.SetLeftMargin(0.14)
         pad.SetRightMargin(0.05)
         pad.SetTopMargin(0.08)
@@ -154,10 +215,10 @@ def JetPtResolutionComparison(hist_c, hist_b):
         h = c.DrawCopy()
         h.GetYaxis().SetTitle("Probability density")
         h.GetXaxis().SetRangeUser(-1, 0.5)
-        h.SetMarkerColor(ROOT.kRed+2)
+        h.SetMarkerColor(ROOT.kRed + 2)
         h.SetMarkerStyle(ROOT.kFullCircle)
         h.SetMarkerSize(0.8)
-        h.SetLineColor(ROOT.kRed+2)
+        h.SetLineColor(ROOT.kRed + 2)
         globalList.append(h)
         h.GetXaxis().SetTitleFont(43)
         h.GetXaxis().SetTitleOffset(2.8)
@@ -171,7 +232,7 @@ def JetPtResolutionComparison(hist_c, hist_b):
         h.GetYaxis().SetLabelFont(43)
         h.GetYaxis().SetLabelOffset(0.009)
         h.GetYaxis().SetLabelSize(18)
-        #h.SetMaximum(h.GetMaximum()*1.3)
+        # h.SetMaximum(h.GetMaximum()*1.3)
         h.SetMinimum(0)
         htitle = ROOT.TPaveText(0.12, 0.99, 0.95, 0.93, "NB NDC")
         htitle.SetBorderSize(0)
@@ -182,10 +243,10 @@ def JetPtResolutionComparison(hist_c, hist_b):
         htitle.Draw()
         globalList.append(htitle)
         hbis = b.DrawCopy("same")
-        hbis.SetMarkerColor(ROOT.kBlue+2)
+        hbis.SetMarkerColor(ROOT.kBlue + 2)
         hbis.SetMarkerStyle(ROOT.kOpenCircle)
         hbis.SetMarkerSize(0.9)
-        hbis.SetLineColor(ROOT.kBlue+2)
+        hbis.SetLineColor(ROOT.kBlue + 2)
     canvas.cd(1)
     leg = ROOT.TLegend(0.19, 0.77, 0.58, 0.95, "NB NDC")
     leg.SetBorderSize(0)
@@ -213,8 +274,8 @@ def ExtractRootList(input):
             elif isinstance(obj, ROOT.TDirectory) or isinstance(obj, ROOT.TCollection):
                 result[k.GetName()] = ExtractRootList(obj)
             else:
-                print("Object {0} not recognized".format(obj.GetName()))        
-                print(obj)        
+                print("Object {0} not recognized".format(obj.GetName()))
+                print(obj)
     else:
         for h in input:
             if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THnBase):
@@ -237,5 +298,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args.actions, args.o, args.f)
-    
+
     IPython.embed()

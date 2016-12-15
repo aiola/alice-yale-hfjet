@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python program to perform a D meson jet analysis
+# python program to perform a D meson jet analysis
 
 import math
 import array
@@ -51,13 +51,13 @@ class DMesonJetAnalysisEngine:
         for s in spectra:
             if not s.fCompare:
                 continue
-            if not s.fNormFDCorrHistogram:
+            if not s.fNormHistogram:
                 continue
             if len(s.fAxis) != 1:
                 continue
             if axisName != s.fAxis[0].fName:
                 continue
-            h = s.fNormFDCorrHistogram.Clone("{0}_copy".format(s.fNormFDCorrHistogram.GetName()))
+            h = s.fNormHistogram.Clone("{0}_copy".format(s.fNormHistogram.GetName()))
             if s.fTitle:
                 h.SetTitle(s.fTitle)
             globalList.append(h)
@@ -80,7 +80,7 @@ class DMesonJetAnalysisEngine:
                 pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
                 pave.Draw()
                 globalList.append(pave)
-            globalList.append(obj)        
+            globalList.append(obj)
 
     def SaveRootFile(self, file):
         rlist = ROOT.TList()
@@ -138,7 +138,7 @@ class DMesonJetAnalysisEngine:
         return fitter
 
     def DoProjections(self):
-        self.fProjector.StartProjection(self.fTrigger, self.fDMeson, 
+        self.fProjector.StartProjection(self.fTrigger, self.fDMeson,
                                         self.fBinMultiSets, self.fNMassBins, self.fMinMass, self.fMaxMass)
 
         self.fEvents = self.fProjector.fTotalEvents
@@ -152,7 +152,7 @@ class DMesonJetAnalysisEngine:
             self.GenerateSpectra()
 
         if not "MCTruth" in self.fDMeson:
-            self.PlotInvMassPlots()            
+            self.PlotInvMassPlots()
         if not "BackgroundOnly" in self.fDMeson:
             self.PlotSpectra()
 
@@ -171,16 +171,16 @@ class DMesonJetAnalysisEngine:
 
     def PlotSpectrum1D(self, s):
         # Spectrum
-        c = ROOT.TCanvas("{0}_canvas".format(s.fNormFDCorrHistogram.GetName()), s.fNormFDCorrHistogram.GetName())
+        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
         c.SetLogy()
         self.fCanvases.append(c)
         c.cd()
-        h = s.fNormFDCorrHistogram.DrawCopy()
+        h = s.fNormHistogram.DrawCopy()
 
-        h.SetMarkerColor(ROOT.kBlue+2)
+        h.SetMarkerColor(ROOT.kBlue + 2)
         h.SetMarkerStyle(ROOT.kFullCircle)
         h.SetMarkerSize(0.9)
-        h.SetLineColor(ROOT.kBlue+2)
+        h.SetLineColor(ROOT.kBlue + 2)
 
         pave = ROOT.TPaveText(0.60, 0.88, 0.9, 0.55, "NB NDC")
         pave.SetFillStyle(0)
@@ -196,16 +196,16 @@ class DMesonJetAnalysisEngine:
         globalList.append(c)
         globalList.append(h)
         globalList.append(pave)
-        
+
         # Uncertainty
         c = ROOT.TCanvas("{0}_canvas".format(s.fUncertainty.GetName()), s.fUncertainty.GetName())
         self.fCanvases.append(c)
         c.cd()
         h = s.fUncertainty.DrawCopy("hist")
 
-        h.SetLineColor(ROOT.kBlue+2)
+        h.SetLineColor(ROOT.kBlue + 2)
         h.SetLineWidth(2)
-        h.SetFillColorAlpha(ROOT.kBlue+2, 0.25)
+        h.SetFillColorAlpha(ROOT.kBlue + 2, 0.25)
         h.SetFillStyle(1001)
 
         pave = ROOT.TPaveText(0.12, 0.88, 0.4, 0.55, "NB NDC")
@@ -229,13 +229,13 @@ class DMesonJetAnalysisEngine:
             self.fCanvases.append(c)
             c.cd()
             h = s.fMass.DrawCopy()
-    
-            h.SetMarkerColor(ROOT.kBlue+2)
+
+            h.SetMarkerColor(ROOT.kBlue + 2)
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.9)
-            h.SetLineColor(ROOT.kBlue+2)
+            h.SetLineColor(ROOT.kBlue + 2)
             h.GetYaxis().SetRangeUser(1.84, 1.91)
-    
+
             pave = ROOT.TPaveText(0.12, 0.88, 0.8, 0.68, "NB NDC")
             pave.SetFillStyle(0)
             pave.SetBorderSize(0)
@@ -246,30 +246,30 @@ class DMesonJetAnalysisEngine:
             pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
             pave.AddText(s.fTitle)
             pave.Draw()
-            
+
             line = ROOT.TLine(h.GetXaxis().GetBinLowEdge(1), 1.86484, h.GetXaxis().GetBinUpEdge(h.GetXaxis().GetNbins()), 1.86484)
             line.SetLineColor(ROOT.kBlack)
             line.SetLineStyle(2)
             line.SetLineWidth(2)
             line.Draw()
-    
+
             globalList.append(c)
             globalList.append(h)
             globalList.append(pave)
             globalList.append(line)
-        
+
         # Mass width
         if s.fMassWidth:
             c = ROOT.TCanvas("{0}_canvas".format(s.fMassWidth.GetName()), s.fMassWidth.GetName())
             self.fCanvases.append(c)
             c.cd()
             h = s.fMassWidth.DrawCopy()
-    
-            h.SetMarkerColor(ROOT.kBlue+2)
+
+            h.SetMarkerColor(ROOT.kBlue + 2)
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.9)
-            h.SetLineColor(ROOT.kBlue+2)
-    
+            h.SetLineColor(ROOT.kBlue + 2)
+
             pave = ROOT.TPaveText(0.12, 0.88, 0.8, 0.68, "NB NDC")
             pave.SetFillStyle(0)
             pave.SetBorderSize(0)
@@ -280,7 +280,7 @@ class DMesonJetAnalysisEngine:
             pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
             pave.AddText(s.fTitle)
             pave.Draw()
-    
+
             globalList.append(c)
             globalList.append(h)
             globalList.append(pave)
@@ -307,7 +307,7 @@ class DMesonJetAnalysisEngine:
         after = s.fFDCorrHistogram.Clone("{0}_compareFD".format(s.fFDCorrHistogram.GetName()))
         after.SetTitle("After FD correction")
         globalList.append(after)
-        
+
         fd = s.fFDHistogram.Clone("{0}_compareFD".format(s.fFDHistogram.GetName()))
         fd.SetTitle("FD correction")
         globalList.append(fd)
@@ -324,8 +324,8 @@ class DMesonJetAnalysisEngine:
         c = DMesonJetUtils.GenerateMultiCanvas(cname, ncanvases)
         self.fCanvases.append(c)
         globalList.append(c)
-        for i,(sig, bkg) in enumerate(zip(sigHistograms, bkgHistograms)):
-            pad = c.cd(i+1)
+        for i, (sig, bkg) in enumerate(zip(sigHistograms, bkgHistograms)):
+            pad = c.cd(i + 1)
             pad.SetLeftMargin(0.12)
             pad.SetRightMargin(0.05)
             pad.SetTopMargin(0.08)
@@ -372,10 +372,10 @@ class DMesonJetAnalysisEngine:
             globalList.append(c)
 
         hSig = hSigOrig.DrawCopy()
-        hSig.SetMarkerColor(ROOT.kBlue+2)
+        hSig.SetMarkerColor(ROOT.kBlue + 2)
         hSig.SetMarkerStyle(ROOT.kOpenCircle)
         hSig.SetMarkerSize(0.9)
-        hSig.SetLineColor(ROOT.kBlue+2)
+        hSig.SetLineColor(ROOT.kBlue + 2)
         hSig.GetYaxis().SetTitleFont(43)
         hSig.GetYaxis().SetTitleSize(22)
         hSig.GetYaxis().SetTitleOffset(1.1)
@@ -386,21 +386,21 @@ class DMesonJetAnalysisEngine:
         hSig.GetXaxis().SetTitleSize(22)
         hSig.GetXaxis().SetLabelFont(43)
         hSig.GetXaxis().SetLabelSize(20)
-        hSig.SetMaximum(hSig.GetMaximum()*1.3)
+        hSig.SetMaximum(hSig.GetMaximum() * 1.3)
         hSig.SetMinimum(0)
 
         hBkg = hBkgOrig.DrawCopy("same")
-        hBkg.SetMarkerColor(ROOT.kRed+2)
+        hBkg.SetMarkerColor(ROOT.kRed + 2)
         hBkg.SetMarkerStyle(ROOT.kOpenSquare)
         hBkg.SetMarkerSize(0.9)
-        hBkg.SetLineColor(ROOT.kRed+2)
+        hBkg.SetLineColor(ROOT.kRed + 2)
 
         hSub = hSigOrig.DrawCopy("same")
         hSub.Add(hBkgOrig, -1)
-        hSub.SetMarkerColor(ROOT.kGreen+2)
+        hSub.SetMarkerColor(ROOT.kGreen + 2)
         hSub.SetMarkerStyle(ROOT.kStar)
         hSub.SetMarkerSize(0.9)
-        hSub.SetLineColor(ROOT.kGreen+2)
+        hSub.SetLineColor(ROOT.kGreen + 2)
 
         if hTitleSig and hTitleBkg:
             leg = ROOT.TLegend(0.42, 0.84, 0.87, 0.93, "", "NB NDC")
@@ -422,17 +422,17 @@ class DMesonJetAnalysisEngine:
         return hSig, hBkg, hSub
 
     def PlotSpectrum2D(self, s):
-        c = ROOT.TCanvas("{0}_canvas".format(s.fNormFDCorrHistogram.GetName()), s.fNormFDCorrHistogram.GetName())
+        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
         c.SetRightMargin(0.18)
         c.SetLogz()
         self.fCanvases.append(c)
         c.cd()
-        h = s.fNormFDCorrHistogram.DrawCopy("colz")
+        h = s.fNormHistogram.DrawCopy("colz")
         h.GetZaxis().SetTitleOffset(1.4)
 
         globalList.append(c)
         globalList.append(h)
-        
+
         c = ROOT.TCanvas("{0}_canvas".format(s.fUncertainty.GetName()), s.fUncertainty.GetName())
         c.SetRightMargin(0.18)
         self.fCanvases.append(c)
@@ -441,7 +441,7 @@ class DMesonJetAnalysisEngine:
         h.GetZaxis().SetTitleOffset(1.4)
 
         globalList.append(c)
-        globalList.append(h)      
+        globalList.append(h)
 
     def PlotSpectrum3D(self, s):
         print("PlotSpectrum3D not implemented!")
@@ -472,7 +472,7 @@ class DMesonJetAnalysisEngine:
             for bin in s.fLikeSignSubtractedBinSet.fBins:
                 self.ProcessInvMassFitSpectrumBin(s, bin, s.fLikeSignSubtractedBinSet)
 
-    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet): 
+    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet):
         w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
 
         xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
@@ -483,14 +483,14 @@ class DMesonJetAnalysisEngine:
         if not bin.fMassFitter.FitSuccessfull():
             print("The bin printed below does not have a successful invariant mass fit!")
             bin.Print()
-            return   
-        signal = bin.fMassFitter.GetSignal()*w
-        signal_unc = bin.fMassFitter.GetSignalError()*w
+            return
+        signal = bin.fMassFitter.GetSignal() * w
+        signal_unc = bin.fMassFitter.GetSignalError() * w
 
         s.fHistogram.SetBinContent(xbin, signal)
         s.fHistogram.SetBinError(xbin, signal_unc)
         if signal > 0:
-            s.fUncertainty.SetBinContent(xbin, signal_unc/signal) 
+            s.fUncertainty.SetBinContent(xbin, signal_unc / signal)
 
         if bin.fMassFitter:
             if s.fBackground:
@@ -531,9 +531,9 @@ class DMesonJetAnalysisEngine:
                 mean = bin.fMassFitter.GetSignalMean()
             else:
                 sigma = s.fBackupSigma
-                mean = s.fBackupMean                   
-            binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
-            binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
+                mean = s.fBackupMean
+            binSig_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas * sigma)
+            binSig_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas * sigma)
 
             if s.fAnalysisType == AnalysisType.LikeSign:
                 if s.fAxis[0].fName == bin.fBinCountAnalysisAxis.fName:
@@ -557,8 +557,8 @@ class DMesonJetAnalysisEngine:
 
             print("Bin: {0}".format(bin.GetTitle()))
             if sig:
-                print("The total signal+background is {0}".format(sig.Integral(0,-1)))
-            print("The signal+background from the invariant mass plot {0} or summing signal and background {1}".format(bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+                print("The total signal+background is {0}".format(sig.Integral(0, -1)))
+            print("The signal+background from the invariant mass plot {0} or summing signal and background {1}".format(bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal() + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
             peakAreaBkgError = ROOT.Double(0.)
             peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
             print("The total background in the peak area estimated from the fit is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
@@ -567,10 +567,10 @@ class DMesonJetAnalysisEngine:
             # Two methods to normalize the background
             # Method 1: use the side-bands
             if s.fSideBandMaxSigmas > s.fSideBandMinSigmas:
-                binSBL_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
-                binSBL_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
-                binSBR_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas*sigma)
-                binSBR_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
+                binSBL_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
+                binSBL_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas * sigma)
+                binSBR_1 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas * sigma)
+                binSBR_2 = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas * sigma)
                 if binSBL_1 < 1:
                     binSBL_1 = 1
                 if binSBR_2 > bin.fInvMassHisto.GetXaxis().GetNbins():
@@ -581,18 +581,18 @@ class DMesonJetAnalysisEngine:
                 SB_R_err = ROOT.Double(0)
                 SB_R = bin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
                 SB_total = SB_L + SB_R
-                SB_total_err = math.sqrt(SB_L_err**2 + SB_R_err**2)
+                SB_total_err = math.sqrt(SB_L_err ** 2 + SB_R_err ** 2)
 
                 LS_SB_L_err = ROOT.Double(0)
                 LS_SB_L = LSbin.fInvMassHisto.IntegralAndError(binSBL_1, binSBL_2, SB_L_err)
                 LS_SB_R_err = ROOT.Double(0)
                 LS_SB_R = LSbin.fInvMassHisto.IntegralAndError(binSBR_1, binSBR_2, SB_R_err)
                 LS_SB_total = LS_SB_L + LS_SB_R
-                LS_SB_total_err = math.sqrt(LS_SB_L_err**2 + LS_SB_R_err**2)
+                LS_SB_total_err = math.sqrt(LS_SB_L_err ** 2 + LS_SB_R_err ** 2)
 
                 if LS_SB_total > 0:
                     bkgNorm = SB_total / LS_SB_total
-                    bkgNorm_err = ((SB_total_err/SB_total)**2 + (LS_SB_total_err/LS_SB_total)**2) * bkgNorm
+                    bkgNorm_err = ((SB_total_err / SB_total) ** 2 + (LS_SB_total_err / LS_SB_total) ** 2) * bkgNorm
                 else:
                     bkgNorm = 1
                     bkgNorm_err = 0
@@ -602,11 +602,11 @@ class DMesonJetAnalysisEngine:
                 print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
 
                 if LStotal:
-                    for xbin in range(0, LStotal.GetNbinsX()+2):
+                    for xbin in range(0, LStotal.GetNbinsX() + 2):
                         if LStotal.GetBinContent(xbin) == 0:
                             continue
-                        error = math.sqrt(LStotal.GetBinError(xbin)**2/LStotal.GetBinContent(xbin)**2+bkgNorm_err**2/bkgNorm**2)*LStotal.GetBinContent(xbin)*bkgNorm
-                        cont = LStotal.GetBinContent(xbin)*bkgNorm
+                        error = math.sqrt(LStotal.GetBinError(xbin) ** 2 / LStotal.GetBinContent(xbin) ** 2 + bkgNorm_err ** 2 / bkgNorm ** 2) * LStotal.GetBinContent(xbin) * bkgNorm
+                        cont = LStotal.GetBinContent(xbin) * bkgNorm
                         LStotal.SetBinError(xbin, error)
                         LStotal.SetBinContent(xbin, cont)
 
@@ -622,21 +622,21 @@ class DMesonJetAnalysisEngine:
                 LStotalIntegral = bin.fInvMassHisto.IntegralAndError(binSig_1, binSig_2, LStotalIntegralError)
                 if LStotalIntegral > 0:
                     if LStotal:
-                        for xbin in range(0, LStotal.GetNbinsX()+2):
+                        for xbin in range(0, LStotal.GetNbinsX() + 2):
                             if LStotal.GetBinContent(xbin) == 0:
                                 continue
                             # Error propagation
-                            error2_1 = peakAreaBkgError**2 * LStotal.GetBinContent(xbin)**2
-                            error2_2 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinError(xbin)**2 * (LStotalIntegral-LStotal.GetBinContent(xbin))**2
-                            error2_3 = peakAreaBkg**2 / LStotalIntegral**2 * LStotal.GetBinContent(xbin)**2 * (LStotalIntegralError**2-LStotal.GetBinError(xbin)**2)
-                            #print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/LStotalIntegral, math.sqrt(error2_2)/LStotalIntegral, math.sqrt(error2_3)/LStotalIntegral))
+                            error2_1 = peakAreaBkgError ** 2 * LStotal.GetBinContent(xbin) ** 2
+                            error2_2 = peakAreaBkg ** 2 / LStotalIntegral ** 2 * LStotal.GetBinError(xbin) ** 2 * (LStotalIntegral - LStotal.GetBinContent(xbin)) ** 2
+                            error2_3 = peakAreaBkg ** 2 / LStotalIntegral ** 2 * LStotal.GetBinContent(xbin) ** 2 * (LStotalIntegralError ** 2 - LStotal.GetBinError(xbin) ** 2)
+                            # print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/LStotalIntegral, math.sqrt(error2_2)/LStotalIntegral, math.sqrt(error2_3)/LStotalIntegral))
                             error = math.sqrt(error2_1 + error2_2 + error2_3) / LStotalIntegral
-                            cont = LStotal.GetBinContent(xbin)*peakAreaBkg/LStotalIntegral
+                            cont = LStotal.GetBinContent(xbin) * peakAreaBkg / LStotalIntegral
                             LStotal.SetBinError(xbin, error)
                             LStotal.SetBinContent(xbin, cont)
                     bkgNorm = peakAreaBkg / LStotalIntegral
                     # this is only a rough estimate
-                    bkgNorm_err = ((peakAreaBkgError/peakAreaBkg)**2 + (LStotalIntegralError/LStotalIntegral)**2) * bkgNorm
+                    bkgNorm_err = ((peakAreaBkgError / peakAreaBkg) ** 2 + (LStotalIntegralError / LStotalIntegral) ** 2) * bkgNorm
                 else:
                     bkgNorm = 1
                     bkgNorm_err = 0
@@ -646,7 +646,7 @@ class DMesonJetAnalysisEngine:
                 bkgNorm_err = 0
 
             print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
-            
+
             if LStotal:
                 integralError = ROOT.Double(0.)
                 integral = LStotal.IntegralAndError(0, -1, integralError)
@@ -682,7 +682,7 @@ class DMesonJetAnalysisEngine:
             if s.fBackground:
                 s.fBackground.Add(s.fLikeSignTotalHistogram)
 
-            for xbin in range(0, s.fHistogram.GetNbinsX()+2):
+            for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
                 if s.fHistogram.GetBinContent(xbin) > 0:
                     s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
                 else:
@@ -696,7 +696,7 @@ class DMesonJetAnalysisEngine:
         print("Generating invariant mass windows for {0}".format(invMassHisto.GetName()))
         sideBandWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
         signalWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
-        for xbin in range(0,invMassHisto.GetNbinsX()+2):
+        for xbin in range(0, invMassHisto.GetNbinsX() + 2):
             if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
                 sideBandWindowInvMassHisto.SetBinContent(xbin, 0)
                 sideBandWindowInvMassHisto.SetBinError(xbin, 0)
@@ -704,14 +704,14 @@ class DMesonJetAnalysisEngine:
                 signalWindowInvMassHisto.SetBinContent(xbin, 0)
                 signalWindowInvMassHisto.SetBinError(xbin, 0)
 
-        return signalWindowInvMassHisto, sideBandWindowInvMassHisto 
+        return signalWindowInvMassHisto, sideBandWindowInvMassHisto
 
     def GenerateSpectrum1DSideBandMethod(self, s):
         if s.fSkipBins:
             print("I will skip the following bins: {0}".format(s.fSkipBins))
         else:
             print("I will not skip any bin")
-        for ibin,bin in enumerate(s.fBinSet.fBins):
+        for ibin, bin in enumerate(s.fBinSet.fBins):
             if s.fSkipBins and ibin in s.fSkipBins:
                 print("Skipping bin {0} as requested".format(bin.GetTitle()))
                 continue
@@ -722,12 +722,12 @@ class DMesonJetAnalysisEngine:
             sigma = bin.fMassFitter.GetSignalWidth()
             mean = bin.fMassFitter.GetSignalMean()
 
-            binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas*sigma)
-            binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas*sigma)
-            binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas*sigma)
-            binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas*sigma)
-            binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas*sigma)
-            binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas*sigma)
+            binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
+            binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas * sigma)
+            binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas * sigma)
+            binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas * sigma)
+            binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas * sigma)
+            binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas * sigma)
             if binSBL_1 < 1:
                 binSBL_1 = 1
             if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
@@ -747,23 +747,23 @@ class DMesonJetAnalysisEngine:
             peakAreaBkgError = ROOT.Double(0.)
             peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
             print("Bin: {0}".format(bin.GetTitle()))
-            print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0,-1), sbR.Integral(0,-1), sbTotal.Integral(0,-1)))
+            print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
             print("The estimated background in the signal window is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
-            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0,-1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal()+bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0, -1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal() + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
 
             sbTotalIntegralError = ROOT.Double(0)
             sbTotalIntegral = sbTotal.IntegralAndError(0, -1, sbTotalIntegralError)
             if sbTotalIntegral > 0:
-                for xbin in range(0, sbTotal.GetNbinsX()+2):
+                for xbin in range(0, sbTotal.GetNbinsX() + 2):
                     if sbTotal.GetBinContent(xbin) == 0:
                         continue
                     # Error propagation
-                    error2_1 = peakAreaBkgError**2 * sbTotal.GetBinContent(xbin)**2
-                    error2_2 = peakAreaBkg**2 / sbTotalIntegral**2 * sbTotal.GetBinError(xbin)**2 * (sbTotalIntegral-sbTotal.GetBinContent(xbin))**2
-                    error2_3 = peakAreaBkg**2 / sbTotalIntegral**2 * sbTotal.GetBinContent(xbin)**2 * (sbTotalIntegralError**2-sbTotal.GetBinError(xbin)**2)
-                    #print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/sbTotalIntegral, math.sqrt(error2_2)/sbTotalIntegral, math.sqrt(error2_3)/sbTotalIntegral))
+                    error2_1 = peakAreaBkgError ** 2 * sbTotal.GetBinContent(xbin) ** 2
+                    error2_2 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinError(xbin) ** 2 * (sbTotalIntegral - sbTotal.GetBinContent(xbin)) ** 2
+                    error2_3 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinContent(xbin) ** 2 * (sbTotalIntegralError ** 2 - sbTotal.GetBinError(xbin) ** 2)
+                    # print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/sbTotalIntegral, math.sqrt(error2_2)/sbTotalIntegral, math.sqrt(error2_3)/sbTotalIntegral))
                     error = math.sqrt(error2_1 + error2_2 + error2_3) / sbTotalIntegral
-                    cont = sbTotal.GetBinContent(xbin)*peakAreaBkg/sbTotalIntegral
+                    cont = sbTotal.GetBinContent(xbin) * peakAreaBkg / sbTotalIntegral
                     sbTotal.SetBinError(xbin, error)
                     sbTotal.SetBinContent(xbin, cont)
 
@@ -792,14 +792,14 @@ class DMesonJetAnalysisEngine:
         if s.fBackground:
             s.fBackground.Add(s.fSideBandWindowTotalHistogram)
 
-        for xbin in range(0, s.fHistogram.GetNbinsX()+2):
+        for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
             if s.fHistogram.GetBinContent(xbin) > 0:
                 s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
             else:
                 s.fUncertainty.SetBinContent(xbin, 0)
 
     def GenerateSpectrum1DTruth(self, s):
-        for ibin in range(0, s.fHistogram.GetNbinsX()+2):
+        for ibin in range(0, s.fHistogram.GetNbinsX() + 2):
             if not s.fHistogram.GetBinContent(ibin) > 0:
                 continue
             w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetXaxis().GetBinCenter(ibin))
@@ -845,7 +845,7 @@ class DMesonJetAnalysisEngine:
                 s.fHistogram.SetBinError(xbin, ybin, signal_unc)
                 s.fBackground.SetBinContent(xbin, ybin, bin.fMassFitter.GetBackground())
                 s.fBackground.SetBinError(xbin, ybin, bin.fMassFitter.GetBackgroundError())
-                s.fUncertainty.SetBinContent(xbin, ybin, signal_unc/signal)
+                s.fUncertainty.SetBinContent(xbin, ybin, signal_unc / signal)
                 s.fMass.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalMeanError())
                 s.fMassWidth.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignalWidth())
@@ -853,11 +853,11 @@ class DMesonJetAnalysisEngine:
 
     def GenerateSpectrum2DTruth(self, s):
         w = 1
-        for xbin in range(0, s.fHistogram.GetNbinsX()+2):
-            if s.fAxis[0].fName == "d_pt": 
+        for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
+            if s.fAxis[0].fName == "d_pt":
                 w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetXaxis().GetBinCenter(xbin))
-            for ybin in range(0, s.fHistogram.GetNbinsY()+2):
-                if s.fAxis[1].fName == "d_pt": 
+            for ybin in range(0, s.fHistogram.GetNbinsY() + 2):
+                if s.fAxis[1].fName == "d_pt":
                     w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetYaxis().GetBinCenter(ybin))
                 if not s.fHistogram.GetBinContent(xbin, ybin) > 0:
                     continue
@@ -868,7 +868,7 @@ class DMesonJetAnalysisEngine:
     def GenerateSpectrum3D(self, s):
         print("GenerateSpectrum3D not implemented!")
 
-    def DrawFitResults(self,bin):
+    def DrawFitResults(self, bin):
         if bin.fMassFitter is None or not bin.fMassFitter.FitSuccessfull():
             return
 
@@ -883,9 +883,9 @@ class DMesonJetAnalysisEngine:
         paveSig.SetTextFont(43)
         paveSig.SetTextSize(14)
         paveSig.SetTextAlign(13)
-        paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalString().Data(), 
+        paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalString().Data(),
                                           bin.fMassFitter.GetBackgroundString().Data()))
-        paveSig.AddText("{0}, {1}, {2}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(), 
+        paveSig.AddText("{0}, {1}, {2}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(),
                                           bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data(),
                                           chi2Text))
         paveSig.Draw()
@@ -907,13 +907,13 @@ class DMesonJetAnalysisEngine:
     def FitInvMassPlots(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
-                self.FitInvMassPlotsBinSet(binSet.fName,binSet.fBins,binSet.fFitOptions)
+                self.FitInvMassPlotsBinSet(binSet.fName, binSet.fBins, binSet.fFitOptions)
 
-    def FitInvMassPlotsBinSet(self,name,bins,fitOptions,initialSigOverBkg=0.1):
+    def FitInvMassPlotsBinSet(self, name, bins, fitOptions, initialSigOverBkg=0.1):
         print("Fitting {0}".format(name))
         pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
 
-        for i,bin in enumerate(bins):
+        for i, bin in enumerate(bins):
             if not bin.fInvMassHisto:
                 continue
             if self.fTrigger:
@@ -925,20 +925,20 @@ class DMesonJetAnalysisEngine:
             bin.SetMassFitter(fitter)
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             if integral > 10:
-                fitter.GetFitFunction().SetParameter(0, integral) # total integral
-                fitter.GetFitFunction().SetParLimits(0, integral-2*math.sqrt(integral), integral+2*math.sqrt(integral)) # total integral
+                fitter.GetFitFunction().SetParameter(0, integral)  # total integral
+                fitter.GetFitFunction().SetParLimits(0, integral - 2 * math.sqrt(integral), integral + 2 * math.sqrt(integral))  # total integral
                 if initialSigOverBkg < 1:
-                    fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg) # signal integral
-                    fitter.GetFitFunction().SetParLimits(2, 0, integral+2*math.sqrt(integral)) # signal integral has to be contained in the total integral
+                    fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg)  # signal integral
+                    fitter.GetFitFunction().SetParLimits(2, 0, integral + 2 * math.sqrt(integral))  # signal integral has to be contained in the total integral
                 else:
-                    fitter.GetFitFunction().SetParameter(2, integral) # signal integral
-                    fitter.GetFitFunction().SetParLimits(2, integral*(initialSigOverBkg-1), integral+2*math.sqrt(integral)) # signal integral has to be contained in the total integral
+                    fitter.GetFitFunction().SetParameter(2, integral)  # signal integral
+                    fitter.GetFitFunction().SetParLimits(2, integral * (initialSigOverBkg - 1), integral + 2 * math.sqrt(integral))  # signal integral has to be contained in the total integral
             else:
-                fitter.GetFitFunction().SetParameter(0, 10) # total integral
-                fitter.GetFitFunction().SetParameter(2, 10) # signal integral
+                fitter.GetFitFunction().SetParameter(0, 10)  # total integral
+                fitter.GetFitFunction().SetParameter(2, 10)  # signal integral
 
-            fitter.GetFitFunction().SetParameter(3, pdgMass) # start fitting using PDG mass
-            fitter.GetFitFunction().SetParLimits(3, pdgMass*0.9975, pdgMass*1.0025) # start fitting using PDG mass
+            fitter.GetFitFunction().SetParameter(3, pdgMass)  # start fitting using PDG mass
+            fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.9975, pdgMass * 1.0025)  # start fitting using PDG mass
             print("Fitting bin {0}".format(bin.GetTitle()))
 
             fitter.Fit(bin.fInvMassHisto, fitOptions)
@@ -966,13 +966,13 @@ class DMesonJetAnalysisEngine:
         if not invMassSBHistoName in spectrum.fSideBandWindowInvMassHistos.keys() or not invMassSigHistoName in spectrum.fSignalWindowInvMassHistos.keys():
             return None
         hsb = spectrum.fSideBandWindowInvMassHistos[invMassSBHistoName].DrawCopy("hist")
-        hsb.SetFillColorAlpha(ROOT.kGreen+2, 0.4)
+        hsb.SetFillColorAlpha(ROOT.kGreen + 2, 0.4)
         hsb.SetFillStyle(1001)
-        hsb.SetLineColorAlpha(ROOT.kGreen+2, 0.4)
+        hsb.SetLineColorAlpha(ROOT.kGreen + 2, 0.4)
         hsig = spectrum.fSignalWindowInvMassHistos[invMassSigHistoName].DrawCopy("hist same")
-        hsig.SetFillColorAlpha(ROOT.kRed+2, 0.4)
+        hsig.SetFillColorAlpha(ROOT.kRed + 2, 0.4)
         hsig.SetFillStyle(1001)
-        hsig.SetLineColorAlpha(ROOT.kRed+2, 0.4)
+        hsig.SetLineColorAlpha(ROOT.kRed + 2, 0.4)
         globalList.append(hsb)
         globalList.append(hsig)
 
@@ -987,7 +987,7 @@ class DMesonJetAnalysisEngine:
         self.fCanvases.append(c)
         globalList.append(c)
         icanvas = 1
-        for i,bin in enumerate(bins):
+        for i, bin in enumerate(bins):
             if spectrum and spectrum.fSkipBins and i in spectrum.fSkipBins:
                 continue
             if not bin.fInvMassHisto:
@@ -1004,12 +1004,12 @@ class DMesonJetAnalysisEngine:
             if SB:
                 h = bin.fInvMassHisto.DrawCopy("same")
                 globalList.append(h)
-                SB.SetMaximum(h.GetMaximum()*1.8)
+                SB.SetMaximum(h.GetMaximum() * 1.8)
                 h = SB
             else:
                 h = bin.fInvMassHisto.DrawCopy()
                 globalList.append(h)
-                h.SetMaximum(h.GetMaximum()*1.8)
+                h.SetMaximum(h.GetMaximum() * 1.8)
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(2.3)
             h.GetXaxis().SetTitleSize(19)
@@ -1083,7 +1083,7 @@ class DMesonJetAnalysis:
                     print("Projecting trigger {0}, D meson {1}".format(trigger, d_meson))
                 else:
                     print("Projecting D meson {0}".format(d_meson))
-                eng = DMesonJetAnalysisEngine(collision, trigger, d_meson, 
+                eng = DMesonJetAnalysisEngine(collision, trigger, d_meson,
                                               binMultiSet, config["n_mass_bins"], config["min_mass"], config["max_mass"],
                                               self.fJets, self.fProjector)
                 self.fAnalysisEngine.append(eng)
@@ -1134,7 +1134,7 @@ class DMesonJetAnalysis:
                         if "suffix" in s:
                             suffix = s["suffix"]
                         else:
-                            suffix = None 
+                            suffix = None
                         sname = '_'.join(obj for obj in [eng.fDMeson, jetDef["type"], jetDef["radius"], s["name"], suffix] if obj)
                         binSet = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]]
                         h = binSet.fSpectra[sname].fHistogram

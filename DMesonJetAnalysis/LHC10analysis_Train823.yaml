@@ -21,7 +21,7 @@ analysis:
   -
     name: JetPtBins_DPt_20
     title: "#it{p}_{T,D} > 2 GeV/#it{c}"
-    active_mesons: [D0]
+    active_mesons: [] #[D0]
     need_inv_mass: [D0]
     efficiency: no
     bins:
@@ -85,7 +85,7 @@ analysis:
   -
     name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}"
-    active_mesons: [D0]
+    active_mesons: [] #[D0]
     need_inv_mass: [D0]
     efficiency: no
     bins:
@@ -147,7 +147,7 @@ analysis:
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 2 GeV/#it{c}"
       type: side_band
-      active_mesons: [D0]
+      active_mesons: [] #[D0]
       FD:
         train: FastSim
         gen: powheg
@@ -186,7 +186,7 @@ analysis:
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 4 GeV/#it{c}"
       type: side_band
-      active_mesons: [D0]
+      active_mesons: [] #[D0]
       FD:
         train: FastSim
         gen: powheg
