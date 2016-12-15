@@ -7,9 +7,10 @@ In case of the sideband scaling, for each fit variation in a given pT(D) bin, th
 - Before the execution, the steering macro needs to be configured, by setting the proper values in the SetInputParametersDzero / SetInputParametersDstar methods.
   In particular:
   -> Set the names of input files, trees/THnSparse, etc.
-  -> Set the number and edges of pT(D) bins pT(jet) bins. For the Dstar, the latter are used only for the efficiency scale method, since in the Sb subtraction method the pT(jet) bins are already determined by the THnSparse projections.
+  -> Set the number and edges of pT(D) bins pT(jet) bins. For the Dstar, the latter are used only for the efficiency scale method, since in the Sb subtraction method the pT(jet) bins are already determined by the THnSparse projections (unless you call SetRebinSpectrumIfSBApproach(kTRUE), see later on).
   -> Set the D efficiency values for each pT(D) bin
   -> For the Dzero: set the value of min, max and bin width for the invariant mass plots (for the Dstar, these come automatically from the THnSparse projections).
+  -> For the Dstar, SB approach: choose whether to rebin the jet pT spectrum with the user-defined binning (calling SetRebinSpectrumIfSBApproach(kTRUE)) orkeep the THnSparse binning
   -> Define the configuration of the trials (look at the next section for details).
 - To execute the code, the class has to be compiled first, and the steering macro loaded:
    gROOT->LoadMacro("AliDJetRawYieldUncertainty.cxx++")
