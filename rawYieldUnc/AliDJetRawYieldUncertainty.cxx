@@ -22,6 +22,28 @@
 //  fabio.colamaria@cern.ch
 //-----------------------------------------------------------------------
 
+#include "TMath.h"
+#include "TFile.h"
+#include "TDirectoryFile.h"
+#include "TList.h"
+#include "TCanvas.h"
+#include "TPaveText.h"
+#include "TLegend.h"
+#include "TLatex.h"
+#include "TSystem.h"
+#include "TRandom2.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "TF1.h"
+#include "THnSparse.h"
+#include "TDatabasePDG.h"
+#include "TChain.h"
+#include "TNtuple.h"
+#include "Riostream.h"
+#include "AliHFMultiTrials.h"
+#include "AliAnalysisTaskDmesonJets.h"
+
 #include "AliDJetRawYieldUncertainty.h"
 
 //___________________________________________________________________________________________
@@ -34,7 +56,7 @@ fpTmin(0),
 fpTmax(99),
 fnDbins(0),			
 fDbinpTedges(0x0),    		
-fDEffValues(0x0),  
+fDEffValues(0x0),
 fMassPlot(0x0)
 {
 
@@ -82,19 +104,21 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot(){
 
   std::cout << "Configuration:\nD meson: " << fDmesonLabel << "\nMethod (eff.scale/sideband): " << fYieldApproach << std::endl;
 
-  fFileInput = TFile::Open(fFileNameInput.Data(),"read");
-  if(!fFileInput){
-    std::cout << "File " << fFileInput << " cannot be opened! check your file path!" << std::endl; return kFALSE;
+  if(fDmesonSpecie==kDStarD0pi) {
+    fFileInput = TFile::Open(fFileNameInput.Data(),"read");
+    if(!fFileInput){
+      std::cout << "File " << fFileInput << " cannot be opened! check your file path!" << std::endl; return kFALSE;
+    }
   }
 
   Bool_t success = kTRUE;
   if(fDmesonSpecie==kD0toKpi && fYieldApproach==kEffScale) success = ExtractInputMassPlotDzeroEffScale();
-  if(fDmesonSpecie==kD0toKpi && fYieldApproach==kSideband) success = ExtractInputMassPlotDzeroSideband();  
-  if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kEffScale) success = ExtractInputMassPlotDstarEffScale();  
-  if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kSideband) success = ExtractInputMassPlotDstarSideband();    
+  else if(fDmesonSpecie==kD0toKpi && fYieldApproach==kSideband) success = ExtractInputMassPlotDzeroSideband();
+  else if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kEffScale) success = ExtractInputMassPlotDstarEffScale();
+  else if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kSideband) success = ExtractInputMassPlotDstarSideband();
 
   if(success) std::cout << "Extracted mass spectrum for fit variations" << std::endl;
-
+  else return kFALSE;
   std::cout << "Mass spectrum entries: " << fMassPlot->GetEntries() << std::endl;
   //fMassPlot->SaveAs("spettrotemp.root"); //DEBUG TEMP
 
@@ -105,17 +129,27 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot(){
 }
 
 //___________________________________________________________________________________________
+TChain* AliDJetRawYieldUncertainty::GenerateChain() {
+  Printf("Generating the chain...");
+  TChain* chain = new TChain(fTreeName);
+  for (std::string fname : fInputFileNames) {
+    chain->Add(fname.c_str());
+  }
+  return chain;
+}
+
+//___________________________________________________________________________________________
 Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroEffScale() {
 
     std::cout << "Extracting input mass plot: " << fpTmin << " to " << fpTmax << std::endl;    
 
-    TTree *tree = (TTree*)fFileInput->Get(fTreeName);
+    TTree *tree = GenerateChain();
     AliAnalysisTaskDmesonJets::AliD0InfoSummary *brD = 0;
     AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = 0;
     tree->SetBranchAddress(fDBranchName,&brD);
     tree->SetBranchAddress(fJetBranchName,&brJet);
 
-    if(!tree || !brD || !brJet) {
+    if(!tree) {
       std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
       return kFALSE;
     }    
@@ -161,13 +195,13 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroSideband() {
 
     std::cout << "Extracting input mass plot: " << fpTmin << " to " << fpTmax << std::endl;    
 
-    TTree *tree = (TTree*)fFileInput->Get(fTreeName);
+    TTree *tree = GenerateChain();
     AliAnalysisTaskDmesonJets::AliD0InfoSummary *brD = 0;
     AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = 0;
     tree->SetBranchAddress(fDBranchName,&brD);
     tree->SetBranchAddress(fJetBranchName,&brJet);
 
-    if(!tree || !brD || !brJet) {
+    if(!tree) {
       std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
       return kFALSE;
     }    

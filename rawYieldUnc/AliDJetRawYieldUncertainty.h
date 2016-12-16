@@ -26,26 +26,10 @@
 //-----------------------------------------------------------------------
 
 #include <iostream>
+#include <vector>
+#include <string>
+
 #include "TObject.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TDirectoryFile.h"
-#include "TList.h"
-#include "TCanvas.h"
-#include "TPaveText.h"
-#include "TLegend.h"
-#include "TLatex.h"
-#include "TSystem.h"
-#include "TRandom2.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TH3D.h"
-#include "TF1.h"
-#include "THnSparse.h"
-#include "TDatabasePDG.h"
-#include "TNtuple.h"
-#include "AliHFMultiTrials.h"
-#include "AliAnalysisTaskDmesonJets.h"
 
 class AliDJetRawYieldUncertainty : public TObject
 {
@@ -59,13 +43,14 @@ public:
     AliDJetRawYieldUncertainty(const AliDJetRawYieldUncertainty &source);
     virtual ~AliDJetRawYieldUncertainty();
 
-    void SetInputFilename(TString filename) {fFileNameInput=filename;}
+    void SetInputFilename(TString filename) {fFileNameInput=filename;}  //Dstar
     void SetInputDirname(TString dirname) {fDirName=dirname;}  //Dstar
     void SetInputListname(TString listname) {fListName=listname;}  //Dstar
     void SetInputObjectname(TString objname) {fObjectName=objname;}  //Dstar
     void SetInputTreename(TString treename) {fTreeName=treename;}  //Dzero
     void SetInputDBranchname(TString dname) {fDBranchName=dname;}  //Dzero
     void SetInputJetBranchname(TString jetname) {fJetBranchName=jetname;}  //Dzero
+    void AddInputFileName(std::string filename) {fInputFileNames.push_back(filename);}
 
     Bool_t SetDmesonSpecie(DMesonSpecies k);
     void SetYieldMethod(YieldMethod meth) {fYieldApproach=meth;}
@@ -90,6 +75,7 @@ public:
     void SetSigmaBinCounting(Int_t nsteps, Double_t* cases=0x0);
     void SetMaskOfVariations(Int_t ncases, Bool_t* cases);
 
+    TChain* GenerateChain();
     Bool_t ExtractInputMassPlot();
     Bool_t ExtractInputMassPlotDzeroEffScale();
     Bool_t ExtractInputMassPlotDzeroSideband();
@@ -103,6 +89,7 @@ public:
     Bool_t EvaluateUncertainty_CoherentTrialChoice();
     Bool_t EvaluateUncertaintyDzeroEffScale();
     Bool_t EvaluateUncertaintyDzeroSideband();
+    Bool_t EvaluateUncertaintyDzeroSideband_CoherentTrialChoice();
     Bool_t EvaluateUncertaintyDstarEffScale();
     Bool_t EvaluateUncertaintyDstarSideband();
     Bool_t EvaluateUncertaintyDstarSideband_CoherentTrialChoice();
@@ -112,11 +99,12 @@ public:
 
 private:
     
-    TFile *fFileInput;      		// file containing the task output
-    TString fFileNameInput;		// name of input file
+    TFile *fFileInput;      		// file containing the task output (Dstar)
+    TString fFileNameInput;		// name of input file (Dstar)
     TString fDirName; 			// name of input directory in the root file (Dstar)
     TString fListName; 			// name of input list (Dstar)
     TString fObjectName; 		// name of input container to extract the mass plot (Dstar)
+    std::vector<std::string> fInputFileNames; // name of input file (Dzero)
     TString fTreeName; 			// name of input TTree (Dzero)
     TString fDBranchName;		// name of input branch for D meson (Dzero)
     TString fJetBranchName;		// name of input branch for jet (Dzero)
