@@ -152,7 +152,10 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface){
 			1,1,   // free sigma, fixed mean
 			1,1};  // fixed mean, fixed sigma
 
-  interface->SetInputFilename("./AnalysisResults_Djets_pp.root");
+  interface->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10b/merge/AnalysisResults.root");
+  interface->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10c/merge/AnalysisResults.root");
+  interface->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10d/merge/AnalysisResults.root");
+  interface->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10e/merge/AnalysisResults.root");
   interface->SetInputTreename("AliAnalysisTaskDmesonJets_AnyINT_D0");
   interface->SetInputDBranchname("DmesonJet");
   interface->SetInputJetBranchname("Jet_AKTChargedR040_pt_scheme");
