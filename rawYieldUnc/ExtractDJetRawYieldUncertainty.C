@@ -7,6 +7,9 @@
 //  ExtractDJetRawYieldUncertainty(...) //to build the uncertainty for the various bins of the jet pT spectrum
 // 
 
+void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface);
+void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface);
+
 void EvaluateBinPerBinUncertainty(
    Int_t specie=AliDJetRawYieldUncertainty::kD0toKpi,  //D-meson decay channel
    Int_t method=AliDJetRawYieldUncertainty::kEffScale,  //yield extraction method
@@ -18,15 +21,22 @@ void EvaluateBinPerBinUncertainty(
 {
 
   AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
-  Bool_t flagSpecie = interface->SetDmesonSpecie(specie);
-  if(!flagSpecie) return;
-  interface->SetYieldMethod(method);
+  Bool_t flagSpecie = interface->SetDmesonSpecie((AliDJetRawYieldUncertainty::DMesonSpecies)specie);
+  if (!flagSpecie) return;
+  interface->SetYieldMethod((AliDJetRawYieldUncertainty::YieldMethod)method);
   interface->SetPtBinEdgesForMassPlot(ptmin,ptmax);
   interface->SetZedges(zmin,zmax);
 
-  if(specie==0) SetInputParametersDzero(interface);  // check the names and the values in the method!!
-  else if(specie==1) SetInputParametersDstar(interface);  // check the names and the values in the method!!
-  else if {printf("Error in setting the D-meson specie! Exiting...\n"); return kFALSE;}
+  if (specie==0) {
+    SetInputParametersDzero(interface);  // check the names and the values in the method!!
+  }
+  else if(specie==1) {
+    SetInputParametersDstar(interface);  // check the names and the values in the method!!
+  }
+  else {
+    printf("Error in setting the D-meson specie! Exiting...\n");
+    return;
+  }
 
   interface->SetDebugLevel(2); //0 = just do the job; 1 = additional printout; 2 = print individual fits
 
@@ -57,15 +67,15 @@ void ExtractDJetRawYieldUncertainty(
 {
 
   AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
-  Bool_t flagSpecie = interface->SetDmesonSpecie(specie);
+  Bool_t flagSpecie = interface->SetDmesonSpecie((AliDJetRawYieldUncertainty::DMesonSpecies)specie);
   if(!flagSpecie) return;
-  interface->SetYieldMethod(method);
+  interface->SetYieldMethod((AliDJetRawYieldUncertainty::YieldMethod)(method));
   interface->SetMaxNTrialsForSidebandMethod(nTrials); //only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
   interface->SetAllowRepetitionOfTrialExtraction(allowRepet);
   
   if(specie==0) SetInputParametersDzero(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
   else if(specie==1) SetInputParametersDstar(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
-  else if {printf("Error in setting the D-meson specie! Exiting...\n"); return kFALSE;}
+  else {printf("Error in setting the D-meson specie! Exiting...\n"); return;}
 
   interface->SetDebugLevel(2); //0 = just do the job; 1 = additional printout; 2 = print individual fits
 
@@ -88,14 +98,14 @@ void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
 {
 
   AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
-  Bool_t flagSpecie = interface->SetDmesonSpecie(specie);
+  Bool_t flagSpecie = interface->SetDmesonSpecie((AliDJetRawYieldUncertainty::DMesonSpecies)specie);
   if(!flagSpecie) return;
   interface->SetYieldMethod(AliDJetRawYieldUncertainty::kSideband);
   interface->SetMaxNTrialsForSidebandMethod(nTrials); 
   
   if(specie==0) SetInputParametersDzero(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
   else if(specie==1) SetInputParametersDstar(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
-  else if {printf("Error in setting the D-meson specie! Exiting...\n"); return kFALSE;}
+  else {printf("Error in setting the D-meson specie! Exiting...\n"); return;}
 
   interface->SetDebugLevel(2); //0 = just do the job; 1 = additional printout; 2 = print individual fits
 
@@ -114,11 +124,11 @@ void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
 void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface){
 
   //Dzero cfg
-  Int_t nDbins = 9;
-  Double_t ptDbins[10] = {2,3,4,5,6,7,8,12,16,24};
-  Int_t nJetbins = 6;
-  Double_t ptJetbins[7] = {5,6,8,10,14,18,24}; //used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
-  Double_t DMesonEff[9] = {/*0.0118323, 0.02011807, */ 0.03644752, 0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591}; //chopping 0-1, 1-2
+  const Int_t nDbins = 8;
+  Double_t ptDbins[nDbins+1] = {3, 4, 5, 6, 7, 8, 10, 16, 30};
+  const Int_t nJetbins = 6;
+  Double_t ptJetbins[nJetbins+1] = {5, 6, 8, 10, 14, 20, 30}; //used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
+  Double_t DMesonEff[nDbins] = {/*0.0118323, 0.02011807,  0.03644752, */0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591}; //chopping 0-1, 1-2
 
   Double_t sigmafixed=0.014;
   Double_t chi2cut=3;
@@ -152,7 +162,7 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface){
   interface->SetJetPtBins(nJetbins,ptJetbins);
   interface->SetDmesonEfficiency(DMesonEff);
 
-  interface->SetSigmaForSignalRegion(3.); //only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
+  interface->SetSigmaForSignalRegion(2.); //only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
   interface->SetSigmaToFix(sigmafixed);
   interface->SetChi2Cut(chi2cut);
   interface->SetMeanSigmaVariations(meansigmaVar);
