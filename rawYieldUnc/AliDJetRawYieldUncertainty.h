@@ -53,7 +53,7 @@ public:
     void AddInputFileName(std::string filename) {fInputFileNames.push_back(filename);}
 
     Bool_t SetDmesonSpecie(DMesonSpecies k);
-    void SetYieldMethod(YieldMethod meth) {fYieldApproach=meth;}
+    void SetYieldMethod(YieldMethod meth);
     void SetAllowRepetitionOfTrialExtraction(Bool_t allow) {fAllowRepetitions=allow;}
     void SetPtBinEdgesForMassPlot(Double_t ptmin, Double_t ptmax) {fpTmin=ptmin; fpTmax=ptmax;}
     void SetZedges(Double_t zmin, Double_t zmax) {fzmin=zmin; fzmax=zmax;}
@@ -112,6 +112,7 @@ private:
     DMesonSpecies fDmesonSpecie;	// D meson specie    
     TString fDmesonLabel;		// D meson label
     YieldMethod fYieldApproach;		// method to extract jet pT spectrum
+    TString fMethodLabel; // method label
     Double_t fpTmin;	    		// pT lower edge of mass plot to evaluate variations of yields
     Double_t fpTmax;	   		// pT upper edge of mass plot to evaluate variations of yields
     Double_t fzmin;	    		// z minimum value to extract jet pT spectrum    
