@@ -7,6 +7,8 @@ import IPython
 import ROOT
 import DMesonJetUtils
 import array
+import shutil
+import os
 
 globalList = []
 canvases = []
@@ -27,7 +29,7 @@ def main(actions, output_path, output_type):
     f.close()
 
     f = open("LHC14j4analysis_Train982.yaml", 'r')
-    configs["LHC14j4_c_eff"] = yaml.load(f)
+    configs["LHC14j4_c"] = yaml.load(f)
     f.close()
 
     f = open("LHC14j4analysis_Train982_efficiency.yaml", 'r')
@@ -69,8 +71,9 @@ def main(actions, output_path, output_type):
     histograms = dict()
 
     for name, c in configs.iteritems():
-        file = OpenFile(c)
-        histograms[name] = ExtractRootList(file)
+        if "LHC" in name:
+            file = OpenFile(c)
+            histograms[name] = ExtractRootList(file)
 
     file = ROOT.TFile("/Volumes/DATA/ALICE/JetResults/FastSim_powheg_beauty_1478869008/stage_1/output/BFeedDown_powheg_beauty_1478869008.root")
     histograms["BFeedDown"] = ExtractRootList(file)
@@ -84,55 +87,171 @@ def main(actions, output_path, output_type):
     if "all" in actions or "fd_fold_unfold" in actions:
         FD_FoldUnfold_Comparison(histograms["BFeedDown"])
 
+    BFeedDownPath = "{0}/BFeedDown".format(output_path)
+    if not os.path.isdir(BFeedDownPath):
+        os.makedirs(BFeedDownPath)
+
     for c in canvases:
         c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
 
-    if "data":
-        CopyDataFilesWithoutEff(configs["LHC10"])
-        CopyDataFilesWithEff(configs["LHC10_eff"])
+    if "all" in actions or "data" in actions:
+        CopyDataFilesWithoutEff(configs["LHC10"], output_path, output_type)
+        CopyDataFilesWithEff(configs["LHC10_eff"], output_path, output_type)
 
-    if "mc":
-        CopyMCFilesWithoutEff(configs["LHC14j4_cb"])
-        CopyMCFilesWithEff(configs["LHC14j4_cb_eff"])
-        CopyMCFilesWithoutEffCharmOnly(configs["LHC14j4_c"])
-        CopyMCFilesWithEffCharmOnly(configs["LHC14j4_c_eff"])
+    if "all" in actions or "mc" in actions:
+        CopyMCFilesWithoutEff(configs["LHC14j4_cb"], output_path, output_type)
+        CopyMCFilesWithEff(configs["LHC14j4_cb_eff"], output_path, output_type)
+        CopyMCFilesWithoutEffCharmOnly(configs["LHC14j4_c"], output_path, output_type)
+        CopyMCFilesWithEffCharmOnly(configs["LHC14j4_c_eff"], output_path, output_type)
 
-    if "data_unfolding":
-        CopyDataUnfoldingFiles(configs["data_unfolding"])
+    if "all" in actions or "data_unfolding" in actions:
+        CopyDataUnfoldingFiles(configs["data_unfolding"], output_path, output_type)
 
-    if "mc_unfolding":
-        CopyMCUnfoldingFiles(configs["mc_unfolding"])
+    if "all" in actions or "mc_unfolding" in actions:
+        CopyMCUnfoldingFiles(configs["mc_unfolding"], output_path, output_type)
 
+    if "all" in actions or "efficiency_c" in actions:
+        CopyEfficiencyFiles(configs["LHC15i2_c"], output_path, output_type)
 
-def CopyDataFilesWithoutEff(config):
+    if "all" in actions or "response_c" in actions:
+        CopyResponseFiles(configs["LHC15i2_c_eff"], output_path, output_type)
+
+    if "all" in actions or "bfeed_down" in actions:
+        CopyBFeedDown("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+
+def CopyFiles(input_path, output_path, file_list, output_type):
+    if not os.path.isdir(output_path):
+        os.makedirs(output_path)
+    for file_name in file_list:
+        print("Copying {0}...".format(file_name))
+        shutil.copy("{0}/{1}.{2}".format(input_path, file_name, output_type), output_path)
+
+def CopyBFeedDown(input_path, output_path, output_type):
+    full_output_path = "{0}/BFeedDown".format(output_path)
+    file_list = []
+    file_list.append("BFeedDownVsPtD_powheg_Charged_R040_1478868679_1478869008")
+    file_list.append("BFeedDownVsPtD_powheg_Charged_R040_1478868679_1478869008_Ratio")
+    file_list.append("BFeedDownVsPtJet_powheg_Charged_R040_1478868679_1478869008")
+    file_list.append("BFeedDownVsPtJet_powheg_Charged_R040_1478868679_1478869008_Ratio")
+    file_list.append("BFeedDownVsZ_powheg_Charged_R040_1478868679_1478869008")
+    file_list.append("BFeedDownVsZ_powheg_Charged_R040_1478868679_1478869008_Ratio")
+    CopyFiles(input_path, full_output_path, file_list, output_type)
+
+def CopyDataFilesWithoutEff(config, output_path, output_type):
+    full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_output_path = "{0}/RawYieldExtractionWithoutEff".format(output_path)
+    file_list = []
+    file_list.append("D0_Charged_R040_JetPtBins_DPt_30")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_InvMassFit_Normalized_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_InvMassFit_Unc_canvas")
+    file_list.append("D0_Charged_R040_DPtBins_JetPt_5_30_SideBand_D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_Normalized_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_Unc_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_BkgVsSig")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_TotalBkgVsSig")
+    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison")
+    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison_Ratio")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
+def CopyDataFilesWithEff(config, output_path, output_type):
+    full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_output_path = "{0}/RawYieldExtractionWithEff".format(output_path)
+    file_list = []
+    file_list.append("D0_Charged_R040_JetPtBins_DPt_30")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_InvMassFit_Normalized_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_InvMassFit_Unc_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_Normalized_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_Unc_canvas")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_TotalBkgVsSig")
+    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison")
+    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison_Ratio")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_FDCorrection")
+    file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_FDCorrection_Ratio")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
+def CopyEfficiencyFiles(config, output_path, output_type):
+    full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_output_path = "{0}/RecoEfficiency".format(output_path)
+    file_list = []
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_PartialEfficiency")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_PartialEfficiencyRatios")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
+def CopyResponseFiles(config, output_path, output_type):
+    full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_output_path = "{0}/DetectorResponse".format(output_path)
+    file_list = []
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtSpectrum_DPt_30_DetectorResponse")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtSpectrum_DPt_30_DetectorResponse_Resolution_canvas")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtSpectrum_DPt_30_DetectorResponse_EnergyScaleShift_canvas")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtSpectrum_DPt_30_DetectorResponse_canvas")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
+def CopyMCFilesWithoutEff(config, output_path, output_type):
     pass
 
-def CopyDataFilesWithEff(config):
+def CopyMCFilesWithEff(config, output_path, output_type):
+    full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_output_path = "{0}/MCRawYieldExtractionWithEff".format(output_path)
+    file_list = []
+    file_list.append("D0_Charged_R040_JetPtBins_DPt_30")
+    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison")
+    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison_Ratio")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
+def CopyMCFilesWithoutEffCharmOnly(config, output_path, output_type):
     pass
 
-def CopyMCFilesWithoutEff(config):
+def CopyMCFilesWithEffCharmOnly(config, output_path, output_type):
     pass
 
-def CopyMCFilesWithEff(config):
-    pass
+def CopyDataUnfoldingFiles(config, output_path, output_type):
+    full_input_path = "{0}/{1}".format(config["input_path"], config["name"])
+    full_output_path = "{0}/DataUnfolding".format(output_path)
+    file_list = []
+    file_list.append("SideBand_DPt_30_Response_PriorResponseTruth")
+    file_list.append("SideBand_DPt_30_UnfoldingSummary_Bayes")
+    file_list.append("SideBand_DPt_30_UnfoldingSummary_Bayes_UnfoldedOverMeasured")
+    file_list.append("SideBand_DPt_30_BinByBinCorrectionFactors")
+    file_list.append("SideBand_DPt_30_Priors")
+    file_list.append("SideBand_DPt_30_Priors_Ratio")
+    file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes")
+    file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes_Ratio")
+    file_list.append("SideBand_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth")
+    file_list.append("SideBand_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth_Ratio")
+    file_list.append("SideBand_DPt_30_UnfoldingMethod")
+    file_list.append("SideBand_DPt_30_UnfoldingMethod_Ratio")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
-def CopyMCFilesWithoutEffCharmOnly(config):
-    pass
-
-def CopyMCFilesWithEffCharmOnly(config):
-    pass
-
-def CopyDataUnfoldingFiles(config):
-    pass
-
-def CopyMCUnfoldingFiles(config):
-    pass
+def CopyMCUnfoldingFiles(config, output_path, output_type):
+    full_input_path = "{0}/{1}".format(config["input_path"], config["name"])
+    full_output_path = "{0}/MCUnfolding".format(output_path)
+    file_list = []
+    file_list.append("SideBand_DPt_30_Response_PriorResponseTruth")
+    file_list.append("SideBand_DPt_30_UnfoldingSummary_Bayes")
+    file_list.append("SideBand_DPt_30_UnfoldingSummary_Bayes_UnfoldedOverMeasured")
+    file_list.append("SideBand_DPt_30_BinByBinCorrectionFactors")
+    file_list.append("SideBand_DPt_30_Priors")
+    file_list.append("SideBand_DPt_30_Priors_Ratio")
+    file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes")
+    file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes_Ratio")
+    file_list.append("SideBand_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth")
+    file_list.append("SideBand_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth_Ratio")
+    file_list.append("SideBand_DPt_30_UnfoldingMethod")
+    file_list.append("SideBand_DPt_30_UnfoldingMethod_Ratio")
+    file_list.append("SignalOnly_DPt_30_UnfoldingPrior_Bayes")
+    file_list.append("SignalOnly_DPt_30_UnfoldingPrior_Bayes_Ratio")
+    file_list.append("SignalOnly_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth")
+    file_list.append("SignalOnly_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth_Ratio")
+    file_list.append("SignalOnly_DPt_30_UnfoldingMethod")
+    file_list.append("SignalOnly_DPt_30_UnfoldingMethod_Ratio")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def FD_FoldUnfold_Comparison(histograms):
-    baseline = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20"].Clone()
-    detector = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20_detector"].Clone()
-    unfolded = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20_unfolded"].Clone()
-    unfolded_b = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20_unfolded_b"].Clone()
+    baseline = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30"].Clone()
+    detector = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_detector"].Clone()
+    unfolded = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_unfolded"].Clone()
+    unfolded_b = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_unfolded_b"].Clone()
     baseline.SetTitle("POWHEG+PYTHIA FD spectrum")
     detector.SetTitle("Smeared w/ b #rightarrow D^{0} detector response")
     unfolded.SetTitle("Unfolded w/ c #rightarrow D^{0} detector response")
@@ -140,7 +259,7 @@ def FD_FoldUnfold_Comparison(histograms):
     hist = [detector, unfolded, unfolded_b]
     globalList.append(baseline)
     globalList.extend(hist)
-    r = DMesonJetUtils.CompareSpectra(baseline, hist, "FD_FoldUnfold_Comparison")
+    r = DMesonJetUtils.CompareSpectra(baseline, hist, "BFeedDown/FD_FoldUnfold_Comparison")
     for obj in r:
         globalList.append(obj)
         if isinstance(obj, ROOT.TCanvas):
@@ -152,7 +271,7 @@ def EfficiencyComparison(hist_c, hist_b):
     dmesonName = "D0"
     prefix = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
     jetPtLimits = [5, 30]
-    cname = "ReconstructionEfficiencyComparison"
+    cname = "BFeedDown/ReconstructionEfficiencyPromptNonPromptComparison"
     opt = "hist"
     c = None
     leg = None
@@ -195,14 +314,14 @@ def EfficiencyComparison(hist_c, hist_b):
     canvases.append(c)
 
 def JetPtResolutionComparison(hist_c, hist_b):
-    spectrumName = "JetPtSpectrum_DPt_20"
+    spectrumName = "JetPtSpectrum_DPt_30"
     jetName = "Jet_AKTChargedR040_pt_scheme"
     dmesonName = "D0"
     listName = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
     detResp_c = hist_c[listName]["DetectorResponse"]
     detResp_b = hist_b[listName]["DetectorResponse"]
 
-    canvas = DMesonJetUtils.GenerateMultiCanvas("DetectorJetPtResolutionComparison", len(detResp_c))
+    canvas = DMesonJetUtils.GenerateMultiCanvas("BFeedDown/DetectorJetPtResolutionPromptNonPromptComparison", len(detResp_c))
     globalList.append(canvas)
     canvases.append(canvas)
     for i, (c, b) in enumerate(zip(detResp_c.itervalues(), detResp_b.itervalues())):
