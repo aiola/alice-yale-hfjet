@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python script to do extract B feed down correction factors
+# python script to do extract B feed down correction factors
 
 import argparse
 import yaml
@@ -25,7 +25,7 @@ class SpectraSet:
         self.spectra.append(s)
 
 class QuarkSetting:
-    def __init__(self,_name):
+    def __init__(self, _name):
         self.name = _name
         self.histos = dict()
 
@@ -42,20 +42,22 @@ class DataSpectrumDef:
         self.fUnfoldingMethod = unfoldingMethod
         self.fUnfoldingReg = unfoldingReg
         self.fUnfoldingPrior = unfoldingPrior
-        self.fCrossSection = 62.3 #mb CINT1
-        self.fBranchingRatio = 0.0388 # D0->Kpi
+        self.fCrossSection = 62.3  # mb CINT1
+        self.fBranchingRatio = 0.0388  # D0->Kpi
         self.fAntiParticleNorm = 2.0
 
     def LoadSpectrum(self, file):
         spectrumList = file.Get(self.fSpectrumName)
         if not spectrumList:
             print("Could not get list {0} from file {1}".format(self.fSpectrumName, file.GetName()))
+            file.ls()
             exit(1)
         else:
             print("List {0} loaded from file {1}".format(self.fSpectrumName, file.GetName()))
         methodList = spectrumList.FindObject(self.fUnfoldingMethod)
         if not methodList:
             print("Could not get list {0} from list {1}".format(self.fUnfoldingMethod, self.fSpectrumName))
+            spectrumList.Print()
             exit(1)
         else:
             print("List {0} loaded from list {1}".format(self.fUnfoldingMethod, self.fSpectrumName))
@@ -63,6 +65,7 @@ class DataSpectrumDef:
         h = methodList.FindObject(hname)
         if not h:
             print("Could not get histogram {0} from list {1}".format(hname, self.fUnfoldingMethod))
+            methodList.Print()
             exit(1)
         else:
             print("Histogram {0} loaded from list {1}".format(hname, self.fUnfoldingMethod))
@@ -75,7 +78,7 @@ class DataSpectrumDef:
             print("Histogram {0} loaded from list {1}".format("Events", spectrumList.GetName()))
         self.fNumberOfEvents = self.fEvents.GetBinContent(1)
         self.fNormalizedHistogram = self.fHistogram.Clone("{0}_Normalized".format(hname))
-        self.fNormalizedHistogram.Scale(self.fCrossSection/(self.fNumberOfEvents*self.fBranchingRatio*self.fAntiParticleNorm), "width")
+        self.fNormalizedHistogram.Scale(self.fCrossSection / (self.fNumberOfEvents * self.fBranchingRatio * self.fAntiParticleNorm), "width")
 
 def GetpPbSpectrum(pPbdata):
     file = ROOT.TFile(pPbdata)
@@ -96,7 +99,7 @@ def pPb_comparison(jet_type, jet_radius, ppdata, pPbdata):
         print("File {0} successfully open".format(dataFileName))
 
     spectra = []
-    spectrum = DataSpectrumDef("InvMassFit_DPt_20", "Bayes", "Reg4", "PriorResponseTruth")
+    spectrum = DataSpectrumDef("InvMassFit_DPt_30", "Bayes", "Reg4", "PriorResponseTruth")
     spectrum.LoadSpectrum(dataFile)
     spectrum.fNormalizedHistogram.SetTitle("pp, #sqrt{#it{s}} = 7 TeV")
     globalList.append(spectrum.fNormalizedHistogram)
