@@ -64,7 +64,8 @@ public:
 
     void SetSigmaForSignalRegion(Double_t nsigma) {fnSigmaSignReg=nsigma;}
     void SetMaxNTrialsForSidebandMethod(Int_t nmax) {fnMaxTrials=nmax;}
-    void SetSigmaToFix(Double_t sigmafix) {fSigmaToFix=sigmafix;}
+    void SetSigmaToFixDPtBins(Double_t* sigmafix);
+    void SetSigmaToFixJetPtBins(Double_t* sigmafix);
     void SetChi2Cut(Double_t chi2cut) {fChi2Cut=chi2cut;}
     void SetMeanSigmaVariations(Bool_t* cases);
     void SetBkgVariations(Bool_t* cases);
@@ -135,7 +136,8 @@ private:
     Double_t *fDEffValues;    		// D-meson efficiency values
 
     Double_t fnSigmaSignReg;		// Number of sigma for signal region
-    Double_t fSigmaToFix;		// Value of fixed sigma for MultiTrial
+    Double_t *fSigmaToFixDPtBins;		// Value of fixed sigma for MultiTrial
+    Double_t *fSigmaToFixJetPtBins;   // Value of fixed sigma for MultiTrial
     Bool_t *fMeanSigmaVar;		// array of bools for mean/sigma variations
     Bool_t *fBkgVar;			// array of bools for bkg variations
     Int_t fnRebinSteps;			// number of steps for rebin

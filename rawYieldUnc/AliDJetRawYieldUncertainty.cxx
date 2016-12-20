@@ -373,10 +373,33 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
   
   TString outfilnam=Form("RawYieldVariations_%s_%s_%1.1fto%1.1f.root",fDmesonLabel.Data(), fMethodLabel.Data(),fpTmin,fpTmax);
 
+  Double_t sigmaToFix = 0;
+  if (fYieldApproach == kEffScale) {
+    for (Int_t i=0; i < fnJetbins; i++){
+      if (fpTmin == fJetbinpTedges[i]) {
+        sigmaToFix = fSigmaToFixJetPtBins[i];
+        Printf("InvMassFit, Jet pt Bin %d (%.2f, %.2f), sigma = %.5f", i, fpTmin, fpTmax, sigmaToFix);
+        break;
+      }
+    }
+  }
+  else if (fYieldApproach == kSideband) {
+    for (Int_t i=0; i < fnDbins; i++){
+      if (fpTmin == fDbinpTedges[i]) {
+        sigmaToFix = fSigmaToFixDPtBins[i];
+        Printf("SB approach, D pt Bin %d (%.2f, %.2f), sigma = %.5f", i, fpTmin, fpTmax, sigmaToFix);
+        break;
+      }
+    }
+  }
+  if (sigmaToFix == 0){
+    Printf("**** ERROR **** sigmaToFix = 0!!");
+    return kFALSE;
+  }
   AliHFMultiTrials* mt = new AliHFMultiTrials();
   mt->SetSuffixForHistoNames("");
   mt->SetMass(massD);
-  mt->SetSigmaGaussMC(fSigmaToFix);
+  mt->SetSigmaGaussMC(sigmaToFix);
   mt->SetUseFixSigFreeMean(fMeanSigmaVar[0]);
   mt->SetUseFixSigUpFreeMean(fMeanSigmaVar[1]);
   mt->SetUseFixSigDownFreeMean(fMeanSigmaVar[2]);
@@ -845,21 +868,16 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
 	std::cout << fJetbinpTedges[fnJetbins] << std::endl;
 
 	//Reload input object to extract projections in jet pT for each D-mass pTrange
-	fFileInput = TFile::Open(fFileNameInput.Data(), "read");
-	if (!fFileInput) {
-		std::cout << "File " << fFileInput << " cannot be opened! check your file path!" << std::endl; return kFALSE;
-	}
+  TTree *tree = GenerateChain();
+  AliAnalysisTaskDmesonJets::AliD0InfoSummary *brD = 0;
+  AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = 0;
+  tree->SetBranchAddress(fDBranchName,&brD);
+  tree->SetBranchAddress(fJetBranchName,&brJet);
 
-	TTree *tree = (TTree*)fFileInput->Get(fTreeName);
-	AliAnalysisTaskDmesonJets::AliD0InfoSummary *brD = 0;
-	AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = 0;
-	tree->SetBranchAddress(fDBranchName, &brD);
-	tree->SetBranchAddress(fJetBranchName, &brJet);
-
-	if (!tree || !brD || !brJet) {
-		std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
-		return kFALSE;
-	}
+  if(!tree) {
+    std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
+    return kFALSE;
+  }
 
 	TRandom2 *gen = new TRandom2();
 	gen->SetSeed(0);
@@ -2149,6 +2167,26 @@ void AliDJetRawYieldUncertainty::SetJetPtBins(Int_t nbins, Double_t* ptedges) {
 }
 
 //___________________________________________________________________________________________
+void AliDJetRawYieldUncertainty::SetSigmaToFixDPtBins(Double_t* sigmafix) {
+
+  if(!fnDbins) return;
+  fSigmaToFixDPtBins = new Double_t[fnDbins];
+  for(int i=0;i<fnDbins;i++) {
+    fSigmaToFixDPtBins[i]=sigmafix[i];
+  }
+}
+
+//___________________________________________________________________________________________
+void AliDJetRawYieldUncertainty::SetSigmaToFixJetPtBins(Double_t* sigmafix) {
+
+  if(!fnJetbins) return;
+  fSigmaToFixJetPtBins = new Double_t[fnJetbins];
+  for(int i=0;i<fnJetbins;i++) {
+    fSigmaToFixJetPtBins[i]=sigmafix[i];
+  }
+}
+
+//___________________________________________________________________________________________
 void AliDJetRawYieldUncertainty::SetDmesonEfficiency(Double_t* effvalues) {
 
   if(!fnDbins) return;
@@ -2255,6 +2293,8 @@ void AliDJetRawYieldUncertainty::ClearObjects() {
   if(fMinMassSteps) delete[] fMinMassSteps; 
   if(fMaxMassSteps) delete[] fMaxMassSteps; 
   if(fMask) delete[] fMask; 
+  if(fSigmaToFixJetPtBins) delete[] fSigmaToFixJetPtBins;
+  if(fSigmaToFixDPtBins) delete[] fSigmaToFixDPtBins;
  
   return;
 }
