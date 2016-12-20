@@ -5,3 +5,5 @@ RawYieldVariations_*.root
 YieldDistribution_*.root
 FinalRawYieldCentralPlusSystUncertainty_*.root
 FinalRawYieldUncertainty_*.root
+DistributionOfFinalYields_*.root
+AverageOfFinalYields_*.root
