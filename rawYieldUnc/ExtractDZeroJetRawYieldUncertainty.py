@@ -74,14 +74,15 @@ def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nT
     globalList.append(interface)
     return interface
 
-def GeneratDzeroJetRawYieldUnc(config, specie, refl):
+def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     # Dzero cfg
     ana = config["analysis"][0]
 
     # DMesonEff = [0.0118323, 0.02011807,  0.03644752, 0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]
     DMesonEff = [0.05664352 , 0.07682878 , 0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]  # chopping 0-1, 1-2, 2-3
+    sigmafixed_DPtBins = [0.0106, 0.0128, 0.0132, 0.0164, 0.0158, 0.0195, 0.0197, 0.025]  # chopping 0-1, 1-2, 2-3
+    sigmafixed_JetPtBins = [0.0125, 0.0136, 0.0167, 0.0165, 0.0202, 0.0212]
 
-    sigmafixed = 0.014
     chi2cut = 3
     meansigmaVar = [True, True, True, True, True, True]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
     bkgVar = [True, False, True, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
@@ -110,12 +111,13 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl):
     interface.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
 
     interface.SetMassEdgesAndBinWidthForMassPlot(1.5664, 2.1664, 0.006)
-    interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins))
-    interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins))
+    interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
+    interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
 
     interface.SetSigmaForSignalRegion(2.)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
-    interface.SetSigmaToFix(sigmafixed)
+    interface.SetSigmaToFixDPtBins(numpy.array(sigmafixed_DPtBins, dtype=numpy.float64))
+    interface.SetSigmaToFixJetPtBins(numpy.array(sigmafixed_JetPtBins, dtype=numpy.float64))
     interface.SetChi2Cut(chi2cut)
     interface.SetMeanSigmaVariations(numpy.array(meansigmaVar, dtype=bool))
     interface.SetBkgVariations(numpy.array(bkgVar, dtype=bool))
