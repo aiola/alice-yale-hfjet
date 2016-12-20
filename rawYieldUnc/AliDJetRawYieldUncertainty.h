@@ -26,9 +26,6 @@
 //-----------------------------------------------------------------------
 
 #include <iostream>
-#include <vector>
-#include <string>
-
 #include "TObject.h"
 
 class AliDJetRawYieldUncertainty : public TObject
@@ -76,6 +73,15 @@ public:
     void SetMaskOfVariations(Int_t ncases, Bool_t* cases);
 
     TChain* GenerateChain();
+    void SetFitReflections(Bool_t refl) {fFitRefl=refl;}
+    void SetReflFilename(TString filename) {fReflFilenameInput=filename;}
+    void SetMCSigFilename(TString filename) {fSigMCFilenameInput=filename;}
+    void SetReflHistoname(TString histoname) {fReflHistoName=histoname;}
+    void SetMCSigHistoname(TString histoname) {fSigMCHistoName=histoname;}
+    void SetValueOfReflOverSignal(Double_t ratio, Double_t minrange=1.7, Double_t maxrange=2.1) {fFixRiflOverS=ratio; fReflRangeL=minrange; fReflRangeR=maxrange;}
+
+    static void FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType="DoubleGaus");
+
     Bool_t ExtractInputMassPlot();
     Bool_t ExtractInputMassPlotDzeroEffScale();
     Bool_t ExtractInputMassPlotDzeroSideband();
@@ -145,6 +151,15 @@ private:
     Bool_t fAllowRepetitions;		// allow repetitions in the extraction of trials in a give pT(D) bin, for sideband approach
     Bool_t fRebinDstarSB;		// rebin the pt spectrum with user-defined binning, instead of using the binning from the THnSparse projection
 
+    Bool_t fFitRefl;			// include reflection template in the mass fit
+    TString fReflFilenameInput;		// name of input file for reflection template
+    TString fSigMCFilenameInput;	// name of input file for MC signal
+    TString fReflHistoName;		// name of reflection template histogram
+    TString fSigMCHistoName;		// name of signal MC histogram
+    Double_t fFixRiflOverS;		// rifl/signMC value for reflections
+    Double_t fReflRangeL;		// lower range of reflection template (for rifl/signMC)
+    Double_t fReflRangeR;		// upper range of reflection template (for rifl/signMC)
+
     TH1D* fMassPlot;		   	// mass spectra to be fitted
     TH1D* fJetYieldCentral;		// central values of the yield of jet spectrum + syst yield uncertainty
     TH1D* fJetYieldUnc;			// yield uncertainty vs jet pT bin
@@ -158,4 +173,3 @@ private:
 };
 
 #endif
-

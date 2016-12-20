@@ -16,7 +16,8 @@ void EvaluateBinPerBinUncertainty(
    Double_t ptmin=0.,  //lower pT edge of mass plot
    Double_t ptmax=99., //upper pT edge of mass plot
    Double_t zmin=0.,   //lower z edge
-   Double_t zmax=2.    //upper z edge
+   Double_t zmax=2.,   //upper z edge
+   Bool_t refl=kFALSE  //add reflection template to fit
    )
 {
 
@@ -26,6 +27,7 @@ void EvaluateBinPerBinUncertainty(
   interface->SetYieldMethod((AliDJetRawYieldUncertainty::YieldMethod)method);
   interface->SetPtBinEdgesForMassPlot(ptmin,ptmax);
   interface->SetZedges(zmin,zmax);
+  interface->SetFitReflections(refl);
 
   if (specie==0) {
     SetInputParametersDzero(interface);  // check the names and the values in the method!!
@@ -121,7 +123,7 @@ void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
 }
 
 //________________________________________
-void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface){
+void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl){
 
   //Dzero cfg
   const Int_t nDbins = 8;
@@ -130,7 +132,7 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface){
   Double_t ptJetbins[nJetbins+1] = {5, 6, 8, 10, 14, 20, 30}; //used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
   Double_t DMesonEff[nDbins] = {/*0.0118323, 0.02011807,  0.03644752, */0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591}; //chopping 0-1, 1-2
 
-  Double_t sigmafixed=0.014;
+  Double_t sigmafixed=0.014; //ATTENTION: the fixed sigma value to be set is pT-dependent!!
   Double_t chi2cut=3;
   Bool_t meansigmaVar[6] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE}; //set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
   Bool_t bkgVar[8] = {kTRUE,kFALSE,kTRUE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE}; //set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
@@ -151,6 +153,14 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface){
 			1,1,   // free sigma, free mean
 			1,1,   // free sigma, fixed mean
 			1,1};  // fixed mean, fixed sigma
+
+  if(refl) { //ATTENTION: the histograms to be set are pT-dependent!!
+    interface->SetReflFilename("reflections_fitted_DoubleGaus.root"); //file with refl template histo
+    interface->SetMCSigFilename("reflections_fitted_DoubleGaus.root"); //file with MC signal histo
+    interface->SetReflHistoname("histRflFittedDoubleGaus_ptBin5");  //name of template histo
+    interface->SetMCSigHistoname("histSgn_5"); //name of template histo
+    interface->SetValueOfReflOverSignal(-1,1.72,2.00); //1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
+  }
 
   interface->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10b/merge/AnalysisResults.root");
   interface->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10c/merge/AnalysisResults.root");
@@ -235,5 +245,16 @@ void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface){
   interface->SetMaskOfVariations(nmask,mask);
 
   return;
+}
+
+//________________________________________
+void FitReflDistr(Int_t nPtBins,  //number of pTbins (one template per bin)
+      TString inputfile,    //file with template histos
+      TString fitType="DoubleGaus"  //fit function: choose among "DoubleGaus", "gaus", "pol3", "pol6"
+            ) {
+
+  AliDJetRawYieldUncertainty::FitReflDistr(nPtBins,inputfile,fitType);
+  return;
+
 }
 

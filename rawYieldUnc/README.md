@@ -21,6 +21,7 @@ gROOT->LoadMacro("AliDJetRawYieldUncertainty.cxx++")
 - Then, independently of the approach chosen, the method `EvaluateBinPerBinUncertainty` has to be run for each p~T~ bin (i.e. *p*~T,jet~ for eff.scale method, *p*~T,D~ for SB subtraction method). `ptmin` and `ptmax` are the *p*~T~ limits of the bin to be looked at; for the D^*^, the *z* range for the projections can be also varied by setting `zmin` and `zmax`.
 - Finally, the yield uncertainty is obtained by executing (once) the method `ExtractDJetRawYieldUncertainty`. In case of the SB subtraction approach, `nTrials` is the number of random variations to be picked from the total list of variations performed in the *p*~T,D~ bins, in order to get the final uncertainty.
 - The code produces a .root file with the absolute value of the yield uncertainty plus another .root file with the mean of the yield from the variations plus its relative uncertainty.
+- NOTE: In case a reflection template has to be added to the invariant mass fit function (D^0^ analysis), refer to the reflection section below.
 
 ## Configuration of the trials
 There's no precise recipe (even in D2H on how to define the variations, and on their number). In the following, some information on the different possibilities, which can be enabled via the steering macro, are given.
@@ -63,3 +64,29 @@ There's no precise recipe (even in D2H on how to define the variations, and on t
   - If there are fits with $\chi^2$ over the value set in the macro, these will be chopped, and you'll get empty bins. This will often happen in case a not suitable bkg function is chosen
   - If the `sigmafixed` value is not properly set, not only you will bias the variations done with the fixed sigma, but you could get empty bins since the cases with a fit $\sigma >2$, or $\sigma<0.5$ from the `sigmafixed` value will be chopped.
 * For the SB subtraction approach with the method `ExtractDJetRawYieldUncertainty`, in building the final uncertatinty never set a value of random variations greater than the minimum number of succesful variations for the varios *p*~T,D~ bins analysed. This, unless you allow repetition of randomly chosen trials, via `allowRepet=kTRUE`, which I won't anyway suggest.
+
+## Reflections (D^0^ only)
+
+The code implements the possibility of setting a template for the fitting of the reflection component of the invariant mass distribution in a given _p_~T~ (D or jet) bin.
+
+This feature enters in play only during the bin-by-bin fitting phase (when calling the `EvaluateBinPerBinUncertainty` function), and can be enabled by setting as `kTRUE` the flag `refl` in the function arguments.
+
+The ingredients needed are:
+
+\- A 1D histogram with the template distribution in the _p_~T~ bin under analysis
+
+\- The reflection/true signal ratio in the mass fit range OR the true signal mass distribution in the _p_~T~ bin under analysis (the ratio can be indeed fixed by hand, or evaluated by the reflection and true signal histograms).
+
+An example of these plots (in several _p_~T~ bins) is given as an attachment in the jira ticket (file reflections_fitted_DoubleGaus.root). Note that these histograms are (strongly) _p_~T~-dependent. It's not mandatory that these histograms have the same binning and mass range of the data mass distribution.
+
+The input filenames and the histogram names are set in the `SetInputParameterDzero` section, together with:
+
+\- The value of the reflection/true signal ratio, if fixed from the user (first argument of `SetValueOfReflOverSignal`)
+
+\- The mass fit range of the bin under study, to automatically evaluate that ratio from the input histograms (in this case the first argument has to be set to -1)
+
+After these setting.
+
+It is possible to smoothen the reflection templates retrived from the MC analysis using the `FitReflDistr` in the steering macro: it needs an input file with the templats for each pTbin inside (named `histRefl_N`, with N the ptbin number from 0 to `nbins`), the number of _p_~T~ bins (`nbins`) and a distribution to be used as guideline for the template smoothing (choose among `DoubleGaus`, `pol3`, `pol6`, `gaus` with the first as default).
+
+This function can be used also to produce template variations (using different guide functions), which, together with variations of the refl/true signal ratio (by fixing it externally to different values) can help in evaluating the impact of the reflection template on the yield extraction, and its stability against template variations.
