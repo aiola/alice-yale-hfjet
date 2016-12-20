@@ -1,2 +1,7 @@
 README.html
-*.root
+Hist_RawYieldSyst*.root
+RawYieldSyst*.root
+RawYieldVariations_*.root
+YieldDistribution_*.root
+FinalRawYieldCentralPlusSystUncertainty_*.root
+FinalRawYieldUncertainty_*.root

@@ -19,10 +19,11 @@ globalList = []
 ptDbins = [3., 4., 5., 6., 7., 8., 10., 16., 30.]
 ptJetbins = [5., 6., 8., 10., 14., 20., 30.]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
-def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, debug=2):
+def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     interface.SetPtBinEdgesForMassPlot(ptmin, ptmax)
+    interface.SetFitReflections(refl)
 
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
 
@@ -73,7 +74,7 @@ def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nT
     globalList.append(interface)
     return interface
 
-def GeneratDzeroJetRawYieldUnc(config, specie):
+def GeneratDzeroJetRawYieldUnc(config, specie, refl):
     # Dzero cfg
     ana = config["analysis"][0]
 
@@ -125,6 +126,13 @@ def GeneratDzeroJetRawYieldUnc(config, specie):
     interface.SetMaskOfVariations(len(mask), numpy.array(mask, dtype=bool))
 
     interface.SetDmesonSpecie(specie)
+
+    if refl:  # ATTENTION: the histograms to be set are pT-dependent!!
+        interface.SetReflFilename("reflections_fitted_DoubleGaus.root")  # file with refl template histo
+        interface.SetMCSigFilename("reflections_fitted_DoubleGaus.root")  # file with MC signal histo
+        interface.SetReflHistoname("histRflFittedDoubleGaus_ptBin5")  # name of template histo
+        interface.SetMCSigHistoname("histSgn_5")  # name of template histo
+        interface.SetValueOfReflOverSignal(-1, 1.72, 2.00)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
     return interface
 
