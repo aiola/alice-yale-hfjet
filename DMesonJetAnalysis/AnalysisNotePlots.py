@@ -119,12 +119,32 @@ def main(actions, output_path, output_type):
     if "all" in actions or "bfeed_down" in actions:
         CopyBFeedDown("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
+    if "all" in actions or "theory_comparison" in actions:
+        CopyTheoryComparisonFiles(configs["data_unfolding"], "1478868679", output_path, output_type)
+
+    if "all" in actions or "ppb_comparison" in actions:
+        CopypPbComparisonFiles(configs["data_unfolding"], output_path, output_type)
+
 def CopyFiles(input_path, output_path, file_list, output_type):
     if not os.path.isdir(output_path):
         os.makedirs(output_path)
     for file_name in file_list:
         print("Copying {0}...".format(file_name))
         shutil.copy("{0}/{1}.{2}".format(input_path, file_name, output_type), output_path)
+
+def CopyTheoryComparisonFiles(config, powheg_ts, output_path, output_type):
+    full_output_path = "{0}/TheoryComparison".format(output_path)
+    file_list = []
+    file_list.append("TheoryComparison_powheg_Charged_R040_{0}_{1}".format(powheg_ts, config["name"]))
+    file_list.append("TheoryComparison_powheg_Charged_R040_{0}_{1}_Ratio".format(powheg_ts, config["name"]))
+    CopyFiles(config["input_path"], full_output_path, file_list, output_type)
+
+def CopypPbComparisonFiles(config, output_path, output_type):
+    full_output_path = "{0}/pPbComparison".format(output_path)
+    file_list = []
+    file_list.append("pPbComparison_Charged_R040_{0}".format(config["name"]))
+    file_list.append("pPbComparison_Charged_R040_{0}_Ratio".format(config["name"]))
+    CopyFiles(config["input_path"], full_output_path, file_list, output_type)
 
 def CopyBFeedDown(input_path, output_path, output_type):
     full_output_path = "{0}/BFeedDown".format(output_path)
