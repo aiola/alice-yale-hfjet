@@ -401,9 +401,32 @@ printf("sigmaBC=%d\n",fnSigmaBC);
   if(fDebug>=2) mt->SetDrawIndividualFits(kTRUE);
 
   TString cname;
-
   cname = TString::Format("MassFit_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* c0 = new TCanvas(cname,cname);
+
+  if(fFitRefl) { //reflection treatment
+
+    cout<< " Reflection template file: " << fReflFilenameInput.Data() << " - Reflection histo name:  " << fReflHistoName.Data() << endl;
+    TFile *fRefl=TFile::Open(fReflFilenameInput.Data(),"read");
+    if(!fRefl) {cout << " Reflection file not found! Exiting... " << endl; return kFALSE;}
+    TH1F *hTemplRefl=(TH1F*)fRefl->Get(fReflHistoName.Data());
+    if(!hTemplRefl) {cout << " Reflection histo not found! Exiting... " << endl; return kFALSE;}
+    hTemplRefl->Draw();
+
+        if(fFixRiflOverS<0){
+          cout<< " MC signal file: " << fSigMCFilenameInput.Data() << " - MC signal histo name:  " << fReflHistoName.Data() << endl;
+          TFile *fSigMC=TFile::Open(fSigMCFilenameInput.Data(),"read"); //needed if refl/sigMC ratio is not fixed
+          if(!fSigMC) {cout << " MC signal file not found! Exiting... " << endl; return kFALSE;}
+          TH1F *hSignMC=(TH1F*)fSigMC->Get(fSigMCHistoName.Data());
+	  if(!hSignMC) {cout << " MC signal histo not found! Exiting... " << endl; return kFALSE;}
+          fFixRiflOverS=hTemplRefl->Integral(hTemplRefl->FindBin(fReflRangeL+0.00001),hTemplRefl->FindBin(fReflRangeR-0.00001))/hSignMC->Integral(hSignMC->FindBin(fReflRangeL+0.00001),hSignMC->FindBin(fReflRangeR-0.00001));
+          printf("Sign over Refl bin %1.1f-%1.1f = %f",fpTmin,fpTmax,fFixRiflOverS);
+        }
+
+    mt->SetTemplateRefl(hTemplRefl);
+    mt->SetFixRefoS(fFixRiflOverS);
+
+  }
 
   Bool_t isOK = mt->DoMultiTrials(fMassPlot,c0);
 
@@ -2008,6 +2031,98 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband_CoherentTria
 
 
 //___________________________________________________________________________________________
+void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType) {
+
+  TFile *fReflections = new TFile(inputfile.Data());
+  TFile *fFitReflection = new TFile(Form("reflections_fitted_%s.root",fitType.Data()), "recreate");
+
+  for (Int_t i=0; i<nPtBins; i++){
+    TH1F *hSignMC= (TH1F*)fReflections->Get(Form("histSgn_%d",i));
+    if(hSignMC) {
+      fFitReflection->cd();
+      hSignMC->Write(Form("histSgn_%d",i));
+    }
+  }
+
+  TCanvas *cy = new TCanvas("fitCanv", "fitCanv");
+  cy->Divide(4,3);
+  TCanvas *cy2 = new TCanvas("fitCanv2", "fitCanv2");
+  cy2->Divide(4,3);
+  TCanvas *cyRatio = new TCanvas("fitCanvRatio", "fitCanvRatio");
+  cyRatio->Divide(4,3);
+
+
+  for (Int_t iBin=0; iBin<nPtBins; iBin++){
+    TH1F *hfitRefl= (TH1F*)fReflections->Get(Form("histRfl_%d", iBin));
+    hfitRefl->SetName(Form("histoRfl_%d",iBin));
+    hfitRefl->SetMarkerStyle(1);
+    hfitRefl->SetLineStyle(1);
+    hfitRefl->Rebin(2);
+    cy->cd(iBin+1);
+    hfitRefl->Draw();
+    hfitRefl->Sumw2();
+
+    TF1 *finput=0x0;
+    if (fitType == "DoubleGaus"){//DoubleGaus
+      finput= new TF1 ("finput","[0]/(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))+[3]/( TMath::Sqrt(2.*TMath::Pi())*[5])*TMath::Exp(-(x-[4])*(x-[4])/(2.*[5]*[5]))");
+
+      finput->SetParameter(0, 1);
+      finput->SetParameter(1, 1);
+      finput->SetParameter(2, 1);
+      finput->SetParameter(3, 1);
+      finput->SetParameter(4, 1);
+      finput->SetParameter(5, 1);
+
+    }
+    else if (fitType == "pol3"){
+      finput= new TF1 ("finput", "pol3");
+    }
+    else if (fitType == "pol6"){
+      finput= new TF1 ("finput", "pol6");
+    }
+    else if (fitType == "gaus"){
+      finput= new TF1 ("finput", "gaus");
+    }
+
+    hfitRefl->Fit("finput", "MLFI");
+    TF1 *fFitRefl = hfitRefl->GetFunction("finput");
+
+    TH1F *hFitReflNewTemp = (TH1F*)hfitRefl->Clone(Form("histRflFitted%s_ptBin%d", fitType.Data(), iBin));
+    TH1F *ratio = (TH1F*)hfitRefl->Clone(Form("ratioRelDistr_%s_bin%d", fitType.Data(), iBin));
+    for(Int_t iBin2=1; iBin2<=hfitRefl->GetNbinsX(); iBin2++){
+      hFitReflNewTemp->SetBinContent(iBin2, 0.);
+      ratio->SetBinContent(iBin2, 0.);
+
+      hFitReflNewTemp->SetBinContent(iBin2, fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2)));
+      if(fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))>=0.) hFitReflNewTemp->SetBinError(iBin2, TMath::Sqrt(fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))));
+      else hFitReflNewTemp->SetBinError(iBin2, 0.);
+      ratio->SetBinContent(iBin2, (hfitRefl->GetBinContent(iBin2) / fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))));
+    }
+
+    cy2->cd(iBin+1);
+    hFitReflNewTemp->Draw();
+
+    //gStyle->SetOptFit(111111);
+    cyRatio->cd(iBin+1);
+    ratio->GetYaxis()->SetRangeUser(-1.5, 3.);
+    ratio->SetMarkerStyle(20);
+    ratio->Fit("pol0", "FM");
+    ratio->Draw("p");
+    gPad->Update();
+
+    fFitReflection->cd();
+    hFitReflNewTemp->Write();
+    ratio->Write();
+
+  }
+
+  return;
+
+}
+
+
+
+//___________________________________________________________________________________________
 void AliDJetRawYieldUncertainty::SetDmesonPtBins(Int_t nbins, Double_t* ptedges) {
 
   if(!nbins) return;
@@ -2143,4 +2258,3 @@ void AliDJetRawYieldUncertainty::ClearObjects() {
  
   return;
 }
-

@@ -18,6 +18,7 @@ In case of the sideband scaling, for each fit variation in a given pT(D) bin, th
 - Then, independently of the approach chosen, the method EvaluateBinPerBinUncertainty has to be run for each pT bin (i.e. pT(jet) for eff.scale method, pT(D) for Sb subtraction method). ptmin and ptmax are the pT limits of the bin to be looked at; for the Dstar, the z range for the projections can be also varied by setting zmin and zmax.
 - Finally, the yield uncertainty is obtained by executing (once) the method ExtractDJetRawYieldUncertainty. In case of the SB subtraction approach, nTrials is the number of random variations to be picked from the total list of variations performed in the pT(D) bins, in order to get the final uncertainty.
 - The code produces a .root file with the absolute value of the yield uncertainty + a .root file with the mean of the yield from the variations + its relative uncertainty.
+NOTE: In case a reflection template has to be added to the invariant mass fit function (Dzero analysis), refer to the reflection section below.
 
 **** CONFIGURATION OF THE TRIALS ****
 There's no precise recipe (even in D2H on how to define the variations, and on their number). In the following, some information on the different possibilities, which can be enabled via the steering macro, are given.
@@ -60,3 +61,16 @@ There's no precise recipe (even in D2H on how to define the variations, and on t
 --> If the sigmafixed value is not properly set, not only you will bias the variations done with the fixed sigma, but you could get empty bins since the cases with a fit sigma >2, or <0.5 from the sigmafixed value will be chopped.
 - For the SB subtraction approach with the method ExtractDJetRawYieldUncertainty, in building the final uncertatinty never set a value of random variations greater than the minimum number of succesful variations for the varios pT(D) bins analysed. This, unless you allow repetition of randomly chosen trials, via allowRepet=kTRUE, which I won't anyway suggest.
 
+**** REFLECTIONS (Dzero only) ****
+The code implements the possibility of setting a template for the fitting of the reflection component of the invariant mass distribution in a given pT (D or jet) bin.
+This feature enters in play only during the bin-by-bin fitting phase (when calling the EvaluateBinPerBinUncertainty function), and can be enabled by setting as kTRUE the flag �refl� in the function arguments.
+The ingredients needed are:
+- A 1D histogram with the template distribution in the pT bin under analysis
+- The reflection/true signal ratio in the mass fit range OR the true signal mass distribution in the pT bin under analysis (the ratio can be indeed fixed by hand, or evaluated by the reflection and true signal histograms).
+An example of these plots (in several pT bins) is given as an attachment in the jira ticket (file reflections_fitted_DoubleGaus.root). Note that these histograms are (strongly) pT-dependent. It�s not mandatory that these histograms have the same binning and mass range of the data mass distribution.
+The input filenames and the histogram names are set in the SetInputParameterDzero section, together with:
+- The value of the reflection/true signal ratio, if fixed from the user (first argument of SetValueOfReflOverSignal)
+- The mass fit range of the bin under study, to automatically evaluate that ratio from the input histograms (in this case the first argument has to be set to -1)
+After these setting.
+It is possible to smoothen the reflection templates retrived from the MC analysis using the FitReflDistr in the steering macro: it needs an input file with the templats for each pTbin inside (named �histRefl_N�, with N the ptbin number from 0 to nbins), the number of pTbins (nbins) and a distribution to be used as guideline for the template smoothing (choose among DoubleGaus, pol3, pol6, gaus � with the first as default).
+This function can be used also to produce template variations (using different guide functions), which, together with variations of the refl/true signal ratio (by fixing it externally to different values) can help in evaluating the impact of the reflection template on the yield extraction, and its stability against template variations.
