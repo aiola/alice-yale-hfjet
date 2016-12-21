@@ -186,4 +186,4 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: DPSpectrum_bEff_efficiency
+        spectrum: DPtSpectrum_bEff_efficiency
