@@ -22,7 +22,8 @@ ptJetbins = [5., 6., 8., 10., 14., 20., 30.]  # used for eff.scale approach, but
 def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
-    interface.SetPtBinEdgesForMassPlot(ptmin, ptmax)
+    print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
+    interface.SetPtBinEdgesForMassPlot(float(ptmin), float(ptmax))
     interface.SetFitReflections(refl)
 
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
@@ -74,12 +75,55 @@ def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nT
     globalList.append(interface)
     return interface
 
+def LoadEfficiency(config):
+    try:
+        eff_config = config["analysis"][0]["binLists"][0]["efficiency"]
+    except:
+        eff_config = None
+    if not eff_config:
+        print("No efficiency requested!")
+        return [1.0] * (len(ptDbins) - 1)
+    fname = "{0}/{1}".format(config["input_path"], eff_config["file_name"])
+    file = ROOT.TFile(fname)
+    if not file or file.IsZombie():
+        print("Could not open file {0}".format(fname))
+        exit(1)
+    else:
+        print("File {0} successfully open".format(fname))
+    rlist = file.Get(eff_config["list_name"])
+    if not rlist:
+        print("Could not get list {0}".format(eff_config["list_name"]))
+        exit(1)
+    else:
+        print("List {0} successfully open".format(eff_config["list_name"]))
+    hist = rlist.FindObject(eff_config["object_name"])
+    if not hist:
+        print("Could not get histogram {0}".format(eff_config["object_name"]))
+        exit(1)
+    else:
+        print("Histogram {0} successfully open".format(eff_config["object_name"]))
+    eff_values = []
+    ibinDest = 0
+    for ibin in range(1, hist.GetNbinsX() + 1):
+        if hist.GetXaxis().GetBinLowEdge(ibin) < ptDbins[0]: continue
+        eff_values.append(hist.GetBinContent(ibin))
+        print("Copying efficiency {0} from bin {1},{2} to bin {3}, {4}".format(hist.GetBinContent(ibin),
+                                                                               hist.GetXaxis().GetBinLowEdge(ibin),
+                                                                               hist.GetXaxis().GetBinUpEdge(ibin),
+                                                                               ptDbins[ibinDest],
+                                                                               ptDbins[ibinDest + 1]))
+        ibinDest += 1
+        if ibinDest + 1 >= len(ptDbins): break
+    return eff_values
+
 def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     # Dzero cfg
     ana = config["analysis"][0]
 
     # DMesonEff = [0.0118323, 0.02011807,  0.03644752, 0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]
-    DMesonEff = [0.05664352 , 0.07682878 , 0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]  # chopping 0-1, 1-2, 2-3
+    # DMesonEff = [0.05664352 , 0.07682878 , 0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]  # chopping 0-1, 1-2, 2-3
+    DMesonEff = LoadEfficiency(config)
+    print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
     sigmafixed_DPtBins = [0.0106, 0.0128, 0.0132, 0.0164, 0.0158, 0.0195, 0.0197, 0.025]  # chopping 0-1, 1-2, 2-3
     sigmafixed_JetPtBins = [0.0125, 0.0136, 0.0167, 0.0165, 0.0202, 0.0212]
 
@@ -110,7 +154,8 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     interface.SetInputDBranchname("DmesonJet")
     interface.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
 
-    interface.SetMassEdgesAndBinWidthForMassPlot(1.5664, 2.1664, 0.006)
+    # interface.SetMassEdgesAndBinWidthForMassPlot(1.5664, 2.1664, 0.006)
+    interface.SetMassEdgesAndBinWidthForMassPlot(1.715, 2.015, 0.006)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
