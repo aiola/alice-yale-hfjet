@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python base classes and utilities for D Meson jet analysis
+# python base classes and utilities for D Meson jet analysis
 
 import ROOT
 import DMesonJetUtils
@@ -15,7 +15,7 @@ class Spectrum:
         if "suffix" in config:
             suffix = config["suffix"]
         else:
-            suffix = None 
+            suffix = None
         self.fName = '_'.join(obj for obj in [self.fDMeson, self.fJetType, self.fJetRadius, config["name"], suffix] if obj)
         self.fBinSet = binSet
         self.fHistogram = None
@@ -112,13 +112,13 @@ class Spectrum:
             rlist.Add(self.fNormHistogram)
         if self.fNormFDCorrHistogram:
             rlist.Add(self.fNormFDCorrHistogram)
-        if self.fUncertainty:    
+        if self.fUncertainty:
             rlist.Add(self.fUncertainty)
-        if self.fMass:    
+        if self.fMass:
             rlist.Add(self.fMass)
-        if self.fMassWidth:    
+        if self.fMassWidth:
             rlist.Add(self.fMassWidth)
-        if self.fBackground:    
+        if self.fBackground:
             rlist.Add(self.fBackground)
         if self.fAnalysisType == AnalysisType.SideBand and self.fSideBandHistograms and self.fSignalHistograms:
             SBlist = ROOT.TList()
@@ -149,19 +149,19 @@ class Spectrum:
     def GenerateFDCorrectedSpectrum(self, events, isWeighted):
         self.fFDCorrHistogram = self.fHistogram.Clone("{0}_FDCorr".format(self.fHistogram.GetName()))
         if self.fFDCorrection.fFDHistogram:
-            crossSection = 62.3 #mb CINT1
-            branchingRatio = 0.0388 # D0->Kpi
+            crossSection = 62.3  # mb CINT1
+            branchingRatio = 0.0388  # D0->Kpi
             fdhist = self.fFDCorrection.fFDHistogram
             self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
             if not isWeighted:
                 self.fFDHistogram.Scale(events / crossSection * branchingRatio)
             print("Trying to add histogram {0} (nbins={1}) with {2} (nbins={3})".format(self.fFDCorrHistogram.GetName(), self.fFDCorrHistogram.GetNbinsX(), self.fFDHistogram.GetName(), self.fFDHistogram.GetNbinsX()))
-            #for ibin in range(0,  self.fFDCorrHistogram.GetNbinsX()+2):
-            #print("Bin = [{0:.2f}, {1:.2f}] vs. [{2:.2f}, {3:.2f}]".format(self.fFDCorrHistogram.GetXaxis().GetBinLowEdge(ibin), self.fFDCorrHistogram.GetXaxis().GetBinUpEdge(ibin),
-            #                                                                   self.fFDHistogram.GetXaxis().GetBinLowEdge(ibin), self.fFDHistogram.GetXaxis().GetBinUpEdge(ibin)))    
+            # for ibin in range(0,  self.fFDCorrHistogram.GetNbinsX()+2):
+            # print("Bin = [{0:.2f}, {1:.2f}] vs. [{2:.2f}, {3:.2f}]".format(self.fFDCorrHistogram.GetXaxis().GetBinLowEdge(ibin), self.fFDCorrHistogram.GetXaxis().GetBinUpEdge(ibin),
+            #                                                                   self.fFDHistogram.GetXaxis().GetBinLowEdge(ibin), self.fFDHistogram.GetXaxis().GetBinUpEdge(ibin)))
             self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
             print("Histograms added")
-            
+
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
         if self.fHistogram:
@@ -242,6 +242,9 @@ class Spectrum:
                 self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "D^{0} mass (GeV/#it{c}^{2})")
                 self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "D^{0} mass width (GeV/#it{c}^{2})")
                 self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
+            elif self.fAnalysisType == AnalysisType.Truth and self.fDMeson in self.fBinSet.fNeedInvMass:
+                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "D^{0} mass (GeV/#it{c}^{2})")
+                self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "D^{0} mass width (GeV/#it{c}^{2})")
         elif len(self.fAxis) == 2:
             self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "counts")
             self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "relative statistical uncertainty")
