@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python script to prepare B feed-down correction file
+# python script to prepare B feed-down correction file
 
 import argparse
 import IPython
@@ -40,13 +40,13 @@ def PrepareFDhist_dpt(FDhistogram_old, input_path, bResponse, cResponse):
     dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
 
     print("Rebinning the FD original histogram")
-    FDhistogram_orig = FDhistogram_old.Rebin(len(dptbins)-1, FDhistogram_old.GetName(), array.array('d', dptbins))
+    FDhistogram_orig = FDhistogram_old.Rebin(len(dptbins) - 1, FDhistogram_old.GetName(), array.array('d', dptbins))
     result.append(FDhistogram_orig)
 
     print("Opening the b->D0 response matrix file")
     bResponseFile = OpenResponseFile(input_path, bResponse, False)
     print("Loading the response matrix")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum", "_NoJet", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_CoarseBins", "_NoJet", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
     result.append(bEfficiency_dpt)
 
     print("Applying the b->D0 reconstruction efficiency")
@@ -57,7 +57,7 @@ def PrepareFDhist_dpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Opening the c->D0 response matrix file")
     cResponseFile = OpenResponseFile(input_path, cResponse, False)
     print("Loading the response matrix")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum", "_NoJet", "c", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_CoarseBins", "_NoJet", "c", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
     result.append(cEfficiency_dpt)
 
     print("Applying the correction for the c->D0 reconstruction efficiency")
@@ -86,11 +86,11 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     cResponseFile_efficiency = OpenResponseFile(input_path, cResponse, True)
 
     print("Rebinning the FD original histogram")
-    FDhistogram_orig = DMesonJetUtils.Rebin2D_fromBins(FDhistogram_old, FDhistogram_old.GetName(), len(jetptbins)-1, array.array('d', jetptbins), FDhistogram_old.GetNbinsY(), FDhistogram_old.GetYaxis().GetXbins().GetArray())
+    FDhistogram_orig = DMesonJetUtils.Rebin2D_fromBins(FDhistogram_old, FDhistogram_old.GetName(), len(jetptbins) - 1, array.array('d', jetptbins), FDhistogram_old.GetNbinsY(), FDhistogram_old.GetYaxis().GetXbins().GetArray())
     result.append(FDhistogram_orig)
 
     print("Loading the response matrix")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_CoarseBins", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     result.append(bEfficiency_dpt)
 
     print("Applying the b->D0 reconstruction efficiency")
@@ -104,7 +104,7 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     result.append(FDhistogram_fineBins)
 
     print("Loading the response matrix")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_CoarseBins", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     result.append(cEfficiency_dpt)
 
     print("Applying the correction for the c->D0 reconstruction efficiency")
@@ -117,16 +117,16 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     ApplyEfficiency(FDhistogram_fineBins_efficiency, cEfficiency_dpt, True)
     result.append(FDhistogram_fineBins_efficiency)
 
-    for ptd in range(2,5):
-        spectrumResponseName = "JetPtSpectrum_DPt_{0}".format(ptd*10)
+    for ptd in range(2, 5):
+        spectrumResponseName = "JetPtSpectrum_DPt_{0}".format(ptd * 10)
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o efficiency)".format(ptd))
-        FDhistogram_jetpt = FDhistogram.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram.GetName(),ptd*10), FDhistogram.GetYaxis().FindBin(ptd), FDhistogram.GetNbinsY()+1)
+        FDhistogram_jetpt = FDhistogram.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram.GetName(), ptd * 10), FDhistogram.GetYaxis().FindBin(ptd), FDhistogram.GetNbinsY() + 1)
         result.append(FDhistogram_jetpt)
-        print("projetcion bins {0} {1}".format(FDhistogram.GetYaxis().FindBin(ptd), FDhistogram.GetNbinsY()+1))
+        print("projetcion bins {0} {1}".format(FDhistogram.GetYaxis().FindBin(ptd), FDhistogram.GetNbinsY() + 1))
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o efficiency, fine bins)".format(ptd))
-        FDhistogram_fineBins_jetpt = FDhistogram_fineBins.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_fineBins.GetName(),ptd*10), FDhistogram_fineBins.GetYaxis().FindBin(ptd), FDhistogram_fineBins.GetNbinsY()+1)
+        FDhistogram_fineBins_jetpt = FDhistogram_fineBins.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_fineBins.GetName(), ptd * 10), FDhistogram_fineBins.GetYaxis().FindBin(ptd), FDhistogram_fineBins.GetNbinsY() + 1)
         result.append(FDhistogram_fineBins_jetpt)
 
         print("Applying the jet pt b response matrix")
@@ -134,11 +134,11 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
         result.append(FDhistogram_jetpt_detector)
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/ efficiency)".format(ptd))
-        FDhistogram_efficiency_jetpt = FDhistogram_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_efficiency.GetName(),ptd*10), FDhistogram_efficiency.GetYaxis().FindBin(ptd), FDhistogram_efficiency.GetNbinsY()+1)
+        FDhistogram_efficiency_jetpt = FDhistogram_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_efficiency.GetName(), ptd * 10), FDhistogram_efficiency.GetYaxis().FindBin(ptd), FDhistogram_efficiency.GetNbinsY() + 1)
         result.append(FDhistogram_efficiency_jetpt)
-        
+
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/ efficiency, fine bins)".format(ptd))
-        FDhistogram_fineBins_efficiency_jetpt = FDhistogram_fineBins_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_fineBins_efficiency.GetName(),ptd*10), FDhistogram_fineBins_efficiency.GetYaxis().FindBin(ptd), FDhistogram_fineBins_efficiency.GetNbinsY()+1)
+        FDhistogram_fineBins_efficiency_jetpt = FDhistogram_fineBins_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_fineBins_efficiency.GetName(), ptd * 10), FDhistogram_fineBins_efficiency.GetYaxis().FindBin(ptd), FDhistogram_fineBins_efficiency.GetNbinsY() + 1)
         result.append(FDhistogram_fineBins_efficiency_jetpt)
 
         print("Applying the jet pt b response matrix")
@@ -166,15 +166,15 @@ def GenerateUnfoldingEngine(name, responseFile, prior, spectrumResponseName):
     analysis["active"] = True
     analysis["d_meson_response"] = "D0"
     analysis["spectrum_response"] = spectrumResponseName
-    analysis["priors"] = ["GeneratedSpectrum"] #, "ResponseTruth", "PowerLaw_3", "PowerLaw_7"]
-    #analysis["priors"] = ["ResponseTruth"] #, "ResponseTruth", "PowerLaw_3", "PowerLaw_7"]
+    analysis["priors"] = ["GeneratedSpectrum"]  # , "ResponseTruth", "PowerLaw_3", "PowerLaw_7"]
+    # analysis["priors"] = ["ResponseTruth"] #, "ResponseTruth", "PowerLaw_3", "PowerLaw_7"]
     analysis["default_prior"] = "GeneratedSpectrum"
     analysis["default_method"] = "Svd"
     svd = dict()
-    default_reg_svd = {"GeneratedSpectrum" : 6} #, "PowerLaw_3" : 5, "PowerLaw_7" : 5}
+    default_reg_svd = {"GeneratedSpectrum" : 6}  # , "PowerLaw_3" : 5, "PowerLaw_7" : 5}
     svd["default_reg"] = default_reg_svd
     bayes = dict()
-    default_reg_bayes = {"GeneratedSpectrum" : 6} #, "PowerLaw_3" : 5, "PowerLaw_7" : 5}
+    default_reg_bayes = {"GeneratedSpectrum" : 6}  # , "PowerLaw_3" : 5, "PowerLaw_7" : 5}
     bayes["default_reg"] = default_reg_bayes
     bayes["iter_min"] = 1
     bayes["iter_max"] = 6
@@ -201,16 +201,16 @@ def GetUnfoldedSpectrum(histogram, responseFile, prior, spectrumResponseName):
 
 def ApplyEfficiency(hist, efficiency, reverse):
     print("Applying efficiency {0} to histogram {1}".format(efficiency.GetName(), hist.GetName()))
-    for ybin in range(0, hist.GetNbinsY()+2):
-        if reverse and efficiency.GetBinContent(ybin)>0:
+    for ybin in range(0, hist.GetNbinsY() + 2):
+        if reverse and efficiency.GetBinContent(ybin) > 0:
             print("Dividing by {0}".format(efficiency.GetBinContent(ybin)))
-            eff = 1./efficiency.GetBinContent(ybin)
+            eff = 1. / efficiency.GetBinContent(ybin)
         else:
             print("Multiplying by {0}".format(efficiency.GetBinContent(ybin)))
             eff = efficiency.GetBinContent(ybin)
-        for xbin in range(0, hist.GetNbinsX()+2):
-            hist.SetBinContent(xbin, ybin, hist.GetBinContent(xbin, ybin)*eff)
-            hist.SetBinError(xbin, ybin, hist.GetBinError(xbin, ybin)*eff)
+        for xbin in range(0, hist.GetNbinsX() + 2):
+            hist.SetBinContent(xbin, ybin, hist.GetBinContent(xbin, ybin) * eff)
+            hist.SetBinError(xbin, ybin, hist.GetBinError(xbin, ybin) * eff)
 
 def ApplyResponse(truth, responseFile, prior, spectrumResponseName):
     unf = GenerateUnfoldingEngine(truth.GetName(), responseFile, prior, spectrumResponseName)
@@ -218,15 +218,15 @@ def ApplyResponse(truth, responseFile, prior, spectrumResponseName):
     unf.fTruthSpectrum = None
     unf.GenerateResponse()
     resp = unf.fResponseMatrices["GeneratedSpectrum"].fNormResponse.Clone("temp")
-    for ybin in range(0, resp.GetYaxis().GetNbins()+2):
-        inty = resp.Integral(0, resp.GetXaxis().GetNbins()+1, ybin, ybin)
+    for ybin in range(0, resp.GetYaxis().GetNbins() + 2):
+        inty = resp.Integral(0, resp.GetXaxis().GetNbins() + 1, ybin, ybin)
         if inty == 0:
             continue
         print("Integral is {0:.3f}".format(inty))
-        scaling = truth.GetBinContent(ybin)/inty
-        for xbin in range(0, resp.GetXaxis().GetNbins()+2):
-            binValue = resp.GetBinContent(xbin, ybin)*scaling
-            binErr = resp.GetBinError(xbin, ybin)*scaling
+        scaling = truth.GetBinContent(ybin) / inty
+        for xbin in range(0, resp.GetXaxis().GetNbins() + 2):
+            binValue = resp.GetBinContent(xbin, ybin) * scaling
+            binErr = resp.GetBinError(xbin, ybin) * scaling
             resp.SetBinContent(xbin, ybin, binValue)
             resp.SetBinError(xbin, ybin, binErr)
     result = resp.ProjectionX("{0}_detector".format(truth.GetName()), 0, -1)
@@ -235,9 +235,9 @@ def ApplyResponse(truth, responseFile, prior, spectrumResponseName):
 
 def OpenResponseFile(input_path, responseTrain, efficiency):
     if efficiency:
-        file_name = "{0}/Jets_EMC_pp_MC_{1}_{2}_{3}_{4}/LHC15i2_Train{1}_efficiency.root".format(input_path, responseTrain, responseTrain+1, responseTrain+2, responseTrain+3)
+        file_name = "{0}/Jets_EMC_pp_MC_{1}_{2}_{3}_{4}/LHC15i2_Train{1}_efficiency.root".format(input_path, responseTrain, responseTrain + 1, responseTrain + 2, responseTrain + 3)
     else:
-        file_name = "{0}/Jets_EMC_pp_MC_{1}_{2}_{3}_{4}/LHC15i2_Train{1}.root".format(input_path, responseTrain, responseTrain+1, responseTrain+2, responseTrain+3)
+        file_name = "{0}/Jets_EMC_pp_MC_{1}_{2}_{3}_{4}/LHC15i2_Train{1}.root".format(input_path, responseTrain, responseTrain + 1, responseTrain + 2, responseTrain + 3)
     file = ROOT.TFile(file_name)
     print("Response file: {0}".format(file_name))
     if not file or file.IsZombie():
@@ -278,8 +278,8 @@ def LoadFDHistogram(file_name):
         print("File {0} open".format(file_name))
     dlist = file.Get("D0_MCTruth")
     jlist = dlist.FindObject("Charged_R040")
-    #slist = jlist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
-    #jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
+    # slist = jlist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
+    # jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
     slist = jlist.FindObject("D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum")
     if not slist:
         print("Could not find FD histogram (jet pt)!")
@@ -290,13 +290,13 @@ def LoadFDHistogram(file_name):
         print("Could not find FD histogram (jet pt)!")
         slist.ls()
         exit(1)
-    #slist = dlist.FindObject("D0_MCTruth_DPtSpectrum")
+    # slist = dlist.FindObject("D0_MCTruth_DPtSpectrum")
     slist = dlist.FindObject("D0_MCTruth_D_Pt_Spectrum")
     if not slist:
         print("Could not find FD histogram (d pt)!")
         dlist.ls()
         exit(1)
-    #dpt_hist = slist.FindObject("D0_MCTruth_DPtSpectrum")
+    # dpt_hist = slist.FindObject("D0_MCTruth_DPtSpectrum")
     dpt_hist = slist.FindObject("D0_MCTruth_D_Pt_Spectrum")
     if not dpt_hist:
         print("Could not find FD histogram (d pt)!")
@@ -306,7 +306,7 @@ def LoadFDHistogram(file_name):
     return jetpt_hist, dpt_hist
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='Prepare B feed-down correction file.')
     parser.add_argument('--charm-response', metavar='charm',
                         default=None, type=int)

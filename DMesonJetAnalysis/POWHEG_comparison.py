@@ -42,7 +42,7 @@ def main(charm_ts, beauty_ts, jet_type, jet_radius, data):
 
 def generate_correction_factors(quarks, jet_type, jet_radius):
     for quark in quarks.itervalues():
-        quark.histogram = GetSpectrum(quark.file, "D0_MCTruth", jet_type, jet_radius, "Jet_Pt_D_Pt_Spectrum_Normalized")
+        quark.histogram = GetSpectrum(quark.file, "D0_MCTruth", jet_type, jet_radius, "JetPtDPtSpectrum")
         quark.histogram.SetName("{0}_{1}".format(quark.name, quark.histogram.GetName()))
     denominator = quarks["beauty"].histogram.Clone("corr_fact_den")
     denominator.Add(quarks["charm"].histogram)
@@ -154,10 +154,10 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
         genTitle = "POWHEG+PYTHIA6"
     else:
         genTitle = "MC"
-    MCspectrum = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "Jet_Pt_Spectrum_PtD_2_Normalized", genTitle)
+    MCspectrum = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "JetPtSpectrum_DPt_3", genTitle)
 
     spectra = []
-    spectra.append(DataSpectrumDef("InvMassFit_DPt_20", "Bayes", "Reg4", "PriorResponseTruth"))
+    spectra.append(DataSpectrumDef("InvMassFit_DPt_30", "Bayes", "Reg4", "PriorResponseTruth"))
 
     cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius] + [quark.ts for quark in quarks.itervalues()] + [data])
     ratioAxis = "data / theory"
@@ -196,23 +196,23 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
             exit(1)
 
     ptD = SpectraSet("BFeedDownVsPtD_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,D}")
-    ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_0_Normalized", "#it{p}_{T,ch jet} > 0", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
-    ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_2_Normalized", "#it{p}_{T,ch jet} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
-    ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_5_Normalized", "#it{p}_{T,ch jet} > 5 GeV/#it{c}", dict(colors=[ROOT.kAzure + 2, ROOT.kCyan + 2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
-    ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_8_Normalized", "#it{p}_{T,ch jet} > 8 GeV/#it{c}", dict(colors=[ROOT.kMagenta + 2, ROOT.kPink + 2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
-    ptD.add(SpectrumDef("D_Pt_Spectrum_JetPt_15_Normalized", "#it{p}_{T,ch jet} > 15 GeV/#it{c}", dict(colors=[ROOT.kTeal + 2, ROOT.kSpring + 2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
+    ptD.add(SpectrumDef("DPtSpectrum_JetPt_0", "#it{p}_{T,ch jet} > 0", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
+    ptD.add(SpectrumDef("DPtSpectrum_JetPt_2", "#it{p}_{T,ch jet} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
+    ptD.add(SpectrumDef("DPtSpectrum_JetPt_5", "#it{p}_{T,ch jet} > 5 GeV/#it{c}", dict(colors=[ROOT.kAzure + 2, ROOT.kCyan + 2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
+    ptD.add(SpectrumDef("DPtSpectrum_JetPt_8", "#it{p}_{T,ch jet} > 8 GeV/#it{c}", dict(colors=[ROOT.kMagenta + 2, ROOT.kPink + 2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
+    ptD.add(SpectrumDef("DPtSpectrum_JetPt_15", "#it{p}_{T,ch jet} > 15 GeV/#it{c}", dict(colors=[ROOT.kTeal + 2, ROOT.kSpring + 2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
 
     ptJet = SpectraSet("BFeedDownVsPtJet_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,ch jet}")
-    ptJet.add(SpectrumDef("Jet_Pt_Spectrum_PtD_0_Normalized", "#it{p}_{T,D} > 0", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
-    ptJet.add(SpectrumDef("Jet_Pt_Spectrum_PtD_2_Normalized", "#it{p}_{T,D} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
+    ptJet.add(SpectrumDef("JetPtSpectrum_DPt_0", "#it{p}_{T,D} > 0", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
+    ptJet.add(SpectrumDef("JetPtSpectrum_DPt_2", "#it{p}_{T,D} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
 
     zJet = SpectraSet("BFeedDownVsZ_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{z}_{||,D}^{ch jet}")
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_0_5_Normalized", "0 < #it{p}_{T,ch jet} < 5 GeV/#it{c}", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_5_10_Normalized", "5 < #it{p}_{T,ch jet} < 10 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_10_15_Normalized", "10 < #it{p}_{T,ch jet} < 15 GeV/#it{c}", dict(colors=[ROOT.kAzure + 2, ROOT.kCyan + 2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_15_20_Normalized", "15 < #it{p}_{T,ch jet} < 20 GeV/#it{c}", dict(colors=[ROOT.kMagenta + 2, ROOT.kPink + 2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_20_25_Normalized", "20 < #it{p}_{T,ch jet} < 25 GeV/#it{c}", dict(colors=[ROOT.kTeal + 2, ROOT.kSpring + 2], markers=[ROOT.kStar, ROOT.kStar], lines=[None, None])))
-    zJet.add(SpectrumDef("Jet_Z_Spectrum_PtJet_25_Normalized", "#it{p}_{T,ch jet} > 25 GeV/#it{c}", dict(colors=[ROOT.kViolet + 2, ROOT.kYellow + 2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
+    zJet.add(SpectrumDef("JetZSpectrum_JetPt_0_5", "0 < #it{p}_{T,ch jet} < 5 GeV/#it{c}", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
+    zJet.add(SpectrumDef("JetZSpectrum_JetPt_5_10", "5 < #it{p}_{T,ch jet} < 10 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
+    zJet.add(SpectrumDef("JetZSpectrum_JetPt_10_15", "10 < #it{p}_{T,ch jet} < 15 GeV/#it{c}", dict(colors=[ROOT.kAzure + 2, ROOT.kCyan + 2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
+    zJet.add(SpectrumDef("JetZSpectrum_JetPt_15_20", "15 < #it{p}_{T,ch jet} < 20 GeV/#it{c}", dict(colors=[ROOT.kMagenta + 2, ROOT.kPink + 2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
+    zJet.add(SpectrumDef("JetZSpectrum_JetPt_20_25", "20 < #it{p}_{T,ch jet} < 25 GeV/#it{c}", dict(colors=[ROOT.kTeal + 2, ROOT.kSpring + 2], markers=[ROOT.kStar, ROOT.kStar], lines=[None, None])))
+    zJet.add(SpectrumDef("JetZSpectrum_JetPt_25", "#it{p}_{T,ch jet} > 25 GeV/#it{c}", dict(colors=[ROOT.kViolet + 2, ROOT.kYellow + 2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
 
     spectraSets = [ptD, ptJet, zJet]
 
@@ -287,10 +287,16 @@ def GetSpectrum(file, meson_name, jet_type, jet_radius, spectrum):
         print("Could not get list {0} from list {1} in file {2}".format(jetlistname, mesonlistname, file.GetName()))
         mesonlist.Print()
         exit(1)
-    spectrumname = "_".join([meson_name, jet_type, jet_radius, spectrum])
-    h = jetlist.FindObject(spectrumname)
+    spectrumlistname = "_".join([meson_name, jet_type, jet_radius, spectrum])
+    spectrumlist = jetlist.FindObject(spectrumlistname)
+    if not spectrumlist:
+        print("Could not get list {0} from list {1} in list {2} in file {3}".format(spectrumlistname, jetlistname, mesonlistname, file.GetName()))
+        jetlist.Print()
+        exit(1)
+    spectrumname = "_".join([meson_name, jet_type, jet_radius, spectrum, "Normalized"])
+    h = spectrumlist.FindObject(spectrumname)
     if not h:
-        print("Could not find object {0} in list {1}/{2} in file {3}".format(spectrumname, mesonlistname, jetlistname, file.GetName()))
+        print("Could not find object {0} in list {1}/{2}/{3} in file {4}".format(spectrumname, mesonlistname, jetlistname, spectrumlistname, file.GetName()))
         jetlist.Print()
         exit(1)
     h_copy = h.Clone("{0}_copy".format(spectrum))

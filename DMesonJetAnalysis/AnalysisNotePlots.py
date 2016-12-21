@@ -193,8 +193,8 @@ def CopyEfficiencyFiles(config, output_path, output_type):
     full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
     full_output_path = "{0}/RecoEfficiency".format(output_path)
     file_list = []
-    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_PartialEfficiency")
-    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_PartialEfficiencyRatios")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_FineBins_PartialEfficiency")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_FineBins_PartialEfficiencyRatios")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyResponseFiles(config, output_path, output_type):
@@ -286,7 +286,7 @@ def FD_FoldUnfold_Comparison(histograms):
             canvases.append(obj)
 
 def EfficiencyComparison(hist_c, hist_b):
-    spectrumName = "JetPtDPtSpectrum"
+    spectrumName = "JetPtDPtSpectrum_FineBins"
     jetName = "Jet_AKTChargedR040_pt_scheme"
     dmesonName = "D0"
     prefix = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
