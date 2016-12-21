@@ -185,11 +185,11 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
             maxRatio *= 10
             minRatio /= 5
         else:
-            maxRatio *= 1.5
+            maxRatio += (maxRatio - minRatio) * 0.5
             if minRatio < 0.2:
                 minRatio = 0
             else:
-                minRatio *= 0.6
+                minRatio -= (maxRatio - minRatio) * 0.5
         mainRatioHist.SetMinimum(minRatio)
         mainRatioHist.SetMaximum(maxRatio)
         cRatio.cd()
@@ -200,11 +200,11 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
             maxY *= 10
             minY /= 5
         else:
-            maxY *= 1.5
+            maxY += (maxY - minY) * 0.5
             if minY < 0.2:
                 minY = 0
             else:
-                minY *= 0.6
+                minY -= (maxY - minY) * 0.5
         mainHist.SetMinimum(minY)
         mainHist.SetMaximum(maxY)
         c.cd()

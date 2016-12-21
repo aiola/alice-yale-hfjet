@@ -87,6 +87,9 @@ def main(actions, output_path, output_type):
     if "all" in actions or "fd_fold_unfold" in actions:
         FD_FoldUnfold_Comparison(histograms["BFeedDown"])
 
+    if "all" in actions or "fit_params" in actions:
+        FitParameterComparison(histograms["LHC14j4_cb_eff"], histograms["LHC10_eff"])
+
     BFeedDownPath = "{0}/BFeedDown".format(output_path)
     if not os.path.isdir(BFeedDownPath):
         os.makedirs(BFeedDownPath)
@@ -404,6 +407,38 @@ def JetPtResolutionComparison(hist_c, hist_b):
     leg.AddEntry(hbis, "b #rightarrow D^{0}", "pe")
     leg.Draw()
     globalList.append(leg)
+
+def FitParameterComparison(MC_histos, data_histos):
+    spectrumName = ["JetPtSpectrum_DPt_30", "DPtSpectrum_JetPt_5_30"]
+    jetName = "Charged_R040"
+    variables = ["Mass", "MassWidth"]
+    DoFitParameterComparison(MC_histos, data_histos, spectrumName, jetName, variables)
+
+def DoFitParameterComparison(MC_histos, data_histos, spectrumName, jetName, variables):
+    for var in variables:
+        for spectrum in spectrumName:
+            cname = "MCRawYieldExtractionWithEff/{0}_{1}_{2}_Comparison".format(var, jetName, spectrum)
+            hname = "D0_kSignalOnly_{0}_{1}_SignalOnly".format(jetName, spectrum)
+            baseline = MC_histos["D0_kSignalOnly"][jetName][hname]["{0}_{1}".format(hname, var)]
+            baseline.SetTitle("MC w/o background")
+            globalList.append(baseline)
+
+            histos = []
+            hname = "D0_{0}_{1}_InvMassFit".format(jetName, spectrum)
+            h = MC_histos["D0"][jetName][hname]["{0}_{1}".format(hname, var)]
+            h.SetTitle("MC w/ background")
+            histos.append(h)
+            globalList.append(h)
+            h = data_histos["D0"][jetName][hname]["{0}_{1}".format(hname, var)]
+            h.SetTitle("Data")
+            histos.append(h)
+            globalList.append(h)
+            r = DMesonJetUtils.CompareSpectra(baseline, histos, cname, "", "", "ratio", "lineary", None)
+
+            for obj in r:
+                globalList.append(obj)
+                if isinstance(obj, ROOT.TCanvas):
+                    canvases.append(obj)
 
 def OpenFile(config):
     file = ROOT.TFile.Open("{0}/{1}/{2}.root".format(config["input_path"], config["train"], config["name"]))

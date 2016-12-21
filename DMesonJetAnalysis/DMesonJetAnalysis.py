@@ -799,6 +799,7 @@ class DMesonJetAnalysisEngine:
                 s.fUncertainty.SetBinContent(xbin, 0)
 
     def GenerateSpectrum1DTruth(self, s):
+        # The truth spectrum is already done, only need to apply the efficiency
         for ibin in range(0, s.fHistogram.GetNbinsX() + 2):
             if not s.fHistogram.GetBinContent(ibin) > 0:
                 continue
@@ -806,6 +807,15 @@ class DMesonJetAnalysisEngine:
             s.fHistogram.SetBinContent(ibin, s.fHistogram.GetBinContent(ibin) * w)
             s.fHistogram.SetBinError(ibin, s.fHistogram.GetBinError(ibin) * w)
             s.fUncertainty.SetBinContent(ibin, s.fHistogram.GetBinError(ibin) / s.fHistogram.GetBinContent(ibin))
+        if self.fDMeson in s.fBinSet.fNeedInvMass:
+            for xbin, bin in enumerate(s.fBinSet.fBins):
+                if bin.fMassFitter:
+                    if s.fMass:
+                        s.fMass.SetBinContent(xbin + 1, bin.fMassFitter.GetSignalMean())
+                        s.fMass.SetBinError(xbin + 1, bin.fMassFitter.GetSignalMeanError())
+                    if s.fMassWidth:
+                        s.fMassWidth.SetBinContent(xbin + 1, bin.fMassFitter.GetSignalWidth())
+                        s.fMassWidth.SetBinError(xbin + 1, bin.fMassFitter.GetSignalWidthError())
 
     def GenerateSpectrum1D(self, s):
         print("Generating spectrum {0}".format(s.fName))
