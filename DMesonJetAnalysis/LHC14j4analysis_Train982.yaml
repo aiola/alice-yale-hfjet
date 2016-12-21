@@ -62,7 +62,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
+        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_30_detector
   -
     name: DPtBins_JetPt_5_30
     title: ""
@@ -97,7 +97,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
+        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_30_detector
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -116,7 +116,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_jetpt_DPt_30_detector
+        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_30_detector
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign
@@ -165,4 +165,4 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: D_Pt_Spectrum_bEff
+        spectrum: DPtSpectrum_bEff
