@@ -25,8 +25,8 @@ analysis:
     need_inv_mass: [D0]
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -60,8 +60,8 @@ analysis:
     need_inv_mass: [D0]
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -95,8 +95,8 @@ analysis:
     need_inv_mass: [D0]
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -152,8 +152,8 @@ analysis:
       type: inv_mass_fit
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [D0]
     -
       name: JetPtSpectrum_DPt_20
@@ -162,8 +162,8 @@ analysis:
       type: side_band
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [] #[D0]
       FD:
         train: FastSim
@@ -185,8 +185,8 @@ analysis:
       type: side_band
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [D0]
       FD:
         train: FastSim
@@ -209,8 +209,8 @@ analysis:
       type: side_band
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [] #[D0]
       FD:
         train: FastSim
@@ -233,8 +233,8 @@ analysis:
       type: like_sign
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [] #[D0]
       FD:
         train: FastSim
@@ -259,8 +259,8 @@ analysis:
       type: like_sign
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [] #[D0]
       FD:
         train: FastSim
@@ -286,8 +286,8 @@ analysis:
       type: like_sign
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
       active_mesons: [] #[D0]
       FD:
         train: FastSim
@@ -328,8 +328,8 @@ analysis:
       type: inv_mass_fit
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_NoJet
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_NoJet
       active_mesons: [D0]
       FD:
         train: FastSim
