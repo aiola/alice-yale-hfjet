@@ -7,3 +7,4 @@ FinalRawYieldCentralPlusSystUncertainty_*.root
 FinalRawYieldUncertainty_*.root
 DistributionOfFinalYields_*.root
 AverageOfFinalYields_*.root
+*.pyc

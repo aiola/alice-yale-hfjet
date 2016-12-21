@@ -165,44 +165,40 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroEffScale() {
       return kFALSE;
     }    
 
-    TH1F* hmassjet[fnDbins]; 
-    TH1F* hmassjet_scale[fnDbins]; 
-    TH1F *hmass;
+    TH1D* hmassjet_scale[fnDbins];
 
-    for(int j=0; j<fnDbins; j++) {
+    for (int j=0; j<fnDbins; j++) {
+      hmassjet_scale[j] = new TH1D(Form("hmassjet_%d_scale",j),"hmassjet",(fmassmax-fmassmin)/fmasswidth,fmassmin,fmassmax);
+      hmassjet_scale[j]->Sumw2();
+    }
 
-      hmassjet[j] = new TH1F(Form("hmassjet_%d",j),"hmassjet",(fmassmax-fmassmin)/fmasswidth,fmassmin,fmassmax);  
-      hmassjet[j]->Sumw2();
- 
-      for(int k=0; k<tree->GetEntries(); k++) {
-        tree->GetEntry(k);
-        if(TMath::Abs(brJet->fEta)>0.5) continue;
-        if(brJet->fPt >= fpTmin && brJet->fPt < fpTmax && brD->fPt >= fDbinpTedges[j] && brD->fPt < fDbinpTedges[j+1]) hmassjet[j]->Fill(brD->fInvMass);
-      }
-  
-      hmassjet_scale[j] = (TH1F*)hmassjet[j]->Clone(Form("hmassjet%d_scale",j));
-      hmassjet_scale[j]->Scale(1./fDEffValues[j]);
+    for (int k=0; k<tree->GetEntries(); k++) {
+      tree->GetEntry(k);
+      if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
+      if (brJet->fPt < fpTmin || brJet->fPt >= fpTmax) continue;
+      for (int j=0; j<fnDbins; j++) {
+        if (brD->fPt < fDbinpTedges[j] || brD->fPt >= fDbinpTedges[j+1]) continue;
+        hmassjet_scale[j]->Fill(brD->fInvMass, 1./fDEffValues[j]);
+      }//end of D-meson pT bin loop
+    }
 
-      if(!j) hmass = (TH1F*)hmassjet_scale[j]->Clone("hmass");
-      else hmass->Add(hmassjet_scale[j]);
-
-    }  //end of D-meson pT bin loop
-
-    fMassPlot = (TH1D*)hmass->Clone("inputSpectrum");
+    for (int j=0; j<fnDbins; j++) {
+      if (!j) fMassPlot = (TH1D*)hmassjet_scale[j]->Clone("inputSpectrum");
+      else fMassPlot->Add(hmassjet_scale[j]);
+    }
 
     if(!fMassPlot) {
       std::cout << "Error in extracting the mass plot! Exiting..." << std::endl;
       return kFALSE;
-    }   
+    }
 
     return kTRUE;
-       
 }
 
 //___________________________________________________________________________________________
 Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroSideband() {
 
-    double jetmin = 5, jetmax = 24;
+    double jetmin = 5, jetmax = 30;
 
     std::cout << "Extracting input mass plot: " << fpTmin << " to " << fpTmax << std::endl;    
 
@@ -222,8 +218,10 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroSideband() {
 
     for(int k=0; k<tree->GetEntries(); k++) {
       tree->GetEntry(k);
-      if(TMath::Abs(brJet->fEta)>0.5) continue;
-      if(brJet->fPt > jetmin && brJet->fPt <= jetmax && brD->fPt > fpTmin && brD->fPt <= fpTmax) fMassPlot->Fill(brD->fInvMass);
+      if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
+      if (brJet->fPt < jetmin || brJet->fPt >= jetmax) continue;
+      if (brD->fPt < fpTmin || brD->fPt >= fpTmax) continue;
+      fMassPlot->Fill(brD->fInvMass);
     }
 
     if(!fMassPlot) {
@@ -777,9 +775,9 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertainty(){
 
   Bool_t success = kTRUE;
   if(fDmesonSpecie==kD0toKpi && fYieldApproach==kEffScale) success = EvaluateUncertaintyDzeroEffScale();
-  if(fDmesonSpecie==kD0toKpi && fYieldApproach==kSideband) success = EvaluateUncertaintyDzeroSideband();  
-  if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kEffScale) success = EvaluateUncertaintyDstarEffScale();  
-  if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kSideband) success = EvaluateUncertaintyDstarSideband();    
+  else if(fDmesonSpecie==kD0toKpi && fYieldApproach==kSideband) success = EvaluateUncertaintyDzeroSideband();
+  else if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kEffScale) success = EvaluateUncertaintyDstarEffScale();
+  else if(fDmesonSpecie==kDStarD0pi && fYieldApproach==kSideband) success = EvaluateUncertaintyDstarSideband();
 
   if(success) std::cout << "Evaluated raw yield uncertainty" << std::endl;
 
@@ -859,10 +857,10 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroEffScale() {
        
 }
 
-
 //___________________________________________________________________________________________
 Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
 
+  double jetmin = 5, jetmax = 30;
 	std::cout << "Jet spectrum pT bin edges: ";
 	for (int i = 0; i<fnJetbins; i++) std::cout << fJetbinpTedges[i] << " - ";
 	std::cout << fJetbinpTedges[fnJetbins] << std::endl;
@@ -957,10 +955,12 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
 
 			for (int k = 0; k<tree->GetEntries(); k++) {
 				tree->GetEntry(k);
-				if (TMath::Abs(brJet->fEta)>0.5) continue;
-				if (brD->fInvMass > signal_c_min && brD->fInvMass < signal_c_max && brD->fPt > fDbinpTedges[iDbin] && brD->fPt <= fDbinpTedges[iDbin + 1]) hjetpt->Fill(brJet->fPt);
-				if (brD->fInvMass > signal_l_min && brD->fInvMass < signal_l_max && brD->fPt > fDbinpTedges[iDbin] && brD->fPt <= fDbinpTedges[iDbin + 1]) hjetpt_s1->Fill(brJet->fPt);
-				if (brD->fInvMass > signal_u_min && brD->fInvMass < signal_u_max && brD->fPt > fDbinpTedges[iDbin] && brD->fPt <= fDbinpTedges[iDbin + 1]) hjetpt_s2->Fill(brJet->fPt);
+	      if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
+	      if (brJet->fPt < jetmin || brJet->fPt >= jetmax) continue;
+	      if (brD->fPt < fDbinpTedges[iDbin] || brD->fPt >= fDbinpTedges[iDbin + 1]) continue;
+				if (brD->fInvMass >= signal_c_min && brD->fInvMass < signal_c_max) hjetpt->Fill(brJet->fPt);
+				if (brD->fInvMass >= signal_l_min && brD->fInvMass < signal_l_max) hjetpt_s1->Fill(brJet->fPt);
+				if (brD->fInvMass >= signal_u_min && brD->fInvMass < signal_u_max) hjetpt_s2->Fill(brJet->fPt);
 			}
 
 			hjetpt_s = (TH1F*)hjetpt_s1->Clone(Form("hjetpt_s%d", iDbin));
