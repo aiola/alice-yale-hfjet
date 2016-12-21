@@ -71,6 +71,7 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     print("Preparing jet pt FD histograms")
     result = []
 
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
     jetptbins = [5, 6, 8, 10, 14, 20, 30]
 
     print("Opening the b->D0 response matrix file")
@@ -86,11 +87,11 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     cResponseFile_efficiency = OpenResponseFile(input_path, cResponse, True)
 
     print("Rebinning the FD original histogram")
-    FDhistogram_orig = DMesonJetUtils.Rebin2D_fromBins(FDhistogram_old, FDhistogram_old.GetName(), len(jetptbins) - 1, array.array('d', jetptbins), FDhistogram_old.GetNbinsY(), FDhistogram_old.GetYaxis().GetXbins().GetArray())
+    FDhistogram_orig = DMesonJetUtils.Rebin2D_fromBins(FDhistogram_old, FDhistogram_old.GetName(), len(jetptbins) - 1, array.array('d', jetptbins), len(dptbins) - 1, array.array('d', dptbins))
     result.append(FDhistogram_orig)
 
     print("Loading the response matrix")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_CoarseBins", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     result.append(bEfficiency_dpt)
 
     print("Applying the b->D0 reconstruction efficiency")
@@ -99,12 +100,12 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
     result.append(FDhistogram)
 
     print("Applying the b->D0 reconstruction efficiency (fine bins)")
-    FDhistogram_fineBins = FDhistogram_old.Clone("{0}_fineBins_bEff".format(FDhistogram_old.GetName()))
+    FDhistogram_fineBins = DMesonJetUtils.Rebin2D_fromBins(FDhistogram_old, "{0}_fineBins_bEff".format(FDhistogram_old.GetName()), FDhistogram_old.GetNbinsX(), FDhistogram_old.GetXaxis().GetXbins().GetArray(), len(dptbins) - 1, array.array('d', dptbins))
     ApplyEfficiency(FDhistogram_fineBins, bEfficiency_dpt, False)
     result.append(FDhistogram_fineBins)
 
     print("Loading the response matrix")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_CoarseBins", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     result.append(cEfficiency_dpt)
 
     print("Applying the correction for the c->D0 reconstruction efficiency")
@@ -146,11 +147,11 @@ def PrepareFDhist_jetpt(FDhistogram_old, input_path, bResponse, cResponse):
         result.append(FDhistogram_efficiency_jetpt_detector)
 
         print("Unfolding using the c response matrix")
-        FDhistogram_efficiency_jetpt_unfolded = GetUnfoldedSpectrum(FDhistogram_efficiency_jetpt_detector, cResponseFile_efficiency, FDhistogram_fineBins_efficiency_jetpt, spectrumResponseName)
+        FDhistogram_efficiency_jetpt_unfolded = GetUnfoldedSpectrum("{0}_unfolded_c".format(FDhistogram_efficiency_jetpt_detector.GetName()), FDhistogram_efficiency_jetpt_detector, cResponseFile_efficiency, FDhistogram_fineBins_efficiency_jetpt, spectrumResponseName)
         result.append(FDhistogram_efficiency_jetpt_unfolded)
 
         print("Unfolding using the b response matrix")
-        FDhistogram_efficiency_jetpt_unfolded_b = GetUnfoldedSpectrum(FDhistogram_efficiency_jetpt_detector, bResponseFile_efficiency, FDhistogram_fineBins_efficiency_jetpt, spectrumResponseName)
+        FDhistogram_efficiency_jetpt_unfolded_b = GetUnfoldedSpectrum("{0}_unfolded_b".format(FDhistogram_efficiency_jetpt_detector.GetName()), FDhistogram_efficiency_jetpt_detector, bResponseFile_efficiency, FDhistogram_fineBins_efficiency_jetpt, spectrumResponseName)
         FDhistogram_efficiency_jetpt_unfolded_b.SetName("{0}_b".format(FDhistogram_efficiency_jetpt_unfolded_b.GetName()))
         result.append(FDhistogram_efficiency_jetpt_unfolded_b)
 
@@ -189,8 +190,8 @@ def GenerateUnfoldingEngine(name, responseFile, prior, spectrumResponseName):
     unf.LoadResponse(responseFile, False)
     return unf
 
-def GetUnfoldedSpectrum(histogram, responseFile, prior, spectrumResponseName):
-    unf = GenerateUnfoldingEngine(histogram.GetName(), responseFile, prior, spectrumResponseName)
+def GetUnfoldedSpectrum(name, histogram, responseFile, prior, spectrumResponseName):
+    unf = GenerateUnfoldingEngine(name, responseFile, prior, spectrumResponseName)
     unf.fInputSpectrum = histogram
     unf.fTruthSpectrum = None
     unf.Start()
@@ -203,10 +204,10 @@ def ApplyEfficiency(hist, efficiency, reverse):
     print("Applying efficiency {0} to histogram {1}".format(efficiency.GetName(), hist.GetName()))
     for ybin in range(0, hist.GetNbinsY() + 2):
         if reverse and efficiency.GetBinContent(ybin) > 0:
-            print("Dividing by {0}".format(efficiency.GetBinContent(ybin)))
+            print("(bin {0:.2f} ({1:.2f}): dividing by {2}".format(hist.GetYaxis().GetBinUpEdge(ybin), efficiency.GetXaxis().GetBinUpEdge(ybin), efficiency.GetBinContent(ybin)))
             eff = 1. / efficiency.GetBinContent(ybin)
         else:
-            print("Multiplying by {0}".format(efficiency.GetBinContent(ybin)))
+            print("(bin {0:.2f} ({1:.2f}): multiplying by {2}".format(hist.GetYaxis().GetBinUpEdge(ybin), efficiency.GetXaxis().GetBinUpEdge(ybin), efficiency.GetBinContent(ybin)))
             eff = efficiency.GetBinContent(ybin)
         for xbin in range(0, hist.GetNbinsX() + 2):
             hist.SetBinContent(xbin, ybin, hist.GetBinContent(xbin, ybin) * eff)
@@ -278,26 +279,22 @@ def LoadFDHistogram(file_name):
         print("File {0} open".format(file_name))
     dlist = file.Get("D0_MCTruth")
     jlist = dlist.FindObject("Charged_R040")
-    # slist = jlist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
-    # jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
-    slist = jlist.FindObject("D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum")
+    slist = jlist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
     if not slist:
         print("Could not find FD histogram (jet pt)!")
-        jlist.ls()
+        jlist.Print()
         exit(1)
-    jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum")
+    jetpt_hist = slist.FindObject("D0_MCTruth_Charged_R040_JetPtDPtSpectrum")
     if not jetpt_hist:
         print("Could not find FD histogram (jet pt)!")
-        slist.ls()
+        slist.Print()
         exit(1)
-    # slist = dlist.FindObject("D0_MCTruth_DPtSpectrum")
-    slist = dlist.FindObject("D0_MCTruth_D_Pt_Spectrum")
+    slist = dlist.FindObject("D0_MCTruth_DPtSpectrum")
     if not slist:
         print("Could not find FD histogram (d pt)!")
         dlist.ls()
         exit(1)
-    # dpt_hist = slist.FindObject("D0_MCTruth_DPtSpectrum")
-    dpt_hist = slist.FindObject("D0_MCTruth_D_Pt_Spectrum")
+    dpt_hist = slist.FindObject("D0_MCTruth_DPtSpectrum")
     if not dpt_hist:
         print("Could not find FD histogram (d pt)!")
         slist.ls()

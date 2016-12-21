@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python program to perform a D meson jet unfolding
+# python program to perform a D meson jet unfolding
 
 import math
 import os
@@ -68,17 +68,17 @@ class DMesonJetUnfoldingEngine:
             rMethodList.SetName(method)
             rlist.Add(rMethodList)
             unfoldingHistos[method] = rMethodList
-        for (method,reg,prior),h in self.fUnfoldedSpectra.iteritems():
-            unfoldingHistos[method].Add(h)            
-        for (method,reg,prior),h in self.fRefoldedSpectra.iteritems():
+        for (method, reg, prior), h in self.fUnfoldedSpectra.iteritems():
             unfoldingHistos[method].Add(h)
-        for (method,reg,prior),h in self.fCovarianceMatrices.iteritems():
+        for (method, reg, prior), h in self.fRefoldedSpectra.iteritems():
+            unfoldingHistos[method].Add(h)
+        for (method, reg, prior), h in self.fCovarianceMatrices.iteritems():
             unfoldingHistos[method].Add(h)
         for h in self.fSvdDvectors.itervalues():
             unfoldingHistos["Svd"].Add(h)
-        for (method,reg,prior),h in self.fPearsonMatrices.iteritems():
+        for (method, reg, prior), h in self.fPearsonMatrices.iteritems():
             unfoldingHistos[method].Add(h)
-        for (method,reg,prior),(h1,h2,h3) in self.fUnfoldedSpectraErrors.iteritems():
+        for (method, reg, prior), (h1, h2, h3) in self.fUnfoldedSpectraErrors.iteritems():
             unfoldingHistos[method].Add(h1)
             if h2: unfoldingHistos[method].Add(h2)
             if h3: unfoldingHistos[method].Add(h3)
@@ -134,9 +134,9 @@ class DMesonJetUnfoldingEngine:
 
     def LoadInputSpectrum(self, dataFile):
         if self.fName == "__self_unfolding__":
-            self.fInputSpectrum = self.fDetectorResponse.ProjectionX("temp",1,self.fDetectorResponse.GetNbinsY()).Rebin(len(self.fBins)-1, "{0}_InputSpectrum".format(self.fName), array.array('d', self.fBins))
+            self.fInputSpectrum = self.fDetectorResponse.ProjectionX("temp", 1, self.fDetectorResponse.GetNbinsY()).Rebin(len(self.fBins) - 1, "{0}_InputSpectrum".format(self.fName), array.array('d', self.fBins))
             self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
-            self.fTruthSpectrum = self.fDetectorTrainTruth.Rebin(len(self.fBins)-1, "{0}_TruthSpectrum".format(self.fName), array.array('d', self.fBins))
+            self.fTruthSpectrum = self.fDetectorTrainTruth.Rebin(len(self.fBins) - 1, "{0}_TruthSpectrum".format(self.fName), array.array('d', self.fBins))
             self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
             return True
 
@@ -211,28 +211,28 @@ class DMesonJetUnfoldingEngine:
         self.fInputSpectrumErrors = ROOT.TH1D("{0}_Errors".format(self.fInputSpectrum.GetName()), "{0} Errors".format(self.fInputSpectrum.GetTitle()), self.fInputSpectrum.GetNbinsX(), self.fInputSpectrum.GetXaxis().GetXbins().GetArray())
         self.fInputSpectrumErrors.GetXaxis().SetTitle(self.fInputSpectrum.GetXaxis().GetTitle())
         self.fInputSpectrumErrors.GetYaxis().SetTitle("relative statistical uncertainty")
-        for ibin in range(self.fInputSpectrum.GetNbinsX()+2):
+        for ibin in range(self.fInputSpectrum.GetNbinsX() + 2):
             if self.fInputSpectrum.GetBinContent(ibin) == 0:
                 continue
-            self.fInputSpectrumErrors.SetBinContent(ibin, self.fInputSpectrum.GetBinError(ibin)/self.fInputSpectrum.GetBinContent(ibin))
+            self.fInputSpectrumErrors.SetBinContent(ibin, self.fInputSpectrum.GetBinError(ibin) / self.fInputSpectrum.GetBinContent(ibin))
 
     def GeneratePearsonMatrices(self):
         for id, cov in self.fCovarianceMatrices.iteritems():
             pearson = cov.Clone(cov.GetName().replace("CovMat", "Pearson"))
             pearson.Reset()
-            for x in range(1, pearson.GetNbinsX()+1):
-                if not cov.GetBinContent(x,x) > 0:
+            for x in range(1, pearson.GetNbinsX() + 1):
+                if not cov.GetBinContent(x, x) > 0:
                     continue
-                sigmax = math.sqrt(cov.GetBinContent(x,x))
-                for y in range(1, pearson.GetNbinsY()+1):
-                    if not cov.GetBinContent(y,y) > 0:
+                sigmax = math.sqrt(cov.GetBinContent(x, x))
+                for y in range(1, pearson.GetNbinsY() + 1):
+                    if not cov.GetBinContent(y, y) > 0:
                         continue
-                    sigmay = math.sqrt(cov.GetBinContent(y,y))
-                    pearson.SetBinContent(x,y,cov.GetBinContent(x,y) / sigmax / sigmay)
+                    sigmay = math.sqrt(cov.GetBinContent(y, y))
+                    pearson.SetBinContent(x, y, cov.GetBinContent(x, y) / sigmax / sigmay)
             self.fPearsonMatrices[id] = pearson
 
     def Plot(self):
-        #ROOT.gStyle.SetPalette(55,ROOT.nullptr)
+        # ROOT.gStyle.SetPalette(55,ROOT.nullptr)
         if len(self.fUnfoldingConfig) > 1:
             self.CompareMethods()
         if len(self.fPriors) > 1:
@@ -311,7 +311,7 @@ class DMesonJetUnfoldingEngine:
             c = ROOT.TCanvas(cname, cname, 850, 750)
             self.fCanvases.append(c)
             globalList.append(c)
-            c.Divide(2,2)
+            c.Divide(2, 2)
 
             pad = c.cd(1)
             pad.SetLogz()
@@ -354,7 +354,7 @@ class DMesonJetUnfoldingEngine:
 
     def PlotEfficiency(self, eff):
         eff_copy = eff.DrawCopy("hist")
-        if eff_copy.GetMinimum() > 0.99: # fix ugly plotting when the efficiency is 1
+        if eff_copy.GetMinimum() > 0.99:  # fix ugly plotting when the efficiency is 1
             eff_copy.SetMaximum(1.2)
             eff_copy.SetMinimum(0.8)
         eff_copy.GetXaxis().SetTitleFont(43)
@@ -414,7 +414,7 @@ class DMesonJetUnfoldingEngine:
                 self.fCanvases.append(obj)
 
     def PlotUnfoldingErrorsForMethod(self, method, prior):
-        #first compare different regularization strengths
+        # first compare different regularization strengths
         baseline = self.fInputSpectrumErrors.Clone("{0}_copy".format(self.fInputSpectrumErrors.GetName()))
         baseline.SetTitle("Input spectrum")
         globalList.append(baseline)
@@ -436,7 +436,7 @@ class DMesonJetUnfoldingEngine:
                 if isinstance(obj, ROOT.TCanvas):
                     self.fCanvases.append(obj)
 
-        #now compare different error estimation methods
+        # now compare different error estimation methods
         if self.fDoErrorCrossChecks:
             reg = self.GetDefaultRegularization(method, prior)
             baselineId = (method, reg, prior)
@@ -444,7 +444,7 @@ class DMesonJetUnfoldingEngine:
             baseline = baselineErr.Clone("{0}_copy".format(baselineErr.GetName()))
             baseline.SetTitle("kError")
             globalList.append(baseline)
-    
+
             spectra = []
             hcov = baselineCov.Clone("{0}_copy".format(baselineCov.GetName()))
             hcov.SetTitle("kCovariance")
@@ -454,7 +454,7 @@ class DMesonJetUnfoldingEngine:
             htoy.SetTitle("kCovToy")
             globalList.append(htoy)
             spectra.append(htoy)
-    
+
             r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingStatisticalUncertaintyStrategy_{1}_Reg{2}_Prior{3}".format(self.fName, method, reg, prior), "hist", "", "", "lineary", False)
             for obj in r:
                 globalList.append(obj)
@@ -483,13 +483,13 @@ class DMesonJetUnfoldingEngine:
         cname = "{0}_Pearson_{1}_Prior{2}".format(self.fName, method, prior)
         rows = int(math.floor(math.sqrt(len(pearsons))))
         cols = int(math.ceil(len(pearsons) / rows))
-        c = ROOT.TCanvas(cname, cname, 360*cols, 350*rows)
+        c = ROOT.TCanvas(cname, cname, 360 * cols, 350 * rows)
         self.fCanvases.append(c)
         globalList.append(c)
         c.Divide(cols, rows)
 
         for i, cov in enumerate(pearsons):
-            c.cd(i+1)
+            c.cd(i + 1)
             cov.GetXaxis().SetTitleFont(43)
             cov.GetXaxis().SetTitleSize(16)
             cov.GetXaxis().SetTitleOffset(2)
@@ -500,11 +500,11 @@ class DMesonJetUnfoldingEngine:
             cov.GetYaxis().SetTitleOffset(2)
             cov.GetYaxis().SetLabelFont(43)
             cov.GetYaxis().SetLabelSize(15)
-            if i % cols == cols-1:
+            if i % cols == cols - 1:
                 cov.Draw("col2z")
             else:
                 cov.Draw("col2")
-            cov.GetZaxis().SetRangeUser(-1,1)
+            cov.GetZaxis().SetRangeUser(-1, 1)
             pave = ROOT.TPaveText(0, 1, 1, 0.9, "NB NDC")
             pave.SetBorderSize(0)
             pave.SetFillStyle(0)
@@ -543,10 +543,10 @@ class DMesonJetUnfoldingEngine:
             cTOM.cd()
             globalList.append(cTOM)
             ratioTruthOverMeas.Divide(self.fInputSpectrum)
-            ratioTruthOverMeas.SetFillColor(ROOT.kRed-10)
+            ratioTruthOverMeas.SetFillColor(ROOT.kRed - 10)
             ratioTruthOverMeas.SetFillStyle(1001)
-            ratioTruthOverMeas.SetLineColor(ROOT.kRed+2)
-            ratioTruthOverMeas.SetMarkerColor(ROOT.kRed+2)
+            ratioTruthOverMeas.SetLineColor(ROOT.kRed + 2)
+            ratioTruthOverMeas.SetMarkerColor(ROOT.kRed + 2)
             ratioTruthOverMeas.SetMarkerStyle(ROOT.kFullCircle)
             ratioTruthOverMeas.SetMarkerSize(0.9)
             ratioTruthOverMeas.Draw()
@@ -602,11 +602,11 @@ class DMesonJetUnfoldingEngine:
             globalList.append(truth)
             truth.SetName("{0}_{1}_{2}_{3}".format(self.fUnfoldedSpectra[(method, reg, prior)].GetName(), method, reg, prior))
             truth.SetMarkerStyle(ROOT.kOpenSquare)
-            truth.SetMarkerColor(ROOT.kOrange+2)
+            truth.SetMarkerColor(ROOT.kOrange + 2)
             truth.SetMarkerSize(1.1)
-            truth.SetFillColor(ROOT.kOrange-9)
+            truth.SetFillColor(ROOT.kOrange - 9)
             truth.SetFillStyle(1001)
-            truth.SetLineColor(ROOT.kOrange+2)
+            truth.SetLineColor(ROOT.kOrange + 2)
             leg.AddEntry(truth, "Truth", "f")
         else:
             truth = None
@@ -618,32 +618,32 @@ class DMesonJetUnfoldingEngine:
         globalList.append(meas)
         meas.SetName("{0}_{1}_{2}_{3}".format(meas, method, reg, prior))
         meas.SetMarkerStyle(ROOT.kFullCircle)
-        meas.SetMarkerColor(ROOT.kRed+2)
+        meas.SetMarkerColor(ROOT.kRed + 2)
         meas.SetMarkerSize(0.9)
-        meas.SetLineColor(ROOT.kRed+2)
+        meas.SetLineColor(ROOT.kRed + 2)
         leg.AddEntry(meas, "Measured", "pe")
 
         unfolded = self.fUnfoldedSpectra[(method, reg, prior)].DrawCopy("same")
         globalList.append(unfolded)
         unfolded.SetName("{0}_{1}_{2}_{3}".format(unfolded.GetName(), method, reg, prior))
         unfolded.SetMarkerStyle(ROOT.kFullSquare)
-        unfolded.SetMarkerColor(ROOT.kBlue+2)
+        unfolded.SetMarkerColor(ROOT.kBlue + 2)
         unfolded.SetMarkerSize(0.9)
-        unfolded.SetLineColor(ROOT.kBlue+2)
+        unfolded.SetLineColor(ROOT.kBlue + 2)
         leg.AddEntry(unfolded, "{0}, reg={1}, prior={2}".format(method, reg, prior), "pe")
 
         refolded = self.fRefoldedSpectra[(method, reg, prior)].DrawCopy("same")
         globalList.append(refolded)
         refolded.SetName("{0}_{1}_{2}_{3}".format(refolded.GetName(), method, reg, prior))
         refolded.SetMarkerStyle(ROOT.kOpenCircle)
-        refolded.SetMarkerColor(ROOT.kGreen+2)
+        refolded.SetMarkerColor(ROOT.kGreen + 2)
         refolded.SetMarkerSize(1.1)
-        refolded.SetLineColor(ROOT.kGreen+2)
+        refolded.SetLineColor(ROOT.kGreen + 2)
         leg.AddEntry(refolded, "Refolded", "l")
 
         leg.Draw()
 
-        #ratios
+        # ratios
         # unfolded/measured
         ratioUnfoldedOverMeas = unfolded.Clone("{0}_UnfoldedOverMeasured".format(meas.GetName()))
         cnameUOM = "{0}_UnfoldingSummary_{1}_UnfoldedOverMeasured".format(self.fName, method)
@@ -656,7 +656,7 @@ class DMesonJetUnfoldingEngine:
         ratioUnfoldedOverMeas.Divide(meas)
         ratioUnfoldedOverMeas.Draw()
 
-        # refolded/measured and unfolded/truth 
+        # refolded/measured and unfolded/truth
         cnameROM = "{0}_UnfoldingSummary_{1}_RefoldedOverMeasured".format(self.fName, method)
         cROM = ROOT.TCanvas(cnameROM, cnameROM)
         self.fCanvases.append(cROM)
@@ -750,9 +750,9 @@ class DMesonJetUnfoldingEngine:
 
     def UnfoldSvd(self):
         max_reg = self.fInputSpectrum.GetNbinsX()
-        #if self.fUseOverflow: max_reg += 2
+        # if self.fUseOverflow: max_reg += 2
         for prior, resp in self.fResponseMatrices.iteritems():
-            for reg in range(1, max_reg+1):
+            for reg in range(1, max_reg + 1):
                 print("Unfolding {0}, reg={1}, prior={2}".format("SVD", reg, prior))
                 unfold = ROOT.RooUnfoldSvd(resp.fRooUnfoldResponse, self.fInputSpectrum, reg)
                 unfolded = unfold.Hreco()
@@ -766,20 +766,20 @@ class DMesonJetUnfoldingEngine:
                 unfolded.SetTitle("{0}, k={1}, prior={2}".format("Svd", reg, prior))
                 self.fUnfoldedSpectra["Svd", reg, prior] = unfolded
 
-                #refolded
+                # refolded
                 refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
                 refolded.SetName("{0}_RefoldedSpectrum_{1}_Reg{2}_Prior{3}".format(self.fName, "Svd", reg, prior))
                 refolded.SetTitle("{0}, k={1}, prior={2}".format("Svd", reg, prior))
                 self.fRefoldedSpectra["Svd", reg, prior] = refolded
 
-                #covariance
+                # covariance
                 cov = ROOT.TH2D(unfold.Ereco())
                 cov.SetName("{0}_CovMat_{1}_Reg{2}_Prior{3}".format(self.fName, "Svd", reg, prior))
                 cov.GetXaxis().SetTitle("bin number")
                 cov.GetYaxis().SetTitle("bin number")
                 self.fCovarianceMatrices["Svd", reg, prior] = cov
 
-                #errors
+                # errors
                 unfoldingErr = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kErrors))
                 unfoldingErr.SetName("{0}_UnfoldErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Svd", reg, prior))
                 unfoldingErr.SetTitle("{0} Unfolding Errors {1} Reg={2} Prior={3}".format(self.fName, "Svd", reg, prior))
@@ -796,7 +796,7 @@ class DMesonJetUnfoldingEngine:
                     diagCov.GetYaxis().SetTitle("relative statistical uncertainty")
                     DMesonJetUtils.DivideNoErrors(diagCov, unfolded)
                     errToy = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
-                    errToy.SetName("{0}_MCToyErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Svd", reg, prior))        
+                    errToy.SetName("{0}_MCToyErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Svd", reg, prior))
                     errToy.SetTitle("{0} Unfolding Errors (MC-toy) {1} Reg={2} Prior={3}".format(self.fName, "Svd", reg, prior))
                     errToy.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
                     errToy.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
@@ -809,7 +809,7 @@ class DMesonJetUnfoldingEngine:
 
     def UnfoldBayes(self, iter_min, iter_max, iter_step):
         for prior, resp in self.fResponseMatrices.iteritems():
-            for reg in range(iter_min, iter_max+1, iter_step):
+            for reg in range(iter_min, iter_max + 1, iter_step):
                 print("Unfolding {0}, reg={1}, prior={2}".format("Bayes", reg, prior))
                 unfold = ROOT.RooUnfoldBayes(resp.fRooUnfoldResponse, self.fInputSpectrum, reg)
                 unfolded = unfold.Hreco()
@@ -818,20 +818,20 @@ class DMesonJetUnfoldingEngine:
                 unfolded.SetTitle("{0}, iter={1}, prior={2}".format("Bayes", reg, prior))
                 self.fUnfoldedSpectra["Bayes", reg, prior] = unfolded
 
-                #refolded
+                # refolded
                 refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
                 refolded.SetName("{0}_RefoldedSpectrum_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))
                 refolded.SetTitle("{0}, iter={1}, prior={2}".format("Bayes", reg, prior))
                 self.fRefoldedSpectra["Bayes", reg, prior] = refolded
 
-                #covariance
+                # covariance
                 cov = ROOT.TH2D(unfold.Ereco())
                 cov.SetName("{0}_CovMat_{1}_{2}_{3}".format(self.fName, "Bayes", reg, prior))
                 cov.GetXaxis().SetTitle("bin number")
                 cov.GetYaxis().SetTitle("bin number")
                 self.fCovarianceMatrices["Bayes", reg, prior] = cov
 
-                #errors
+                # errors
                 unfoldingErr = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kErrors))
                 unfoldingErr.SetName("{0}_UnfoldErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))
                 unfoldingErr.SetTitle("{0} Unfolding Errors {1} Reg={2} Prior={3}".format(self.fName, "Bayes", reg, prior))
@@ -848,7 +848,7 @@ class DMesonJetUnfoldingEngine:
                     diagCov.GetYaxis().SetTitle("relative statistical uncertainty")
                     DMesonJetUtils.DivideNoErrors(diagCov, unfolded)
                     errToy = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
-                    errToy.SetName("{0}_MCToyErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))        
+                    errToy.SetName("{0}_MCToyErr_{1}_Reg{2}_Prior{3}".format(self.fName, "Bayes", reg, prior))
                     errToy.SetTitle("{0} Unfolding Errors (MC-toy) {1} Reg={2} Prior={3}".format(self.fName, "Bayes", reg, prior))
                     errToy.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
                     errToy.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
@@ -874,22 +874,22 @@ class DMesonJetUnfoldingEngine:
             unfolded.SetTitle("{0}, prior={1}".format("BinByBin", prior))
             self.fUnfoldedSpectra["BinByBin", None, prior] = unfolded
 
-            #refolded
+            # refolded
             refolded = resp.fRooUnfoldResponse.ApplyToTruth(unfolded)
-            #refolded = unfolded.Clone("refolded")
-            #refolded.Divide(binBybinCorrFactors)
+            # refolded = unfolded.Clone("refolded")
+            # refolded.Divide(binBybinCorrFactors)
             refolded.SetName("{0}_RefoldedSpectrum_{1}_Prior{2}".format(self.fName, "BinByBin", prior))
             refolded.SetTitle("{0}, prior={1}".format("BinByBin", prior))
             self.fRefoldedSpectra["BinByBin", None, prior] = refolded
 
-            #covariance
+            # covariance
             cov = ROOT.TH2D(unfold.Ereco())
             cov.SetName("{0}_CovMat_{1}_{2}".format(self.fName, "BinByBin", prior))
             cov.GetXaxis().SetTitle("bin number")
             cov.GetYaxis().SetTitle("bin number")
             self.fCovarianceMatrices["BinByBin", None, prior] = cov
 
-            #errors
+            # errors
             unfoldingErr = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kErrors))
             unfoldingErr.SetName("{0}_UnfoldErr_{1}_Prior{2}".format(self.fName, "BinByBin", prior))
             unfoldingErr.SetTitle("{0} Unfolding Errors {1} Prior={2}".format(self.fName, "BinByBin", prior))
@@ -906,7 +906,7 @@ class DMesonJetUnfoldingEngine:
                 diagCov.GetYaxis().SetTitle("relative statistical uncertainty")
                 DMesonJetUtils.DivideNoErrors(diagCov, unfolded)
                 errToy = DMesonJetUtils.V2TH1(unfold.ErecoV(ROOT.RooUnfold.kCovToy))
-                errToy.SetName("{0}_MCToyErr_{1}_Prior{2}".format(self.fName, "BinByBin", prior))        
+                errToy.SetName("{0}_MCToyErr_{1}_Prior{2}".format(self.fName, "BinByBin", prior))
                 errToy.SetTitle("{0} Unfolding Errors (MC-toy) {1} Prior={2}".format(self.fName, "BinByBin", prior))
                 errToy.GetXaxis().SetTitle(unfolded.GetXaxis().GetTitle())
                 errToy.GetXaxis().Set(unfolded.GetNbinsX(), unfolded.GetXaxis().GetXbins().GetArray())
@@ -925,11 +925,11 @@ class DMesonJetUnfoldingEngine:
             detRespForRooUnfold = detResp.Clone()
             if self.fUseOverflow:
                 # if using overflow bins, need to reset the content of the measured axis overflow bins (not measured)
-                for ybin in range(0, detRespForRooUnfold.GetNbinsY()+2):
-                    detRespForRooUnfold.SetBinContent(0,ybin,0)
-                    detRespForRooUnfold.SetBinError(0,ybin,0)
-                    detRespForRooUnfold.SetBinContent(self.fDetectorResponse.GetNbinsX()+1,ybin,0)
-                    detRespForRooUnfold.SetBinError(self.fDetectorResponse.GetNbinsX()+1,ybin,0)
+                for ybin in range(0, detRespForRooUnfold.GetNbinsY() + 2):
+                    detRespForRooUnfold.SetBinContent(0, ybin, 0)
+                    detRespForRooUnfold.SetBinError(0, ybin, 0)
+                    detRespForRooUnfold.SetBinContent(self.fDetectorResponse.GetNbinsX() + 1, ybin, 0)
+                    detRespForRooUnfold.SetBinError(self.fDetectorResponse.GetNbinsX() + 1, ybin, 0)
             rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detRespForRooUnfold)
             rooUnfoldResp.UseOverflow(self.fUseOverflow)
             detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior())
@@ -939,7 +939,7 @@ class DMesonJetUnfoldingEngine:
             if self.fName == "__self_unfolding__" and not self.fInputSpectrum:
                 respMatrix.SelfUnfoldingData(self)
 
-    def NormalizeAndRebinResponseMatrix(self, prior): 
+    def NormalizeAndRebinResponseMatrix(self, prior):
         (normResp, priorHist) = self.NormalizeResponseMatrix(prior)
         coarseResp = self.Rebin(normResp)
         coarsePrior = self.Rebin(priorHist)
@@ -952,7 +952,7 @@ class DMesonJetUnfoldingEngine:
             return DMesonJetUtils.Rebin1D(hist, self.fInputSpectrum.GetXaxis())
         else:
             print("Object {0} of unrecognized type!".format(hist))
-            return None # will fail
+            return None  # will fail
 
     def NormalizeResponseMatrix(self, prior):
         if prior == "ResponseTruth":
@@ -962,16 +962,24 @@ class DMesonJetUnfoldingEngine:
             detectorResponse = self.fDetectorResponse
             detectorTrainTruth = self.fDetectorTrainTruth
         elif "PowerLaw" in prior:
-            priorHist = self.GeneratePowerLawPrior(-int(prior.replace("PowerLaw_","")))
+            priorHist = self.GeneratePowerLawPrior(-int(prior.replace("PowerLaw_", "")))
             detectorResponse = self.fDetectorResponse
             detectorTrainTruth = self.fDetectorTrainTruth
         else:
             priorHist = self.GetCustomPrior(prior)
-            if not DMesonJetUtils.CompareAxis(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis()):
-                print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the response matrix, hopefully things will go well (and you know what you are doing!)")
+            axisCompare = DMesonJetUtils.CompareAxis(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
+            if axisCompare < 0:
+                print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the response matrix, hopefully things will go well (and you know what you are doing!)".format(prior))
                 detectorResponse = DMesonJetUtils.Rebin2D(self.fDetectorResponse, self.fDetectorResponse.GetXaxis(), priorHist.GetXaxis(), False)
                 detectorTrainTruth = DMesonJetUtils.Rebin1D(self.fDetectorTrainTruth, priorHist.GetXaxis())
-
+            elif axisCompare > 0:
+                print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the custom prior, hopefully things will go well (and you know what you are doing!)".format(prior))
+                priorHist = DMesonJetUtils.Rebin1D(priorHist, self.fDetectorTrainTruth.GetXaxis())
+                detectorResponse = self.fDetectorResponse
+                detectorTrainTruth = self.fDetectorTrainTruth
+            else:
+                detectorResponse = self.fDetectorResponse
+                detectorTrainTruth = self.fDetectorTrainTruth
         priorHist.Scale(detectorTrainTruth.Integral() / priorHist.Integral())
         priorEffHist = priorHist.Clone("priorEffHist")
         priorEffHist.Multiply(detectorResponse.ProjectionY())
@@ -994,33 +1002,33 @@ class DMesonJetUnfoldingEngine:
         print("Generating power law prior with index {0}".format(a))
         priorHist = self.fDetectorTrainTruth.Clone("myprior")
         priorHist.Reset()
-        #this is a modified power law, where at low pT an exponential dumps the function to zero, to avoid infinities
-        #other protections are added via the [2] parameter to avoid intermediate infinities in the function evaluation
-        #the resulting modified power law has a local maximum, which is set to 3 GeV/c by default
-        f = ROOT.TF1("f", "(x>[2])*TMath::Max([2],x)^[0]*TMath::Exp([1]/TMath::Max([2],x))", 0, priorHist.GetXaxis().GetXmax()*2)
+        # this is a modified power law, where at low pT an exponential dumps the function to zero, to avoid infinities
+        # other protections are added via the [2] parameter to avoid intermediate infinities in the function evaluation
+        # the resulting modified power law has a local maximum, which is set to 3 GeV/c by default
+        f = ROOT.TF1("f", "(x>[2])*TMath::Max([2],x)^[0]*TMath::Exp([1]/TMath::Max([2],x))", 0, priorHist.GetXaxis().GetXmax() * 2)
         f.SetParameter(0, a)
-        f.SetParameter(1, a*peak)
+        f.SetParameter(1, a * peak)
         f.SetParameter(2, 1e-6)
         priorHist.Add(f, 1, "i")
         return priorHist
 
     def GenerateFlatPrior(self):
         priorHist = self.fDetectorTrainTruth.Clone("myprior")
-        for ibin in range(0, priorHist.GetNbinsX()+2):
+        for ibin in range(0, priorHist.GetNbinsX() + 2):
             priorHist.SetBinContent(ibin, 1)
             priorHist.SetBinError(ibin, 0)
         return priorHist
 
     def Normalize2D(self, hist, norm):
         resp = hist.Clone("myresp")
-        for ybin in range(0, resp.GetYaxis().GetNbins()+2):
-            inty = resp.Integral(0, resp.GetXaxis().GetNbins()+1, ybin, ybin)
+        for ybin in range(0, resp.GetYaxis().GetNbins() + 2):
+            inty = resp.Integral(0, resp.GetXaxis().GetNbins() + 1, ybin, ybin)
             if inty == 0:
                 continue
-            scaling = norm.GetBinContent(ybin)/inty
-            for xbin in range(0, resp.GetXaxis().GetNbins()+2):
-                binValue = resp.GetBinContent(xbin, ybin)*scaling
-                binErr = resp.GetBinError(xbin, ybin)*scaling
+            scaling = norm.GetBinContent(ybin) / inty
+            for xbin in range(0, resp.GetXaxis().GetNbins() + 2):
+                binValue = resp.GetBinContent(xbin, ybin) * scaling
+                binErr = resp.GetBinError(xbin, ybin) * scaling
                 resp.SetBinContent(xbin, ybin, binValue)
                 resp.SetBinError(xbin, ybin, binErr)
         return resp

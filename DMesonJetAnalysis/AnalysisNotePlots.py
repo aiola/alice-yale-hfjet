@@ -215,8 +215,15 @@ def CopyMCFilesWithEff(config, output_path, output_type):
     full_output_path = "{0}/MCRawYieldExtractionWithEff".format(output_path)
     file_list = []
     file_list.append("D0_Charged_R040_JetPtBins_DPt_30")
-    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison")
-    file_list.append("D0_Charged_R040_jet_pt_SpectraComparison_Ratio")
+    file_list.append("D0_kSignalOnly_Charged_R040_JetPtBins_DPt_30")
+    file_list.append("D0_Charged_R040_DPtBins_JetPt_5_30_SideBand_D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand")
+    file_list.append("D0_kSignalOnly_Charged_R040_DPtBins_JetPt_5_30")
+    file_list.append("Charged_R040_JetPtSpectrum_DPt_30_SpectraComparison")
+    file_list.append("Charged_R040_JetPtSpectrum_DPt_30_SpectraComparison_Ratio")
+    file_list.append("D0_kSignalOnly_Charged_R040_jet_pt_SpectraComparison")
+    file_list.append("D0_kSignalOnly_Charged_R040_jet_pt_SpectraComparison_Ratio")
+    file_list.append("D0_MCTruth_Charged_R040_jet_pt_SpectraComparison")
+    file_list.append("D0_MCTruth_Charged_R040_jet_pt_SpectraComparison_Ratio")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyMCFilesWithoutEffCharmOnly(config, output_path, output_type):
@@ -268,10 +275,10 @@ def CopyMCUnfoldingFiles(config, output_path, output_type):
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def FD_FoldUnfold_Comparison(histograms):
-    baseline = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30"].Clone()
-    detector = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_detector"].Clone()
-    unfolded = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_unfolded"].Clone()
-    unfolded_b = histograms["D0_MCTruth_Charged_R040_Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_unfolded_b"].Clone()
+    baseline = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30"].Clone()
+    detector = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector"].Clone()
+    unfolded = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_unfolded"].Clone()
+    unfolded_b = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_unfolded_b"].Clone()
     baseline.SetTitle("POWHEG+PYTHIA FD spectrum")
     detector.SetTitle("Smeared w/ b #rightarrow D^{0} detector response")
     unfolded.SetTitle("Unfolded w/ c #rightarrow D^{0} detector response")
@@ -306,7 +313,7 @@ def EfficiencyComparison(hist_c, hist_b):
         styles["colors"] = colors[i * 2:(i + 1) * 2]
         styles["lines"] = lines[i * 2:(i + 1) * 2]
         styles["markers"] = markers[i * 2:(i + 1) * 2]
-        recoTruthName = "{0}_RecontructedTruth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
+        recoTruthName = "{0}_ReconstructedTruth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
         truthName = "{0}_Truth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
         cRecoTruth = detResp_c[recoTruthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(recoTruthName), array.array('d', DPtBins))
         cTruth = detResp_c[truthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(truthName), array.array('d', DPtBins))

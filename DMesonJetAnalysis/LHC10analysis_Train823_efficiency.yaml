@@ -52,7 +52,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_20_detector
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
@@ -87,7 +87,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector
   -
     name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}"
@@ -122,7 +122,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_40_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_40_detector
   -
     name: DPtBins_JetPt_5_30
     title: ""
@@ -171,7 +171,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_20_detector
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -194,7 +194,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector
       side_band:
         skip_bins: [0]
         min_sigmas: 4
@@ -218,7 +218,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_40_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_40_detector
       side_band:
         skip_bins: [0,1]
         min_sigmas: 4
@@ -242,7 +242,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_20_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_20_detector
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign
@@ -268,7 +268,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_30_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector
       like_sign:
         skip_bins: [0]
         mode: bin_count
@@ -295,7 +295,7 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: Jet_Pt_D_Pt_Spectrum_bEff_efficiency_jetpt_DPt_40_detector
+        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_40_detector
       like_sign:
         skip_bins: [0,1]
         mode: bin_count
@@ -337,4 +337,4 @@ analysis:
         proc: beauty
         ts: 1478869008
         subdir: stage_1/output
-        spectrum: D_Pt_Spectrum_bEff_efficiency
+        spectrum: DPtSpectrum_bEff_efficiency
