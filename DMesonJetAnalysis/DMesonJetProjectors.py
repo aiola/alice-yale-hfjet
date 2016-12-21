@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python program to project D meson jet trees into invariant mass histograms
+# python program to project D meson jet trees into invariant mass histograms
 
 import math
 import os
@@ -21,7 +21,7 @@ class EfficiencyWeightCalculator:
         self.fEfficiencyValues = []
         self.fRootObject = None
         if filename and listname and objectname:
-            self.LoadEfficiency(filename,listname,objectname)
+            self.LoadEfficiency(filename, listname, objectname)
 
     def GetObjectFromRootFile(self, file, listname, objectname):
         rlist = file.Get(listname)
@@ -64,7 +64,6 @@ class EfficiencyWeightCalculator:
 
     def GetEfficiencyWeightTGraph(self, dmeson, jet):
         eff = self.fRootObject.Eval(dmeson.fPt)
-        #print("pT,D = {0}, eff = {1}".format(dmeson.DmesonJet.fReconstructed.fPt, eff))
         if eff == 0:
             return 0
         else:
@@ -79,7 +78,6 @@ class EfficiencyWeightCalculator:
 #        else:
 #            eff = self.fRootObject.Interpolate(jet.fPt, dmeson.DmesonJet.fReconstructed.fPt)
         eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(jet.fPt, dmeson.fPt))
-        #print("pT,D = {0}, pTjet = {1}, eff = {2}".format(dmeson.DmesonJet.fReconstructed.fPt, jet.fPt, eff))
 
         if eff == 0:
             return 0
@@ -93,7 +91,6 @@ class EfficiencyWeightCalculator:
 #        else:
 #            eff = self.fRootObject.Interpolate(dmeson.DmesonJet.fReconstructed.fPt)
         eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(dmeson.fPt))
-        #print("pT,D = {0}, eff = {1}".format(dmeson.DmesonJet.fReconstructed.fPt, eff))
 
         if eff == 0:
             return 0
@@ -136,14 +133,14 @@ class DMesonJetDataProjector:
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
             self.fNFiles += 1
-        
+
     def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsectionAfterSel")
-        trials  = hlist.FindObject("fHistTrialsAfterSel")
-        
+        trials = hlist.FindObject("fHistTrialsAfterSel")
+
         if not trials or not xsection:
             print("Could not find trial and x-section information (not necessarily a bad thing)!")
-            hlist.Print() 
+            hlist.Print()
             self.fWeight = 1
             return
 
@@ -151,7 +148,7 @@ class DMesonJetDataProjector:
         valXSEC = xsection.GetMean(2);
         scalingFactor = 0;
         if valNTRIALS > 0:
-            self.fWeight = valXSEC/valNTRIALS;
+            self.fWeight = valXSEC / valNTRIALS;
 
     def RecalculateWeight(self, trigger):
         if self.fMergingType == "simple_sum":
@@ -162,7 +159,7 @@ class DMesonJetDataProjector:
             else:
                 listName = "{0}_histos".format(self.fTaskName)
             hlist = self.fChain.GetCurrentFile().Get(listName)
-    
+
             if not hlist:
                 print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
                 self.fWeight = 1
@@ -180,16 +177,16 @@ class DMesonJetDataProjector:
     def ExtractCurrentFileInfo(self):
         fname = self.fChain.GetCurrentFile().GetName()
         lastSlash = fname.rfind('/')
-        secondLastSlash = fname.rfind('/',0,lastSlash-1)
-        thirdLastSlash = fname.rfind('/',0,secondLastSlash-1)
-        self.fPeriod = fname[thirdLastSlash+1:secondLastSlash]
+        secondLastSlash = fname.rfind('/', 0, lastSlash - 1)
+        thirdLastSlash = fname.rfind('/', 0, secondLastSlash - 1)
+        self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractEventsFromHistogramList(self, hlist):
         eventsHist = hlist.FindObject("fHistNEvents")
-        
+
         if not eventsHist:
             print("Could not find event book-keeping histogram!")
-            hlist.Print() 
+            hlist.Print()
             return 0
 
         events = eventsHist.GetBinContent(eventsHist.GetXaxis().FindBin("Accepted"));
@@ -251,8 +248,8 @@ class DMesonJetDataProjector:
         print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
-        
-        for i,dmesonEvent in enumerate(self.fChain):
+
+        for i, dmesonEvent in enumerate(self.fChain):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
                 if self.fMaxEvents > 0 and i >= self.fMaxEvents:
@@ -260,7 +257,7 @@ class DMesonJetDataProjector:
                     break
             dmeson = dmesonEvent.DmesonJet
             self.OnFileChange(DMesonDef, trigger)
-            for (jtype, jradius),binMultiSet in binMultiSets.iteritems():
+            for (jtype, jradius), binMultiSet in binMultiSets.iteritems():
                 if jtype or jradius:
                     jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
                     jet = getattr(dmesonEvent, jetName)
@@ -270,12 +267,12 @@ class DMesonJetDataProjector:
                     jet = None
 
                 bins = binMultiSet.FindBin(dmeson, jet, DMesonDef)
-                for bin,weight in bins:
+                for bin, weight in bins:
                     if bin.fCounts == 0: bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
                     bin.FillInvariantMass(dmeson, jet, weight * self.fWeight)
 
                 spectra = binMultiSet.FindSpectra(dmeson, jet)
-                for spectrum,weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
+                for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
 
         print("Total number of events: {0}".format(self.fTotalEvents))
 
@@ -302,31 +299,29 @@ class DMesonJetResponseProjector:
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
 
-        #self.fChain.Print()
-
     def ExtractCurrentFileInfo(self):
         fname = self.fChain.GetCurrentFile().GetName()
         lastSlash = fname.rfind('/')
-        secondLastSlash = fname.rfind('/',0,lastSlash-1)
-        thirdLastSlash = fname.rfind('/',0,secondLastSlash-1)
-        self.fPtHardBin = int(fname[secondLastSlash+1:lastSlash])
-        self.fPeriod = fname[thirdLastSlash+1:secondLastSlash]
-        
+        secondLastSlash = fname.rfind('/', 0, lastSlash - 1)
+        thirdLastSlash = fname.rfind('/', 0, secondLastSlash - 1)
+        self.fPtHardBin = int(fname[secondLastSlash + 1:lastSlash])
+        self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
+
     def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsection")
-        trials  = hlist.FindObject("fHistTrials")
-        
+        trials = hlist.FindObject("fHistTrials")
+
         if not trials or not xsection:
             print("Could not find trial and x-section information!")
-            hlist.Print() 
+            hlist.Print()
             self.fWeight = 1
             return
 
-        valNTRIALS = trials.GetBinContent(self.fPtHardBin+1);
-        valXSEC = xsection.GetBinContent(self.fPtHardBin+1);
+        valNTRIALS = trials.GetBinContent(self.fPtHardBin + 1);
+        valXSEC = xsection.GetBinContent(self.fPtHardBin + 1);
         scalingFactor = 0;
         if valNTRIALS > 0:
-            self.fWeight = valXSEC/valNTRIALS;
+            self.fWeight = valXSEC / valNTRIALS;
 
     def RecalculateWeight(self):
         oldPtHardBin = self.fPtHardBin
@@ -345,14 +340,14 @@ class DMesonJetResponseProjector:
             return 1
 
         self.ExtractWeightFromHistogramList(hlist)
-        
+
         print("Period: {0}\nPt hard bin: {1}\nWeight: {2}".format(self.fPeriod, self.fPtHardBin, self.fWeight))
 
     def GetDetectorResponse(self, respDefinitions, DMesonDef, jetDefinitions):
         response = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-            for axisName,(axisDef, weightEff, cuts) in respDefinitions.iteritems():
+            for axisName, (axisDef, weightEff, cuts) in respDefinitions.iteritems():
                 respName = "{0}_{1}_{2}".format(DMesonDef, jetName, axisName)
                 resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, weightEff)
                 resp.GenerateHistograms()
@@ -365,7 +360,7 @@ class DMesonJetResponseProjector:
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
 
-        for i,dmeson in enumerate(self.fChain):
+        for i, dmeson in enumerate(self.fChain):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
                 if self.fMaxEvents > 0 and i > self.fMaxEvents:
