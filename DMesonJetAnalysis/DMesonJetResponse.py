@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python program to generate a D meson jet response
+# python program to generate a D meson jet response
 
 import math
 import os
@@ -21,19 +21,19 @@ class DMesonJetResponseEngine:
         self.fAxis = axis
         self.fResponses = None
         self.fCanvases = []
-        
+
     def SaveRootFile(self, file):
         for resp in self.fResponses.itervalues():
             rlist = resp.GenerateRootList()
             rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
-    
+
     def SavePlots(self, path, format):
         for c in self.fCanvases:
             c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
-    
+
     def ProjectResponse(self):
         self.fResponses = self.fProjector.GetDetectorResponse(self.fAxis, self.fDMeson, self.fJetDefinitions)
-        
+
     def Start(self):
         self.ProjectResponse()
         self.GenerateEfficiency()
@@ -67,11 +67,11 @@ class DMesonJetResponseEngine:
             c = DMesonJetUtils.GenerateMultiCanvas(resp.fStatistics.fName, len(resp.fStatistics.fStatisticSets))
             globalList.append(c)
             self.fCanvases.append(c)
-            for i,s in enumerate(resp.fStatistics.fStatisticSets):
+            for i, s in enumerate(resp.fStatistics.fStatisticSets):
                 if not s.fHistogram:
                     continue
-                pad = c.cd(i+1)
-                #pad.SetLogy()
+                pad = c.cd(i + 1)
+                # pad.SetLogy()
                 pad.SetLeftMargin(0.14)
                 pad.SetRightMargin(0.05)
                 pad.SetTopMargin(0.08)
@@ -79,10 +79,10 @@ class DMesonJetResponseEngine:
                 h = s.fHistogram.DrawCopy()
                 h.GetYaxis().SetTitle("Probability density")
                 h.GetXaxis().SetRangeUser(-1, 0.5)
-                h.SetMarkerColor(ROOT.kRed+2)
+                h.SetMarkerColor(ROOT.kRed + 2)
                 h.SetMarkerStyle(ROOT.kFullCircle)
                 h.SetMarkerSize(0.8)
-                h.SetLineColor(ROOT.kRed+2)
+                h.SetLineColor(ROOT.kRed + 2)
                 globalList.append(h)
                 h.GetXaxis().SetTitleFont(43)
                 h.GetXaxis().SetTitleOffset(2.8)
@@ -96,7 +96,7 @@ class DMesonJetResponseEngine:
                 h.GetYaxis().SetLabelFont(43)
                 h.GetYaxis().SetLabelOffset(0.009)
                 h.GetYaxis().SetLabelSize(18)
-                #h.SetMaximum(h.GetMaximum()*1.3)
+                # h.SetMaximum(h.GetMaximum()*1.3)
                 h.SetMinimum(0)
                 htitle = ROOT.TPaveText(0.12, 0.99, 0.95, 0.93, "NB NDC")
                 htitle.SetBorderSize(0)
@@ -131,8 +131,8 @@ class DMesonJetResponseEngine:
             h.GetYaxis().SetRangeUser(0.04, 0.2)
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.8)
-            h.SetMarkerColor(ROOT.kBlue+2)
-            h.SetLineColor(ROOT.kBlue+2)
+            h.SetMarkerColor(ROOT.kBlue + 2)
+            h.SetLineColor(ROOT.kBlue + 2)
             globalList.append(h)
             globalList.append(c)
             self.fCanvases.append(c)
@@ -162,15 +162,15 @@ class DMesonJetResponseEngine:
             h.GetYaxis().SetLabelSize(18)
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.8)
-            h.SetMarkerColor(ROOT.kBlue+2)
-            h.SetLineColor(ROOT.kBlue+2)
+            h.SetMarkerColor(ROOT.kBlue + 2)
+            h.SetLineColor(ROOT.kBlue + 2)
             globalList.append(h)
-            
+
             hMed = resp.fEnergyScaleShiftMedian.DrawCopy("same")
             hMed.SetMarkerStyle(ROOT.kFullSquare)
             hMed.SetMarkerSize(0.8)
-            hMed.SetMarkerColor(ROOT.kRed+2)
-            hMed.SetLineColor(ROOT.kRed+2)
+            hMed.SetMarkerColor(ROOT.kRed + 2)
+            hMed.SetLineColor(ROOT.kRed + 2)
 
             leg = ROOT.TLegend(0.8, 0.85, 0.9, 0.75)
             leg.SetTextFont(43)
@@ -195,6 +195,7 @@ class DMesonJetResponseEngine:
             c.SetLeftMargin(0.12)
             c.SetLogz()
             h = resp.fResponseMatrix.DrawCopy("colz")
+            h.SetMinimum(h.GetMinimum() / 1.5)
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.3)
             h.GetXaxis().SetTitleSize(21)
@@ -260,8 +261,8 @@ class DMesonJetResponseEngine:
             h = resp.fEfficiency.Clone()
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.9)
-            h.SetMarkerColor(ROOT.kBlue+2)
-            h.SetLineColor(ROOT.kBlue+2)
+            h.SetMarkerColor(ROOT.kBlue + 2)
+            h.SetLineColor(ROOT.kBlue + 2)
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.2)
             h.GetXaxis().SetTitleSize(19)
@@ -310,21 +311,21 @@ class DMesonJetResponseEngine:
         globalList.append(h)
         globalList.append(c)
         self.fCanvases.append(c)
-        
+
     def GenerateMultiCanvas(self, name, n):
         rows = int(math.floor(math.sqrt(n)))
         cols = int(math.ceil(float(n) / rows))
         cname = "{0}_{1}".format(self.fDMeson, name)
-        c = ROOT.TCanvas(cname, cname, cols*400, rows*400)
+        c = ROOT.TCanvas(cname, cname, cols * 400, rows * 400)
         c.Divide(cols, rows)
         globalList.append(c)
         self.fCanvases.append(c)
         return c
-    
+
     def PlotPartialMultiEfficiency(self, resp):
         self.PlotMultiHistogram(resp, "PartialEfficiency", "Efficiency", "fEfficiency1D")
         self.PlotMultiHistogram(resp, "PartialEfficiencyRatios", "Ratio", "fEfficiency1DRatios")
-        
+
     def PlotMultiHistogram(self, resp, name, yaxisTitle, listName):
         histList = getattr(resp, listName)
         if not histList:
@@ -353,7 +354,7 @@ class DMesonJetResponseEngine:
         blank.GetYaxis().SetLabelSize(18)
         blank.Draw()
         globalList.append(blank)
-        colors = [ROOT.kBlue+2, ROOT.kRed+2, ROOT.kGreen+2, ROOT.kOrange+2, ROOT.kMagenta+2, ROOT.kAzure+2, ROOT.kPink+2, ROOT.kBlack]
+        colors = [ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kMagenta + 2, ROOT.kAzure + 2, ROOT.kPink + 2, ROOT.kBlack]
         markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross, ROOT.kOpenCircle]
         max = 0;
         leg = ROOT.TLegend(0.15, 0.90, 0.45, 0.65)
@@ -361,7 +362,7 @@ class DMesonJetResponseEngine:
         leg.SetBorderSize(0)
         leg.SetTextFont(43)
         leg.SetTextSize(16)
-        for color,marker,eff in zip(colors[:len(histList)-1]+colors[-1:],markers[:len(histList)-1]+markers[-1:],histList):
+        for color, marker, eff in zip(colors[:len(histList) - 1] + colors[-1:], markers[:len(histList) - 1] + markers[-1:], histList):
             h = eff.Clone()
             globalList.append(h)
             h.SetMarkerStyle(marker)
@@ -377,14 +378,14 @@ class DMesonJetResponseEngine:
                         max = y
             else:
                 h.Draw("same")
-                for i in range(1, h.GetNbinsX()+1):
+                for i in range(1, h.GetNbinsX() + 1):
                     y = h.GetBinContent(i)
                     if y > max:
                         max = y
 
         leg.Draw()
         globalList.append(leg)
-        blank.SetMaximum(max*1.5)
+        blank.SetMaximum(max * 1.5)
 
 class DMesonJetResponse:
     def __init__(self, name):
@@ -393,7 +394,7 @@ class DMesonJetResponse:
 
     def SetProjector(self, projector):
         self.fProjector = projector
-        
+
     def StartAnalysis(self, config):
         axis = dict()
         for resp in config["response"]:
@@ -404,7 +405,7 @@ class DMesonJetResponse:
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
             axis_list = []
-            for axis_name,bins in resp["bins"].iteritems():
+            for axis_name, bins in resp["bins"].iteritems():
                 if "bins" in bins:
                     a = DetectorResponse.ResponseAxis(Axis.Axis(axis_name, bins["bins"], "reco"), Axis.Axis(axis_name, bins["bins"], "truth"))
                 else:
@@ -434,7 +435,7 @@ class DMesonJetResponse:
         for eng in self.fResponseEngine:
             eng.SaveRootFile(file)
         file.Close()
-        
+
     def SavePlots(self, path, format):
         fullPath = "{0}/{1}/{2}".format(path, self.fName, format)
         if not os.path.isdir(fullPath):
