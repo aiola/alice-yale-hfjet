@@ -1043,7 +1043,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
 
 	fJetYieldUnc->SetStats(kFALSE);
 	fJetYieldUnc->Draw();
-	fJetYieldUnc->SaveAs(Form("FinalRawYieldUncertainty_%s.root", fDmesonLabel.Data()));
+	fJetYieldUnc->SaveAs(Form("FinalRawYieldUncertainty_%s_%s.root", fDmesonLabel.Data(),fMethodLabel.Data()));
 	fJetYieldCentral->SetStats(kFALSE);
 	fJetYieldCentral->Draw();
 	fJetYieldCentral->SaveAs(Form("FinalRawYieldCentralPlusSystUncertainty_%s_%s.root", fDmesonLabel.Data(),fMethodLabel.Data()));
