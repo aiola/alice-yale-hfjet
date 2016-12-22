@@ -96,7 +96,6 @@ Bool_t AliDJetRawYieldUncertainty::SetDmesonSpecie(DMesonSpecies k){
 
   fDmesonSpecie=k;
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -136,7 +135,6 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot(){
   //fFileInput->Close(); 
 
   return success;
-
 }
 
 //___________________________________________________________________________________________
@@ -230,7 +228,6 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroSideband() {
   }
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -300,7 +297,6 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDstarEffScale() {
   }
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -356,7 +352,6 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDstarSideband() {
   }
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -464,7 +459,6 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
   CombineMultiTrialOutcomes();
 
   return isOK;
-
 }
 
 //___________________________________________________________________________________________
@@ -767,7 +761,6 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes(){
   hUnc->SaveAs(Form("Hist_%s",outfilnam.Data()));
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -782,7 +775,6 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertainty(){
   if(success) std::cout << "Evaluated raw yield uncertainty" << std::endl;
 
   return success;
-
 }
 
 //___________________________________________________________________________________________
@@ -795,7 +787,6 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertainty_CoherentTrialChoice(){
   if(success) std::cout << "Evaluated raw yield uncertainty (CoherentTrialChoice)" << std::endl;
 
   return success;
-
 }
 
 //___________________________________________________________________________________________
@@ -854,7 +845,6 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroEffScale() {
   }
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -1118,9 +1108,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
   } //end of advanced plots
 
   return kTRUE;
-
 }
-
 
 //___________________________________________________________________________________________
 Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband_CoherentTrialChoice() {
@@ -1358,7 +1346,6 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband_CoherentTria
   } //end of advanced plots
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -1418,7 +1405,6 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarEffScale() {
   } 
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -1744,7 +1730,6 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband() {
   } //end of advanced plots
 
   return kTRUE;
-
 }
 
 //___________________________________________________________________________________________
@@ -2044,9 +2029,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband_CoherentTria
   } //end of advanced plots
 
   return kTRUE;
-
 }
-
 
 //___________________________________________________________________________________________
 void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType) {
@@ -2131,14 +2114,8 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     fFitReflection->cd();
     hFitReflNewTemp->Write();
     ratio->Write();
-
   }
-
-  return;
-
 }
-
-
 
 //___________________________________________________________________________________________
 void AliDJetRawYieldUncertainty::SetDmesonPtBins(Int_t nbins, Double_t* ptedges) {
@@ -2149,8 +2126,6 @@ void AliDJetRawYieldUncertainty::SetDmesonPtBins(Int_t nbins, Double_t* ptedges)
   for(int i=0;i<fnDbins+1;i++) {
     fDbinpTedges[i]=ptedges[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2162,8 +2137,6 @@ void AliDJetRawYieldUncertainty::SetJetPtBins(Int_t nbins, Double_t* ptedges) {
   for(int i=0;i<fnJetbins+1;i++) {
     fJetbinpTedges[i]=ptedges[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2194,8 +2167,6 @@ void AliDJetRawYieldUncertainty::SetDmesonEfficiency(Double_t* effvalues) {
   for(int i=0;i<fnDbins;i++) {
     fDEffValues[i]=effvalues[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2205,8 +2176,6 @@ void AliDJetRawYieldUncertainty::SetMeanSigmaVariations(Bool_t* cases) {
   for(int i=0;i<6;i++) {
     fMeanSigmaVar[i]=cases[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2216,8 +2185,6 @@ void AliDJetRawYieldUncertainty::SetBkgVariations(Bool_t* cases) {
   for(int i=0;i<8;i++) {
     fBkgVar[i]=cases[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2228,8 +2195,6 @@ void AliDJetRawYieldUncertainty::SetRebinSteps(Int_t nsteps, Int_t* cases) {
   for(int i=0;i<fnRebinSteps;i++) {
     fRebinSteps[i]=cases[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2240,8 +2205,6 @@ void AliDJetRawYieldUncertainty::SetMinMassSteps(Int_t nsteps, Double_t* cases) 
   for(int i=0;i<fnMinMassSteps;i++) {
     fMinMassSteps[i]=cases[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2252,8 +2215,6 @@ void AliDJetRawYieldUncertainty::SetMaxMassSteps(Int_t nsteps, Double_t* cases) 
   for(int i=0;i<fnMaxMassSteps;i++) {
     fMaxMassSteps[i]=cases[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2265,8 +2226,6 @@ void AliDJetRawYieldUncertainty::SetSigmaBinCounting(Int_t nsteps, Double_t* cas
   for(int i=0;i<fnSigmaBC;i++) {
     fSigmaBC[i]=cases[i];
   }
-
-  return;
 }
 
 //___________________________________________________________________________________________
@@ -2277,8 +2236,6 @@ void AliDJetRawYieldUncertainty::SetMaskOfVariations(Int_t ncases, Bool_t* cases
   for(int i=0;i<fnMask;i++) {
     fMask[i]=cases[i];
   }
-
-  return;
 }
 
 //__________________________________________
@@ -2295,6 +2252,4 @@ void AliDJetRawYieldUncertainty::ClearObjects() {
   if(fMask) delete[] fMask; 
   if(fSigmaToFixJetPtBins) delete[] fSigmaToFixJetPtBins;
   if(fSigmaToFixDPtBins) delete[] fSigmaToFixDPtBins;
-
-  return;
 }
