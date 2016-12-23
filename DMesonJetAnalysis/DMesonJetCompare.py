@@ -23,12 +23,26 @@ class DMesonJetCompare:
         self.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
         self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
         self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
+        self.fFills = [3001, 3002, 3003, 3004, 3005, 3006, 3007]
         self.fMainHistogram = None
         self.fMainRatioHistogram = None
         self.fMaxSpectrum = -1e30
         self.fMinSpectrum = +1e30
         self.fMaxRatio = -1e30
         self.fMinRatio = +1e30
+        self.fRatioRelativeUncertainty = None
+        self.fResults = None
+
+    def SetRatioRelativeUncertaintyFromHistogram(self, hist):
+        self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
+        self.fRatioRelativeUncertainty.SetTitle("Uncertainty")
+        for ibin in range(0, self.fRatioRelativeUncertainty.GetNbinsX() + 2):
+            if self.fRatioRelativeUncertainty.GetBinContent(ibin) != 0:
+                self.fRatioRelativeUncertainty.SetBinError(ibin, self.fRatioRelativeUncertainty.GetBinError(ibin) / self.fRatioRelativeUncertainty.GetBinContent(ibin))
+                self.fRatioRelativeUncertainty.SetBinContent(ibin, 1)
+            else:
+                self.fRatioRelativeUncertainty.SetBinError(ibin, 0)
+                self.fRatioRelativeUncertainty.SetBinContent(ibin, 0)
 
     def PrepareSpectraCanvas(self):
         if not self.fCanvasSpectra:
@@ -81,15 +95,34 @@ class DMesonJetCompare:
         if self.fDoRatioPlot == "logy":
             self.fDoRatioPlot.SetLogy()
 
+        n = len(self.fHistograms)
+        if self.fRatioRelativeUncertainty: n += 1
+
         if self.fLegendRatio:
-            self.fLegendRatio.SetY1(self.fLegendRatio.GetY1() - 0.04 * (len(self.fHistograms)))
+            self.fLegendRatio.SetY1(self.fLegendRatio.GetY1() - 0.05 * n)
         else:
-            self.fLegendRatio = ROOT.TLegend(0.25, 0.87 - 0.04 * (len(self.fHistograms) + 1), 0.85, 0.87)
+            self.fLegendRatio = ROOT.TLegend(0.25, 0.87 - 0.05 * n, 0.85, 0.87)
             self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
             self.fLegendRatio.SetFillStyle(0)
             self.fLegendRatio.SetBorderSize(0)
             self.fLegendRatio.SetTextFont(43)
             self.fLegendRatio.SetTextSize(20)
+
+        if self.fRatioRelativeUncertainty:
+            opt = "e2"
+            if "same" in self.fOptRatio:
+                opt += "same"
+            h = self.fRatioRelativeUncertainty.DrawCopy(opt)
+            h.SetFillColor(self.fColors[0])
+            h.SetFillStyle(self.fFills[0])
+            h.SetLineColor(self.fColors[0])
+            h.GetYaxis().SetTitle(self.fYaxisRatio)
+            self.fLegendRatio.AddEntry(h, h.GetTitle(), "f")
+            self.fResults.append(h)
+            if not "same" in self.fOptRatio:
+                self.fOptRatio += "same"
+            if not self.fMainRatioHistogram:
+                self.fMainRatioHistogram = h
 
     def PlotHistogram(self, color, marker, line, h):
         self.fCanvasSpectra.cd()
@@ -139,6 +172,7 @@ class DMesonJetCompare:
             self.fOptRatio += "same"
 
     def CompareSpectra(self, baseline, histos):
+        self.fResults = []
         print("CompareSpectra: {0}".format(self.fName))
         self.fBaselineHistogram = baseline
         self.fHistograms = histos
@@ -158,17 +192,17 @@ class DMesonJetCompare:
             if self.fDoRatioPlot:
                 self.PlotRatio(color, marker, line, h)
         self.AdjustYLimits()
-        return self.GenerateResults()
+        self.GenerateResults()
+        return self.fResults
 
     def GenerateResults(self):
-        results = []
-        results.extend(self.fRatios)
-        if self.fCanvasSpectra: results.append(self.fCanvasSpectra)
-        if self.fCanvasRatio: results.append(self.fCanvasRatio)
-        if self.fLegendSpectra: results.append(self.fLegendSpectra)
-        if self.fLegendRatio: results.append(self.fLegendRatio)
-        if self.fBaselineRatio: results.append(self.fBaselineRatio)
-        return results
+        self.fResults.extend(self.fRatios)
+        if self.fCanvasSpectra: self.fResults.append(self.fCanvasSpectra)
+        if self.fCanvasRatio: self.fResults.append(self.fCanvasRatio)
+        if self.fLegendSpectra: self.fResults.append(self.fLegendSpectra)
+        if self.fLegendRatio: self.fResults.append(self.fLegendRatio)
+        if self.fBaselineRatio: self.fResults.append(self.fBaselineRatio)
+        if self.fRatioRelativeUncertainty: self.fResults.append(self.fRatioRelativeUncertainty)
 
     def AdjustYLimits(self):
         if self.fDoRatioPlot:
