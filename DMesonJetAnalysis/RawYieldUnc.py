@@ -9,8 +9,6 @@ import DMesonJetCompare
 
 globalList = []
 
-rawYieldUncPath = "/Volumes/DATA/ALICE/JetResults/RawYieldUnc_Dzero_pp_WithEff_20161221"
-
 def main(config, meson_name, jet_type, jet_radius, spectrum):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -41,8 +39,8 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
     for obj in r:
         globalList.append(obj)
 
-def GetAverageSpectrum(method):
-    fname = "{0}/FinalRawYieldCentralPlusSystUncertainty_Dzero_{1}.root".format(rawYieldUncPath, method)
+def GetAverageSpectrum(method, config):
+    fname = "{0}/{1}/{2}/RawYieldUnc/FinalRawYieldCentralPlusSystUncertainty_Dzero_{3}.root".format(config["input_path"], config["train"], config["name"], method)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
