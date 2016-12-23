@@ -129,10 +129,10 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
 
     chi2cut = 3
     meansigmaVar = [True, True, True, True, True, True]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
-    bkgVar = [True, False, True, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
-    rebinStep = [1]
-    minMassStep = [1.72, 1.74]
-    maxMassStep = [2.00, 2.03]
+    bkgVar = [True, True, True, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
+    rebinStep = [1, 2]
+    minMassStep = [1.70, 1.72, 1.74]
+    maxMassStep = [2.000, 2.025, 2.050]
     nSigmasBC = [3.5, 4.0]
     # WARNING! set nmask value to active mean/sigma*active bkg variations!
     # And adjust consequently the following matrix (put an entry for each variation, with value: 0=don't consider it, 1=consider it in the final syst eval)
