@@ -16,21 +16,28 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
+    comp.fOptRatio = "hist"
     comp.fColors = [ROOT.kBlue + 2, ROOT.kGreen + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
+    comp.fFills = [3004] * 2
     default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum)
     comp.fColors = [ROOT.kRed + 2, ROOT.kOrange + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
+    comp.fFills = [3005] * 2
     default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
 
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
     default_spectrum = GetDefaaultSpectrum(config, meson_name, jet_type, jet_radius, "_".join([spectrum, method]))
-    default_spectrum.SetTitle("Default Fit, {0}".format(method))
+    default_spectrum.SetTitle("Def Fit, {0}".format(method))
     average_spectrum = GetAverageSpectrum(method)
-    average_spectrum.SetTitle("Average of Raw Yield Extr. Trials, {0}".format(method))
+    average_spectrum.SetTitle("Avg Raw Yield Extr Trials, {0}".format(method))
+    average_spectrum.GetXaxis().SetTitle(default_spectrum.GetXaxis().GetTitle())
+    average_spectrum.GetYaxis().SetTitle(default_spectrum.GetYaxis().GetTitle())
     globalList.append(default_spectrum)
     globalList.append(average_spectrum)
-    r = comp.CompareSpectra(default_spectrum, [average_spectrum])
+    comp.SetRatioRelativeUncertaintyFromHistogram(average_spectrum)
+    comp.fRatioRelativeUncertainty.SetTitle("Rel. Syst. Unc., {0}".format(method))
+    r = comp.CompareSpectra(average_spectrum, [default_spectrum])
     for obj in r:
         globalList.append(obj)
 
