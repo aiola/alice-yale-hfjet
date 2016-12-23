@@ -5,6 +5,7 @@ import os
 import ROOT
 import math
 import array
+import DMesonJetCompare
 
 def ConvertDMesonName(dmeson):
     if "D0" in dmeson:
@@ -29,188 +30,42 @@ def find_file(path, file_name):
                 yield os.path.join(root, file)
 
 def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary", c=None, cRatio=None, leg=None, legRatio=None, styles=None):
-    results = []
-    baselineRatio = None
-    mainRatioHist = None
-    maxRatio = 0
-    minRatio = 999
-    mainHist = None
+    comp = DMesonJetCompare.DMesonJetCompare(comparisonName)
+    comp.fOptSpectrum = opt
+    comp.fOptRatio = optRatio
+    comp.fYaxisRatio = yaxisRatio
+    comp.fDoSpectraPlot = doSpectra
+    comp.fDoRatioPlot = doRatio
+    comp.fCanvasSpectra = c
+    comp.fCanvasRatio = cRatio
+    comp.fLegendSpectra = leg
+    comp.fLegendRatio = legRatio
+    comp.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
+    comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
+    comp.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
+    if "colors" in styles: comp.fColors = styles["colors"]
+    if "markers" in styles: comp.fMarkers = styles["markers"]
+    if "lines" in styles: comp.fLines = styles["lines"]
 
-    print("CompareSpectra: {0}".format(comparisonName))
-    print(baseline.GetName())
-    for s in spectra:
-        print(s.GetName())
-
-    if styles:
-        colors = styles["colors"]
-        markers = styles["markers"]
-        lines = styles["lines"]
-    else:
-        colors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
-        markers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
-        lines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
-
-    if doSpectra:
-        if not c:
-            c = ROOT.TCanvas(comparisonName, comparisonName)
-
-        results.append(c)
-        c.cd()
-        if doSpectra == "logy":
-            c.SetLogy()
-
-        if leg:
-            leg.SetY1(leg.GetY1() - 0.04 * (len(spectra) + 1))
-        else:
-            leg = ROOT.TLegend(0.25, 0.87 - 0.04 * (len(spectra) + 1), 0.85, 0.87)
-            leg.SetName("{0}_legend".format(c.GetName()))
-            leg.SetFillStyle(0)
-            leg.SetBorderSize(0)
-            leg.SetTextFont(43)
-            leg.SetTextSize(20)
-
-        results.append(leg)
-
-        if "hist" in opt:
-            baseline.SetLineColor(colors[0])
-            baseline.SetLineWidth(2)
-            baseline.SetLineStyle(lines[0])
-            leg.AddEntry(baseline, baseline.GetTitle(), "l")
-        else:
-            baseline.SetMarkerColor(colors[0])
-            baseline.SetLineColor(colors[0])
-            baseline.SetMarkerStyle(markers[0])
-            baseline.SetMarkerSize(1.2)
-            leg.AddEntry(baseline, baseline.GetTitle(), "pe")
-
-        baseline.Draw(opt)
-        if "frac" in baseline.GetYaxis().GetTitle():
-            c.SetLeftMargin(0.12)
-            baseline.GetYaxis().SetTitleOffset(1.4)
-        if not "same" in opt:
-            opt += "same"
-
+    if c:
         for obj in c.GetListOfPrimitives():
             if isinstance(obj, ROOT.TH1):
-                mainHist = obj
-                mainHist.SetMinimum(-1111)
-                mainHist.SetMaximum(-1111)
-                print("Main histogram is: {0}".format(mainHist.GetName()))
+                comp.fMainHistogram = obj
+                comp.fMainHistogram.SetMinimum(-1111)
+                comp.fMainHistogram.SetMaximum(-1111)
+                print("Main histogram is: {0}".format(comp.fMainHistogram.GetName()))
                 break
-        minY = min(mainHist.GetMinimum(0), baseline.GetMinimum(0))
-        maxY = max(mainHist.GetMaximum(), baseline.GetMaximum())
 
-    if doRatio:
-        cname = "{0}_Ratio".format(comparisonName)
-        if not cRatio:
-            cRatio = ROOT.TCanvas(cname, cname)
-        results.append(cRatio)
-        cRatio.cd()
-        if doRatio == "logy":
-            cRatio.SetLogy()
+    if cRatio:
+        for obj in cRatio.GetListOfPrimitives():
+            if isinstance(obj, ROOT.TH1):
+                comp.fMainRatioHistogram = obj
+                print("Main ratio histogram is: {0}".format(comp.fMainRatioHistogram.GetName()))
+                comp.fMainRatioHistogram.SetMinimum(-1111)
+                comp.fMainRatioHistogram.SetMaximum(-1111)
+                break
 
-        if legRatio:
-            legRatio.SetY1(legRatio.GetY1() - 0.04 * (len(spectra)))
-        else:
-            legRatio = ROOT.TLegend(0.25, 0.87 - 0.04 * (len(spectra) + 1), 0.85, 0.87)
-            legRatio.SetName("{0}_legend".format(cRatio.GetName()))
-            legRatio.SetFillStyle(0)
-            legRatio.SetBorderSize(0)
-            legRatio.SetTextFont(43)
-            legRatio.SetTextSize(20)
-
-        results.append(legRatio)
-
-    for color, marker, line, h in zip(colors[1:], markers[1:], lines[1:], spectra):
-        if doSpectra:
-            c.cd()
-            if minY > h.GetMinimum(0):
-                minY = h.GetMinimum(0)
-            if maxY < h.GetMaximum():
-                maxY = h.GetMaximum()
-            h.Draw(opt)
-            if "hist" in opt:
-                h.SetLineColor(color)
-                h.SetLineWidth(3)
-                h.SetLineStyle(line)
-                leg.AddEntry(h, h.GetTitle(), "l")
-            else:
-                h.SetMarkerColor(color)
-                h.SetLineColor(color)
-                h.SetMarkerStyle(marker)
-                h.SetMarkerSize(1.2)
-                leg.AddEntry(h, h.GetTitle(), "pe")
-
-        if doRatio:
-            cRatio.cd()
-            hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
-            hRatio.GetYaxis().SetTitle(yaxisRatio)
-            if not baselineRatio:
-                baselineRatio = hRatio
-            if "hist" in optRatio:
-                hRatio.SetLineColor(color)
-                hRatio.SetLineWidth(3)
-                hRatio.SetLineStyle(line)
-                legRatio.AddEntry(hRatio, h.GetTitle(), "l")
-            else:
-                hRatio.SetMarkerColor(color)
-                hRatio.SetLineColor(color)
-                hRatio.SetMarkerStyle(marker)
-                hRatio.SetMarkerSize(1.2)
-                legRatio.AddEntry(hRatio, h.GetTitle(), "pe")
-            results.append(hRatio)
-            hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
-            hRatio.Divide(baseline)
-            hRatio.Draw(optRatio)
-            if not mainRatioHist:
-                for obj in cRatio.GetListOfPrimitives():
-                    if isinstance(obj, ROOT.TH1):
-                        mainRatioHist = obj
-                        print("Main ratio histogram is: {0}".format(mainRatioHist.GetName()))
-                        mainRatioHist.SetMinimum(-1111)
-                        mainRatioHist.SetMaximum(-1111)
-                        minRatio = mainRatioHist.GetMinimum(0)
-                        maxRatio = mainRatioHist.GetMaximum()
-                        break
-            if minRatio > hRatio.GetMinimum(0):
-                minRatio = hRatio.GetMinimum(0)
-            if maxRatio < hRatio.GetMaximum():
-                maxRatio = hRatio.GetMaximum()
-
-            if not "same" in optRatio:
-                optRatio += "same"
-
-    if doRatio:
-        if doRatio == "logy":
-            maxRatio *= 10
-            minRatio /= 5
-        else:
-            maxRatio += (maxRatio - minRatio) * 0.5
-            if minRatio < 0.2:
-                minRatio = 0
-            else:
-                minRatio -= (maxRatio - minRatio) * 0.5
-        mainRatioHist.SetMinimum(minRatio)
-        mainRatioHist.SetMaximum(maxRatio)
-        cRatio.cd()
-        legRatio.Draw()
-
-    if doSpectra:
-        if doSpectra == "logy":
-            maxY *= 10
-            minY /= 5
-        else:
-            maxY += (maxY - minY) * 0.5
-            if minY < 0.2:
-                minY = 0
-            else:
-                minY -= (maxY - minY) * 0.5
-        mainHist.SetMinimum(minY)
-        mainHist.SetMaximum(maxY)
-        c.cd()
-        leg.Draw()
-
-    return results
+    return comp.CompareSpectra(baseline, spectra)
 
 def DivideNoErrors(ratio, den):
     if not ratio.GetNbinsX() == den.GetNbinsX():
