@@ -11,6 +11,9 @@ import argparse
 import yaml
 import IPython
 import numpy
+import os
+import shutil
+import glob
 
 import ROOT
 
@@ -167,9 +170,9 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     interface.SetMeanSigmaVariations(numpy.array(meansigmaVar, dtype=bool))
     interface.SetBkgVariations(numpy.array(bkgVar, dtype=bool))
     interface.SetRebinSteps(len(rebinStep), numpy.array(rebinStep, dtype=numpy.int32))
-    interface.SetMinMassSteps(len(minMassStep), numpy.array(minMassStep, dtype=numpy.float32))
-    interface.SetMaxMassSteps(len(maxMassStep), numpy.array(maxMassStep, dtype=numpy.float32))
-    interface.SetSigmaBinCounting(len(nSigmasBC), numpy.array(nSigmasBC, dtype=numpy.float32))
+    interface.SetMinMassSteps(len(minMassStep), numpy.array(minMassStep, dtype=numpy.float64))
+    interface.SetMaxMassSteps(len(maxMassStep), numpy.array(maxMassStep, dtype=numpy.float64))
+    interface.SetSigmaBinCounting(len(nSigmasBC), numpy.array(nSigmasBC, dtype=numpy.float64))
     interface.SetMaskOfVariations(len(mask), numpy.array(mask, dtype=bool))
 
     interface.SetDmesonSpecie(specie)
@@ -218,6 +221,19 @@ def main(config, debug):
         interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt)
         rawYieldUncSideBand.append(interface)
     rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
+
+    outputPath = "{0}/{1}/{2}".format(config["input_path"], config["train"], config["name"])
+    MoveFiles(outputPath)
+
+def MoveFiles(outputPath):
+    outputPath += "/RawYieldUnc"
+    print("Results will be moved to {0}".format(outputPath))
+    if not os.path.isdir(outputPath):
+        os.makedirs(outputPath)
+    for file in glob.glob(r'./*.root'):
+        print("Moving file {0}".format(file))
+        shutil.copy(file, outputPath)
+        os.remove(file)
 
 if __name__ == '__main__':
 
