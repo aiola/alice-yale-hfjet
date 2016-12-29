@@ -34,12 +34,12 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     extract = interface.ExtractInputMassPlot()
     if not extract:
         print("Error in extracting the mass plot! Exiting...")
-        return
+        exit(1)
 
     multitrial = interface.RunMultiTrial()
     if not multitrial:
         print("Error in running the MultiTrial code! Exiting...")
-        return
+        exit(1)
 
     interface.ClearObjects()
     globalList.append(interface)
@@ -56,7 +56,7 @@ def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=10, allowRepe
     evalunc = interface.EvaluateUncertainty()
     if not evalunc:
         print("Error in evaluating the yield uncertainty! Exiting...")
-        return
+        exit(1)
 
     interface.ClearObjects()
     globalList.append(interface)
@@ -72,7 +72,7 @@ def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nT
     evalunc = interface.EvaluateUncertainty_CoherentTrialChoice()
     if not evalunc:
         print("Error in evaluating the yield uncertainty! Exiting...")
-        return
+        exit(1)
 
     interface.ClearObjects()
     globalList.append(interface)
@@ -123,8 +123,6 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     # Dzero cfg
     ana = config["analysis"][0]
 
-    # DMesonEff = [0.0118323, 0.02011807,  0.03644752, 0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]
-    # DMesonEff = [0.05664352 , 0.07682878 , 0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591]  # chopping 0-1, 1-2, 2-3
     DMesonEff = LoadEfficiency(config)
     print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
     sigmafixed_DPtBins = [0.0106, 0.0128, 0.0132, 0.0164, 0.0158, 0.0195, 0.0197, 0.025]  # chopping 0-1, 1-2, 2-3
