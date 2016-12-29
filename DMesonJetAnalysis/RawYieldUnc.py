@@ -6,6 +6,7 @@ import yaml
 import IPython
 import ROOT
 import DMesonJetCompare
+import os
 
 globalList = []
 
@@ -23,11 +24,17 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fFills = [3005] * 2
     default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
+    outputPath = "{0}/{1}/{2}/RawYieldUnc/pdf".format(config["input_path"], config["train"], config["name"])
+    os.makedirs(outputPath)
+    for obj in globalList:
+        if isinstance(obj, ROOT.TCanvas):
+            fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
+            obj.SaveAs(fname)
 
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
     default_spectrum = GetDefaaultSpectrum(config, meson_name, jet_type, jet_radius, "_".join([spectrum, method]))
     default_spectrum.SetTitle("Def Fit, {0}".format(method))
-    average_spectrum = GetAverageSpectrum(method)
+    average_spectrum = GetAverageSpectrum(method, config)
     average_spectrum.SetTitle("Avg Raw Yield Extr Trials, {0}".format(method))
     average_spectrum.GetXaxis().SetTitle(default_spectrum.GetXaxis().GetTitle())
     average_spectrum.GetYaxis().SetTitle(default_spectrum.GetYaxis().GetTitle())
@@ -37,7 +44,8 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
     comp.fRatioRelativeUncertainty.SetTitle("Rel. Syst. Unc., {0}".format(method))
     r = comp.CompareSpectra(average_spectrum, [default_spectrum])
     for obj in r:
-        globalList.append(obj)
+        if not obj in globalList:
+            globalList.append(obj)
 
 def GetAverageSpectrum(method, config):
     fname = "{0}/{1}/{2}/RawYieldUnc/FinalRawYieldCentralPlusSystUncertainty_Dzero_{3}.root".format(config["input_path"], config["train"], config["name"], method)
