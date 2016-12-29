@@ -275,7 +275,7 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDstarEffScale() {
 
   TH1F* hmassjet[fnDbins];
   TH1F* hmassjet_scale[fnDbins];
-  TH1F *hmass;
+  TH1F *hmass = 0;
 
   for(int j=0; j<fnDbins; j++){
 
@@ -359,7 +359,7 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
 
   std::cout << "Running MultiTrial on pT bin" << fpTmin << " to " << fpTmax << std::endl;
 
-  Double_t massD;
+  Double_t massD = 0.0;
   if(fDmesonSpecie==kD0toKpi) massD = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   if(fDmesonSpecie==kDStarD0pi) massD = TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass(); 
   if(fDebug) std::cout << "D-meson mass: " << massD << std::endl;
@@ -456,7 +456,7 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
   }
   else return kFALSE;
 
-  CombineMultiTrialOutcomes();
+  isOK = CombineMultiTrialOutcomes();
 
   return isOK;
 }
@@ -495,10 +495,10 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes(){
   }
 
   Int_t totCases=nBackFuncCases*nConfigCases;
-  if(totCases!=fnMask) {
-    std::cout << "Error in the configuration of the mask! Mismatch with the number of active sigma/mean and bkg types settings!" << std::endl;
-    return kFALSE;
-  } 
+  //if(totCases!=fnMask) {
+  //  std::cout << "Error in the configuration of the mask! Mismatch with the number of active sigma/mean and bkg types settings!" << std::endl;
+  //  return kFALSE;
+  //}
 
   TH1F* histo[totCases];
   std::cout << " Total cases (sigma/mean * bkg configs): " << totCases << std::endl;
