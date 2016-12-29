@@ -922,6 +922,7 @@ class DMesonJetAnalysisEngine:
     def FitInvMassPlotsBinSet(self, name, bins, fitOptions, initialSigOverBkg=0.1):
         print("Fitting {0}".format(name))
         pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
+        massWidth = 0.015
 
         for i, bin in enumerate(bins):
             if not bin.fInvMassHisto:
@@ -936,19 +937,20 @@ class DMesonJetAnalysisEngine:
             integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
             if integral > 10:
                 fitter.GetFitFunction().SetParameter(0, integral)  # total integral
-                fitter.GetFitFunction().SetParLimits(0, integral - 2 * math.sqrt(integral), integral + 2 * math.sqrt(integral))  # total integral
-                if initialSigOverBkg < 1:
+                fitter.GetFitFunction().SetParLimits(0, integral - 3 * math.sqrt(integral), integral + 3 * math.sqrt(integral))  # total integral
+                if initialSigOverBkg <= 1 and initialSigOverBkg >= 0:
                     fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg)  # signal integral
-                    fitter.GetFitFunction().SetParLimits(2, 0, integral + 2 * math.sqrt(integral))  # signal integral has to be contained in the total integral
+                    fitter.GetFitFunction().SetParLimits(2, 0, integral + 3 * math.sqrt(integral))  # signal integral has to be contained in the total integral
                 else:
                     fitter.GetFitFunction().SetParameter(2, integral)  # signal integral
-                    fitter.GetFitFunction().SetParLimits(2, integral * (initialSigOverBkg - 1), integral + 2 * math.sqrt(integral))  # signal integral has to be contained in the total integral
+                    fitter.GetFitFunction().SetParLimits(2, integral * (initialSigOverBkg - 1), integral + 3 * math.sqrt(integral))  # signal integral has to be contained in the total integral
             else:
                 fitter.GetFitFunction().SetParameter(0, 10)  # total integral
                 fitter.GetFitFunction().SetParameter(2, 10)  # signal integral
 
             fitter.GetFitFunction().SetParameter(3, pdgMass)  # start fitting using PDG mass
             fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.9975, pdgMass * 1.0025)  # start fitting using PDG mass
+            fitter.GetFitFunction().SetParameter(4, massWidth)  # start fitting using mass peak width =
             print("Fitting bin {0}".format(bin.GetTitle()))
 
             fitter.Fit(bin.fInvMassHisto, fitOptions)
