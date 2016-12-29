@@ -43,9 +43,10 @@ def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxis
     comp.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
     comp.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
-    if "colors" in styles: comp.fColors = styles["colors"]
-    if "markers" in styles: comp.fMarkers = styles["markers"]
-    if "lines" in styles: comp.fLines = styles["lines"]
+    if styles:
+        if "colors" in styles: comp.fColors = styles["colors"]
+        if "markers" in styles: comp.fMarkers = styles["markers"]
+        if "lines" in styles: comp.fLines = styles["lines"]
 
     if c:
         for obj in c.GetListOfPrimitives():
