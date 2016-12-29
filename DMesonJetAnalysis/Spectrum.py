@@ -150,7 +150,7 @@ class Spectrum:
         self.fFDCorrHistogram = self.fHistogram.Clone("{0}_FDCorr".format(self.fHistogram.GetName()))
         if self.fFDCorrection.fFDHistogram:
             crossSection = 62.3  # mb CINT1
-            branchingRatio = 0.0388  # D0->Kpi
+            branchingRatio = 0.0393  # D0->Kpi
             fdhist = self.fFDCorrection.fFDHistogram
             self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
             if not isWeighted:
