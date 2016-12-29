@@ -67,7 +67,7 @@ class DataSpectrumDef:
         self.fUnfoldingReg = unfoldingReg
         self.fUnfoldingPrior = unfoldingPrior
         self.fCrossSection = 62.3  # mb CINT1
-        self.fBranchingRatio = 0.0388  # D0->Kpi
+        self.fBranchingRatio = 0.0393  # D0->Kpi
         self.fAntiParticleNorm = 2.0
 
     def LoadSpectrum(self, file):
