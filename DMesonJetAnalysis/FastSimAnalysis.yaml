@@ -1,5 +1,5 @@
 name: FastSimAnalysis_{0}
-input_path: /Volumes/DATA/ALICE/JetResults/FastSim_{0}/stage_1/output
+input_path: /Volumes/DATA/ALICE/JetResults/FastSim_{0}/stage_{1}/output
 train: ""
 file_name: AnalysisResults_FastSim_{0}.root
 task_name: AliAnalysisTaskDmesonJets
@@ -14,14 +14,17 @@ analysis:
   max_mass: 2.015
   jets:
   -
+    active: yes
     type: Charged
     radius: R040
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   -
+    active: yes
     type: Charged
     radius: R060
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.6"
   -
+    active: yes
     type: Full
     radius: R040
     title: "Full Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
