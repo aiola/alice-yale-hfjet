@@ -10,6 +10,7 @@ import os
 import ROOT
 
 import DMesonJetProjectors
+import DMesonJetCompare
 import DMesonJetUtils
 from DMesonJetBase import AnalysisType
 import BinSet
@@ -31,6 +32,8 @@ class DMesonJetAnalysisEngine:
         self.fCanvases = []
 
         for jetDef in self.fJetDefinitions:
+            if "active" in jetDef and not jetDef["active"]:
+                continue
             binset_copy = copy.deepcopy(binSet)
             binset_copy.Initialize(self.fDMeson, jetDef["type"], jetDef["radius"], jetDef["title"], self.fProjector.fInputPath)
             self.fBinMultiSets[jetDef["type"], jetDef["radius"]] = binset_copy
@@ -46,6 +49,7 @@ class DMesonJetAnalysisEngine:
             self.CompareSpectraForAxis("d_z", binMultiSet)
 
     def CompareSpectraForAxis(self, axisName, binMultiSet):
+        cname = "{0}_{1}_{2}_{3}_SpectraComparison".format(self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, axisName)
         spectraToCompare = []
         spectra = binMultiSet.FindAllSpectra()
         for s in spectra:
@@ -57,14 +61,17 @@ class DMesonJetAnalysisEngine:
                 continue
             if axisName != s.fAxis[0].fName:
                 continue
-            h = s.fNormHistogram.Clone("{0}_copy".format(s.fNormHistogram.GetName()))
+            h = s.fNormHistogram.Clone("{0}_{1}_copy".format(s.fNormHistogram.GetName(), cname))
             if s.fTitle:
                 h.SetTitle(s.fTitle)
             globalList.append(h)
             spectraToCompare.append(h)
         if len(spectraToCompare) < 2:
             return
-        results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], "{0}_{1}_{2}_{3}_SpectraComparison".format(self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, axisName), "", "hist")
+
+        comp = DMesonJetCompare.DMesonJetCompare(cname)
+        comp.fOptRatio = "hist"
+        results = comp.CompareSpectra(spectraToCompare[0], spectraToCompare[1:])
         for obj in results:
             if obj and isinstance(obj, ROOT.TCanvas):
                 self.fCanvases.append(obj)
@@ -313,7 +320,8 @@ class DMesonJetAnalysisEngine:
         globalList.append(fd)
 
         cname = "{0}_FDCorrection".format(s.fName)
-        r = DMesonJetUtils.CompareSpectra(before, [after, fd], cname)
+        comp = DMesonJetCompare.DMesonJetCompare(cname)
+        r = comp.CompareSpectra(before, [after, fd])
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):
@@ -1169,7 +1177,8 @@ class DMesonJetAnalysis:
                         spectraToCompare.append(h_copy)
             if len(spectraToCompare) > 1:
                 cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name, "SpectraComparison"] if obj)
-                results = DMesonJetUtils.CompareSpectra(spectraToCompare[0], spectraToCompare[1:], cname)
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                results = comp.CompareSpectra(spectraToCompare[0], spectraToCompare[1:])
                 for obj in results:
                     if isinstance(obj, ROOT.TCanvas):
                         self.fCanvases.append(obj)

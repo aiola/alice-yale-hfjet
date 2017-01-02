@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python script to run the D meson jet analysis on 2010 pp data
+# python script to run the D meson jet analysis on 2010 pp data
 
 import argparse
 import yaml
@@ -12,8 +12,8 @@ import ROOT
 
 globalList = []
 
-def main(config, maxEvents, format, gen, proc, ts):
-    
+def main(config, maxEvents, format, gen, proc, ts, stage):
+
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
@@ -42,8 +42,8 @@ def main(config, maxEvents, format, gen, proc, ts):
         file_name = file_name.format(suffix)
 
     input_path = config["input_path"]
-    if "{0}" in input_path:
-        input_path = input_path.format(suffix)
+    if "{0}" and "{1}" in input_path:
+        input_path = input_path.format(suffix, stage)
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
     projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, config["train"], file_name, config["task_name"], config["merging_type"], maxEvents)
@@ -56,7 +56,7 @@ def main(config, maxEvents, format, gen, proc, ts):
     ana.SavePlots("{0}/{1}".format(input_path, config["train"]), format)
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='D meson jet analysis for 2010 pp data.')
     parser.add_argument('yaml', metavar='config.yaml',
                         help='YAML configuration file')
@@ -70,13 +70,14 @@ if __name__ == '__main__':
                         default=None)
     parser.add_argument('--ts', metavar='TS',
                         default=None)
-
+    parser.add_argument('--stage', metavar='N',
+                        default=1)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.format, args.gen, args.proc, args.ts)
+    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage)
 
     IPython.embed()
