@@ -3,6 +3,7 @@
 
 import ROOT
 import math
+import DMesonJetUtils
 
 class DMesonJetCompare:
     def __init__(self, name):
@@ -26,12 +27,14 @@ class DMesonJetCompare:
         self.fFills = [3001, 3002, 3003, 3004, 3005, 3006, 3007]
         self.fMainHistogram = None
         self.fMainRatioHistogram = None
-        self.fMaxSpectrum = -1e30
-        self.fMinSpectrum = +1e30
-        self.fMaxRatio = -1e30
-        self.fMinRatio = +1e30
+        self.fMaxSpectrum = None
+        self.fMinSpectrum = None
+        self.fMaxRatio = None
+        self.fMinRatio = None
         self.fRatioRelativeUncertainty = None
         self.fResults = None
+        self.fX1Legend = 0.55
+        self.fY1Legend = 0.87
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -55,7 +58,7 @@ class DMesonJetCompare:
         if self.fLegendSpectra:
             self.fLegendSpectra.SetY1(self.fLegendSpectra.GetY1() - 0.04 * (len(self.fHistograms) + 1))
         else:
-            self.fLegendSpectra = ROOT.TLegend(0.25, 0.87 - 0.04 * (len(self.fHistograms) + 1), 0.85, 0.87)
+            self.fLegendSpectra = ROOT.TLegend(self.fX1Legend, self.fY1Legend - 0.05 * (len(self.fHistograms) + 1), 0.9, self.fY1Legend)
             self.fLegendSpectra.SetName("{0}_legend".format(self.fCanvasSpectra.GetName()))
             self.fLegendSpectra.SetFillStyle(0)
             self.fLegendSpectra.SetBorderSize(0)
@@ -74,6 +77,7 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetMarkerSize(1.2)
             self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
 
+        print("Plotting hist {0} with option {1}".format(self.fBaselineHistogram.GetName(), self.fOptSpectrum))
         self.fBaselineHistogram.Draw(self.fOptSpectrum)
         if "frac" in self.fBaselineHistogram.GetYaxis().GetTitle():
             self.fCanvasSpectra.SetLeftMargin(0.12)
@@ -101,7 +105,7 @@ class DMesonJetCompare:
         if self.fLegendRatio:
             self.fLegendRatio.SetY1(self.fLegendRatio.GetY1() - 0.05 * n)
         else:
-            self.fLegendRatio = ROOT.TLegend(0.25, 0.87 - 0.05 * n, 0.85, 0.87)
+            self.fLegendRatio = ROOT.TLegend(self.fX1Legend, self.fY1Legend - 0.05 * n, 0.9, self.fY1Legend)
             self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
             self.fLegendRatio.SetFillStyle(0)
             self.fLegendRatio.SetBorderSize(0)
@@ -126,8 +130,18 @@ class DMesonJetCompare:
 
     def PlotHistogram(self, color, marker, line, h):
         self.fCanvasSpectra.cd()
-        self.fMinSpectrum = min(self.fMinSpectrum, h.GetBinContent(h.GetMinimumBin()))
-        self.fMaxSpectrum = max(self.fMaxSpectrum, h.GetBinContent(h.GetMaximumBin()))
+        m = DMesonJetUtils.FindMinimum(h)
+        if not m is None:
+            if self.fMinSpectrum is None:
+                self.fMinSpectrum = m
+            else:
+                self.fMinSpectrum = min(self.fMinSpectrum, m)
+        m = DMesonJetUtils.FindMaximum(h)
+        if not m is None:
+            if self.fMaxSpectrum is None:
+                self.fMaxSpectrum = m
+            else:
+                self.fMaxSpectrum = max(self.fMaxSpectrum, m)
 
         h.Draw(self.fOptSpectrum)
         if "hist" in self.fOptSpectrum:
@@ -165,8 +179,18 @@ class DMesonJetCompare:
         hRatio.Draw(self.fOptRatio)
         if not self.fMainRatioHistogram:
             self.fMainRatioHistogram = hRatio
-        self.fMinRatio = min(self.fMinRatio, hRatio.GetBinContent(hRatio.GetMinimumBin()))
-        self.fMaxRatio = max(self.fMaxRatio, hRatio.GetBinContent(hRatio.GetMaximumBin()))
+        m = DMesonJetUtils.FindMinimum(hRatio)
+        if not m is None:
+            if self.fMinRatio is None:
+                self.fMinRatio = m
+            else:
+                self.fMinRatio = min(self.fMinRatio, m)
+        m = DMesonJetUtils.FindMaximum(hRatio)
+        if not m is None:
+            if self.fMaxRatio is None:
+                self.fMaxRatio = m
+            else:
+                self.fMaxRatio = max(self.fMaxRatio, m)
 
         if not "same" in self.fOptRatio:
             self.fOptRatio += "same"
@@ -205,31 +229,27 @@ class DMesonJetCompare:
         if self.fRatioRelativeUncertainty: self.fResults.append(self.fRatioRelativeUncertainty)
 
     def AdjustYLimits(self):
-        if self.fDoRatioPlot:
+        if not self.fMaxRatio is None and not self.fMinRatio is None:
             if self.fDoRatioPlot == "logy":
-                max = self.fMaxRatio * 5
+                max = self.fMaxRatio * 50
                 min = self.fMinRatio / 2
             else:
                 max = self.fMaxRatio + (self.fMaxRatio - self.fMinRatio) * 0.9
-                if self.fMinRatio < 0.2:
-                    min = 0
-                else:
-                    min = self.fMinRatio - (self.fMaxRatio - self.fMinRatio) * 0.9
+                min = self.fMinRatio - (self.fMaxRatio - self.fMinRatio) * 0.2
+            if min < 0 and self.fMinRatio >= 0: min = 0
             self.fMainRatioHistogram.SetMinimum(min)
             self.fMainRatioHistogram.SetMaximum(max)
             self.fCanvasRatio.cd()
             self.fLegendRatio.Draw()
 
-        if self.fDoSpectraPlot:
+        if not self.fMaxSpectrum is None and not self.fMinSpectrum is None:
             if self.fDoSpectraPlot == "logy":
-                max = self.fMaxSpectrum * 5
+                max = self.fMaxSpectrum * 50
                 min = self.fMinSpectrum / 2
             else:
                 max = self.fMaxSpectrum + (self.fMaxSpectrum - self.fMinSpectrum) * 0.9
-                if self.fMinSpectrum < 0.2:
-                    min = 0
-                else:
-                    min = self.fMinSpectrum - (self.fMaxSpectrum - self.fMinSpectrum) * 0.9
+                min = self.fMinSpectrum - (self.fMaxSpectrum - self.fMinSpectrum) * 0.2
+            if min < 0 and self.fMinSpectrum >= 0: min = 0
             self.fMainHistogram.SetMinimum(min)
             self.fMainHistogram.SetMaximum(max)
             self.fCanvasSpectra.cd()
