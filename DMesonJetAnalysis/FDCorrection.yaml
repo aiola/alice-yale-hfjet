@@ -1,0 +1,54 @@
+name: BFeedDown
+input_path: /Volumes/DATA/ALICE/JetResults
+generator: powheg_beauty
+response:
+  c_response:
+    train: Jets_EMC_pp_MC_961_962_963_964
+    name: LHC15i2_Train961
+  b_response:
+    train: Jets_EMC_pp_MC_973_974_975_976
+    name: LHC15i2_Train973
+variations:
+  default:
+    active: yes
+    title: Central Values
+    ts: 1481734588
+    stage: 0
+  old:
+    active: yes
+    title: Old
+    ts: 1478869008
+    stage: 1
+  new:
+    active: yes
+    title: New
+    ts: 1482152927
+    stage: 1
+  mass_low:
+    active: no
+    title: #it{m}_{b} = 4.5 GeV/#it{c}^2
+    ts: 1481734661
+    stage: 1
+  mass_high:
+    active: no
+    title: #it{m}_{b} = 5.0 GeV/#it{c}^2
+    ts: 1481821920
+    stage: 0
+  facscfact1_renscfact05:
+    active: no
+    title: #mu_{F} = 1, #mu_{R} = 0.5
+    ts: 1481900572
+    stage: 0
+  facscfact05_renscfact1:
+    active: no
+    title: #mu_{F} = 1, #mu_{R} = 0.5
+    ts: 1481975831
+    stage: 0
+  facscfact2_renscfact1:
+    active: no
+    title: #mu_{F} = 1, #mu_{R} = 0.5
+    ts: 1481976285
+    stage: 0
+
+
+    
