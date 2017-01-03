@@ -192,7 +192,7 @@ class DMesonJetUnfoldingEngine:
 
         return True
 
-    def Start(self):
+    def Start(self, doPlotting=True):
         self.GenerateResponse()
         self.GenerateMeasuredUncertainty()
         for method, config in self.fUnfoldingConfig.iteritems():
@@ -205,7 +205,7 @@ class DMesonJetUnfoldingEngine:
             else:
                 print("Unfolding method {0} not known!".format(method))
         self.GeneratePearsonMatrices()
-        self.Plot()
+        if doPlotting: self.Plot()
 
     def GenerateMeasuredUncertainty(self):
         self.fInputSpectrumErrors = ROOT.TH1D("{0}_Errors".format(self.fInputSpectrum.GetName()), "{0} Errors".format(self.fInputSpectrum.GetTitle()), self.fInputSpectrum.GetNbinsX(), self.fInputSpectrum.GetXaxis().GetXbins().GetArray())
