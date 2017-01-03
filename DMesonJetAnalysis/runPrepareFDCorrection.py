@@ -9,6 +9,11 @@ import math
 import yaml
 import DMesonJetUnfolding
 import DMesonJetUtils
+import DMesonJetCompare
+import copy
+from collections import OrderedDict
+
+globalList = []
 
 def main(config, unfolding_debug):
     ROOT.TH1.AddDirectory(False)
@@ -27,17 +32,20 @@ def main(config, unfolding_debug):
     print("Opening the c->D0 response matrix file (w/ efficiency)")
     cResponseFile_efficiency = OpenResponseFile(config["input_path"], config["c_response"], True)
 
-    results = dict()
+    results = OrderedDict()
     robjects = []
-    for name, v in config["variations"].iteritems():
+    for v in config["variations"]:
         if not v["active"]: continue
+        name = v["name"]
         suffix = "_".join([config["generator"], str(v["ts"])])
         input_file_name = "{0}/FastSim_{1}/stage_{2}/output/FastSimAnalysis_{1}.root".format(config["input_path"], suffix, v["stage"])
         (FDhistogram_jetpt_orig, FDhistogram_dpt_orig) = LoadFDHistogram(input_file_name)
-        results[name] = dict()
+        results[name] = OrderedDict()
         results[name]["DPtSpectrum"] = PrepareFDhist_dpt(v["ts"], FDhistogram_dpt_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency)
         results[name]["JetPtSpectrum"] = PrepareFDhist_jetpt(v["ts"], FDhistogram_jetpt_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug)
         robjects.append(GenerateRootList(results[name], name))
+
+    CompareVariations(config["variations"], results)
 
     output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
     outputFile = ROOT.TFile(output_file_name, "recreate")
@@ -47,7 +55,63 @@ def main(config, unfolding_debug):
     for obj in robjects:
         obj.Write(obj.GetName(), ROOT.TObject.kSingleKey)
     outputFile.Close()
+
+    SaveCanvases(config["input_path"])
+
     print("Done: {0}.".format(output_file_name))
+
+def GetSpectrum(results, name):
+    subdirs = name.split("/")
+    if len(subdirs) < 1:
+        print("{0} is not a valid spectrum name".format(name))
+        exit(1)
+    for subdir in subdirs:
+        if not (isinstance(results, dict) or isinstance(results, OrderedDict)):
+            print("ERROR: {0} is not a dictionary!".format(results))
+            exit(1)
+        results = results[subdir]
+    return results
+
+def CompareVariationsForSpectrum(comp_template, variations, results, name, spectrum):
+    comp = copy.deepcopy(comp_template)
+    comp.fName = name
+    h = GetSpectrum(results["default"], spectrum)
+    baseline = h.Clone("{0}_copy".format(h.GetName()))
+    baseline.SetTitle(variations[0]["title"])
+    spectra = []
+    for v in variations:
+        name = v["name"]
+        if not v["active"] or name == "default": continue
+        h = GetSpectrum(results[name], spectrum)
+        h_copy = h.Clone("{0}_copy".format(h.GetName()))
+        h_copy.SetTitle(v["title"])
+        spectra.append(h_copy)
+    comp.CompareSpectra(baseline, spectra)
+    globalList.append(baseline)
+    globalList.extend(spectra)
+    globalList.extend(comp.fResults)
+
+def CompareVariations(variations, results):
+    comp_template = DMesonJetCompare.DMesonJetCompare("DMesonJetCompare")
+    comp_template.fOptRatio = "hist"
+    comp_template.fLogUpperSpace = 3
+
+    CompareVariationsForSpectrum(comp_template, variations, results,
+                                 "GeneratorLevel_DPtSpectrum_Comparison",
+                                 "DPtSpectrum/GeneratorLevel_DPtSpectrum")
+
+    CompareVariationsForSpectrum(comp_template, variations, results,
+                                 "GeneratorLevel_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide_Comparison",
+                                 "JetPtSpectrum/DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
+
+    CompareVariationsForSpectrum(comp_template, variations, results,
+                                 "DetectorLevel_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide_Comparison",
+                                 "JetPtSpectrum/DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
+
+def SaveCanvases(input_path):
+    for obj in globalList:
+        if isinstance(obj, ROOT.TCanvas):
+            obj.SaveAs("{0}/BFeedDown_{1}.pdf".format(input_path, obj.GetName()))
 
 def GenerateRootList(pdict, name):
     rlist = ROOT.TList()
@@ -55,7 +119,7 @@ def GenerateRootList(pdict, name):
     for nobj, obj in pdict.iteritems():
         if isinstance(obj, ROOT.TObject):
             rlist.Add(obj)
-        elif isinstance(obj, dict):
+        elif isinstance(obj, dict) or isinstance(obj, OrderedDict):
             rlist.Add(GenerateRootList(obj, nobj))
         else:
             print("Error: type of object {0} not recognized!".format(obj))
@@ -63,11 +127,11 @@ def GenerateRootList(pdict, name):
 
 def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency):
     print("Preparing D pt FD histograms")
-    result = dict()
+    result = OrderedDict()
 
     dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
 
-    responseList = dict()
+    responseList = OrderedDict()
     result["DetectorResponse"] = responseList
 
     print("Rebinning the FD original histogram")
@@ -101,12 +165,12 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
 
 def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
     print("Preparing jet pt FD histograms")
-    result = dict()
+    result = OrderedDict()
 
     dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
     jetptbins = [5, 6, 8, 10, 14, 20, 30]
 
-    responseList = dict()
+    responseList = OrderedDict()
     result["DetectorResponse"] = responseList
 
     print("Rebinning the FD original histogram")
@@ -152,17 +216,19 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
     for ptd in range(2, 5):
         spectrumResponseName = "JetPtSpectrum_DPt_{0}".format(ptd * 10)
 
-        ptdList = dict()
+        ptdList = OrderedDict()
         result["DPt_{0}".format(ptd * 10)] = ptdList
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o efficiency)".format(ptd))
         FDhistogram_jetpt = FDhistogram.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram.GetName(), ptd * 10), FDhistogram.GetYaxis().FindBin(ptd), FDhistogram.GetNbinsY() + 1)
         FDhistogram_jetpt.SetName("GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply")
+        FDhistogram_jetpt.GetYaxis().SetTitle(FDhistogram.GetZaxis().GetTitle())
         ptdList[FDhistogram_jetpt.GetName()] = FDhistogram_jetpt
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o efficiency, fine bins)".format(ptd))
         FDhistogram_fineBins_jetpt = FDhistogram_fineBins.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_fineBins.GetName(), ptd * 10), FDhistogram_fineBins.GetYaxis().FindBin(ptd), FDhistogram_fineBins.GetNbinsY() + 1)
         FDhistogram_fineBins_jetpt.SetName("GeneratorLevel_JetPtSpectrum_FineBins_bEfficiencyMultiply")
+        FDhistogram_fineBins_jetpt.GetYaxis().SetTitle(FDhistogram_fineBins.GetZaxis().GetTitle())
         ptdList[FDhistogram_fineBins_jetpt.GetName()] = FDhistogram_fineBins_jetpt
 
         print("Applying the jet pt b response matrix")
@@ -173,11 +239,13 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/ efficiency)".format(ptd))
         FDhistogram_efficiency_jetpt = FDhistogram_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_efficiency.GetName(), ptd * 10), FDhistogram_efficiency.GetYaxis().FindBin(ptd), FDhistogram_efficiency.GetNbinsY() + 1)
         FDhistogram_efficiency_jetpt.SetName("GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
+        FDhistogram_efficiency_jetpt.GetYaxis().SetTitle(FDhistogram_efficiency.GetZaxis().GetTitle())
         ptdList[FDhistogram_efficiency_jetpt.GetName()] = FDhistogram_efficiency_jetpt
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/ efficiency, fine bins)".format(ptd))
         FDhistogram_fineBins_efficiency_jetpt = FDhistogram_fineBins_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_fineBins_efficiency.GetName(), ptd * 10), FDhistogram_fineBins_efficiency.GetYaxis().FindBin(ptd), FDhistogram_fineBins_efficiency.GetNbinsY() + 1)
         FDhistogram_fineBins_efficiency_jetpt.SetName("GeneratorLevel_JetPtSpectrum_FineBins_bEfficiencyMultiply_cEfficiencyDivide")
+        FDhistogram_fineBins_efficiency_jetpt.GetYaxis().SetTitle(FDhistogram_fineBins_efficiency.GetZaxis().GetTitle())
         ptdList[FDhistogram_fineBins_efficiency_jetpt.GetName()] = FDhistogram_fineBins_efficiency_jetpt
 
         print("Applying the jet pt b response matrix")
@@ -340,6 +408,8 @@ def LoadFDHistogram(file_name):
         slist.ls()
         exit(1)
 
+    jetpt_hist.GetZaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} #times #Delta#it{p}_{T} (mb)")
+    dpt_hist.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} #times #Delta#it{p}_{T} (mb)")
     return jetpt_hist, dpt_hist
 
 if __name__ == '__main__':

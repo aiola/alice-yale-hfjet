@@ -157,6 +157,7 @@ def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
     r = ROOT.TH2D(name, name, nbinsX, binsX, nbinsY, binsY)
     r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
     r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
+    r.GetZaxis().SetTitle(hist.GetZaxis().GetTitle())
     for xbin in range(0, hist.GetXaxis().GetNbins() + 2):
         for ybin in range(0, hist.GetYaxis().GetNbins() + 2):
             xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
