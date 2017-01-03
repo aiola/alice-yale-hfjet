@@ -35,6 +35,10 @@ class DMesonJetCompare:
         self.fResults = None
         self.fX1Legend = 0.55
         self.fY1Legend = 0.87
+        self.fLogUpperSpace = 50  # this factor will be used to adjust the y axis in log scale
+        self.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
+        self.fLinUpperSpace = 0.9  # this factor will be used to adjust the y axis in linear scale
+        self.fLinLowerSpace = 0.2  # this factor will be used to adjust the y axis in linear scale
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -56,9 +60,13 @@ class DMesonJetCompare:
             self.fCanvasSpectra.SetLogy()
 
         if self.fLegendSpectra:
-            self.fLegendSpectra.SetY1(self.fLegendSpectra.GetY1() - 0.04 * (len(self.fHistograms) + 1))
+            y1 = self.fLegendSpectra.GetY1() - 0.04 * (len(self.fHistograms) + 1)
+            if y1 < 0.2: y1 = 0.2
+            self.fLegendSpectra.SetY1(y1)
         else:
-            self.fLegendSpectra = ROOT.TLegend(self.fX1Legend, self.fY1Legend - 0.05 * (len(self.fHistograms) + 1), 0.9, self.fY1Legend)
+            y1 = self.fY1Legend - 0.05 * (len(self.fHistograms) + 1)
+            if y1 < 0.2: y1 = 0.2
+            self.fLegendSpectra = ROOT.TLegend(self.fX1Legend, y1, 0.9, self.fY1Legend)
             self.fLegendSpectra.SetName("{0}_legend".format(self.fCanvasSpectra.GetName()))
             self.fLegendSpectra.SetFillStyle(0)
             self.fLegendSpectra.SetBorderSize(0)
@@ -103,9 +111,13 @@ class DMesonJetCompare:
         if self.fRatioRelativeUncertainty: n += 1
 
         if self.fLegendRatio:
-            self.fLegendRatio.SetY1(self.fLegendRatio.GetY1() - 0.05 * n)
+            y1 = self.fLegendRatio.GetY1() - 0.05 * n
+            if y1 < 0.2: y1 = 0.2
+            self.fLegendRatio.SetY1(y1)
         else:
-            self.fLegendRatio = ROOT.TLegend(self.fX1Legend, self.fY1Legend - 0.05 * n, 0.9, self.fY1Legend)
+            y1 = self.fY1Legend - 0.05 * n
+            if y1 < 0.2: y1 = 0.2
+            self.fLegendRatio = ROOT.TLegend(self.fX1Legend, y1, 0.9, self.fY1Legend)
             self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
             self.fLegendRatio.SetFillStyle(0)
             self.fLegendRatio.SetBorderSize(0)
@@ -231,11 +243,11 @@ class DMesonJetCompare:
     def AdjustYLimits(self):
         if not self.fMaxRatio is None and not self.fMinRatio is None:
             if self.fDoRatioPlot == "logy":
-                max = self.fMaxRatio * 50
-                min = self.fMinRatio / 2
+                max = self.fMaxRatio * self.fLogUpperSpace
+                min = self.fMinRatio / self.fLogLowerSpace
             else:
-                max = self.fMaxRatio + (self.fMaxRatio - self.fMinRatio) * 0.9
-                min = self.fMinRatio - (self.fMaxRatio - self.fMinRatio) * 0.2
+                max = self.fMaxRatio + (self.fMaxRatio - self.fMinRatio) * self.fLinUpperSpace
+                min = self.fMinRatio - (self.fMaxRatio - self.fMinRatio) * self.fLinLowerSpace
             if min < 0 and self.fMinRatio >= 0: min = 0
             self.fMainRatioHistogram.SetMinimum(min)
             self.fMainRatioHistogram.SetMaximum(max)
@@ -244,11 +256,11 @@ class DMesonJetCompare:
 
         if not self.fMaxSpectrum is None and not self.fMinSpectrum is None:
             if self.fDoSpectraPlot == "logy":
-                max = self.fMaxSpectrum * 50
-                min = self.fMinSpectrum / 2
+                max = self.fMaxSpectrum * self.fLogUpperSpace
+                min = self.fMinSpectrum / self.fLogLowerSpace
             else:
-                max = self.fMaxSpectrum + (self.fMaxSpectrum - self.fMinSpectrum) * 0.9
-                min = self.fMinSpectrum - (self.fMaxSpectrum - self.fMinSpectrum) * 0.2
+                max = self.fMaxSpectrum + (self.fMaxSpectrum - self.fMinSpectrum) * self.fLinUpperSpace
+                min = self.fMinSpectrum - (self.fMaxSpectrum - self.fMinSpectrum) * self.fLinLowerSpace
             if min < 0 and self.fMinSpectrum >= 0: min = 0
             self.fMainHistogram.SetMinimum(min)
             self.fMainHistogram.SetMaximum(max)
