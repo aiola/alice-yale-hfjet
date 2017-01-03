@@ -69,7 +69,7 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
             self.fBaselineHistogram.SetLineWidth(2)
             self.fBaselineHistogram.SetLineStyle(self.fLines[0])
-            leg.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "l")
+            self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "l")
         else:
             self.fBaselineHistogram.SetMarkerColor(self.fColors[0])
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
@@ -97,7 +97,7 @@ class DMesonJetCompare:
             self.fCanvasRatio = ROOT.TCanvas(cname, cname)
         self.fCanvasRatio.cd()
         if self.fDoRatioPlot == "logy":
-            self.fDoRatioPlot.SetLogy()
+            self.fCanvasRatio.SetLogy()
 
         n = len(self.fHistograms)
         if self.fRatioRelativeUncertainty: n += 1
