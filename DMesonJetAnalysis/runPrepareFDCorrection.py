@@ -108,6 +108,10 @@ def CompareVariations(variations, results):
                                  "DetectorLevel_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide_Comparison",
                                  "JetPtSpectrum/DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
 
+    CompareVariationsForSpectrum(comp_template, variations, results,
+                                 "Unfolded_c_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide_Comparison",
+                                 "JetPtSpectrum/DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
+
 def SaveCanvases(input_path):
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
@@ -235,6 +239,16 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
         FDhistogram_jetpt_detector = ApplyResponse(FDhistogram_jetpt, bResponseFile, FDhistogram_fineBins_jetpt, spectrumResponseName)
         FDhistogram_jetpt_detector.SetName("DetectorLevel_JetPtSpectrum_bEfficiencyMultiply")
         ptdList[FDhistogram_jetpt_detector.GetName()] = FDhistogram_jetpt_detector
+
+        print("Unfolding using the c response matrix")
+        FDhistogram_jetpt_unfolded = GetUnfoldedSpectrum("{0}_{1}_unfolded_c".format(ts, FDhistogram_jetpt_detector.GetName()), FDhistogram_jetpt_detector, cResponseFile, FDhistogram_fineBins_jetpt, spectrumResponseName, unfolding_debug)
+        FDhistogram_jetpt_unfolded.SetName("Unfolded_c_JetPtSpectrum_bEfficiencyMultiply")
+        ptdList[FDhistogram_jetpt_unfolded.GetName()] = FDhistogram_jetpt_unfolded
+
+        print("Unfolding using the b response matrix")
+        FDhistogram_jetpt_unfolded = GetUnfoldedSpectrum("{0}_{1}_unfolded_b".format(ts, FDhistogram_jetpt_detector.GetName()), FDhistogram_jetpt_detector, bResponseFile, FDhistogram_fineBins_jetpt, spectrumResponseName, unfolding_debug)
+        FDhistogram_jetpt_unfolded.SetName("Unfolded_b_JetPtSpectrum_bEfficiencyMultiply")
+        ptdList[FDhistogram_jetpt_unfolded.GetName()] = FDhistogram_jetpt_unfolded
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/ efficiency)".format(ptd))
         FDhistogram_efficiency_jetpt = FDhistogram_efficiency.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_efficiency.GetName(), ptd * 10), FDhistogram_efficiency.GetYaxis().FindBin(ptd), FDhistogram_efficiency.GetNbinsY() + 1)
