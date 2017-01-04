@@ -26,9 +26,9 @@ analysis:
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      jet_pt: [5, 6, 8, 10, 14, 20, 32]
     cuts:
     -
       object: jet
@@ -47,12 +47,9 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_20_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
@@ -61,9 +58,9 @@ analysis:
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      jet_pt: [5, 6, 8, 10, 14, 20, 32]
     cuts:
     -
       object: jet
@@ -82,12 +79,9 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
   -
     name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}"
@@ -96,9 +90,9 @@ analysis:
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      jet_pt: [5, 6, 8, 10, 14, 20, 32]
     cuts:
     -
       object: jet
@@ -117,12 +111,9 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_40_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
   -
     name: DPtBins_JetPt_5_30
     title: ""
@@ -130,7 +121,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
     cuts:
     -
       object: jet
@@ -143,7 +134,7 @@ analysis:
       min: 5
       max: 30
     bin_count_analysis:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      jet_pt: [5, 6, 8, 10, 14, 20, 32]
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
@@ -153,7 +144,7 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [D0]
     -
       name: JetPtSpectrum_DPt_20
@@ -163,15 +154,12 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_20_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -186,15 +174,12 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
       side_band:
         skip_bins: [0]
         min_sigmas: 4
@@ -210,15 +195,12 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_40_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
       side_band:
         skip_bins: [0,1]
         min_sigmas: 4
@@ -234,15 +216,12 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_20_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign
@@ -260,15 +239,12 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
       like_sign:
         skip_bins: [0]
         mode: bin_count
@@ -287,15 +263,12 @@ analysis:
       efficiency:
         file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
         list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_40_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
       like_sign:
         skip_bins: [0,1]
         mode: bin_count
@@ -313,7 +286,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
     cuts:
     -
       object: d
@@ -332,9 +305,6 @@ analysis:
         object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_NoJet
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: DPtSpectrum_bEff_efficiency
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
