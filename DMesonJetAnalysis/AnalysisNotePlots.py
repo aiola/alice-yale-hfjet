@@ -300,14 +300,14 @@ def EfficiencyComparison(hist_c, hist_b):
     jetName = "Jet_AKTChargedR040_pt_scheme"
     dmesonName = "D0"
     prefix = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
-    jetPtLimits = [5, 30]
+    jetPtLimits = [5, 32]
     cname = "BFeedDown/ReconstructionEfficiencyPromptNonPromptComparison"
     opt = "hist"
     c = None
     leg = None
     detResp_c = hist_c[prefix]
     detResp_b = hist_b[prefix]
-    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 30]
+    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
     colors = [ROOT.kBlue + 2, ROOT.kGreen + 2, ROOT.kRed + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kOrange + 2]
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenDiamond, ROOT.kOpenStar]
     lines = [1, 2, 9, 5, 7, 10]

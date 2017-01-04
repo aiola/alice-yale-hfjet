@@ -5,6 +5,7 @@ import argparse
 import IPython
 import ROOT
 import array
+import numpy
 import math
 import yaml
 import DMesonJetUnfolding
@@ -112,6 +113,18 @@ def GenerateSystematicUncertainty(baseline, spectra):
                 lowerLimitsHist.SetBinContent(ibin, -diff)
                 print("Bin {0}, lower limit {1}".format(ibin, -diff))
         symmetricLimitsHist.SetBinContent(ibin, max(upperLimitsHist.GetBinContent(ibin), lowerLimitsHist.GetBinContent(ibin)))
+    xArray = numpy.array([baseline.GetXaxis().GetBinCenter(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
+    xArrayErr = numpy.array([baseline.GetXaxis().GetBinWidth(ibin) / 2 for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
+    yArray = numpy.array([baseline.GetBinContent(ibin) / baseline.GetXaxis().GetBinWidth(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
+    yArrayErrUp = numpy.array([upperLimitsHist.GetBinContent(ibin) / upperLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, upperLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+    yArrayErrLow = numpy.array([lowerLimitsHist.GetBinContent(ibin) / lowerLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, lowerLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+    yArrayErrSym = numpy.array([symmetricLimitsHist.GetBinContent(ibin) / symmetricLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, symmetricLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+    symmetricUncGraph = ROOT.TGraphErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, yArrayErrSym)
+    symmetricUncGraph.SetName("{0}_CentralSymmSyst".format(baseline.GetName()))
+    asymmetricUncGraph = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, xArrayErr, yArrayErrLow, yArrayErrUp)
+    asymmetricUncGraph.SetName("{0}_CentralAsymmSyst".format(baseline.GetName()))
+    result[symmetricUncGraph.GetName()] = symmetricUncGraph
+    result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
     return result
 
 def CompareVariations(variations, results):
@@ -164,7 +177,7 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
     dpt = OrderedDict()
     result["DPtSpectrum"] = dpt
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
 
     responseList = OrderedDict()
     dpt["DetectorResponse"] = responseList
@@ -205,8 +218,8 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
     jetptdpt = OrderedDict()
     result["JetPtDPtSpectrum"] = jetptdpt
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
-    jetptbins = [5, 6, 8, 10, 14, 20, 30]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
+    jetptbins = [5, 6, 8, 10, 14, 20, 32]
 
     responseList = OrderedDict()
     jetptdpt["DetectorResponse"] = responseList
