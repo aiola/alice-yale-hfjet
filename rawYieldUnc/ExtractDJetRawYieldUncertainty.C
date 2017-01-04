@@ -7,7 +7,7 @@
 //  ExtractDJetRawYieldUncertainty(...) //to build the uncertainty for the various bins of the jet pT spectrum
 // 
 
-void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface);
+void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl);
 void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface);
 
 void EvaluateBinPerBinUncertainty(
@@ -30,7 +30,7 @@ void EvaluateBinPerBinUncertainty(
   interface->SetFitReflections(refl);
 
   if (specie==0) {
-    SetInputParametersDzero(interface);  // check the names and the values in the method!!
+    SetInputParametersDzero(interface,refl);  // check the names and the values in the method!!
   }
   else if(specie==1) {
     SetInputParametersDstar(interface);  // check the names and the values in the method!!
@@ -64,7 +64,8 @@ void ExtractDJetRawYieldUncertainty(
    Int_t specie=AliDJetRawYieldUncertainty::kD0toKpi,  //D-meson decay channel
    Int_t method=AliDJetRawYieldUncertainty::kEffScale,  //yield extraction method
    Int_t nTrials=10,  	     //only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
-   Bool_t allowRepet=kFALSE  //only for SB method: allow repetitions in the extraction of trials in a give pT(D) bin
+   Bool_t allowRepet=kFALSE,  //only for SB method: allow repetitions in the extraction of trials in a give pT(D) bin
+   Bool_t refl=kFALSE  //add reflection template to fit
    )
 {
 
@@ -75,7 +76,7 @@ void ExtractDJetRawYieldUncertainty(
   interface->SetMaxNTrialsForSidebandMethod(nTrials); //only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
   interface->SetAllowRepetitionOfTrialExtraction(allowRepet);
   
-  if(specie==0) SetInputParametersDzero(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+  if(specie==0) SetInputParametersDzero(interface,refl);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
   else if(specie==1) SetInputParametersDstar(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
   else {printf("Error in setting the D-meson specie! Exiting...\n"); return;}
 
@@ -95,7 +96,8 @@ void ExtractDJetRawYieldUncertainty(
 //________________________________________
 void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
    Int_t specie=AliDJetRawYieldUncertainty::kD0toKpi,  //D-meson decay channel
-   Int_t nTrials=10
+   Int_t nTrials=10,
+   Bool_t refl=kFALSE  //add reflection template to fit
    ) //number of variations is fixed (all the variations in the pT(D) bins, which should match among the various pT(D) bins!)
 {
 
@@ -105,7 +107,7 @@ void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
   interface->SetYieldMethod(AliDJetRawYieldUncertainty::kSideband);
   interface->SetMaxNTrialsForSidebandMethod(nTrials); 
   
-  if(specie==0) SetInputParametersDzero(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+  if(specie==0) SetInputParametersDzero(interface,refl);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
   else if(specie==1) SetInputParametersDstar(interface);  // here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
   else {printf("Error in setting the D-meson specie! Exiting...\n"); return;}
 
