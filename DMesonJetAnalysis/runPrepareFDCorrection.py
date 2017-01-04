@@ -129,7 +129,7 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
     print("Preparing D pt FD histograms")
     result = OrderedDict()
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
 
     responseList = OrderedDict()
     result["DetectorResponse"] = responseList
@@ -167,7 +167,7 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
     print("Preparing jet pt FD histograms")
     result = OrderedDict()
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
     jetptbins = [5, 6, 8, 10, 14, 20, 30]
 
     responseList = OrderedDict()
