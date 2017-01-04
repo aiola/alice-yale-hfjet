@@ -121,7 +121,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
     cuts:
     -
       object: jet
@@ -276,7 +276,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 16, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 30]
     cuts:
     -
       object: d
