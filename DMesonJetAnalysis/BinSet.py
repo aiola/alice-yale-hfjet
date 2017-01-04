@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python base classes and utilities for D Meson jet analysis
+# python base classes and utilities for D Meson jet analysis
 
 import array
 import copy
@@ -24,7 +24,7 @@ class BinMultiSet:
 
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fBinSetName] = binSet
-        
+
     def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
         self.fDMeson = dmeson
         self.fJetType = jtype
@@ -112,9 +112,9 @@ class BinSet:
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
             if "FD" in s and s["FD"]:
-                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(s["FD"], inputPath, dmeson, jtype, jradius)
+                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(s["FD"], s["name"], inputPath, dmeson, jtype, jradius)
             else:
-                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(None)
+                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(None, None)
             spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight, FD)
             self.fSpectra[spectrum.fName] = spectrum
         if "MCTruth" in dmeson and not isinstance(self.fWeightEfficiency , DMesonJetProjectors.SimpleWeight):
@@ -134,8 +134,8 @@ class BinSet:
     def AddBinsRecursive(self, limitSetList, limits):
         if len(limitSetList) > 0:
             (limitSetName, limitSet) = limitSetList[0]
-            for min,max in zip(limitSet[:-1], limitSet[1:]):
-                limits[limitSetName] = min,max
+            for min, max in zip(limitSet[:-1], limitSet[1:]):
+                limits[limitSetName] = min, max
                 self.AddBinsRecursive(limitSetList[1:], limits)
         else:
             bin = BinLimits(limits)
@@ -163,7 +163,7 @@ class BinLimits:
 
     def FillInvariantMass(self, dmeson, jet, w):
         self.fCounts += w
-        self.fSumw2 += w*w
+        self.fSumw2 += w * w
         if self.fInvMassHisto:
             self.fInvMassHisto.Fill(dmeson.fInvMass, w)
         if self.fBinCountAnalysisHisto:
@@ -172,21 +172,21 @@ class BinLimits:
             else:
                 obsVal = 0
             self.fBinCountAnalysisHisto.Fill(dmeson.fInvMass, obsVal, w)
-        
+
     def AddFromAxis(self, axis, binIndex):
         if binIndex == 0:
             min = axis.fBins[0]
             max = axis.fBins[-1]
         else:
-            min = axis.fBins[binIndex-1]
-            max = axis.fBins[binIndex]                
+            min = axis.fBins[binIndex - 1]
+            max = axis.fBins[binIndex]
         self.fLimits[axis.fName] = min, max
-      
+
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
-    
+
     def IsSameOf(self, bin):
-        for name,(min, max) in self.fLimits.iteritems():
+        for name, (min, max) in self.fLimits.iteritems():
             if bin.fLimits.has_key(name):
                 if not bin.fLimits[name] == (min, max):
                     return False
@@ -196,21 +196,21 @@ class BinLimits:
 
     def SetJetPtLimits(self, min, max):
         self.fLimits["jet_pt"] = min, max
-        
+
     def SetDPtLimits(self, min, max):
         self.fLimits["d_pt"] = min, max
-        
+
     def SetDZLimits(self, min, max):
         self.fLimits["d_z"] = min, max
-        
+
     def SetJetEtaLimits(self, min, max):
         self.fLimits["jet_eta"] = min, max
-        
+
     def SetDEtaLimits(self, min, max):
         self.fLimits["d_eta"] = min, max
-        
+
     def IsInBinLimits(self, dmeson, jet):
-        for name,(min,max) in self.fLimits.iteritems():
+        for name, (min, max) in self.fLimits.iteritems():
             if not min < max:
                 continue
             if name == "d_pt" and (dmeson.fPt < min or dmeson.fPt >= max):
@@ -225,7 +225,7 @@ class BinLimits:
                 return False
 
         return True
-    
+
     def GetBinCenter(self, axis):
         if axis in self.fLimits:
             (min, max) = self.fLimits[axis]
@@ -235,27 +235,27 @@ class BinLimits:
 
     def GetName(self):
         name = ""
-        for varName,(min,max) in self.fLimits.iteritems():
+        for varName, (min, max) in self.fLimits.iteritems():
             if varName == "d_pt":
-                name += "DPt_{0}_{1}_".format(int(min*100), int(max*100))
+                name += "DPt_{0}_{1}_".format(int(min * 100), int(max * 100))
             elif varName == "jet_pt":
-                name += "JetPt_{0}_{1}_".format(int(min*100), int(max*100))
+                name += "JetPt_{0}_{1}_".format(int(min * 100), int(max * 100))
             elif varName == "d_eta":
-                name += "DEta_{0}_{1}_".format(int(min*10), int(max*10))
+                name += "DEta_{0}_{1}_".format(int(min * 10), int(max * 10))
             elif varName == "jet_eta":
-                name += "JetEta_{0}_{1}_".format(int(min*10), int(max*10))
+                name += "JetEta_{0}_{1}_".format(int(min * 10), int(max * 10))
             elif varName == "d_z":
-                name += "DZ_{0}_{1}_".format(int(min*100), int(max*100))
-        
-        #remove last "_"
+                name += "DZ_{0}_{1}_".format(int(min * 100), int(max * 100))
+
+        # remove last "_"
         if name:
             name = name[:-1]
         return name
-        
+
     def GetTitle(self):
         title = ""
-        
-        for varName,(min,max) in self.fLimits.iteritems():
+
+        for varName, (min, max) in self.fLimits.iteritems():
             if varName == "d_pt":
                 title += "{0:.1f} < #it{{p}}_{{T,D}} < {1:.1f} GeV/#it{{c}}, ".format(min, max)
             elif varName == "jet_pt":
@@ -267,14 +267,14 @@ class BinLimits:
             elif varName == "d_z":
                 title += "{0:.1f} < #it{{z}}_{{||, D}} < {1:.1f}, ".format(min, max)
 
-        #remove last ", "
+        # remove last ", "
         if title:
             title = title[:-2]
         return title
-    
+
     def Print(self):
         print(self.GetTitle())
-    
+
     def CreateInvMassHisto(self, trigger, DMesonDef, xAxis, yAxis, nMassBins, minMass, maxMass):
         if trigger:
             hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
@@ -288,15 +288,15 @@ class BinLimits:
             if self.fBinCountAnalysisAxis:
                 hnameSB = "InvMassBinCounting_{0}_{1}".format(DMesonDef, self.GetName())
                 htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
-        
+
         if not "MCTruth" in DMesonDef:
             self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
             self.fInvMassHisto.Sumw2()
             self.fInvMassHisto.SetMarkerSize(0.9)
             self.fInvMassHisto.SetMarkerStyle(ROOT.kFullCircle)
-            self.fInvMassHisto.SetMarkerColor(ROOT.kBlue+2)
-            self.fInvMassHisto.SetLineColor(ROOT.kBlue+2)
-        
+            self.fInvMassHisto.SetMarkerColor(ROOT.kBlue + 2)
+            self.fInvMassHisto.SetLineColor(ROOT.kBlue + 2)
+
         if self.fBinCountAnalysisAxis:
-            self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins)-1, array.array('d', self.fBinCountAnalysisAxis.fBins))
+            self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins))
             self.fBinCountAnalysisHisto.Sumw2()

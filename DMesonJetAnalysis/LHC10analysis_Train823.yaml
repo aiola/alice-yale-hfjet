@@ -44,12 +44,9 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_20_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
@@ -76,12 +73,9 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_30_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
   -
     name: JetPtBins_DPt_40
     title: "#it{p}_{T,D} > 4 GeV/#it{c}"
@@ -108,12 +102,9 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_40_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
   -
     name: DPtBins_JetPt_5_30
     title: ""
@@ -149,12 +140,9 @@ analysis:
       type: side_band
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_20_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -168,12 +156,9 @@ analysis:
       type: side_band
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_30_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       side_band:
         skip_bins: [0]
         min_sigmas: 4
@@ -188,12 +173,9 @@ analysis:
       type: side_band
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_40_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       side_band:
         skip_bins: [0,1]
         min_sigmas: 4
@@ -208,12 +190,9 @@ analysis:
       type: like_sign
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_20_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       like_sign:
         mode: bin_count
         name: 2ProngLikeSign
@@ -230,12 +209,9 @@ analysis:
       type: like_sign
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_30_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       like_sign:
         skip_bins: [0]
         mode: bin_count
@@ -253,12 +229,9 @@ analysis:
       type: like_sign
       active_mesons: [] #[D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: JetPtDPtSpectrum_bEff_jetpt_DPt_40_detector
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       like_sign:
         skip_bins: [0,1]
         mode: bin_count
@@ -291,9 +264,6 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        train: FastSim
-        gen: powheg
-        proc: beauty
-        ts: 1478869008
-        subdir: stage_1/output
-        spectrum: DPtSpectrum_bEff
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: GeneratorLevel_DPtSpectrum_bEfficiencyMultiply
