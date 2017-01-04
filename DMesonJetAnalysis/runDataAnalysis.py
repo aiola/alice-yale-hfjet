@@ -6,7 +6,6 @@ import yaml
 import IPython
 import DMesonJetAnalysis
 import DMesonJetProjectors
-import DMesonJetFDCorrection
 import subprocess
 import ROOT
 

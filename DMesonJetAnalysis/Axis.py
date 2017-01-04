@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python base classes and utilities for D Meson jet analysis
+# python base classes and utilities for D Meson jet analysis
 
 import ROOT
 import array
@@ -12,31 +12,30 @@ import numpy
 from enum import Enum
 import collections
 import sys
-import DMesonJetFDCorrection
 
 class Axis:
-    def __init__(self, name, bins, label = "", charged_jet = True):
+    def __init__(self, name, bins, label="", charged_jet=True):
         self.fName = name
         self.fBins = bins
         self.fLabel = label
         self.fChargedJet = charged_jet
 
     @classmethod
-    def fromLimits(cls, name, start, stop, step, label = "", charged_jet = True):
+    def fromLimits(cls, name, start, stop, step, label="", charged_jet=True):
         bins = []
-        bins.extend(numpy.linspace(start, stop, (stop-start)/step+1, True))
+        bins.extend(numpy.linspace(start, stop, (stop - start) / step + 1, True))
         return cls(name, bins, label, charged_jet)
 
     def FindBin(self, x):
-        for i,(min,max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
+        for i, (min, max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
             if x >= min and x < max:
                 return i
         return -1
 
     def GetNbins(self):
-        return len(self.fBins)-1
+        return len(self.fBins) - 1
 
-    def GetTitle(self, label = ""):
+    def GetTitle(self, label=""):
         varName = self.GetVariableName(label)
         units = self.GetVariableUnits()
 
@@ -46,14 +45,14 @@ class Axis:
             title = varName
 
         return title
-        
+
     def GetVariableUnits(self):
         if "pt" in self.fName:
             return "GeV/#it{c}"
         else:
             return ""
 
-    def GetVariableName(self, label = ""):
+    def GetVariableName(self, label=""):
         if not label:
             label = self.fLabel
 
