@@ -971,9 +971,14 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
       hjetpt->SetLineColor(kGreen + 3);
 
       // correct for D* efficiency
-      hjetpt->Scale(1. / fDEffValues[iDbin]); // D efficiency
+      hjetpt->Scale(1./fDEffValues[iDbin]); // D efficiency
       hjetpt->SetMarkerColor(kBlue + 3);
       hjetpt->SetLineColor(kBlue + 3);
+
+	  //Normalize to full range the signal range (from fnSigmaSignReg range)
+	  TF1 *gaus = new TF1("gaus","TMath::Gaus(x,0,1)",-10,10);
+	  Double normNsigma = gaus->Integral(-10,10)/gaus->Integral(-fnSigmaSignReg,fnSigmaSignReg);
+      hjetpt->Scale(normNsigma);
 
       // for every trial of every pT(D) bin, save the value of the yield, after eff scaling, in each pT(jet) bin (to study pT(D)->pT(jet) yield correlations)
       for (int l = 0; l<hjetpt->GetNbinsX(); l++) arrYldBinPerBin[iDbin][l][iTrial] = hjetpt->GetBinContent(l + 1);
@@ -1213,6 +1218,11 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband_CoherentTria
       hjetpt->Scale(1./fDEffValues[iDbin]); // D efficiency
       hjetpt->SetMarkerColor(kBlue+3);
       hjetpt->SetLineColor(kBlue+3);
+
+	  //Normalize to full range the signal range (from fnSigmaSignReg range)
+	  TF1 *gaus = new TF1("gaus","TMath::Gaus(x,0,1)",-10,10);
+	  Double normNsigma = gaus->Integral(-10,10)/gaus->Integral(-fnSigmaSignReg,fnSigmaSignReg);
+      hjetpt->Scale(normNsigma);
 
       // for every trial of every pT(D) bin, save the value of the yield, after eff scaling, in each pT(jet) bin (to study pT(D)->pT(jet) yield correlations)
       for (int l = 0; l<hjetpt->GetNbinsX(); l++) arrYldBinPerBin[iDbin][l][iTrial] = hjetpt->GetBinContent(l + 1);
@@ -1599,6 +1609,11 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband() {
       hjetpt->SetMarkerColor(kBlue+3);
       hjetpt->SetLineColor(kBlue+3);
 
+	  //Normalize to full range the signal range (from fnSigmaSignReg range)
+	  TF1 *gaus = new TF1("gaus","TMath::Gaus(x,0,1)",-10,10);
+	  Double normNsigma = gaus->Integral(-10,10)/gaus->Integral(-fnSigmaSignReg,fnSigmaSignReg);
+      hjetpt->Scale(normNsigma);
+
       // for every trial of every pT(D) bin, save the value of the yield, after eff scaling, in each pT(jet) bin (to study pT(D)->pT(jet) yield correlations)
       for(int l=0;l<hjetpt->GetNbinsX();l++) arrYldBinPerBin[iDbin][l][iTrial] = hjetpt->GetBinContent(l+1);
 
@@ -1897,6 +1912,11 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband_CoherentTria
       hjetpt->Scale(1./fDEffValues[iDbin]); // D efficiency
       hjetpt->SetMarkerColor(kBlue+3);
       hjetpt->SetLineColor(kBlue+3);
+
+	  //Normalize to full range the signal range (from fnSigmaSignReg range)
+	  TF1 *gaus = new TF1("gaus","TMath::Gaus(x,0,1)",-10,10);
+	  Double normNsigma = gaus->Integral(-10,10)/gaus->Integral(-fnSigmaSignReg,fnSigmaSignReg);
+      hjetpt->Scale(normNsigma);
 
       // for every trial of every pT(D) bin, save the value of the yield, after eff scaling, in each pT(jet) bin (to study pT(D)->pT(jet) yield correlations)
       for(int l=0;l<hjetpt->GetNbinsX();l++) arrYldBinPerBin[iDbin][l][iTrial] = hjetpt->GetBinContent(l+1);
