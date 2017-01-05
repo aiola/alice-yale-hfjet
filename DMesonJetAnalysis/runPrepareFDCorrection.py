@@ -230,12 +230,12 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
     jetptdpt[FDhistogram_orig.GetName()] = FDhistogram_orig
 
     print("Loading the response matrix b->D0")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3200", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     bEfficiency_dpt.SetName("EfficiencyVsDPt_b")
     responseList[bEfficiency_dpt.GetName()] = bEfficiency_dpt
 
     print("Loading the response matrix c->D0")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3200", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     cEfficiency_dpt.SetName("EfficiencyVsDPt_c")
     responseList[cEfficiency_dpt.GetName()] = cEfficiency_dpt
 
