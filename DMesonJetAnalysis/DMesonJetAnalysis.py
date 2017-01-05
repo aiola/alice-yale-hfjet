@@ -800,6 +800,10 @@ class DMesonJetAnalysisEngine:
         if s.fBackground:
             s.fBackground.Add(s.fSideBandWindowTotalHistogram)
 
+        scaleGaussianLimit = 1.0 - math.erfc(s.fBinCountSignalSigmas / math.sqrt(2.0))
+        print("Scaling for the Gaussian limit ({0} sigmas): {1}".format(s.fBinCountSignalSigmas, scaleGaussianLimit))
+        s.fHistogram.Scale(1.0 / scaleGaussianLimit)
+
         for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
             if s.fHistogram.GetBinContent(xbin) > 0:
                 s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
