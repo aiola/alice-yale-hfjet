@@ -48,6 +48,7 @@ def main(config, unfolding_debug):
 
     results["SystematicUncertainty"] = CompareVariations(config["variations"], results)
     robjects.append(GenerateRootList(results["SystematicUncertainty"], "SystematicUncertainty"))
+    PlotFSspectraAndSyst(results)
 
     output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
     outputFile = ROOT.TFile(output_file_name, "recreate")
@@ -62,6 +63,46 @@ def main(config, unfolding_debug):
 
     print("Done: {0}.".format(output_file_name))
 
+def PlotFSspectraAndSyst(results):
+    spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
+                     "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
+                     "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
+                     "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
+                     ]
+
+    for name in spectrumNames:
+        stat = GetSpectrum(results["default"], name)
+        hname = name[name.rfind("/") + 1:]
+        syst = results["SystematicUncertainty"][name]["{0}_CentralAsymmSyst".format(hname)]
+        canvas = ROOT.TCanvas("{0}_canvas".format(name), "{0}_canvas".format(name))
+        canvas.SetLogy()
+        canvas.SetLeftMargin(0.13)
+        canvas.cd()
+        syst_copy = syst.Clone()
+        syst_copy.SetFillColor(ROOT.kCyan + 1)
+        syst_copy.SetMarkerColor(ROOT.kCyan + 1)
+        syst_copy.GetYaxis().SetTitleOffset(1.5)
+        syst_copy.Draw("a e2")
+        stat_copy = stat.DrawCopy("same p e0 x0")
+        stat_copy.Scale(1., "width")
+        stat_copy.SetMarkerColor(ROOT.kBlue + 1)
+        stat_copy.SetMarkerStyle(ROOT.kFullCircle)
+        stat_copy.SetMarkerSize(0.6)
+        stat_copy.SetLineColor(ROOT.kBlue + 1)
+        leg = ROOT.TLegend(0.35, 0.71, 0.89, 0.89, "NB")
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(43)
+        leg.SetTextSize(20)
+        leg.AddEntry(stat_copy, "Central values with stat. unc.", "pe")
+        leg.AddEntry(syst_copy, "Systematic uncertainty", "f")
+        leg.Draw()
+        globalList.append(syst_copy)
+        globalList.append(syst_copy.GetHistogram())
+        globalList.append(stat_copy)
+        globalList.append(leg)
+        globalList.append(canvas)
+
 def GetSpectrum(results, name):
     subdirs = name.split("/")
     if len(subdirs) < 1:
@@ -71,20 +112,22 @@ def GetSpectrum(results, name):
         if not (isinstance(results, dict) or isinstance(results, OrderedDict)):
             print("ERROR: {0} is not a dictionary!".format(results))
             exit(1)
+        if not subdir in results:
+            print("Could not find key '{0}' in dictionary '{1}'".format(subdir, results))
         results = results[subdir]
     return results
 
-def CompareVariationsForSpectrum(comp_template, variations, results, name, spectrum):
+def CompareVariationsForSpectrum(comp_template, variations, results, name):
     comp = copy.deepcopy(comp_template)
     comp.fName = name
-    h = GetSpectrum(results["default"], spectrum)
+    h = GetSpectrum(results["default"], name)
     baseline = h.Clone("{0}_copy".format(h.GetName()))
     baseline.SetTitle(variations[0]["title"])
     spectra = []
     for v in variations:
-        name = v["name"]
-        if not v["active"] or name == "default": continue
-        h = GetSpectrum(results[name], spectrum)
+        vname = v["name"]
+        if not v["active"] or vname == "default": continue
+        h = GetSpectrum(results[vname], name)
         h_copy = h.Clone("{0}_copy".format(h.GetName()))
         h_copy.SetTitle(v["title"])
         spectra.append(h_copy)
@@ -95,9 +138,10 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name, spect
     return GenerateSystematicUncertainty(baseline, spectra)
 
 def GenerateSystematicUncertainty(baseline, spectra):
-    upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(baseline.GetName()), "{0}_UpperSyst".format(baseline.GetName()), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
-    lowerLimitsHist = ROOT.TH1D("{0}_LowerSyst".format(baseline.GetName()), "{0}_LowerSyst".format(baseline.GetName()), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
-    symmetricLimitsHist = ROOT.TH1D("{0}_SymmSyst".format(baseline.GetName()), "{0}_SymmSyst".format(baseline.GetName()), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    hname = baseline.GetName().replace("_copy", "")
+    upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(hname), "{0}_UpperSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    lowerLimitsHist = ROOT.TH1D("{0}_LowerSyst".format(hname), "{0}_LowerSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    symmetricLimitsHist = ROOT.TH1D("{0}_SymmSyst".format(hname), "{0}_SymmSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     result = OrderedDict()
     result[upperLimitsHist.GetName()] = upperLimitsHist
     result[lowerLimitsHist.GetName()] = lowerLimitsHist
@@ -120,9 +164,13 @@ def GenerateSystematicUncertainty(baseline, spectra):
     yArrayErrLow = numpy.array([lowerLimitsHist.GetBinContent(ibin) / lowerLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, lowerLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
     yArrayErrSym = numpy.array([symmetricLimitsHist.GetBinContent(ibin) / symmetricLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, symmetricLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
     symmetricUncGraph = ROOT.TGraphErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, yArrayErrSym)
-    symmetricUncGraph.SetName("{0}_CentralSymmSyst".format(baseline.GetName()))
+    symmetricUncGraph.SetName("{0}_CentralSymmSyst".format(hname))
+    symmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
+    symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
     asymmetricUncGraph = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, xArrayErr, yArrayErrLow, yArrayErrUp)
-    asymmetricUncGraph.SetName("{0}_CentralAsymmSyst".format(baseline.GetName()))
+    asymmetricUncGraph.SetName("{0}_CentralAsymmSyst".format(hname))
+    asymmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
+    asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
     result[symmetricUncGraph.GetName()] = symmetricUncGraph
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
     return result
@@ -134,27 +182,22 @@ def CompareVariations(variations, results):
 
     result = OrderedDict()
 
-    name = "GeneratorLevel_DPtSpectrum"
-    result[name] = CompareVariationsForSpectrum(comp_template, variations, results, name,
-                                                "DPtSpectrum/GeneratorLevel_DPtSpectrum")
+    spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
+                     "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
+                     "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
+                     "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
+                     ]
 
-    name = "GeneratorLevel_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide"
-    result[name] = CompareVariationsForSpectrum(comp_template, variations, results, name,
-                                                "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
+    for name in spectrumNames:
+        result[name] = CompareVariationsForSpectrum(comp_template, variations, results, name)
 
-    name = "DetectorLevel_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide"
-    result[name] = CompareVariationsForSpectrum(comp_template, variations, results, name,
-                                                "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
-
-    name = "Unfolded_c_JetPtSpectrum_DPt_30_bEfficiencyMultiply_cEfficiencyDivide"
-    result[name] = CompareVariationsForSpectrum(comp_template, variations, results, name,
-                                                "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide")
     return result
 
 def SaveCanvases(input_path):
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
-            obj.SaveAs("{0}/BFeedDown_{1}.pdf".format(input_path, obj.GetName()))
+            oname = obj.GetName().replace("/", "_")
+            obj.SaveAs("{0}/BFeedDown_{1}.pdf".format(input_path, oname))
 
 def GenerateRootList(pdict, name):
     rlist = ROOT.TList()
