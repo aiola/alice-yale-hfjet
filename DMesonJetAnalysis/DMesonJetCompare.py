@@ -35,7 +35,7 @@ class DMesonJetCompare:
         self.fResults = None
         self.fX1Legend = 0.55
         self.fY1Legend = 0.87
-        self.fLogUpperSpace = 50  # this factor will be used to adjust the y axis in log scale
+        self.fLogUpperSpace = 10  # this factor will be used to adjust the y axis in log scale
         self.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
         self.fLinUpperSpace = 0.9  # this factor will be used to adjust the y axis in linear scale
         self.fLinLowerSpace = 0.2  # this factor will be used to adjust the y axis in linear scale
