@@ -28,7 +28,6 @@ MassFitter::MassFitter() :
   fMaxMass(0.),
   fMinFitRange(0.),
   fMaxFitRange(0.),
-  fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
   fHistogram(0),
@@ -62,7 +61,6 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fMaxMass(maxMass),
   fMinFitRange(minMass),
   fMaxFitRange(maxMass),
-  fScaleFactor(1.),
   fFunction(0),
   fFunctionBkg(0),
   fHistogram(0),
@@ -174,8 +172,6 @@ void MassFitter::SetHistogram(TH1* histo)
   if (!histo) return;
 
   fHistogram = histo;
-
-  fScaleFactor = (histo->GetXaxis()->GetXmax() - histo->GetXaxis()->GetXmin()) / histo->GetXaxis()->GetNbins();
 }
 
 //____________________________________________________________________________________
@@ -214,8 +210,11 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     fMeanError = fFunction->GetParError(fNParBkg+1);
     fWidth = fFunction->GetParameter(fNParBkg+2);
     fWidthError = fFunction->GetParError(fNParBkg+2);
-    fSignal = fFunction->GetParameter(fNParBkg);
-    fSignalError = fFunction->GetParError(fNParBkg);
+    fSignal = fFunction->GetParameter(fNParBkg) * (TMath::Sqrt(TMath::TwoPi()) * fFunction->GetParameter(fNParBkg+2)) / fHistogram->GetXaxis()->GetBinWidth(0);
+    fSignalError = TMath::Sqrt(fFunction->GetParError(fNParBkg)*fFunction->GetParError(fNParBkg)/
+        fFunction->GetParameter(fNParBkg)/fFunction->GetParameter(fNParBkg) +
+        fFunction->GetParError(fNParBkg+2)*fFunction->GetParError(fNParBkg+2)/
+        fFunction->GetParameter(fNParBkg+2)/fFunction->GetParameter(fNParBkg+2)) * fSignal;
 
     for (Int_t i = 1; i < fNParBkg; i++) {
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -559,7 +558,6 @@ double MassFitter::FunctionSig(double *x, double *p)
       // Gaus = [0] * exp(-1/2*((x-[1])^2/[2]^2))  -> integral is sqrt(2pi)*[2]
       if (p[2] != 0.) {
         r = p[0] * TMath::Exp(-0.5 * (x[0] - p[1])*(x[0] - p[1]) / (p[2]*p[2]));
-        r *= 1. / (TMath::Sqrt(TMath::TwoPi()) * p[2]); // p[0] is now the integral between -inf and +inf
       }
       break;
     }
@@ -572,7 +570,6 @@ double MassFitter::FunctionSig(double *x, double *p)
     }
   }
 
-  r *= fScaleFactor;
   return r;
 }
 
@@ -586,7 +583,6 @@ double MassFitter::FunctionBkg(double *x, double *p)
     {
       // Expo = a * exp(bx) -> integral = a/b*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
       r = p[0] * TMath::Exp(p[1]*x[0]);
-      r *= p[1] / (TMath::Exp(p[1]*fMaxMass) - TMath::Exp(p[1]*fMinMass)); // p[0] is now the integral between fMinMass and fMaxMass
       break;
     }
   case kExpoPower:
@@ -597,7 +593,6 @@ double MassFitter::FunctionBkg(double *x, double *p)
         break;
       }
       r = p[0] * TMath::Sqrt(x[0] - fPionMass) * TMath::Exp(-p[1] * (x[0] - fPionMass));
-      r *= TMath::Sqrt(p[1]*p[1]*p[1]) / (TMath::Gamma(1.5) * (TMath::Gamma(1.5, p[1]*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, p[1]*(fMinMass-fPionMass)))); // p[0] is now the integral between fMinMass and fMaxMass
       break;
     }
   default:
@@ -609,7 +604,6 @@ double MassFitter::FunctionBkg(double *x, double *p)
     }
   }
 
-  r *= fScaleFactor;
   return r;
 }
 
@@ -682,19 +676,6 @@ void MassFitter::SetFitRange(Double_t min, Double_t max)
   else {
     Printf("Error: min mass %.3f must be smaller then mass max %.3f!", min, max);
   }
-}
-
-//____________________________________________________________________________________
-void MassFitter::DivideByBinWidth()
-{
-  fScaleFactor = 1.; 
-}
-
-//____________________________________________________________________________________
-void MassFitter::NormalizeBackground()
-{
-  Double_t bkg = GetBackground();
-  if (bkg > fgkEpsilon) fScaleFactor = 1. / bkg;
 }
 
 //____________________________________________________________________________________

@@ -81,9 +81,6 @@ class MassFitter : public TNamed {
   TFitResultPtr GetFitStatus()                       const { return fFitResult    ; }
   Bool_t        FitSuccessfull()                     const { return fFitSuccessfull; }
 
-  void     DivideByBinWidth();
-  void     NormalizeBackground();
-
   void     Draw(Option_t* opt = "");
   
   double   FunctionSig(double *x, double *p);
@@ -109,7 +106,6 @@ class MassFitter : public TNamed {
   Double_t          fMaxMass           ;//  Maximum mass value
   Double_t          fMinFitRange       ;//  Minimum fit range
   Double_t          fMaxFitRange       ;//  Maximum fit range
-  Double_t          fScaleFactor       ;//  Scale factor
   TFitResultPtr     fFitResult         ;//  Fit result
   
   TF1*              fFunction          ;//  Fit function
