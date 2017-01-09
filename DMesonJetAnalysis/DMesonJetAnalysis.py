@@ -137,7 +137,10 @@ class DMesonJetAnalysisEngine:
             totIntegral = invMassHist.Integral(1, invMassHist.GetXaxis().GetNbins(), "width")
             integral3sigma = invMassHist.Integral(invMassHist.GetXaxis().FindBin(pdgMass - 3 * massWidth), invMassHist.GetXaxis().FindBin(pdgMass + 3 * massWidth), "width")
 
-            expoParBkg1 = math.log(invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) / invMassHist.GetBinContent(1)) / (maxMass - minMass)
+            if invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) > 0 and invMassHist.GetBinContent(1) > 0:
+                expoParBkg1 = math.log(invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) / invMassHist.GetBinContent(1)) / (maxMass - minMass)
+            else:
+                expoParBkg1 = -1
             expoParBkg0 = totIntegral / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
 
             sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
