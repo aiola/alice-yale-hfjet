@@ -25,7 +25,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 32]
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
     -
       object: jet
@@ -54,7 +54,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 32]
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
     -
       object: jet
@@ -83,7 +83,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 32]
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
     cuts:
     -
       object: jet
@@ -112,7 +112,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
     cuts:
     -
       object: jet
@@ -125,7 +125,7 @@ analysis:
       min: 5
       max: 30
     bin_count_analysis:
-      jet_pt: [5, 6, 8, 10, 14, 20, 32]
+      jet_pt: [5, 6, 8, 10, 14, 18, 24]
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
@@ -249,7 +249,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
     cuts:
     -
       object: d
