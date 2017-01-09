@@ -216,10 +216,9 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
         fFunction->GetParError(fNParBkg+2)*fFunction->GetParError(fNParBkg+2)/
         fFunction->GetParameter(fNParBkg+2)/fFunction->GetParameter(fNParBkg+2)) * fSignal;
 
-    for (Int_t i = 1; i < fNParBkg; i++) {
+    for (Int_t i = 0; i < fNParBkg; i++) {
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
     }
-    fFunctionBkg->SetParameter(0, fFunction->GetParameter(0) - fFunction->GetParameter(fNParBkg));
   }
 
   if (fFitSuccessfull) {
@@ -555,7 +554,7 @@ double MassFitter::FunctionSig(double *x, double *p)
   switch (fMassFitTypeSig) {
   case kGaus:
     {
-      // Gaus = [0] * exp(-1/2*((x-[1])^2/[2]^2))  -> integral is sqrt(2pi)*[2]
+      // Gaus = [0] * exp(-1/2*((x-[1])^2/[2]^2))  -> integral is sqrt(2pi)*[2]*[0]
       if (p[2] != 0.) {
         r = p[0] * TMath::Exp(-0.5 * (x[0] - p[1])*(x[0] - p[1]) / (p[2]*p[2]));
       }
@@ -612,17 +611,15 @@ double MassFitter::FunctionSigBkg(double *x, double *p)
 {
   Double_t r = 0;
 
-  // p[0] = Total integral
-  // p[1..fNParBkg-1] = Bkg pars
-  // p[fNParBkg] = Sig integral
-  // p[fNParBkg+1..fNParBkg+fNParSig] = Sig pars
+  // p[0..fNParBkg-1] = Bkg pars
+  // p[fNParBkg..fNParBkg+fNParSig] = Sig pars
   
   if (!fDisableBkg) {
     Double_t bkgPars[10] = {0.};
     for (Int_t i = 0; i < fNParBkg; i++) {
       bkgPars[i] = p[i];
     }
-    bkgPars[0] -= p[fNParBkg];
+    //bkgPars[0] -= p[fNParBkg];
     
     r += FunctionBkg(x, bkgPars);
   }
@@ -645,10 +642,9 @@ void MassFitter::Draw(Option_t* opt)
   TString optAndSame(opt);
   if (!optAndSame.Contains("same")) optAndSame += " same";
 
-  for (Int_t i = 1; i < fNParBkg; i++) {
+  for (Int_t i = 0; i < fNParBkg; i++) {
     fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
   }
-  fFunctionBkg->SetParameter(0, fFunction->GetParameter(0) - fFunction->GetParameter(fNParBkg));
   
   fFunctionBkg->Draw(opt);
   fFunction->Draw(optAndSame);

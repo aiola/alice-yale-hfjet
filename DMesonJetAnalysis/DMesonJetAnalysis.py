@@ -120,22 +120,43 @@ class DMesonJetAnalysisEngine:
         for c in self.fCanvases:
             c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
 
-    def CreateMassFitter(self, name):
+    def CreateMassFitter(self, name, invMassHist):
         if "D0" in self.fDMeson:
             minMass = self.fMinMass
             maxMass = self.fMaxMass
             minFitRange = self.fMinMass
             maxFitRange = self.fMaxMass
-            startingSigma = 0.01
-            startingSigmaBkg = -1
             DMesonType = ROOT.MassFitter.kDzeroKpi
+
+            # some defualt params
+            pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
+            massWidth = 0.012
+
+            minMass = invMassHist.GetXaxis().GetBinLowEdge(1)
+            maxMass = invMassHist.GetXaxis().GetBinUpEdge(invMassHist.GetXaxis().GetNbins())
+            totIntegral = invMassHist.Integral(1, invMassHist.GetXaxis().GetNbins(), "width")
+            integral3sigma = invMassHist.Integral(invMassHist.GetXaxis().FindBin(pdgMass - 3 * massWidth), invMassHist.GetXaxis().FindBin(pdgMass + 3 * massWidth), "width")
+
+            expoParBkg1 = math.log(invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) / invMassHist.GetBinContent(1)) / (maxMass - minMass)
+            expoParBkg0 = totIntegral / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
+
+            sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
+            GaussConst = sig / math.sqrt(2 * math.pi) / massWidth
+
+            fitter = ROOT.MassFitter("MyMassFitter", ROOT.MassFitter.kDzeroKpi, minMass, maxMass)
+            fitter.SetFitRange(minMass, maxMass)
+            fitter.SetHistogram(invMassHist)
+            fitter.GetFitFunction().SetParameter(0, expoParBkg0)
+            fitter.GetFitFunction().SetParameter(1, expoParBkg1)
+            fitter.GetFitFunction().SetParameter(2, GaussConst)
+            fitter.GetFitFunction().SetParameter(3, pdgMass)  # start fitting using PDG mass
+            fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.9, pdgMass * 1.1)  # limiting mass parameter +/- 10% of PDG value
+            fitter.GetFitFunction().SetParameter(4, massWidth)
+            fitter.GetFitFunction().SetParLimits(4, 0, 1)  # limiting width to being positive
+
         elif self.fDMeson == "DStar":
             print("Not implemented for DStar!")
 
-        fitter = ROOT.MassFitter(name, DMesonType, minMass, maxMass)
-        fitter.GetFitFunction().SetParameter(1, startingSigmaBkg)
-        fitter.GetFitFunction().SetParameter(4, startingSigma)
-        fitter.SetFitRange(minFitRange, maxFitRange)
         if "SignalOnly" in self.fDMeson:
             fitter.DisableBkg()
         elif "BackgroundOnly" in self.fDMeson:
@@ -696,7 +717,7 @@ class DMesonJetAnalysisEngine:
                 else:
                     s.fUncertainty.SetBinContent(xbin, 0)
         elif s.fAnalysisType == AnalysisType.LikeSignFit:
-            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions, 0.7)
+            self.FitInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins, s.fLikeSignSubtractedBinSet.fFitOptions)
             self.PlotInvMassPlotsBinSet(s.fLikeSignSubtractedBinSet.fName, s.fLikeSignSubtractedBinSet.fBins)
             self.GenerateSpectrum1DInvMassFit(s)
 
@@ -931,10 +952,8 @@ class DMesonJetAnalysisEngine:
             for binSet in binMultiSet.fBinSets.itervalues():
                 self.FitInvMassPlotsBinSet(binSet.fName, binSet.fBins, binSet.fFitOptions)
 
-    def FitInvMassPlotsBinSet(self, name, bins, fitOptions, initialSigOverBkg=0.1):
+    def FitInvMassPlotsBinSet(self, name, bins, fitOptions):
         print("Fitting {0}".format(name))
-        pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
-        massWidth = 0.015
 
         for i, bin in enumerate(bins):
             if not bin.fInvMassHisto:
@@ -944,25 +963,9 @@ class DMesonJetAnalysisEngine:
             else:
                 fitterName = "InvMass_{0}_{1}_fitter".format(self.fDMeson, bin.GetName())
 
-            fitter = self.CreateMassFitter(fitterName)
+            fitter = self.CreateMassFitter(fitterName, bin.fInvMassHisto)
             bin.SetMassFitter(fitter)
-            integral = bin.fInvMassHisto.Integral(1, bin.fInvMassHisto.GetXaxis().GetNbins())
-            if integral > 10:
-                fitter.GetFitFunction().SetParameter(0, integral)  # total integral
-                fitter.GetFitFunction().SetParLimits(0, integral - 3 * math.sqrt(integral), integral + 3 * math.sqrt(integral))  # total integral
-                if initialSigOverBkg <= 1 and initialSigOverBkg >= 0:
-                    fitter.GetFitFunction().SetParameter(2, integral * initialSigOverBkg)  # signal integral
-                    fitter.GetFitFunction().SetParLimits(2, 0, integral + 3 * math.sqrt(integral))  # signal integral has to be contained in the total integral
-                else:
-                    fitter.GetFitFunction().SetParameter(2, integral)  # signal integral
-                    fitter.GetFitFunction().SetParLimits(2, integral * (initialSigOverBkg - 1), integral + 3 * math.sqrt(integral))  # signal integral has to be contained in the total integral
-            else:
-                fitter.GetFitFunction().SetParameter(0, 10)  # total integral
-                fitter.GetFitFunction().SetParameter(2, 10)  # signal integral
 
-            fitter.GetFitFunction().SetParameter(3, pdgMass)  # start fitting using PDG mass
-            fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.9975, pdgMass * 1.0025)  # start fitting using PDG mass
-            fitter.GetFitFunction().SetParameter(4, massWidth)  # start fitting using mass peak width =
             print("Fitting bin {0}".format(bin.GetTitle()))
 
             fitter.Fit(bin.fInvMassHisto, fitOptions)
