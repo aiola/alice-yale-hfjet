@@ -4,54 +4,83 @@
 import ROOT
 import IPython
 import subprocess
+import math
 
 globalList = []
 
 def TestMassFitter():
-  ROOT.gRandom = ROOT.TRandom3(0)
+    ROOT.TH1.AddDirectory(False)
+    ROOT.gRandom = ROOT.TRandom3(0)
+    subprocess.call("make")
+    ROOT.gSystem.Load("MassFitter.so")
 
-  subprocess.call("make")
-  ROOT.gSystem.Load("MassFitter.so")
+    invMassHist = GetMassHistogram()
 
-  mpi = ROOT.TDatabasePDG.Instance().GetParticle(211).Mass()
+    # some defualt params
+    pdgMass = ROOT.TDatabasePDG.Instance().GetParticle(421).Mass()
+    massWidth = 0.012
 
-  fitter = ROOT.MassFitter("MyMassFitter", ROOT.MassFitter.kDzeroKpi, 1.7, 2)
+    minMass = invMassHist.GetXaxis().GetBinLowEdge(1)
+    maxMass = invMassHist.GetXaxis().GetBinUpEdge(invMassHist.GetXaxis().GetNbins())
+    totIntegral = invMassHist.Integral(1, invMassHist.GetXaxis().GetNbins(), "width")
+    integral3sigma = invMassHist.Integral(invMassHist.GetXaxis().FindBin(pdgMass - 3 * massWidth), invMassHist.GetXaxis().FindBin(pdgMass + 3 * massWidth), "width")
 
-  fitter.GetFitFunction().SetParameter(0, 800.00)
-  fitter.GetFitFunction().SetParameter(1, -2.00)
-  fitter.GetFitFunction().SetParameter(2, 60.00)
-  fitter.GetFitFunction().SetParameter(3, 1.87)
-  fitter.GetFitFunction().SetParameter(4, 0.01)
+    expoParBkg1 = math.log(invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) / invMassHist.GetBinContent(1)) / (maxMass - minMass)
+    expoParBkg0 = totIntegral / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
 
-  c = ROOT.TCanvas()
-  hist = ROOT.TH1F("hist", "hist", 100, 1.7, 2)
-  hist.FillRandom(fitter.GetFitFunction().GetName(), 500)
-  hist.Sumw2()
-  hist.Draw()
+    sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
+    GaussConst = sig / math.sqrt(2 * math.pi) / massWidth
 
-  fitter.GetFitFunction().SetParameter(0, 100)
-  fitter.GetFitFunction().SetParameter(1, -5)
+    fitter = ROOT.MassFitter("MyMassFitter", ROOT.MassFitter.kDzeroKpi, minMass, maxMass)
+    fitter.SetFitRange(minMass, maxMass)
+    fitter.SetHistogram(invMassHist)
+    fitter.GetFitFunction().SetParameter(0, expoParBkg0)
+    fitter.GetFitFunction().SetParameter(1, expoParBkg1)
+    fitter.GetFitFunction().SetParameter(2, GaussConst)
+    fitter.GetFitFunction().SetParameter(3, pdgMass)  # start fitting using PDG mass
+    fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.9, pdgMass * 1.1)  # limiting mass parameter +/- 10% of PDG value
+    fitter.GetFitFunction().SetParameter(4, massWidth)
+    fitter.GetFitFunction().SetParLimits(4, 0, 1)  # limiting width to being positive
 
-  fitter.Fit(hist, "0 E S")
+    c = ROOT.TCanvas()
+    invMassHist.Draw()
 
-  fitter.Draw("same")
+    print("Expo index before fit: {0:.3f}".format(expoParBkg1))
+    print("Gauss const before fit: {0:.3f}".format(GaussConst))
 
-  histInt = hist.Integral(hist.GetXaxis().FindBin(1.7), hist.GetXaxis().FindBin(2))
-  fitInt = fitter.GetFitFunction().Integral(1.7, 2) / 0.3 * 100;
+    fitInt = fitter.GetFitFunction().Integral(minMass, maxMass)
+    print("before fitting: sig = {0:.3f}, hist tot integral = {1:.3f}, fit integral = {2:.3f}".format(sig, totIntegral, fitInt))
 
-  print("hist integral = {0:.3f}, fit integral = {1:.3f}".format(histInt, fitInt))
+    fitter.Fit("0 L S V")
+    fitInt = fitter.GetFitFunction().Integral(minMass, maxMass)
+    print("after fitting: hist integral = {0:.3f}, fit integral = {1:.3f}".format(totIntegral, fitInt))
 
-  bkg = fitter.GetBackground()
-  sig = fitter.GetSignal()
+    fitter.Draw("same")
 
-  print("bkg = {0:.3f}, sig = {1:.3f}".format(bkg, sig))
+    bkg = fitter.GetBackground()
+    sig = fitter.GetSignal()
 
-  globalList.append(hist)
-  globalList.append(c)
-  globalList.append(fitter)
+    print("bkg = {0:.3f}, sig = {1:.3f}".format(bkg, sig))
+
+    globalList.append(invMassHist)
+    globalList.append(c)
+    globalList.append(fitter)
+
+def GetMassHistogram():
+    file = ROOT.TFile("MassFitterTest.root")
+    if not file or file.IsZombie():
+        print("Could not open file MassFitterTest.root")
+        exit(1)
+    h = file.Get("hMass")
+    if not h:
+        print("Could not find histogram hMass")
+        file.ls()
+        exit(1)
+    h_copy = h.Clone()
+    file.Close()
+    return h_copy
 
 if __name__ == '__main__':
-
     TestMassFitter()
 
     IPython.embed()
