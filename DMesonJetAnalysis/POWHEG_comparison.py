@@ -5,7 +5,7 @@ import argparse
 import yaml
 import IPython
 import ROOT
-import DMesonJetUtils
+import DMesonJetCompare
 
 globalList = []
 
@@ -126,16 +126,16 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
 
     if charm_ts:
         charmQuark = QuarkSetting("charm")
-        charmQuark.ts = charm_ts
+        (charmQuark.ts, charmQuark.stage) = get_ts_stage(charm_ts)
         quarks["charm"] = charmQuark
 
     if beauty_ts:
         beautyQuark = QuarkSetting("beauty")
-        beautyQuark.ts = beauty_ts
+        (beautyQuark.ts, beautyQuark.stage) = get_ts_stage(beauty_ts)
         quarks["beauty"] = beautyQuark
 
     for quark in quarks.itervalues():
-        quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_1/output".format(rootPath, gen, quark.name, quark.ts)
+        quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
         quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
         quark.file = ROOT.TFile(quark.filename)
         if not quark.file or quark.file.IsZombie():
@@ -176,6 +176,16 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
         if isinstance(obj, ROOT.TCanvas):
             obj.SaveAs("{0}/{1}.pdf".format(rootPath, obj.GetName()))
 
+
+def get_ts_stage(ts_stage):
+    b = ts_stage.split(":")
+    ts = b[0]
+    if len(b) > 1:
+        stage = b[1]
+    else:
+        stage = "0"
+    return ts, stage
+
 def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
     rootPath = "/Volumes/DATA/ALICE/JetResults"
     charmQuark = QuarkSetting("charm")
@@ -184,11 +194,11 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
     quarks["charm"] = charmQuark
     quarks["beauty"] = beautyQuark
 
-    charmQuark.ts = charm_ts
-    beautyQuark.ts = beauty_ts
+    (charmQuark.ts, charmQuark.stage) = get_ts_stage(charm_ts)
+    (beautyQuark.ts, beautyQuark.stage) = get_ts_stage(beauty_ts)
 
     for quark in quarks.itervalues():
-        quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_1/output".format(rootPath, gen, quark.name, quark.ts)
+        quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
         quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
         quark.file = ROOT.TFile(quark.filename)
         if not quark.file or quark.file.IsZombie():
@@ -219,14 +229,19 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
     ratioAxis = "({0} #rightarrow D^{{0}}) / ({1} #rightarrow D^{{0}})".format(quarks.values()[1].name[0], quarks.values()[0].name[0])
 
     for spectraSet in spectraSets:
-        cname = spectraSet.name
-        opt = ""
-        optRatio = ""
-        c = None
-        cRatio = None
-        leg = None
-        legRatio = None
+        comp = DMesonJetCompare.DMesonJetCompare(spectraSet.name)
+        comp.fOptSpectrum = ""
+        comp.fOptRatio = ""
+        comp.fYaxisRatio = ratioAxis
+        comp.fX1LegSpectrum = 0.10
+        comp.fX1LegRatio = 0.4
+        comp.fNColsLegSpectrum = 2
+        comp.fLogUpperSpace = 500
+        comp.fLegTextSize = 18
         for spectrumDef in spectraSet.spectra:
+            comp.fColors = spectrumDef.styles["colors"]
+            comp.fMarkers = spectrumDef.styles["markers"]
+            comp.fLines = spectrumDef.styles["lines"]
             histos = []
             for quark in quarks.itervalues():
                 h = GetSpectrum(quark.file, "D0_MCTruth", jet_type, jet_radius, spectrumDef.name)
@@ -235,9 +250,10 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
                 histos.append(h)
                 globalList.append(h)
                 quark.histos[spectrumDef] = h
-            r = DMesonJetUtils.CompareSpectra(histos[0], histos[1:], cname, opt, optRatio, ratioAxis, "logy", "lineary", c, cRatio, leg, legRatio, spectrumDef.styles)
-            opt = "same"
-            optRatio = "same"
+
+            r = comp.CompareSpectra(histos[0], histos[1:])
+            comp.fOptSpectrum = "same"
+            comp.fOptRatio = "same"
             for obj in r:
                 globalList.append(obj)
                 if isinstance(obj, ROOT.TLegend):
