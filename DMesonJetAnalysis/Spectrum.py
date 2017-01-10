@@ -20,7 +20,6 @@ class Spectrum:
         self.fBinSet = binSet
         self.fHistogram = None
         self.fNormHistogram = None
-        self.fNormFDCorrHistogram = None
         self.fUncertainty = None
         self.fMass = None
         self.fMassWidth = None
@@ -31,7 +30,12 @@ class Spectrum:
         self.fSkipBins = None
         self.fEfficiencyWeight = effWeight
         self.fFDCorrHistogram = None
+        self.fFDCorrSystHistogram = None
         self.fFDHistogram = None
+        self.fFDSystUncHistogram = None
+        self.fFDUnfoldedSystUncHistogram = None
+        self.fNormFDCorrHistogram = None
+        self.fNormFDCorrSystHistogram = None
 
         # S-B analysis
         self.fSideBandHistograms = None
@@ -108,10 +112,18 @@ class Spectrum:
             rlist.Add(self.fFDHistogram)
         if self.fFDCorrHistogram:
             rlist.Add(self.fFDCorrHistogram)
+        if self.fFDCorrSystHistogram:
+            rlist.Add(self.fFDCorrSystHistogram)
+        if self.fFDSystUncHistogram:
+            rlist.Add(self.fFDSystUncHistogram)
+        if self.fFDUnfoldedSystUncHistogram:
+            rlist.Add(self.fFDUnfoldedSystUncHistogram)
         if self.fNormHistogram:
             rlist.Add(self.fNormHistogram)
         if self.fNormFDCorrHistogram:
             rlist.Add(self.fNormFDCorrHistogram)
+        if self.fNormFDCorrSystHistogram:
+            rlist.Add(self.fNormFDCorrSystHistogram)
         if self.fUncertainty:
             rlist.Add(self.fUncertainty)
         if self.fMass:
@@ -148,20 +160,31 @@ class Spectrum:
 
     def GenerateFDCorrectedSpectrum(self, events, isWeighted):
         self.fFDCorrHistogram = self.fHistogram.Clone("{0}_FDCorr".format(self.fHistogram.GetName()))
-        if self.fFDCorrection.fFDHistogram:
-            crossSection = 62.3  # mb CINT1
-            branchingRatio = 0.0393  # D0->Kpi
-            fdhist = self.fFDCorrection.fFDHistogram
-            self.fFDHistogram = fdhist.Clone("{0}_FD".format(self.fHistogram.GetName()))
-            if not isWeighted:
-                self.fFDHistogram.Scale(events / crossSection * branchingRatio)
-            self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
+        if not self.fFDCorrection.fFDHistogram: return
+        self.fFDCorrSystHistogram = self.fHistogram.Clone("{0}_FDSystCorr".format(self.fHistogram.GetName()))
+
+        crossSection = 62.3  # mb CINT1
+        branchingRatio = 0.0393  # D0->Kpi
+        self.fFDHistogram = self.fFDCorrection.fFDHistogram.Clone("{0}_FD".format(self.fHistogram.GetName()))
+        self.fFDSystUncHistogram = self.fFDCorrection.fFDSystUncHistogram.Clone("{0}_FDSystUnc".format(self.fHistogram.GetName()))
+        if self.fFDCorrection.fFDUnfoldedSystUncHistogram: self.fFDUnfoldedSystUncHistogram = self.fFDCorrection.fFDUnfoldedSystUncHistogram.Clone("{0}_FDUnfoldedSystUnc".format(self.fHistogram.GetName()))
+
+        if not isWeighted:
+            self.fFDHistogram.Scale(events / crossSection * branchingRatio)
+            self.fFDSystUncHistogram.Scale(events / crossSection * branchingRatio)
+            if self.fFDUnfoldedSystUncHistogram: self.fFDUnfoldedSystUncHistogram.Scale(events / crossSection * branchingRatio)
+        self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
+        self.fFDCorrSystHistogram.Add(self.fFDHistogram, -1)
+        for ibin in range(0, self.fFDCorrSystHistogram.GetNbinsX() + 2):
+            self.fFDCorrSystHistogram.SetBinError(ibin, self.fFDSystUncHistogram.GetBinContent(ibin))
 
     def GenerateNormalizedSpectrum(self, events, weighted=False):
         if self.fHistogram:
             self.fNormHistogram = self.GenerateNormalizedSpectrumForHistogram(self.fHistogram, events, weighted)
         if self.fFDCorrHistogram:
             self.fNormFDCorrHistogram = self.GenerateNormalizedSpectrumForHistogram(self.fFDCorrHistogram, events, weighted)
+        if self.fFDCorrSystHistogram:
+            self.fNormFDCorrSystHistogram = self.GenerateNormalizedSpectrumForHistogram(self.fFDCorrSystHistogram, events, weighted)
 
     def GenerateNormalizedSpectrumForHistogram(self, hist, events, weighted):
         hname = "{0}_Normalized".format(hist.GetName())

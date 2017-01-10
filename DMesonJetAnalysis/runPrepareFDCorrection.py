@@ -65,8 +65,11 @@ def main(config, unfolding_debug):
 
 def PlotFSspectraAndSyst(results):
     spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
+                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply",
+                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply",
+                     "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
@@ -190,8 +193,11 @@ def CompareVariations(variations, results):
     result = OrderedDict()
 
     spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
+                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply",
+                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply",
+                     "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
@@ -229,7 +235,7 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
     dpt = OrderedDict()
     result["DPtSpectrum"] = dpt
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 
     responseList = OrderedDict()
     dpt["DetectorResponse"] = responseList
@@ -270,8 +276,8 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
     jetptdpt = OrderedDict()
     result["JetPtDPtSpectrum"] = jetptdpt
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
-    jetptbins = [5, 6, 8, 10, 14, 20, 32]
+    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    jetptbins = [5, 6, 8, 10, 14, 20, 30]
 
     responseList = OrderedDict()
     jetptdpt["DetectorResponse"] = responseList
