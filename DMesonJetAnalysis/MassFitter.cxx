@@ -274,7 +274,7 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
   }
 
   Double_t bkg = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean - fWidth*sigmas), fHistogram->GetXaxis()->FindBin(fMean + fWidth*sigmas), bkgErr);
-  bkg -= GetSignal();
+  bkg -= GetSignal() * (1.0 - TMath::Erfc(sigmas / TMath::Sqrt2()));
   bkgErr = TMath::Sqrt(bkgErr*bkgErr + GetSignalError()*GetSignalError());
   return bkg;
 }
