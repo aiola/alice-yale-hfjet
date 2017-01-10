@@ -50,4 +50,55 @@ class DMesonJetFDCorrection:
         else:
             print("Histogram {0} loaded".format(self.fFDSpectrumName))
         self.fFDHistogram = h.Clone("FD")
+
+        # Loading systematic uncertainty
+        systListName = "SystematicUncertainty"
+        systList = file.Get(systListName)
+        if not systList:
+            print("Could not find list {0}".format(systListName))
+            return
+        else:
+            print("List {0} loaded".format(systListName))
+
+        detLevListName = "{0}/{1}".format(self.fSpectrumName, self.fFDSpectrumName)
+        detLevList = systList.FindObject(detLevListName)
+        if not detLevList:
+            print("Could not find list {0}".format(detLevListName))
+            systList.ls()
+            return
+        else:
+            print("List {0} loaded".format(detLevListName))
+
+        detLevSystName = "{0}_SymmSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(detLevSystName)
+        if not h:
+            print("Could not find hist {0}".format(detLevSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(detLevSystName))
+        self.fFDSystUncHistogram = h.Clone("FD_DetectorLevelSyst")
+
+        if "DPtSpectrum" in self.fSpectrumName:
+            unfoldedFDspectrumName = self.fFDSpectrumName
+        else:
+            unfoldedFDspectrumName = self.fFDSpectrumName.replace("GeneratorLevel", "Unfolded_c")
+        if not "cEfficiencyDivide" in unfoldedFDspectrumName: unfoldedFDspectrumName += "_cEfficiencyDivide"
+
+        unfoldedListName = "{0}/{1}".format(self.fSpectrumName, unfoldedFDspectrumName)
+        unfoldedList = systList.FindObject(unfoldedListName)
+        if not unfoldedList:
+            print("Could not find list {0}".format(unfoldedListName))
+            return
+        else:
+            print("List {0} loaded".format(unfoldedListName))
+
+        unfoldedSystName = "{0}_SymmSyst".format(unfoldedFDspectrumName)
+        h = unfoldedList.FindObject(unfoldedSystName)
+        if not h:
+            print("Could not find hist {0}".format(unfoldedSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(unfoldedSystName))
+        self.fFDUnfoldedSystUncHistogram = h.Clone("FD_UnfoldedSyst")
+
         file.Close()
