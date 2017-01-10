@@ -70,13 +70,13 @@ variations:
   stage: 0
 -
   name: facscfact2_renscfact1
-  active: no
+  active: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
   ts: 1483628767
   stage: 0
 -
   name: facscfact1_renscfact2
-  active: no
-  title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
+  active: yes
+  title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
   ts: 1483629492
   stage: 0
