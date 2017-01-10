@@ -30,7 +30,7 @@ analysis:
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
       object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -70,7 +70,7 @@ analysis:
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
       object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -110,7 +110,7 @@ analysis:
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
       object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3200
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -147,7 +147,7 @@ analysis:
     need_inv_mass: [D0, 2ProngLikeSign, D0_kSignalOnly]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
     -
       object: jet
@@ -160,7 +160,7 @@ analysis:
       min: 5
       max: 30
     bin_count_analysis:
-      jet_pt: [5, 6, 8, 10, 14, 18, 24]
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
@@ -305,7 +305,7 @@ analysis:
     need_inv_mass: [D0, D0_kSignalOnly]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
     -
       object: d
