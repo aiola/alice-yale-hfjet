@@ -22,7 +22,7 @@ class DMesonJetCompare:
         self.fLegendRatio = None
         self.fBaselineRatio = None
         self.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
-        self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
+        self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kFullCross, ROOT.kMultiply]
         self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
         self.fFills = [3001, 3002, 3003, 3004, 3005, 3006, 3007]
         self.fMainHistogram = None
@@ -33,12 +33,18 @@ class DMesonJetCompare:
         self.fMinRatio = None
         self.fRatioRelativeUncertainty = None
         self.fResults = None
-        self.fX1Legend = 0.55
-        self.fY1Legend = 0.87
+        self.fNColsLegRatio = 1
+        self.fNColsLegSpectrum = 1
+        self.fX1LegRatio = 0.55
+        self.fY1LegRatio = 0.87
+        self.fX1LegSpectrum = 0.55
+        self.fY1LegSpectrum = 0.87
         self.fLogUpperSpace = 10  # this factor will be used to adjust the y axis in log scale
         self.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
         self.fLinUpperSpace = 0.9  # this factor will be used to adjust the y axis in linear scale
         self.fLinLowerSpace = 0.2  # this factor will be used to adjust the y axis in linear scale
+        self.fLegTextSize = 20
+        self.fLegLineHeight = 0.04
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -60,18 +66,19 @@ class DMesonJetCompare:
             self.fCanvasSpectra.SetLogy()
 
         if self.fLegendSpectra:
-            y1 = self.fLegendSpectra.GetY1() - 0.04 * (len(self.fHistograms) + 1)
+            y1 = self.fLegendSpectra.GetY1() - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
             if y1 < 0.2: y1 = 0.2
             self.fLegendSpectra.SetY1(y1)
         else:
-            y1 = self.fY1Legend - 0.05 * (len(self.fHistograms) + 1)
+            y1 = self.fY1LegSpectrum - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
             if y1 < 0.2: y1 = 0.2
-            self.fLegendSpectra = ROOT.TLegend(self.fX1Legend, y1, 0.9, self.fY1Legend)
+            self.fLegendSpectra = ROOT.TLegend(self.fX1LegSpectrum, y1, 0.9, self.fY1LegSpectrum)
             self.fLegendSpectra.SetName("{0}_legend".format(self.fCanvasSpectra.GetName()))
+            self.fLegendSpectra.SetNColumns(self.fNColsLegSpectrum)
             self.fLegendSpectra.SetFillStyle(0)
             self.fLegendSpectra.SetBorderSize(0)
             self.fLegendSpectra.SetTextFont(43)
-            self.fLegendSpectra.SetTextSize(20)
+            self.fLegendSpectra.SetTextSize(self.fLegTextSize)
 
         if "hist" in self.fOptSpectrum:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
@@ -111,18 +118,19 @@ class DMesonJetCompare:
         if self.fRatioRelativeUncertainty: n += 1
 
         if self.fLegendRatio:
-            y1 = self.fLegendRatio.GetY1() - 0.05 * n
+            y1 = self.fLegendRatio.GetY1() - self.fLegLineHeight * n / self.fNColsLegRatio
             if y1 < 0.2: y1 = 0.2
             self.fLegendRatio.SetY1(y1)
         else:
-            y1 = self.fY1Legend - 0.05 * n
+            y1 = self.fY1LegRatio - self.fLegLineHeight * n / self.fNColsLegRatio
             if y1 < 0.2: y1 = 0.2
-            self.fLegendRatio = ROOT.TLegend(self.fX1Legend, y1, 0.9, self.fY1Legend)
+            self.fLegendRatio = ROOT.TLegend(self.fX1LegRatio, y1, 0.9, self.fY1LegRatio)
             self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
+            self.fLegendRatio.SetNColumns(self.fNColsLegRatio)
             self.fLegendRatio.SetFillStyle(0)
             self.fLegendRatio.SetBorderSize(0)
             self.fLegendRatio.SetTextFont(43)
-            self.fLegendRatio.SetTextSize(20)
+            self.fLegendRatio.SetTextSize(self.fLegTextSize)
 
         if self.fRatioRelativeUncertainty:
             opt = "e2"
