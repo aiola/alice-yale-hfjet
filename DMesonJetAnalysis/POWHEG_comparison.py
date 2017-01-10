@@ -157,25 +157,27 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
     MCspectrum = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "JetPtSpectrum_DPt_3", genTitle)
 
     spectra = []
-    spectra.append(DataSpectrumDef("InvMassFit_DPt_30", "Bayes", "Reg4", "PriorResponseTruth"))
+    spectra.append(DataSpectrumDef("SideBand_DPt_30", "Bayes", "Reg4", "PriorResponseTruth"))
 
     cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius] + [quark.ts for quark in quarks.itervalues()] + [data])
     ratioAxis = "data / theory"
     histos = []
     for spectrum in spectra:
         spectrum.LoadSpectrum(dataFile)
+        spectrum.fNormalizedHistogram.SetTitle("ALICE")
         histos.append(spectrum.fNormalizedHistogram)
 
     MCspectrumRebinned = MCspectrum.Rebin(histos[0].GetNbinsX(), "{0}_Rebinned".format(MCspectrum.GetName()), histos[0].GetXaxis().GetXbins().GetArray())
     MCspectrumRebinned.Scale(1., "width")
     globalList.append(MCspectrumRebinned)
     globalList.extend(histos)
-    r = DMesonJetUtils.CompareSpectra(MCspectrumRebinned, histos, cname, "", "", ratioAxis, "logy", "lineary")
+    comp = DMesonJetCompare.DMesonJetCompare(cname)
+    comp.fYaxisRatio = ratioAxis
+    r = comp.CompareSpectra(MCspectrumRebinned, histos)
     for obj in r:
         globalList.append(obj)
         if isinstance(obj, ROOT.TCanvas):
             obj.SaveAs("{0}/{1}.pdf".format(rootPath, obj.GetName()))
-
 
 def get_ts_stage(ts_stage):
     b = ts_stage.split(":")
@@ -320,15 +322,15 @@ def GetSpectrum(file, meson_name, jet_type, jet_radius, spectrum):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='B feed-down.')
-    parser.add_argument('--charm', metavar='CHARM',
+    parser.add_argument('--charm', metavar='timestamp',
                         default=None)
-    parser.add_argument('--beauty', metavar='CHARM',
+    parser.add_argument('--beauty', metavar='timestamp',
                         default=None)
     parser.add_argument('--jet-type', metavar='TYPE',
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
                         default="R040")
-    parser.add_argument('--data', metavar='DATA',
+    parser.add_argument('--data', metavar='LHC10_Train823_LHC15i2_Train961_efficiency',
                         default=None)
     args = parser.parse_args()
 
