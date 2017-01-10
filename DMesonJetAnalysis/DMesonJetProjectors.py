@@ -70,13 +70,6 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
     def GetEfficiencyWeightTH2(self, dmeson, jet):
-#        if jet.fPt < self.fRootObject.GetXaxis().GetBinLowEdge(1) or \
-#           jet.fPt >= self.fRootObject.GetXaxis().GetBinUpEdge(self.fRootObject.GetXaxis().GetNbins()) or \
-#           dmeson.DmesonJet.fReconstructed.fPt < self.fRootObject.GetYaxis().GetBinLowEdge(1) or \
-#           dmeson.DmesonJet.fReconstructed.fPt >= self.fRootObject.GetYaxis().GetBinUpEdge(self.fRootObject.GetYaxis().GetNbins()):
-#            eff = 0
-#        else:
-#            eff = self.fRootObject.Interpolate(jet.fPt, dmeson.DmesonJet.fReconstructed.fPt)
         eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(jet.fPt, dmeson.fPt))
 
         if eff == 0:
@@ -85,11 +78,6 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
     def GetEfficiencyWeightTH1(self, dmeson, jet):
-#        if dmeson.DmesonJet.fReconstructed.fPt < self.fRootObject.GetXaxis().GetBinLowEdge(1) or \
-#           dmeson.DmesonJet.fReconstructed.fPt >= self.fRootObject.GetXaxis().GetBinUpEdge(self.fRootObject.GetXaxis().GetNbins()):
-#            eff = 0
-#        else:
-#            eff = self.fRootObject.Interpolate(dmeson.DmesonJet.fReconstructed.fPt)
         eff = self.fRootObject.GetBinContent(self.fRootObject.FindBin(dmeson.fPt))
 
         if eff == 0:
