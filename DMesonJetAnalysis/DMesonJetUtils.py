@@ -29,19 +29,26 @@ def find_file(path, file_name):
             if file == file_name:
                 yield os.path.join(root, file)
 
-def FindMinimum(histogram, limit=0.):
+def FindMinimum(histogram, limit=0., errors=True):
     m = None
     for ibin in range(1, histogram.GetNbinsX() + 1):
-        if histogram.GetBinContent(ibin) <= limit:
-            continue
-        if m is None or histogram.GetBinContent(ibin) < m: m = histogram.GetBinContent(ibin)
+        if errors:
+            cont = histogram.GetBinContent(ibin) - histogram.GetBinError(ibin)
+        else:
+            cont = histogram.GetBinContent(ibin)
+        if cont <= limit: continue
+        if m is None or cont < m: m = cont
     return m
 
-def FindMaximum(histogram, limit=0.):
+def FindMaximum(histogram, limit=0., errors=True):
     m = None
     for ibin in range(1, histogram.GetNbinsX() + 1):
-        if histogram.GetBinContent(ibin) <= limit: continue
-        if m is None or histogram.GetBinContent(ibin) > m: m = histogram.GetBinContent(ibin)
+        if errors:
+            cont = histogram.GetBinContent(ibin) + histogram.GetBinError(ibin)
+        else:
+            cont = histogram.GetBinContent(ibin)
+        if cont <= limit: continue
+        if m is None or cont > m: m = cont
     return m
 
 def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary", c=None, cRatio=None, leg=None, legRatio=None, styles=None):
