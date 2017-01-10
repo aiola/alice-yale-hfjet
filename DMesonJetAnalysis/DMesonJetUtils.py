@@ -5,7 +5,6 @@ import os
 import ROOT
 import math
 import array
-import DMesonJetCompare
 
 def ConvertDMesonName(dmeson):
     if "D0" in dmeson:
@@ -50,45 +49,6 @@ def FindMaximum(histogram, limit=0., errors=True):
         if cont <= limit: continue
         if m is None or cont > m: m = cont
     return m
-
-def CompareSpectra(baseline, spectra, comparisonName, opt="", optRatio="", yaxisRatio="ratio", doSpectra="logy", doRatio="lineary", c=None, cRatio=None, leg=None, legRatio=None, styles=None):
-    comp = DMesonJetCompare.DMesonJetCompare(comparisonName)
-    comp.fOptSpectrum = opt
-    comp.fOptRatio = optRatio
-    comp.fYaxisRatio = yaxisRatio
-    comp.fDoSpectraPlot = doSpectra
-    comp.fDoRatioPlot = doRatio
-    comp.fCanvasSpectra = c
-    comp.fCanvasRatio = cRatio
-    comp.fLegendSpectra = leg
-    comp.fLegendRatio = legRatio
-    comp.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
-    comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kOpenCircle]
-    comp.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
-    if styles:
-        if "colors" in styles: comp.fColors = styles["colors"]
-        if "markers" in styles: comp.fMarkers = styles["markers"]
-        if "lines" in styles: comp.fLines = styles["lines"]
-
-    if c:
-        for obj in c.GetListOfPrimitives():
-            if isinstance(obj, ROOT.TH1):
-                comp.fMainHistogram = obj
-                comp.fMainHistogram.SetMinimum(-1111)
-                comp.fMainHistogram.SetMaximum(-1111)
-                print("Main histogram is: {0}".format(comp.fMainHistogram.GetName()))
-                break
-
-    if cRatio:
-        for obj in cRatio.GetListOfPrimitives():
-            if isinstance(obj, ROOT.TH1):
-                comp.fMainRatioHistogram = obj
-                print("Main ratio histogram is: {0}".format(comp.fMainRatioHistogram.GetName()))
-                comp.fMainRatioHistogram.SetMinimum(-1111)
-                comp.fMainRatioHistogram.SetMaximum(-1111)
-                break
-
-    return comp.CompareSpectra(baseline, spectra)
 
 def DivideNoErrors(ratio, den):
     if not ratio.GetNbinsX() == den.GetNbinsX():
