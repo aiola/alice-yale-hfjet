@@ -5,7 +5,7 @@ import argparse
 import yaml
 import IPython
 import ROOT
-import DMesonJetUtils
+import DMesonJetCompare
 
 globalList = []
 
@@ -99,7 +99,7 @@ def pPb_comparison(jet_type, jet_radius, ppdata, pPbdata):
         print("File {0} successfully open".format(dataFileName))
 
     spectra = []
-    spectrum = DataSpectrumDef("InvMassFit_DPt_30", "Bayes", "Reg4", "PriorResponseTruth")
+    spectrum = DataSpectrumDef("SideBand_DPt_30", "Bayes", "Reg4", "PriorResponseTruth")
     spectrum.LoadSpectrum(dataFile)
     spectrum.fNormalizedHistogram.SetTitle("pp, #sqrt{#it{s}} = 7 TeV")
     globalList.append(spectrum.fNormalizedHistogram)
@@ -115,7 +115,9 @@ def pPb_comparison(jet_type, jet_radius, ppdata, pPbdata):
     histos.append(pPbSpectrum)
 
     globalList.extend(histos)
-    r = DMesonJetUtils.CompareSpectra(spectrum.fNormalizedHistogram, histos, cname, "", "", ratioAxis, "logy", "lineary")
+    comp = DMesonJetCompare.DMesonJetCompare(cname)
+    comp.fYaxisRatio = ratioAxis
+    r = comp.CompareSpectra(spectrum.fNormalizedHistogram, histos)
     for obj in r:
         globalList.append(obj)
         if isinstance(obj, ROOT.TH1) and "Ratio" in obj.GetName():
@@ -133,9 +135,9 @@ if __name__ == '__main__':
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
                         default="R040")
-    parser.add_argument('--pp', metavar='DATA',
+    parser.add_argument('--pp', metavar='LHC10_Train823_LHC15i2_Train961_efficiency',
                         default=None)
-    parser.add_argument('--pPb', metavar='DATA',
+    parser.add_argument('--pPb', metavar='CorrectedJetSpectra_ppBinningSB_pPb_Barbara_20161213.root',
                         default=None)
     args = parser.parse_args()
 
