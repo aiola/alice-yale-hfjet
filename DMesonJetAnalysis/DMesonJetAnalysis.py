@@ -153,7 +153,7 @@ class DMesonJetAnalysisEngine:
             fitter.GetFitFunction().SetParameter(1, expoParBkg1)
             fitter.GetFitFunction().SetParameter(2, GaussConst)
             fitter.GetFitFunction().SetParameter(3, pdgMass)  # start fitting using PDG mass
-            fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.9, pdgMass * 1.1)  # limiting mass parameter +/- 10% of PDG value
+            fitter.GetFitFunction().SetParLimits(3, pdgMass * 0.95, pdgMass * 1.05)  # limiting mass parameter +/- 5% of PDG value
             fitter.GetFitFunction().SetParameter(4, massWidth)
             fitter.GetFitFunction().SetParLimits(4, 0, 1)  # limiting width to being positive
 
