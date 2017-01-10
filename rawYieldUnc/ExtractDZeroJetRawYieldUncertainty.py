@@ -19,8 +19,8 @@ import ROOT
 
 globalList = []
 
-ptDbins = [3., 4., 5., 6., 7., 8., 10., 16., 30.]
-ptJetbins = [5., 6., 8., 10., 14., 20., 30.]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
+ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
 def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
