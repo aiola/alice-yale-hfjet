@@ -9,6 +9,7 @@ import array
 import ROOT
 
 import DMesonJetUtils
+import DMesonJetCompare
 import UnfoldingResponseMatrix
 
 globalList = []
@@ -251,7 +252,6 @@ class DMesonJetUnfoldingEngine:
         baselineId = self.fDefaultPrior
         baseline = self.fBinByBinCorrectionFactors[baselineId].Clone("{0}_copy".format(self.fBinByBinCorrectionFactors[baselineId].GetName()))
         baseline.SetTitle(self.fDefaultPrior)
-        yaxisRatio = "Prior x / {0}".format(self.fDefaultPrior)
         globalList.append(baseline)
         spectra = []
         for priorIt, corrFact in self.fBinByBinCorrectionFactors.iteritems():
@@ -263,7 +263,13 @@ class DMesonJetUnfoldingEngine:
             globalList.append(cf)
         if len(spectra) < 1:
             return
-        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_BinByBinCorrectionFactors".format(self.fName), "hist", "hist", yaxisRatio, "lineary", "lineary")
+        comp = DMesonJetCompare.DMesonJetCompare("{0}_BinByBinCorrectionFactors".format(self.fName))
+        comp.fOptSpectrum = "hist"
+        comp.fOptRatio = "hist"
+        comp.fYaxisRatio = "Prior x / {0}".format(self.fDefaultPrior)
+        comp.fDoSpectraPlot = "lineary"
+        comp.fDoRatioPlot = "lineary"
+        r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):
@@ -299,7 +305,13 @@ class DMesonJetUnfoldingEngine:
             globalList.append(spectrum)
         if len(spectra) < 1:
             return
-        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_Priors".format(self.fName), "hist", "hist", yaxisRatio, "logy", "logy")
+        comp = DMesonJetCompare.DMesonJetCompare("{0}_Priors".format(self.fName))
+        comp.fOptSpectrum = "hist"
+        comp.fOptRatio = "hist"
+        comp.fYaxisRatio = yaxisRatio
+        comp.fDoSpectraPlot = "logy"
+        comp.fDoRatioPlot = "logy"
+        r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):
@@ -406,8 +418,11 @@ class DMesonJetUnfoldingEngine:
             h.SetTitle(method)
             spectra.append(h)
             globalList.append(h)
-
-        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingStatisticalUncertaintyCompareMethods".format(self.fName), "hist", "", "", "lineary", False)
+        comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingStatisticalUncertaintyCompareMethods".format(self.fName))
+        comp.fOptSpectrum = "hist"
+        comp.fDoSpectraPlot = "lineary"
+        comp.fDoRatioPlot = False
+        r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):
@@ -430,7 +445,11 @@ class DMesonJetUnfoldingEngine:
             globalList.append(h)
 
         if len(spectra) > 0:
-            r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingStatisticalUncertainty_{1}_Prior{2}".format(self.fName, method, prior), "hist", "", "", "lineary", False)
+            comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingStatisticalUncertainty_{1}_Prior{2}".format(self.fName, method, prior))
+            comp.fOptSpectrum = "hist"
+            comp.fDoSpectraPlot = "lineary"
+            comp.fDoRatioPlot = False
+            r = comp.CompareSpectra(baseline, spectra)
             for obj in r:
                 globalList.append(obj)
                 if isinstance(obj, ROOT.TCanvas):
@@ -455,7 +474,11 @@ class DMesonJetUnfoldingEngine:
             globalList.append(htoy)
             spectra.append(htoy)
 
-            r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingStatisticalUncertaintyStrategy_{1}_Reg{2}_Prior{3}".format(self.fName, method, reg, prior), "hist", "", "", "lineary", False)
+            comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingStatisticalUncertaintyStrategy_{1}_Reg{2}_Prior{3}".format(self.fName, method, reg, prior))
+            comp.fOptSpectrum = "hist"
+            comp.fDoSpectraPlot = "lineary"
+            comp.fDoRatioPlot = False
+            r = comp.CompareSpectra(baseline, spectra)
             for obj in r:
                 globalList.append(obj)
                 if isinstance(obj, ROOT.TCanvas):
@@ -576,7 +599,11 @@ class DMesonJetUnfoldingEngine:
             globalList.append(spectrum)
         if (self.fTruthSpectrum and len(spectra) < 2) or len(spectra) < 1:
             return
-        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingRegularization_{1}_Prior{2}".format(self.fName, method, prior), "", "", yaxisRatio, "logy", "lineary")
+        comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingRegularization_{1}_Prior{2}".format(self.fName, method, prior))
+        comp.fYaxisRatio = yaxisRatio
+        comp.fDoSpectraPlot = "logy"
+        comp.fDoRatioPlot = "lineary"
+        r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):
@@ -709,7 +736,11 @@ class DMesonJetUnfoldingEngine:
             spectra.append(h)
             globalList.append(h)
 
-        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingMethod".format(self.fName), "", "", yaxisRatio, "logy", "lineary")
+        comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingMethod".format(self.fName))
+        comp.fYaxisRatio = yaxisRatio
+        comp.fDoSpectraPlot = "logy"
+        comp.fDoRatioPlot = "lineary"
+        r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):
@@ -742,7 +773,11 @@ class DMesonJetUnfoldingEngine:
             spectra.append(h)
             globalList.append(h)
 
-        r = DMesonJetUtils.CompareSpectra(baseline, spectra, "{0}_UnfoldingPrior_{1}".format(self.fName, method), "", "", yaxisRatio, "logy", "lineary")
+        comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingPrior_{1}".format(self.fName, method))
+        comp.fYaxisRatio = yaxisRatio
+        comp.fDoSpectraPlot = "logy"
+        comp.fDoRatioPlot = "lineary"
+        r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TCanvas):

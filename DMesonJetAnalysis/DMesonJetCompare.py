@@ -103,8 +103,18 @@ class DMesonJetCompare:
         if not self.fMainHistogram:
             self.fMainHistogram = self.fBaselineHistogram
 
-        self.fMinSpectrum = min(self.fMinSpectrum, self.fBaselineHistogram.GetBinContent(self.fMainHistogram.GetMinimumBin()))
-        self.fMaxSpectrum = max(self.fMaxSpectrum, self.fBaselineHistogram.GetBinContent(self.fMainHistogram.GetMaximumBin()))
+        m = DMesonJetUtils.FindMinimum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrum)
+        if not m is None:
+            if self.fMinSpectrum is None:
+                self.fMinSpectrum = m
+            else:
+                self.fMinSpectrum = min(self.fMinSpectrum, m)
+        m = DMesonJetUtils.FindMaximum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrum)
+        if not m is None:
+            if self.fMaxSpectrum is None:
+                self.fMaxSpectrum = m
+            else:
+                self.fMaxSpectrum = max(self.fMaxSpectrum, m)
 
     def PrepareRatioCanvas(self):
         cname = "{0}_Ratio".format(self.fName)
@@ -150,13 +160,13 @@ class DMesonJetCompare:
 
     def PlotHistogram(self, color, marker, line, h):
         self.fCanvasSpectra.cd()
-        m = DMesonJetUtils.FindMinimum(h)
+        m = DMesonJetUtils.FindMinimum(h, 0., not "hist" in self.fOptSpectrum)
         if not m is None:
             if self.fMinSpectrum is None:
                 self.fMinSpectrum = m
             else:
                 self.fMinSpectrum = min(self.fMinSpectrum, m)
-        m = DMesonJetUtils.FindMaximum(h)
+        m = DMesonJetUtils.FindMaximum(h, 0., not "hist" in self.fOptSpectrum)
         if not m is None:
             if self.fMaxSpectrum is None:
                 self.fMaxSpectrum = m
@@ -199,13 +209,13 @@ class DMesonJetCompare:
         hRatio.Draw(self.fOptRatio)
         if not self.fMainRatioHistogram:
             self.fMainRatioHistogram = hRatio
-        m = DMesonJetUtils.FindMinimum(hRatio)
+        m = DMesonJetUtils.FindMinimum(hRatio, 0., not "hist" in self.fOptRatio)
         if not m is None:
             if self.fMinRatio is None:
                 self.fMinRatio = m
             else:
                 self.fMinRatio = min(self.fMinRatio, m)
-        m = DMesonJetUtils.FindMaximum(hRatio)
+        m = DMesonJetUtils.FindMaximum(hRatio, 0., not "hist" in self.fOptRatio)
         if not m is None:
             if self.fMaxRatio is None:
                 self.fMaxRatio = m
