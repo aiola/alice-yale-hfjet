@@ -15,12 +15,6 @@ variations:
   ts: 1483385484
   stage: 2
 -
-  name: old
-  active: no
-  title: "Old"
-  ts: 1478869008
-  stage: 1
--
   name: mass_low
   active: yes
   title: "#it{m}_{b} = 4.5 GeV/#it{c}^{2}"
@@ -64,19 +58,25 @@ variations:
   stage: 0
 -
   name: facscfact1_renscfact05
-  active: no
+  active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
-  ts: 0
-  stage: 1
+  ts: 1483619400
+  stage: 0
 -
   name: facscfact05_renscfact1
-  active: no
+  active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
-  ts: 0
-  stage: 1
+  ts: 1483622213
+  stage: 0
 -
   name: facscfact2_renscfact1
   active: no
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
-  ts: 0
-  stage: 1
+  ts: 1483628767
+  stage: 0
+-
+  name: facscfact1_renscfact2
+  active: no
+  title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
+  ts: 1483629492
+  stage: 0
