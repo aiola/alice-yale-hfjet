@@ -75,7 +75,7 @@ def main(actions, output_path, output_type):
             file = OpenFile(c)
             histograms[name] = ExtractRootList(file)
 
-    file = ROOT.TFile("/Volumes/DATA/ALICE/JetResults/FastSim_powheg_beauty_1478869008/stage_1/output/BFeedDown_powheg_beauty_1478869008.root")
+    file = ROOT.TFile("/Volumes/DATA/ALICE/JetResults/BFeedDown.root")
     histograms["BFeedDown"] = ExtractRootList(file)
 
     if "all" in actions or "jetptres_comp" in actions:
@@ -85,7 +85,7 @@ def main(actions, output_path, output_type):
         EfficiencyComparison(histograms["LHC15i2_c"], histograms["LHC15i2_b"])
 
     if "all" in actions or "fd_fold_unfold" in actions:
-        FD_FoldUnfold_Comparison(histograms["BFeedDown"])
+        FD_FoldUnfold_Comparison(histograms["BFeedDown"]["default"]["JetPtSpectrum_DPt_30"])
 
     if "all" in actions or "fit_params" in actions:
         FitParameterComparison(histograms["LHC14j4_cb_eff"], histograms["LHC10_eff"])
@@ -278,10 +278,10 @@ def CopyMCUnfoldingFiles(config, output_path, output_type):
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def FD_FoldUnfold_Comparison(histograms):
-    baseline = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30"].Clone()
-    detector = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_detector"].Clone()
-    unfolded = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_unfolded"].Clone()
-    unfolded_b = histograms["D0_MCTruth_Charged_R040_JetPtDPtSpectrum_bEff_efficiency_jetpt_DPt_30_unfolded_b"].Clone()
+    baseline = histograms["GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"].Clone()
+    detector = histograms["DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"].Clone()
+    unfolded = histograms["Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"].Clone()
+    unfolded_b = histograms["Unfolded_b_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"].Clone()
     baseline.SetTitle("POWHEG+PYTHIA FD spectrum")
     detector.SetTitle("Smeared w/ b #rightarrow D^{0} detector response")
     unfolded.SetTitle("Unfolded w/ c #rightarrow D^{0} detector response")
@@ -450,7 +450,7 @@ def ExtractRootList(input):
         keys = input.GetListOfKeys()
         for k in keys:
             obj = input.Get(k.GetName())
-            if isinstance(obj, ROOT.TH1) or isinstance(obj, ROOT.THnBase):
+            if isinstance(obj, ROOT.TH1) or isinstance(obj, ROOT.THnBase) or isinstance(obj, ROOT.TGraph):
                 result[k.GetName()] = obj
             elif isinstance(obj, ROOT.TDirectory) or isinstance(obj, ROOT.TCollection):
                 result[k.GetName()] = ExtractRootList(obj)
@@ -459,7 +459,7 @@ def ExtractRootList(input):
                 print(obj)
     else:
         for h in input:
-            if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THnBase):
+            if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THnBase) or isinstance(obj, ROOT.TGraph):
                 result[h.GetName()] = h
             elif isinstance(h, ROOT.TDirectory) or isinstance(h, ROOT.TCollection):
                 result[h.GetName()] = ExtractRootList(h)
