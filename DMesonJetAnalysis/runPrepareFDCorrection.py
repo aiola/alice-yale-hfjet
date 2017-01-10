@@ -142,10 +142,12 @@ def GenerateSystematicUncertainty(baseline, spectra):
     upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(hname), "{0}_UpperSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     lowerLimitsHist = ROOT.TH1D("{0}_LowerSyst".format(hname), "{0}_LowerSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     symmetricLimitsHist = ROOT.TH1D("{0}_SymmSyst".format(hname), "{0}_SymmSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    relativeSystHist = ROOT.TH1D("{0}_RelSyst".format(hname), "{0}_RelSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     result = OrderedDict()
     result[upperLimitsHist.GetName()] = upperLimitsHist
     result[lowerLimitsHist.GetName()] = lowerLimitsHist
     result[symmetricLimitsHist.GetName()] = symmetricLimitsHist
+    result[relativeSystHist.GetName()] = relativeSystHist
     for ibin in range(1, baseline.GetNbinsX() + 1):
         centralValue = baseline.GetBinContent(ibin)
         for var in spectra:
@@ -157,6 +159,7 @@ def GenerateSystematicUncertainty(baseline, spectra):
                 lowerLimitsHist.SetBinContent(ibin, -diff)
                 print("Bin {0}, lower limit {1}".format(ibin, -diff))
         symmetricLimitsHist.SetBinContent(ibin, max(upperLimitsHist.GetBinContent(ibin), lowerLimitsHist.GetBinContent(ibin)))
+        relativeSystHist.SetBinContent(ibin, symmetricLimitsHist.GetBinContent(ibin) / baseline.GetBinContent(ibin))
     xArray = numpy.array([baseline.GetXaxis().GetBinCenter(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
     xArrayErr = numpy.array([baseline.GetXaxis().GetBinWidth(ibin) / 2 for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
     yArray = numpy.array([baseline.GetBinContent(ibin) / baseline.GetXaxis().GetBinWidth(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
@@ -179,6 +182,8 @@ def CompareVariations(variations, results):
     comp_template = DMesonJetCompare.DMesonJetCompare("DMesonJetCompare")
     comp_template.fOptRatio = "hist"
     comp_template.fLogUpperSpace = 3
+    comp_template.fNColsLegRatio = 2
+    comp_template.fX1LegRatio = 0.2
 
     result = OrderedDict()
 
@@ -273,12 +278,12 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
     jetptdpt[FDhistogram_orig.GetName()] = FDhistogram_orig
 
     print("Loading the response matrix b->D0")
-    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3200", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     bEfficiency_dpt.SetName("EfficiencyVsDPt_b")
     responseList[bEfficiency_dpt.GetName()] = bEfficiency_dpt
 
     print("Loading the response matrix c->D0")
-    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3200", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+    temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
     cEfficiency_dpt.SetName("EfficiencyVsDPt_c")
     responseList[cEfficiency_dpt.GetName()] = cEfficiency_dpt
 
