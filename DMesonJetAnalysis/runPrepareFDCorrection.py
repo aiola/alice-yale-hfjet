@@ -65,6 +65,8 @@ def main(config, unfolding_debug):
 
 def PlotFSspectraAndSyst(results):
     spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
+                     "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum",
+                     "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
@@ -188,6 +190,8 @@ def CompareVariations(variations, results):
     result = OrderedDict()
 
     spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
+                     "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum",
+                     "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply",
                      "JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
                      "JetPtSpectrum_DPt_30/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
@@ -317,6 +321,12 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
 
         ptdList = OrderedDict()
         result[spectrumName] = ptdList
+
+        print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o b or c efficiency)".format(ptd))
+        FDhistogram_jetpt_orig = FDhistogram_orig.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram_orig.GetName(), ptd * 10), FDhistogram_orig.GetYaxis().FindBin(ptd), FDhistogram_orig.GetNbinsY() + 1)
+        FDhistogram_jetpt_orig.SetName("GeneratorLevel_JetPtSpectrum")
+        FDhistogram_jetpt_orig.GetYaxis().SetTitle(FDhistogram_orig.GetZaxis().GetTitle())
+        ptdList[FDhistogram_jetpt_orig.GetName()] = FDhistogram_jetpt_orig
 
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o efficiency)".format(ptd))
         FDhistogram_jetpt = FDhistogram.ProjectionX("{0}_jetpt_DPt_{1}".format(FDhistogram.GetName(), ptd * 10), FDhistogram.GetYaxis().FindBin(ptd), FDhistogram.GetNbinsY() + 1)
