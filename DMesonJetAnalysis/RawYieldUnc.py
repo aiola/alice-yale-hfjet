@@ -15,17 +15,23 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
-    comp.fOptRatio = "hist"
-    comp.fColors = [ROOT.kBlue + 2, ROOT.kGreen + 2]
+    comp.fOptSpectrum = "p x0"
+    comp.fOptRatio = ""
+    comp.fSeparateBaselineUncertainty = True
+    comp.fX1LegRatio = 0.35
+    comp.fX1LegSpectrum = 0.25
+    comp.fColors = [ROOT.kBlue + 2, ROOT.kBlue + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    comp.fFills = [3004] * 2
+    comp.fFills = [3245] * 2
+    comp.fOptSpectrumBaseline = "e2"
     default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum)
-    comp.fColors = [ROOT.kRed + 2, ROOT.kOrange + 2]
+    comp.fColors = [ROOT.kRed + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
-    comp.fFills = [3005] * 2
+    comp.fFills = [3254] * 2
+    comp.fOptSpectrumBaseline = "e2 same"
     default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
     outputPath = "{0}/{1}/{2}/RawYieldUnc/pdf".format(config["input_path"], config["train"], config["name"])
-    os.makedirs(outputPath)
+    if not os.listdir(outputPath): os.makedirs(outputPath)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
@@ -34,14 +40,14 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
     default_spectrum = GetDefaaultSpectrum(config, meson_name, jet_type, jet_radius, "_".join([spectrum, method]))
     default_spectrum.SetTitle("Def Fit, {0}".format(method))
+    default_spectrum.SetFillStyle(0)
     average_spectrum = GetAverageSpectrum(method, config)
     average_spectrum.SetTitle("Avg Raw Yield Extr Trials, {0}".format(method))
     average_spectrum.GetXaxis().SetTitle(default_spectrum.GetXaxis().GetTitle())
     average_spectrum.GetYaxis().SetTitle(default_spectrum.GetYaxis().GetTitle())
     globalList.append(default_spectrum)
     globalList.append(average_spectrum)
-    comp.SetRatioRelativeUncertaintyFromHistogram(average_spectrum)
-    comp.fRatioRelativeUncertainty.SetTitle("Rel. Syst. Unc., {0}".format(method))
+    comp.fRatioRelativeUncertaintyTitle = "Rel. Syst. Unc., {0}".format(method)
     r = comp.CompareSpectra(average_spectrum, [default_spectrum])
     for obj in r:
         if not obj in globalList:

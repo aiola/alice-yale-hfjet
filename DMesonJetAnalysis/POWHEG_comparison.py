@@ -159,7 +159,7 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
     spectra = []
     spectra.append(DataSpectrumDef("SideBand_DPt_30", "Bayes", "Reg4", "PriorResponseTruth"))
 
-    cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius] + [quark.ts for quark in quarks.itervalues()] + [data])
+    cname = "_".join(["TheoryComparison", gen, jet_type, jet_radius])
     ratioAxis = "data / theory"
     histos = []
     for spectrum in spectra:
@@ -207,18 +207,18 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
             print("Could not open file {0}".format(quark.filename))
             exit(1)
 
-    ptD = SpectraSet("BFeedDownVsPtD_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,D}")
+    ptD = SpectraSet("BFeedDownVsPtD_{0}_{1}_{2}".format(gen, jet_type, jet_radius), "B feed-down vs #it{p}_{T,D}")
     ptD.add(SpectrumDef("DPtSpectrum_JetPt_0", "#it{p}_{T,ch jet} > 0", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     ptD.add(SpectrumDef("DPtSpectrum_JetPt_2", "#it{p}_{T,ch jet} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     ptD.add(SpectrumDef("DPtSpectrum_JetPt_5", "#it{p}_{T,ch jet} > 5 GeV/#it{c}", dict(colors=[ROOT.kAzure + 2, ROOT.kCyan + 2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))
     ptD.add(SpectrumDef("DPtSpectrum_JetPt_8", "#it{p}_{T,ch jet} > 8 GeV/#it{c}", dict(colors=[ROOT.kMagenta + 2, ROOT.kPink + 2], markers=[ROOT.kOpenStar, ROOT.kOpenStar], lines=[None, None])))
     ptD.add(SpectrumDef("DPtSpectrum_JetPt_15", "#it{p}_{T,ch jet} > 15 GeV/#it{c}", dict(colors=[ROOT.kTeal + 2, ROOT.kSpring + 2], markers=[ROOT.kOpenCross, ROOT.kOpenCross], lines=[None, None])))
 
-    ptJet = SpectraSet("BFeedDownVsPtJet_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{p}_{T,ch jet}")
+    ptJet = SpectraSet("BFeedDownVsPtJet_{0}_{1}_{2}".format(gen, jet_type, jet_radius), "B feed-down vs #it{p}_{T,ch jet}")
     ptJet.add(SpectrumDef("JetPtSpectrum_DPt_0", "#it{p}_{T,D} > 0", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     ptJet.add(SpectrumDef("JetPtSpectrum_DPt_2", "#it{p}_{T,D} > 2 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
 
-    zJet = SpectraSet("BFeedDownVsZ_{0}_{1}_{2}_{3}_{4}".format(gen, jet_type, jet_radius, charmQuark.ts, beautyQuark.ts), "B feed-down vs #it{z}_{||,D}^{ch jet}")
+    zJet = SpectraSet("BFeedDownVsZ_{0}_{1}_{2}".format(gen, jet_type, jet_radius), "B feed-down vs #it{z}_{||,D}^{ch jet}")
     zJet.add(SpectrumDef("JetZSpectrum_JetPt_0_5", "0 < #it{p}_{T,ch jet} < 5 GeV/#it{c}", dict(colors=[ROOT.kBlue + 2, ROOT.kGreen + 2], markers=[ROOT.kFullCircle, ROOT.kFullCircle], lines=[None, None])))
     zJet.add(SpectrumDef("JetZSpectrum_JetPt_5_10", "5 < #it{p}_{T,ch jet} < 10 GeV/#it{c}", dict(colors=[ROOT.kRed + 2, ROOT.kOrange + 2], markers=[ROOT.kOpenSquare, ROOT.kOpenSquare], lines=[None, None])))
     zJet.add(SpectrumDef("JetZSpectrum_JetPt_10_15", "10 < #it{p}_{T,ch jet} < 15 GeV/#it{c}", dict(colors=[ROOT.kAzure + 2, ROOT.kCyan + 2], markers=[ROOT.kOpenDiamond, ROOT.kOpenDiamond], lines=[None, None])))

@@ -6,6 +6,7 @@ import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
+import DMesonJetCompare
 import array
 import shutil
 import os
@@ -123,7 +124,7 @@ def main(actions, output_path, output_type):
         CopyBFeedDown("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "theory_comparison" in actions:
-        CopyTheoryComparisonFiles(configs["data_unfolding"], "1478868679", output_path, output_type)
+        CopyTheoryComparisonFiles(configs["data_unfolding"], output_path, output_type)
 
     if "all" in actions or "ppb_comparison" in actions:
         CopypPbComparisonFiles(configs["data_unfolding"], output_path, output_type)
@@ -135,29 +136,29 @@ def CopyFiles(input_path, output_path, file_list, output_type):
         print("Copying {0}...".format(file_name))
         shutil.copy("{0}/{1}.{2}".format(input_path, file_name, output_type), output_path)
 
-def CopyTheoryComparisonFiles(config, powheg_ts, output_path, output_type):
+def CopyTheoryComparisonFiles(config, output_path, output_type):
     full_output_path = "{0}/TheoryComparison".format(output_path)
     file_list = []
-    file_list.append("TheoryComparison_powheg_Charged_R040_{0}_{1}".format(powheg_ts, config["name"]))
-    file_list.append("TheoryComparison_powheg_Charged_R040_{0}_{1}_Ratio".format(powheg_ts, config["name"]))
+    file_list.append("TheoryComparison_powheg_Charged_R040")
+    file_list.append("TheoryComparison_powheg_Charged_R040_Ratio")
     CopyFiles(config["input_path"], full_output_path, file_list, output_type)
 
 def CopypPbComparisonFiles(config, output_path, output_type):
     full_output_path = "{0}/pPbComparison".format(output_path)
     file_list = []
-    file_list.append("pPbComparison_Charged_R040_{0}".format(config["name"]))
-    file_list.append("pPbComparison_Charged_R040_{0}_Ratio".format(config["name"]))
+    file_list.append("pPbComparison_Charged_R040")
+    file_list.append("pPbComparison_Charged_R040_Ratio")
     CopyFiles(config["input_path"], full_output_path, file_list, output_type)
 
 def CopyBFeedDown(input_path, output_path, output_type):
     full_output_path = "{0}/BFeedDown".format(output_path)
     file_list = []
-    file_list.append("BFeedDownVsPtD_powheg_Charged_R040_1478868679_1478869008")
-    file_list.append("BFeedDownVsPtD_powheg_Charged_R040_1478868679_1478869008_Ratio")
-    file_list.append("BFeedDownVsPtJet_powheg_Charged_R040_1478868679_1478869008")
-    file_list.append("BFeedDownVsPtJet_powheg_Charged_R040_1478868679_1478869008_Ratio")
-    file_list.append("BFeedDownVsZ_powheg_Charged_R040_1478868679_1478869008")
-    file_list.append("BFeedDownVsZ_powheg_Charged_R040_1478868679_1478869008_Ratio")
+    file_list.append("BFeedDownVsPtD_powheg_Charged_R040")
+    file_list.append("BFeedDownVsPtD_powheg_Charged_R040_Ratio")
+    file_list.append("BFeedDownVsPtJet_powheg_Charged_R040")
+    file_list.append("BFeedDownVsPtJet_powheg_Charged_R040_Ratio")
+    file_list.append("BFeedDownVsZ_powheg_Charged_R040")
+    file_list.append("BFeedDownVsZ_powheg_Charged_R040_Ratio")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyDataFilesWithoutEff(config, output_path, output_type):
@@ -289,7 +290,10 @@ def FD_FoldUnfold_Comparison(histograms):
     hist = [detector, unfolded, unfolded_b]
     globalList.append(baseline)
     globalList.extend(hist)
-    r = DMesonJetUtils.CompareSpectra(baseline, hist, "BFeedDown/FD_FoldUnfold_Comparison")
+    comp = DMesonJetCompare.DMesonJetCompare("BFeedDown/FD_FoldUnfold_Comparison")
+    comp.fX1LegRatio = 0.25
+    comp.fX1LegSpectrum = 0.25
+    r = comp.CompareSpectra(baseline, hist)
     for obj in r:
         globalList.append(obj)
         if isinstance(obj, ROOT.TCanvas):
@@ -300,22 +304,23 @@ def EfficiencyComparison(hist_c, hist_b):
     jetName = "Jet_AKTChargedR040_pt_scheme"
     dmesonName = "D0"
     prefix = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
-    jetPtLimits = [5, 32]
-    cname = "BFeedDown/ReconstructionEfficiencyPromptNonPromptComparison"
-    opt = "hist"
-    c = None
-    leg = None
+    jetPtLimits = [5, 30]
     detResp_c = hist_c[prefix]
     detResp_b = hist_b[prefix]
-    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 32]
+    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    cname = "BFeedDown/ReconstructionEfficiencyPromptNonPromptComparison"
+    comp = DMesonJetCompare.DMesonJetCompare(cname)
+    comp.fOptSpectrum = "hist"
+    comp.fDoSpectraPlot = "lineary"
+    comp.fDoRatioPlot = None
+    comp.fX1LegSpectrum = 0.35
     colors = [ROOT.kBlue + 2, ROOT.kGreen + 2, ROOT.kRed + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kOrange + 2]
     markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenDiamond, ROOT.kOpenStar]
     lines = [1, 2, 9, 5, 7, 10]
-    styles = dict()
     for i, (minPt, maxPt) in enumerate(zip(jetPtLimits[:-1], jetPtLimits[1:])):
-        styles["colors"] = colors[i * 2:(i + 1) * 2]
-        styles["lines"] = lines[i * 2:(i + 1) * 2]
-        styles["markers"] = markers[i * 2:(i + 1) * 2]
+        comp.fColors = colors[i * 2:(i + 1) * 2]
+        comp.fLines = lines[i * 2:(i + 1) * 2]
+        comp.fMarkers = markers[i * 2:(i + 1) * 2]
         recoTruthName = "{0}_ReconstructedTruth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
         truthName = "{0}_Truth_JetPt_{1}_{2}".format(prefix, minPt * 100, maxPt * 100)
         cRecoTruth = detResp_c[recoTruthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(recoTruthName), array.array('d', DPtBins))
@@ -332,8 +337,7 @@ def EfficiencyComparison(hist_c, hist_b):
         b_hist_Ratio.SetTitle("b #rightarrow D^{{0}}, {0}".format(b_hist_Ratio.GetTitle()))
         globalList.append(c_hist_Ratio)
         globalList.append(b_hist_Ratio)
-        r = DMesonJetUtils.CompareSpectra(c_hist_Ratio, [b_hist_Ratio], cname, opt, "", "", "lineary", None, c, None, leg, None, styles)
-        opt += "same"
+        r = comp.CompareSpectra(c_hist_Ratio, [b_hist_Ratio])
         for obj in r:
             globalList.append(obj)
             if isinstance(obj, ROOT.TLegend):
@@ -433,7 +437,10 @@ def DoFitParameterComparison(MC_histos, data_histos, spectrumName, jetName, vari
             h.SetTitle("Data")
             histos.append(h)
             globalList.append(h)
-            r = DMesonJetUtils.CompareSpectra(baseline, histos, cname, "", "", "ratio", "lineary", None)
+            comp = DMesonJetCompare.DMesonJetCompare(cname)
+            comp.fDoSpectraPlot = "lineary"
+            comp.fDoRatioPlot = None
+            r = comp.CompareSpectra(baseline, histos)
 
             for obj in r:
                 globalList.append(obj)
@@ -459,7 +466,7 @@ def ExtractRootList(input):
                 print(obj)
     else:
         for h in input:
-            if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THnBase) or isinstance(obj, ROOT.TGraph):
+            if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THnBase) or isinstance(h, ROOT.TGraph):
                 result[h.GetName()] = h
             elif isinstance(h, ROOT.TDirectory) or isinstance(h, ROOT.TCollection):
                 result[h.GetName()] = ExtractRootList(h)

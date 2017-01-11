@@ -106,7 +106,7 @@ def pPb_comparison(jet_type, jet_radius, ppdata, pPbdata):
     spectrum.fNormalizedHistogram.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
     spectrum.fNormalizedHistogram.GetXaxis().SetTitle("#it{p}_{T, ch jet} (GeV/#it{c})")
 
-    cname = "_".join(["pPbComparison", jet_type, jet_radius] + [ppdata])
+    cname = "_".join(["pPbComparison", jet_type, jet_radius])
     ratioAxis = "#frac{d^{2}#sigma_{p-Pb}}{d#it{p}_{T}d#eta} / #frac{d^{2}#sigma_{pp}}{d#it{p}_{T}d#eta}"
     pPbSpectrum = GetpPbSpectrum(pPbdata)
     pPbSpectrum.SetTitle("p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV")
