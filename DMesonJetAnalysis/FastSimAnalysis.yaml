@@ -1,7 +1,7 @@
-name: FastSimAnalysis_{0}
-input_path: /Volumes/DATA/ALICE/JetResults/FastSim_{0}/stage_{1}/output
-train: ""
-file_name: AnalysisResults_FastSim_{0}.root
+name: FastSimAnalysis
+input_path: /Volumes/DATA/ALICE/JetResults
+train: FastSim
+file_name: ""
 task_name: AliAnalysisTaskDmesonJets
 merging_type: average
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"

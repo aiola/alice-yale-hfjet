@@ -135,8 +135,12 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
         quarks["beauty"] = beautyQuark
 
     for quark in quarks.itervalues():
-        quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
-        quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        if quark.stage >= 0:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        else:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/output".format(rootPath, gen, quark.name, quark.ts)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}.root".format(quark.path, gen, quark.name)
         quark.file = ROOT.TFile(quark.filename)
         if not quark.file or quark.file.IsZombie():
             print("Could not open file {0}".format(quark.filename))
@@ -181,11 +185,11 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
 
 def get_ts_stage(ts_stage):
     b = ts_stage.split(":")
-    ts = b[0]
+    ts = int(b[0])
     if len(b) > 1:
-        stage = b[1]
+        stage = int(b[1])
     else:
-        stage = "0"
+        stage = -1
     return ts, stage
 
 def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius):
@@ -200,8 +204,12 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
     (beautyQuark.ts, beautyQuark.stage) = get_ts_stage(beauty_ts)
 
     for quark in quarks.itervalues():
-        quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
-        quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        if quark.stage >= 0:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        else:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/output".format(rootPath, gen, quark.name, quark.ts)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}.root".format(quark.path, gen, quark.name)
         quark.file = ROOT.TFile(quark.filename)
         if not quark.file or quark.file.IsZombie():
             print("Could not open file {0}".format(quark.filename))

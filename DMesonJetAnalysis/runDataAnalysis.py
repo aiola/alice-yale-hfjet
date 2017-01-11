@@ -20,39 +20,44 @@ def main(config, maxEvents, format, gen, proc, ts, stage):
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
 
-    suffix = "{0}_{1}_{2}".format(gen, proc, ts)
+    if config["train"] == "FastSim":
+        suffix = "{0}_{1}_{2}".format(gen, proc, ts)
 
-    if gen == "powheg":
-        collision = "POWHEG+PYTHIA6 "
+        if gen == "powheg":
+            collision = "POWHEG+PYTHIA6 "
+        else:
+            collision = ""
+        if proc == "charm":
+            collision += "(c#bar{c}) "
+        elif proc == "beauty":
+            collision += "(b#bar{b}) "
+        collision += config["collision_system"]
+
+        name = "{0}_{1}".format(config["name"], suffix)
+
+        if stage >= 0:
+            input_path = "{0}/FastSim_{1}/stage_{2}/output".format(config["input_path"], suffix, stage)
+            file_name = "AnalysisResults_FastSim_{0}.root".format(suffix)
+        else:
+            input_path = "{0}/FastSim_{1}/output".format(config["input_path"], suffix, stage)
+            file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
+        train = ""
     else:
-        collision = ""
-    if proc == "charm":
-        collision += "(c#bar{c}) "
-    elif proc == "beauty":
-        collision += "(b#bar{b}) "
-    collision += config["collision_system"]
-
-    name = config["name"]
-    if "{0}" in name:
-        name = name.format(suffix)
-
-    file_name = config["file_name"]
-    if "{0}" in file_name:
-        file_name = file_name.format(suffix)
-
-    input_path = config["input_path"]
-    if "{0}" and "{1}" in input_path:
-        input_path = input_path.format(suffix, stage)
+        collision = config["collision_system"]
+        name = config["name"]
+        train = config["train"]
+        input_path = config["input_path"]
+        file_name = config["file_name"]
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, config["train"], file_name, config["task_name"], config["merging_type"], maxEvents)
+    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(collision, anaConfig)
 
-    ana.SaveRootFile("{0}/{1}".format(input_path, config["train"]))
-    ana.SavePlots("{0}/{1}".format(input_path, config["train"]), format)
+    ana.SaveRootFile("{0}/{1}".format(input_path, train))
+    ana.SavePlots("{0}/{1}".format(input_path, train), format)
 
 if __name__ == '__main__':
 
@@ -70,7 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('--ts', metavar='TS',
                         default=None)
     parser.add_argument('--stage', metavar='N',
-                        default=1)
+                        default=-1, type=int)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
