@@ -125,8 +125,8 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
 
     DMesonEff = LoadEfficiency(config)
     print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
-    sigmafixed_DPtBins = [0.0106, 0.0128, 0.0132, 0.0164, 0.0158, 0.0195, 0.0197, 0.025]  # chopping 0-1, 1-2, 2-3
-    sigmafixed_JetPtBins = [0.0125, 0.0136, 0.0167, 0.0165, 0.0202, 0.0212]
+    sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027]  # chopping 0-1, 1-2, 2-3
+    sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
 
     chi2cut = 3
     meansigmaVar = [True, True, True, True, True, True]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
