@@ -29,13 +29,13 @@ variations:
 -
   name: PDF_CT10
   active: yes
-  title: "PDF = CT10" 
+  title: "PDF = CT10 (11000)" 
   ts: 1483392034
   stage: 1
 -
   name: PDF_cteq6l1
   active: no
-  title: "PDF = cteq6l1" 
+  title: "PDF = cteq6l1 (10042)" 
   ts: 1483393628
   stage: 1
 -
