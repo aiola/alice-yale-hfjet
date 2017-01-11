@@ -11,6 +11,7 @@ class DMesonJetCompare:
         self.fBaselineHistogram = None
         self.fHistograms = None
         self.fRatios = []
+        self.fOptSpectrumBaseline = ""
         self.fOptSpectrum = ""
         self.fOptRatio = ""
         self.fYaxisRatio = "Ratio"
@@ -45,10 +46,13 @@ class DMesonJetCompare:
         self.fLinLowerSpace = 0.2  # this factor will be used to adjust the y axis in linear scale
         self.fLegTextSize = 20
         self.fLegLineHeight = 0.04
+        self.fBaselineForRatio = None
+        self.fSeparateBaselineUncertainty = False
+        self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
-        self.fRatioRelativeUncertainty.SetTitle("Uncertainty")
+        self.fRatioRelativeUncertainty.SetTitle(self.fRatioRelativeUncertaintyTitle)
         for ibin in range(0, self.fRatioRelativeUncertainty.GetNbinsX() + 2):
             if self.fRatioRelativeUncertainty.GetBinContent(ibin) != 0:
                 self.fRatioRelativeUncertainty.SetBinError(ibin, self.fRatioRelativeUncertainty.GetBinError(ibin) / self.fRatioRelativeUncertainty.GetBinContent(ibin))
@@ -80,11 +84,18 @@ class DMesonJetCompare:
             self.fLegendSpectra.SetTextFont(43)
             self.fLegendSpectra.SetTextSize(self.fLegTextSize)
 
-        if "hist" in self.fOptSpectrum:
+        if "hist" in self.fOptSpectrumBaseline:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
             self.fBaselineHistogram.SetLineWidth(2)
             self.fBaselineHistogram.SetLineStyle(self.fLines[0])
             self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "l")
+        elif "e2" in self.fOptSpectrumBaseline:
+            self.fBaselineHistogram.SetLineColor(self.fColors[0])
+            self.fBaselineHistogram.SetFillColor(self.fColors[0])
+            self.fBaselineHistogram.SetLineWidth(1)
+            self.fBaselineHistogram.SetLineStyle(self.fLines[0])
+            self.fBaselineHistogram.SetFillStyle(self.fFills[0])
+            self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "f")
         else:
             self.fBaselineHistogram.SetMarkerColor(self.fColors[0])
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
@@ -92,8 +103,8 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetMarkerSize(1.2)
             self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
 
-        print("Plotting hist {0} with option {1}".format(self.fBaselineHistogram.GetName(), self.fOptSpectrum))
-        self.fBaselineHistogram.Draw(self.fOptSpectrum)
+        print("Plotting hist {0} with option {1}".format(self.fBaselineHistogram.GetName(), self.fOptSpectrumBaseline))
+        self.fBaselineHistogram.Draw(self.fOptSpectrumBaseline)
         if "frac" in self.fBaselineHistogram.GetYaxis().GetTitle():
             self.fCanvasSpectra.SetLeftMargin(0.12)
             self.fBaselineHistogram.GetYaxis().SetTitleOffset(1.4)
@@ -102,14 +113,15 @@ class DMesonJetCompare:
 
         if not self.fMainHistogram:
             self.fMainHistogram = self.fBaselineHistogram
+        self.fBaselineForRatio = self.fBaselineHistogram.Clone("{0}_copy".format(self.fBaselineHistogram.GetName()))
 
-        m = DMesonJetUtils.FindMinimum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrum)
+        m = DMesonJetUtils.FindMinimum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrumBaseline)
         if not m is None:
             if self.fMinSpectrum is None:
                 self.fMinSpectrum = m
             else:
                 self.fMinSpectrum = min(self.fMinSpectrum, m)
-        m = DMesonJetUtils.FindMaximum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrum)
+        m = DMesonJetUtils.FindMaximum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrumBaseline)
         if not m is None:
             if self.fMaxSpectrum is None:
                 self.fMaxSpectrum = m
@@ -125,7 +137,7 @@ class DMesonJetCompare:
             self.fCanvasRatio.SetLogy()
 
         n = len(self.fHistograms)
-        if self.fRatioRelativeUncertainty: n += 1
+        if self.fRatioRelativeUncertainty or self.fSeparateBaselineUncertainty: n += 1
 
         if self.fLegendRatio:
             y1 = self.fLegendRatio.GetY1() - self.fLegLineHeight * n / self.fNColsLegRatio
@@ -142,7 +154,10 @@ class DMesonJetCompare:
             self.fLegendRatio.SetTextFont(43)
             self.fLegendRatio.SetTextSize(self.fLegTextSize)
 
-        if self.fRatioRelativeUncertainty:
+        if self.fSeparateBaselineUncertainty:
+            self.SetRatioRelativeUncertaintyFromHistogram(self.fBaselineHistogram)
+            for ibin in range(0, self.fBaselineForRatio.GetNbinsX() + 2):
+                self.fBaselineForRatio.SetBinError(ibin, 0)
             opt = "e2"
             if "same" in self.fOptRatio:
                 opt += "same"
@@ -157,6 +172,18 @@ class DMesonJetCompare:
                 self.fOptRatio += "same"
             if not self.fMainRatioHistogram:
                 self.fMainRatioHistogram = h
+            m = DMesonJetUtils.FindMinimum(h, 0., True)
+            if not m is None:
+                if self.fMinRatio is None:
+                    self.fMinRatio = m
+                else:
+                    self.fMinRatio = min(self.fMinRatio, m)
+            m = DMesonJetUtils.FindMaximum(h, 0., True)
+            if not m is None:
+                if self.fMaxRatio is None:
+                    self.fMaxRatio = m
+                else:
+                    self.fMaxRatio = max(self.fMaxRatio, m)
 
     def PlotHistogram(self, color, marker, line, h):
         self.fCanvasSpectra.cd()
@@ -205,7 +232,7 @@ class DMesonJetCompare:
             self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "pe")
         self.fRatios.append(hRatio)
         hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
-        hRatio.Divide(self.fBaselineHistogram)
+        hRatio.Divide(self.fBaselineForRatio)
         hRatio.Draw(self.fOptRatio)
         if not self.fMainRatioHistogram:
             self.fMainRatioHistogram = hRatio
