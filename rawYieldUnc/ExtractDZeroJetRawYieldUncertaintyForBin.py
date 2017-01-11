@@ -59,7 +59,7 @@ if __name__ == '__main__':
                         default=0)
     parser.add_argument('--ptmax', metavar='pt',
                         default=0)
-    parser.add_argument('--method', metavar='methos',
+    parser.add_argument('--method', metavar='method',
                         default="invmassfit")
     args = parser.parse_args()
 
