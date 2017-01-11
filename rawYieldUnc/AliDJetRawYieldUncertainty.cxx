@@ -227,6 +227,8 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroSideband() {
     return kFALSE;
   }
 
+  fMassPlot->Draw();
+
   return kTRUE;
 }
 
@@ -904,6 +906,19 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
 
     if (fDebug) std::cout << "Running bin pT(D) " << iDbin << std::endl;
 
+    Int_t nValid = 0;
+    for (Int_t iBin = 1; iBin < hMean->GetNbinsX()+1; iBin++){
+      if (hSigma->GetBinContent(iBin) > 0) nValid++;
+    }
+    if (nValid < 1) {
+      std::cout << "No valid trial found!" << std::endl;
+      return kFALSE;
+    }
+    if (!fAllowRepetitions && fnMaxTrials > nValid) {
+      std::cout << "Error! you set more set spectrum total variations (" << fnMaxTrials << ")  than those done and valid (" << nValid << ") for pT(D) bin" << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin + 1] << "! ";
+      std::cout << "Impossible to do without allowing repetitions! Exiting..." << std::endl;
+      return kFALSE;
+    }
     for (int iTrial = 0; iTrial<fnMaxTrials; iTrial++) {
 
       Bool_t extractOk = kFALSE;
@@ -912,24 +927,15 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
       do {  //just one time if fAllowRepetitions==kTRUE, repeat extraction till new number is obtained if fAllowRepetitions==kFALSE
 
         rnd = gen->Integer(hMean->GetNbinsX()) + 1;
-        if (hSigma->GetBinContent(rnd)>0) extractOk = kTRUE;  //avoid 'empty' cases
+        if (hSigma->GetBinContent(rnd) > 0) extractOk = kTRUE;  //avoid 'empty' cases
 
         if (!fAllowRepetitions) { //check if already extracted for this pT(D) bin
-
-          if (fnMaxTrials>hMean->GetNbinsX()) {
-            std::cout << "Error! you set more set spectrum total variations than those done for pT(D) bin" << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin + 1] << "! ";
-            std::cout << "Impossible to do without allowing repetitions! Exiting..." << std::endl;
-            return kFALSE;
-          }
-
-          for (int j = 0; j<iTrial; j++) {
+          for (int j = 0; j < iTrial; j++) {
             if (rnd == extracted[j]) extractOk = kFALSE;
           }
-
         } //end of if(!fAllowRepetitions)
 
         extracted[iTrial] = rnd;
-
       } while (extractOk == kFALSE);
 
       Double_t mean = hMean->GetBinContent(rnd);
