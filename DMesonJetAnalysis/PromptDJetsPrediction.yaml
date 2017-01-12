@@ -10,22 +10,28 @@ variations:
   stage: 2
 -
   name: mass_low
-  active: no
+  active: yes
   title: "#it{m}_{b} = 1.3 GeV/#it{c}^{2}"
   ts: 1484078952
-  stage: 1
+  stage: 2
 -
   name: mass_high
-  active: no
+  active: yes
   title: "#it{m}_{b} = 1.7 GeV/#it{c}^{2}"
   ts: 1484079666
-  stage: 1
+  stage: 2
 -
   name: PDF_CT10
-  active: no
+  active: yes
   title: "PDF = CT10 (10800)" 
   ts: 1484149098
-  stage: 1
+  stage: 2
+-
+  name: PDF_MSTW2008nlo68cl
+  active: no
+  title: "PDF = MSTW2008nlo68cl (21200)" 
+  ts: 1484231826
+  stage: 2
 -
   name: PDF_cteq6l1
   active: no
