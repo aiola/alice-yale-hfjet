@@ -52,7 +52,7 @@ variations:
   stage: 0
 -
   name: facscfact10_renscfact10
-  active: yes
+  active: no
   title: "#mu_{F} = 1.0, #mu_{R} = 1.0"
   ts: 1483403444
   stage: 0
