@@ -19,7 +19,7 @@ def LoadMacros():
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerQA.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMakerNew.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C")
-    #old emcal framework
+    # old emcal framework
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C")
@@ -28,7 +28,7 @@ def LoadMacros():
 
 def AddESDHandler():
     mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
-    
+
     if mgr == None:
         ROOT.Error("AddESDHandler", "No analysis manager to connect to.")
         return None
@@ -36,17 +36,17 @@ def AddESDHandler():
     inputHandler = mgr.GetInputEventHandler()
 
     handler = ROOT.AliESDInputHandler()
-  
+
     if inputHandler == None:
         mgr.SetInputEventHandler(handler);
     else:
         ROOT.Error("AddESDHandler", "inputHandler is NOT null. ESD handler was NOT added !!!")
-      
+
     return handler
-    
+
 def AddAODHandler():
     mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
-    
+
     if mgr == None:
         ROOT.Error("AddAODHandler", "No analysis manager to connect to.")
         return None
@@ -54,26 +54,26 @@ def AddAODHandler():
     inputHandler = mgr.GetInputEventHandler()
 
     handler = ROOT.AliAODInputHandler()
-  
+
     if inputHandler == None:
         mgr.SetInputEventHandler(handler);
     else:
         ROOT.Error("AddAODHandler", "inputHandler is NOT null. AOD handler was NOT added !!!")
-      
+
     return handler
 
 def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, cachePID=False, detResponse="",
-                       useTPCEtaCorrection=True,             #Please use default value! Otherwise splines can be off
-                       useTPCMultiplicityCorrection=True,    #Please use default value! Otherwise splines can be off
+                       useTPCEtaCorrection=True,  # Please use default value! Otherwise splines can be off
+                       useTPCMultiplicityCorrection=True,  # Please use default value! Otherwise splines can be off
                        recoDataPass=-1):
-    
+
     # Macro to connect a centrality selection task to an existing analysis manager.
     mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
-    
+
     if mgr == None:
         ROOT.Error("AddTaskPIDResponse", "No analysis manager to connect to.")
         return None
-    
+
     print "========================================================================================"
     print "PIDResponse: Initialising AliAnalysisTaskPIDResponse"
 
@@ -84,7 +84,7 @@ def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, 
             print "             Using MC with tune on data."
             print "             !!! ATTENTION ATTENTION ATTENTION !!!"
             print("             You MUST make sure the reco pass set (", recoPass, ") corresponds to the one this MC was produced for!")
-            pidTask.SetTuneOnData(True,recoPass)
+            pidTask.SetTuneOnData(True, recoPass, "pass{0}".format(recoPass))
             # tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
             # pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);
             # pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);
@@ -102,7 +102,7 @@ def AddTaskPIDResponse(isMC=False, autoMCesd=True, tuneOnData=True, recoPass=2, 
     mgr.AddTask(pidTask)
 
     mgr.ConnectInput(pidTask, 0, mgr.GetCommonInputContainer())
-      
+
     print "========================================================================================"
 
     return pidTask
@@ -116,26 +116,26 @@ def PrepareEMCAL(yamlFile):
 def PrepareEMCAL_old(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=True, doClusterMaker=True, doClusTrackMatcher=True, doHadCorr=True) :
     # Tender
     if doTender:
-        bDistBC         = False #switch for recalculation cluster position from bad channel
-        bRecalibClus    = False
-        bRecalcClusPos  = False
-        bNonLinearCorr  = False
-        bRemExoticCell  = False
-        bRemExoticClus  = False
-        bFidRegion      = False
-        bCalibEnergy    = True
-        bCalibTime      = True
-        bRemBC          = True
-        iNonLinFunct    = ROOT.AliEMCALRecoUtils.kNoCorrection
-        bReclusterize   = False
-        fSeedThresh     = 0.1      # 100 MeV
-        fCellThresh     = 0.05     # 50 MeV
-        iClusterizer    = 0
-        bTrackMatch     = False
+        bDistBC = False  # switch for recalculation cluster position from bad channel
+        bRecalibClus = False
+        bRecalcClusPos = False
+        bNonLinearCorr = False
+        bRemExoticCell = False
+        bRemExoticClus = False
+        bFidRegion = False
+        bCalibEnergy = True
+        bCalibTime = True
+        bRemBC = True
+        iNonLinFunct = ROOT.AliEMCALRecoUtils.kNoCorrection
+        bReclusterize = False
+        fSeedThresh = 0.1  # 100 MeV
+        fCellThresh = 0.05  # 50 MeV
+        iClusterizer = 0
+        bTrackMatch = False
         bUpdateCellOnly = True
-        fEMCtimeMin     = -50e-6
-        fEMCtimeMax     =  50e-6
-        fEMCtimeCut     =  1e6
+        fEMCtimeMin = -50e-6
+        fEMCtimeMax = 50e-6
+        fEMCtimeCut = 1e6
 
         pTenderTask = ROOT.AddTaskEMCALTender(bDistBC, bRecalibClus, bRecalcClusPos, bNonLinearCorr, bRemExoticCell, bRemExoticClus,
                                               bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
@@ -144,17 +144,17 @@ def PrepareEMCAL_old(kPhysSel=ROOT.AliVEvent.kMB, doTender=True, doClusterizer=T
 
     if doClusterizer:
         # Clusterizer
-        fEMCtimeMin     = -50e-6
-        fEMCtimeMax     =  50e-6
-        fEMCtimeCut     =  1e6
-        iClusterizer    = ROOT.AliEMCALRecParam.kClusterizerv2
+        fEMCtimeMin = -50e-6
+        fEMCtimeMax = 50e-6
+        fEMCtimeCut = 1e6
+        iClusterizer = ROOT.AliEMCALRecParam.kClusterizerv2
         pClusterizerTask = ROOT.AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer, 0.05, 0.1,
                                                        fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, False, False)
         pClusterizerTask.SelectCollisionCandidates(kPhysSel)
 
     if doClusterMaker:
-        bRemExoticClus  = True
-        iNonLinFunct    = ROOT.AliEMCALRecoUtils.kBeamTestCorrectedv3
+        bRemExoticClus = True
+        iNonLinFunct = ROOT.AliEMCALRecoUtils.kBeamTestCorrectedv3
 
         # Cluster maker
         pClusterMakerTask = ROOT.AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, "usedefault", "", 0., True)
