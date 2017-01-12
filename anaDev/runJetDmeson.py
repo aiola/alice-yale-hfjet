@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-#python script to test Jet D meson analysis
+# python script to test Jet D meson analysis
 
 import argparse
 import ROOT
 import helperFunctions
 import yaml
 
-def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doResponse, noInclusiveJets,
+def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doResponse, noInclusiveJets, efficiency,
          taskName="JetDmesonAna", debugLevel=0):
-    
+
     f = open(configFileName, 'r')
     config = yaml.load(f)
     f.close()
@@ -17,7 +17,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     ROOT.gSystem.Load("libCGAL")
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])
-    
+
     mode = None
     if config["mode"] == "AOD":
         mode = helperFunctions.AnaMode.AOD
@@ -30,10 +30,10 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     print("{0} analysis chosen.".format(config["mode"]))
     print("Setting local analysis for {0} files from list {1} max events = {2}".format(nFiles, config["file_list"], nEvents))
 
-    #AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
-    #AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
+    # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
+    # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
 
-    #Analysis manager
+    # Analysis manager
     mgr = ROOT.AliAnalysisManager(taskName)
 
     helperFunctions.LoadMacros()
@@ -42,21 +42,21 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
         helperFunctions.AddAODHandler()
     elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
-        
-    #Physics selection task
+
+    # Physics selection task
     if mode is helperFunctions.AnaMode.ESD and not config["MC"]:
         ROOT.AddTaskPhysicsSelection()
 
-    #Setup task
+    # Setup task
     if config["full_jets"] or mode is helperFunctions.AnaMode.ESD:
         OCDBpath = "raw://";
         pSetupTask = ROOT.AliEmcalSetupTask("EmcalSetupTask");
         pSetupTask.SetNoOCDB(0)
         mgr.AddTask(pSetupTask)
         cinput = mgr.GetCommonInputContainer()
-        mgr.ConnectInput(pSetupTask, 0,  cinput)
+        mgr.ConnectInput(pSetupTask, 0, cinput)
         pSetupTask.SetOcdbPath(OCDBpath)
-        
+
     if config["full_jets"]:
         helperFunctions.PrepareEMCAL("userQAconfiguration.yaml")
 
@@ -65,7 +65,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     else:
         print "Running on data"
 
-    #PID response
+    # PID response
     helperFunctions.AddTaskPIDResponse(config["MC"], True, True, config["reco_pass"])
 
     if config["full_jets"]:
@@ -79,35 +79,35 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     pSpectraTask.SetPtBin(1, 150)
 
     if not noInclusiveJets:
-        #Charged jet analysis
+        # Charged jet analysis
         if config["charged_jets"]:
             pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pChJetTask.SelectCollisionCandidates(physSel)
-    
+
             pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pChJetTask.SelectCollisionCandidates(physSel)
-    
-        #Full jet analysis
+
+        # Full jet analysis
         if config["full_jets"]:
             pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pJetTask.SelectCollisionCandidates(physSel)
-    
+
             pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pJetTask.SelectCollisionCandidates(physSel)
-    
+
         if config["full_jets"]:
             pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "usedefault")
             pJetSpectraTask.SetNeedEmcalGeom(True)
         else:
             pJetSpectraTask = ROOT.AddTaskEmcalJetTree("usedefault", "")
             pJetSpectraTask.SetNeedEmcalGeom(False)
-                    
+
         pJetSpectraTask.SelectCollisionCandidates(physSel)
-    
+
         if config["charged_jets"]:
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
-    
+
         if config["full_jets"]:
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
@@ -116,10 +116,10 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     if doRecLevel:
         nOutputTrees += 3
-        
+
     if config["MC"] and doSignalOnly:
         nOutputTrees += 2
-        
+
     if config["MC"] and doMCTruth:
         nOutputTrees += 2
 
@@ -152,6 +152,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
         pDMesonJetsTask.SelectCollisionCandidates(physSel)
         pDMesonJetsTask.SetApplyKinematicCuts(False)
+        pDMesonJetsTask.SetTrackEfficiency(efficiency);
 
         if doRecLevel and not doResponse:
             # D0
@@ -160,7 +161,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpiLikeSign, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpiLikeSign, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
-        
+
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
@@ -170,45 +171,45 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kChargedJet, 0.6)
-        
+
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kNoMC, ROOT.AliJetContainer.kFullJet, 0.4)
-            
+
         if config["MC"] and doSignalOnly:
             # D0
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.6)
-        
+
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
-        
+
             # D*
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kChargedJet, 0.6)
-        
+
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
-                
+
         if config["MC"] and doMCTruth:
             # D0
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.6)
-        
+
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
-        
+
             # D*
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.4)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kChargedJet, 0.6)
-        
+
             if config["full_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kMCTruth, ROOT.AliJetContainer.kFullJet, 0.4)
@@ -226,7 +227,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     mgr.PrintStatus()
 
-    outFile = ROOT.TFile("train.root","RECREATE")
+    outFile = ROOT.TFile("train.root", "RECREATE")
     outFile.cd()
     mgr.Write()
     outFile.Close()
@@ -238,16 +239,16 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     elif mode is helperFunctions.AnaMode.ESD:
         ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
         chain = ROOT.CreateESDChain(config["file_list"], nFiles, 0, False)
-        
+
     if debugLevel == 0:
         mgr.SetUseProgressBar(1, 250)
 
     mgr.SetDebugLevel(debugLevel)
 
-    #To have more debug info
-    #mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug+100)
+    # To have more debug info
+    # mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug+100)
 
-    #start analysis
+    # start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, nEvents)
 
@@ -257,7 +258,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet D meson analysis.')
     parser.add_argument('config',
                         help='YAML configuration file')
-    parser.add_argument('-f', '--n-files', 
+    parser.add_argument('-f', '--n-files',
                         default=100,
                         type=int,
                         help='Number of files to be analyzed')
@@ -265,10 +266,10 @@ if __name__ == '__main__':
                         type=int,
                         default=2000,
                         help='Number of events to be analyzed')
-    parser.add_argument('--no-signal-only',action='store_const',
+    parser.add_argument('--no-signal-only', action='store_const',
                         default=False, const=True,
                         help='Signal only analysis')
-    parser.add_argument('--no-rec-level',action='store_const',
+    parser.add_argument('--no-rec-level', action='store_const',
                         default=False, const=True,
                         help='Reconstructed level analysis')
     parser.add_argument('--no-mc-truth', action='store_const',
@@ -279,15 +280,18 @@ if __name__ == '__main__':
                         help='No inclusive jets')
     parser.add_argument('--response',
                         default=False,
-                        help='Run response matrix')
+                        help='Run response matrix (c or b)')
+    parser.add_argument('--efficiency',
+                        default=0.0, type=float,
+                        help='Artificial tracking inefficiency')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
-    parser.add_argument('-d', '--debug-level', 
+    parser.add_argument('-d', '--debug-level',
                         default=0,
                         type=int,
                         help='Debug level')
     args = parser.parse_args()
 
-    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response, args.no_incl_jets,
+    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response, args.no_incl_jets, args.efficiency,
          args.task_name, args.debug_level)
