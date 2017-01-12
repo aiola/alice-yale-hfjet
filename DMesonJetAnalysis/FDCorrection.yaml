@@ -34,7 +34,7 @@ variations:
   stage: 1
 -
   name: PDF_MSTW2008nlo68cl
-  active: no
+  active: yes
   title: "PDF = MSTW2008nlo68cl (21200)" 
   ts: 1484037661
   stage: 1
