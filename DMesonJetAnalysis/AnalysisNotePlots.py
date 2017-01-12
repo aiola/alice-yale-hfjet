@@ -159,6 +159,12 @@ def CopyBFeedDown(input_path, output_path, output_type):
     file_list.append("BFeedDownVsPtJet_powheg_Charged_R040_Ratio")
     file_list.append("BFeedDownVsZ_powheg_Charged_R040")
     file_list.append("BFeedDownVsZ_powheg_Charged_R040_Ratio")
+    file_list.append("BFeedDown_DPtSpectrum_GeneratorLevel_DPtSpectrum")
+    file_list.append("BFeedDown_DPtSpectrum_GeneratorLevel_DPtSpectrum_Ratio")
+    file_list.append("BFeedDown_DPtSpectrum_GeneratorLevel_DPtSpectrum_canvas")
+    file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum")
+    file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_Ratio")
+    file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyDataFilesWithoutEff(config, output_path, output_type):
@@ -191,6 +197,13 @@ def CopyDataFilesWithEff(config, output_path, output_type):
     file_list.append("D0_Charged_R040_jet_pt_SpectraComparison_Ratio")
     file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_FDCorrection")
     file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_FDCorrection_Ratio")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
+    full_input_path = "{0}/{1}/{2}/RawYieldUnc/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_output_path = "{0}/RawYieldExtractionWithEff".format(output_path)
+    file_list = []
+    file_list.append("AverageRawYieldVsDefault")
+    file_list.append("AverageRawYieldVsDefault_Ratio")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyEfficiencyFiles(config, output_path, output_type):
@@ -258,23 +271,11 @@ def CopyMCUnfoldingFiles(config, output_path, output_type):
     full_input_path = "{0}/{1}".format(config["input_path"], config["name"])
     full_output_path = "{0}/MCUnfolding".format(output_path)
     file_list = []
-    file_list.append("SideBand_DPt_30_Response_PriorResponseTruth")
-    file_list.append("SideBand_DPt_30_UnfoldingSummary_Bayes")
-    file_list.append("SideBand_DPt_30_UnfoldingSummary_Bayes_UnfoldedOverMeasured")
-    file_list.append("SideBand_DPt_30_BinByBinCorrectionFactors")
-    file_list.append("SideBand_DPt_30_Priors")
-    file_list.append("SideBand_DPt_30_Priors_Ratio")
-    file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes")
     file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes_Ratio")
-    file_list.append("SideBand_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth")
     file_list.append("SideBand_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth_Ratio")
-    file_list.append("SideBand_DPt_30_UnfoldingMethod")
     file_list.append("SideBand_DPt_30_UnfoldingMethod_Ratio")
-    file_list.append("SignalOnly_DPt_30_UnfoldingPrior_Bayes")
     file_list.append("SignalOnly_DPt_30_UnfoldingPrior_Bayes_Ratio")
-    file_list.append("SignalOnly_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth")
     file_list.append("SignalOnly_DPt_30_UnfoldingRegularization_Bayes_PriorResponseTruth_Ratio")
-    file_list.append("SignalOnly_DPt_30_UnfoldingMethod")
     file_list.append("SignalOnly_DPt_30_UnfoldingMethod_Ratio")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
