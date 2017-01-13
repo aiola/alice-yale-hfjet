@@ -49,7 +49,10 @@ def main(config, unfolding_debug):
         if not v["active"]: continue
         name = v["name"]
         suffix = "_".join([config["generator"], str(v["ts"])])
-        input_file_name = "{0}/FastSim_{1}/stage_{2}/output/FastSimAnalysis_{1}.root".format(config["input_path"], suffix, v["stage"])
+        if v["stage"] >= 0:
+            input_file_name = "{0}/FastSim_{1}/stage_{2}/output/FastSimAnalysis_{1}.root".format(config["input_path"], suffix, v["stage"])
+        else:
+            input_file_name = "{0}/FastSim_{1}/output/FastSimAnalysis_{1}.root".format(config["input_path"], suffix)
         (FDhistogram_jetpt_orig, FDhistogram_dpt_orig) = LoadFDHistogram(input_file_name)
         results[name] = OrderedDict()
         results[name].update(PrepareFDhist_dpt(v["ts"], FDhistogram_dpt_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency))
