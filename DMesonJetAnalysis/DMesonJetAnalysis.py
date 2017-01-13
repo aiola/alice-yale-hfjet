@@ -140,7 +140,8 @@ class DMesonJetAnalysisEngine:
             if invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) > 0 and invMassHist.GetBinContent(1) > 0:
                 expoParBkg1 = math.log(invMassHist.GetBinContent(invMassHist.GetXaxis().GetNbins()) / invMassHist.GetBinContent(1)) / (maxMass - minMass)
             else:
-                expoParBkg1 = -1
+                expoParBkg1 = -1.0
+            if expoParBkg1 == 0: expoParBkg1 = -1.0
             expoParBkg0 = totIntegral / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
 
             sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
@@ -753,6 +754,7 @@ class DMesonJetAnalysisEngine:
 
             sigma = bin.fMassFitter.GetSignalWidth()
             mean = bin.fMassFitter.GetSignalMean()
+            print("Sigma={0:.3f}, Mean={1:.3f}".format(sigma, mean))
 
             binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
             binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas * sigma)
@@ -764,7 +766,9 @@ class DMesonJetAnalysisEngine:
                 binSBL_1 = 1
             if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
                 binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
-
+            effSigma1 = (mean - bin.fBinCountAnalysisHisto.GetXaxis().GetBinLowEdge(binSig_1)) / sigma
+            effSigma2 = (bin.fBinCountAnalysisHisto.GetXaxis().GetBinUpEdge(binSig_2) - mean) / sigma
+            print("The left effective sigma is {0:.3f}; the right effective sigma is {1:.3f}".format(effSigma1, effSigma2))
             (signalWindowInvMassHisto, sideBandWindowInvMassHisto) = self.GenerateInvMassWidonws(bin.fInvMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2)
 
             s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
@@ -776,12 +780,16 @@ class DMesonJetAnalysisEngine:
             sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
             sbTotal.Add(sbR)
 
-            peakAreaBkgError = ROOT.Double(0.)
-            peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
+            # peakAreaBkgError = ROOT.Double(0.)
+            # peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
+            intSigErr = ROOT.Double(0.)
+            intSig = sig.IntegralAndError(0, -1, intSigErr)
+            peakAreaBkgError = math.sqrt(intSigErr ** 2 + (bin.fMassFitter.GetSignalError(effSigma1) / 2) ** 2 + (bin.fMassFitter.GetSignalError(effSigma2) / 2) ** 2)
+            peakAreaBkg = intSig - bin.fMassFitter.GetSignal(effSigma1) / 2 - bin.fMassFitter.GetSignal(effSigma2) / 2
             print("Bin: {0}".format(bin.GetTitle()))
             print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
             print("The estimated background in the signal window is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
-            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0, -1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal(s.fBinCountSignalSigmas) + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(intSig, bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal(s.fBinCountSignalSigmas) + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
 
             sbTotalIntegralError = ROOT.Double(0)
             sbTotalIntegral = sbTotal.IntegralAndError(0, -1, sbTotalIntegralError)
@@ -808,6 +816,11 @@ class DMesonJetAnalysisEngine:
                 sbTotal.Scale(w)
                 sig.Scale(w)
 
+            scaleGaussianLimit = 1.0 - math.erfc(effSigma1 / math.sqrt(2.0)) / 2 - math.erfc(effSigma2 / math.sqrt(2.0)) / 2
+            print("Scaling for the Gaussian limit ({0} sigmas): {1}".format(s.fBinCountSignalSigmas, scaleGaussianLimit))
+            sbTotal.Scale(1.0 / scaleGaussianLimit)
+            sig.Scale(1.0 / scaleGaussianLimit)
+
             sbTotal.SetTitle(bin.GetTitle())
             s.fSideBandHistograms.append(sbTotal)
             s.fSideBandWindowTotalHistogram.Add(sbTotal)
@@ -823,10 +836,6 @@ class DMesonJetAnalysisEngine:
         s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
         if s.fBackground:
             s.fBackground.Add(s.fSideBandWindowTotalHistogram)
-
-        scaleGaussianLimit = 1.0 - math.erfc(s.fBinCountSignalSigmas / math.sqrt(2.0))
-        print("Scaling for the Gaussian limit ({0} sigmas): {1}".format(s.fBinCountSignalSigmas, scaleGaussianLimit))
-        s.fHistogram.Scale(1.0 / scaleGaussianLimit)
 
         for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
             if s.fHistogram.GetBinContent(xbin) > 0:
