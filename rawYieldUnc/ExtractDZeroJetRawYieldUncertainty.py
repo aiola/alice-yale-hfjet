@@ -132,18 +132,18 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     meansigmaVar = [True, True, True, True, True, True]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
     bkgVar = [True, True, True, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
     rebinStep = [1, 2]
-    minMassStep = [1.70, 1.72, 1.74]
-    maxMassStep = [2.000, 2.025, 2.050]
+    minMassStep = [1.715, 1.739, 1.691]
+    maxMassStep = [2.015, 1.991, 2.039]
     nSigmasBC = [3.5, 4.0]
     # WARNING! set nmask value to active mean/sigma*active bkg variations!
     # And adjust consequently the following matrix (put an entry for each variation, with value: 0=don't consider it, 1=consider it in the final syst eval)
     mask = [
-        1, 1,  # fixed sigma (Expo, Lin, Pol2, Pol3, Pol4, Pol5, PowLaw, PowLaw*Exp)
-		1, 1,  # fixed sigma+15%
-		1, 1,  # fixed sigma-15%
-		1, 1,  # free sigma, free mean
-		1, 1,  # free sigma, fixed mean
-		1, 1  # fixed mean, fixed sigma
+        1, 1, 1,  # fixed sigma (Expo, Lin, Pol2, Pol3, Pol4, Pol5, PowLaw, PowLaw*Exp)
+		1, 1, 1,  # fixed sigma+15%
+		1, 1, 1,  # fixed sigma-15%
+		1, 1, 1,  # free sigma, free mean
+		1, 1, 1,  # free sigma, fixed mean
+		1, 1, 1  # fixed mean, fixed sigma
         ]
 
     interface = ROOT.AliDJetRawYieldUncertainty()
@@ -155,8 +155,7 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     interface.SetInputDBranchname("DmesonJet")
     interface.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
 
-    # interface.SetMassEdgesAndBinWidthForMassPlot(1.5664, 2.1664, 0.006)
-    interface.SetMassEdgesAndBinWidthForMassPlot(1.715, 2.015, 0.006)
+    interface.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
@@ -184,7 +183,7 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
 
     return interface
 
-def main(config, debug):
+def main(config, skip_binbybin, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
 
@@ -210,14 +209,16 @@ def main(config, debug):
     rawYieldUncInvMassFit = []
     rawYieldUncSideBand = []
 
-    for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
-        interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt)
-        rawYieldUncInvMassFit.append(interface)
+    if not skip_binbybin:
+        for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
+            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt)
+            rawYieldUncInvMassFit.append(interface)
     rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
 
-    for minPt, maxPt in zip(ptDbins[:-1], ptDbins[1:]):
-        interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt)
-        rawYieldUncSideBand.append(interface)
+    if not skip_binbybin:
+        for minPt, maxPt in zip(ptDbins[:-1], ptDbins[1:]):
+            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt)
+            rawYieldUncSideBand.append(interface)
     rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
     outputPath = "{0}/{1}/{2}".format(config["input_path"], config["train"], config["name"])
@@ -239,12 +240,14 @@ if __name__ == '__main__':
     parser.add_argument('yaml', metavar='file.yaml')
     parser.add_argument('--debug', metavar='debug',
                         default=2)
+    parser.add_argument('--skip-binbybin', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.debug)
+    main(config, args.skip_binbybin, args.debug)
 
     IPython.embed()
