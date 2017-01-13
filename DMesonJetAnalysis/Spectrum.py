@@ -33,7 +33,6 @@ class Spectrum:
         self.fFDCorrSystHistogram = None
         self.fFDHistogram = None
         self.fFDSystUncHistogram = None
-        self.fFDUnfoldedSystUncHistogram = None
         self.fNormFDCorrHistogram = None
         self.fNormFDCorrSystHistogram = None
 
@@ -116,8 +115,6 @@ class Spectrum:
             rlist.Add(self.fFDCorrSystHistogram)
         if self.fFDSystUncHistogram:
             rlist.Add(self.fFDSystUncHistogram)
-        if self.fFDUnfoldedSystUncHistogram:
-            rlist.Add(self.fFDUnfoldedSystUncHistogram)
         if self.fNormHistogram:
             rlist.Add(self.fNormHistogram)
         if self.fNormFDCorrHistogram:
@@ -167,12 +164,10 @@ class Spectrum:
         branchingRatio = 0.0393  # D0->Kpi
         self.fFDHistogram = self.fFDCorrection.fFDHistogram.Clone("{0}_FD".format(self.fHistogram.GetName()))
         self.fFDSystUncHistogram = self.fFDCorrection.fFDSystUncHistogram.Clone("{0}_FDSystUnc".format(self.fHistogram.GetName()))
-        if self.fFDCorrection.fFDUnfoldedSystUncHistogram: self.fFDUnfoldedSystUncHistogram = self.fFDCorrection.fFDUnfoldedSystUncHistogram.Clone("{0}_FDUnfoldedSystUnc".format(self.fHistogram.GetName()))
 
         if not isWeighted:
             self.fFDHistogram.Scale(events / crossSection * branchingRatio)
             self.fFDSystUncHistogram.Scale(events / crossSection * branchingRatio)
-            if self.fFDUnfoldedSystUncHistogram: self.fFDUnfoldedSystUncHistogram.Scale(events / crossSection * branchingRatio)
         self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
         self.fFDCorrSystHistogram.Add(self.fFDHistogram, -1)
         for ibin in range(0, self.fFDCorrSystHistogram.GetNbinsX() + 2):
