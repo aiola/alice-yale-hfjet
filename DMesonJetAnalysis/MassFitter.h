@@ -49,6 +49,8 @@ class MassFitter : public TNamed {
   Double_t GetSignalWidthError()                     const { return fDisableSig == kFALSE ? fWidthError : 0.      ; }
   Double_t GetSignal()                               const { return fDisableSig == kFALSE ? fSignal : 0.          ; }
   Double_t GetSignalError()                          const { return fDisableSig == kFALSE ? fSignalError : 0.     ; }
+  Double_t GetSignal(Double_t sigmas)                const;
+  Double_t GetSignalError(Double_t sigmas)           const;
   Double_t GetBackground(Double_t sigmas=3.0)        const;
   Double_t GetBackgroundError(Double_t sigmas=3.0)   const;
   Double_t GetBackgroundAndError(Double_t& bkgErr,
