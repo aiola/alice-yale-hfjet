@@ -6,6 +6,8 @@
 #include <TF1.h>
 #include <TDatabasePDG.h>
 #include <TFitter.h>
+#include <TFitResult.h>
+#include <TMatrixDSym.h>
 
 const Double_t MassFitter::fgkEpsilon = 1e-15;
 
@@ -218,6 +220,7 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
 
     for (Int_t i = 0; i < fNParBkg; i++) {
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
+      fFunctionBkg->SetParError(i, fFunction->GetParError(i));
     }
   }
 
@@ -273,10 +276,32 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
     return 0.;
   }
 
+  Double_t sig = GetSignal(sigmas);
+  Double_t sigErr = GetSignalError(sigmas);
+
   Double_t bkg = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean - fWidth*sigmas), fHistogram->GetXaxis()->FindBin(fMean + fWidth*sigmas), bkgErr);
-  bkg -= GetSignal() * (1.0 - TMath::Erfc(sigmas / TMath::Sqrt2()));
-  bkgErr = TMath::Sqrt(bkgErr*bkgErr + GetSignalError()*GetSignalError());
+  bkg -= sig;
+  bkgErr = TMath::Sqrt(bkgErr*bkgErr + sigErr*sigErr);
+  /*
+  Bool_t temp = fDisableSig;
+  (const_cast<MassFitter*>(this))->fDisableSig = kTRUE;
+  Double_t bkg = fFunction->Integral(fMean - fWidth*sigmas, fMean + fWidth*sigmas) / fHistogram->GetBinWidth(1);
+  bkgErr = fFunction->IntegralError(fMean - fWidth*sigmas, fMean + fWidth*sigmas, 0, fFitResult->GetCovarianceMatrix().GetMatrixArray()) / fHistogram->GetBinWidth(1);
+  (const_cast<MassFitter*>(this))->fDisableSig = temp;
+  */
   return bkg;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetSignal(Double_t sigmas) const
+{
+  return GetSignal() * (1.0 - TMath::Erfc(sigmas / TMath::Sqrt2()));
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetSignalError(Double_t sigmas) const
+{
+  return GetSignalError() * (1.0 - TMath::Erfc(sigmas / TMath::Sqrt2()));
 }
 
 //____________________________________________________________________________________
