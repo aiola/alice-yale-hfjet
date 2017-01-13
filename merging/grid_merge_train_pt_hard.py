@@ -24,7 +24,7 @@ def AlienFileExists(fileName):
         subprocessCheckCall(["alien_ls", fname])
     except subprocess.CalledProcessError:
         fileExists = False
-        
+
     return fileExists
 
 def AlienCopy(source, destination, attempts=3, overwrite=False):
@@ -36,12 +36,12 @@ def AlienCopy(source, destination, attempts=3, overwrite=False):
             AlienDelete(destination)
         else:
             return True
-        
+
     if destination.find("alien://") == -1:
         dest = "alien://{0}".format(destination)
     else:
         dest = destination
-    
+
     while True:
         subprocessCall(["alien_cp", source, dest])
         i += 1
@@ -51,13 +51,13 @@ def AlienCopy(source, destination, attempts=3, overwrite=False):
         if i >= attempts:
             print("After {0} attempts I could not copy {1} to {2}".format(i, source, dest))
             break
-    
+
     return fileExists
 
 def subprocessCall(cmd):
     print(cmd)
     return  subprocess.call(cmd)
-    
+
 def subprocessCheckCall(cmd):
     print(cmd)
     return subprocess.check_call(cmd)
@@ -67,18 +67,18 @@ def subprocessCheckOutput(cmd):
     return subprocess.check_output(cmd, universal_newlines=True)
 
 def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
-    output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, TrainName+"/"+str(TrainNumber)+"_*"], universal_newlines=True)
-    #print("alien_find", "-d", "-l", "1", SearchPath, TrainName+"/"+str(TrainNumber)+"_*")
-    #print(output)
-    i = output.rfind(str(TrainNumber)+"_")
+    output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, TrainName + "/" + str(TrainNumber) + "_*"], universal_newlines=True)
+    # print("alien_find", "-d", "-l", "1", SearchPath, TrainName + "/" + str(TrainNumber) + "_*")
+    # print(output)
+    i = output.rfind(str(TrainNumber) + "_")
     j = len(str(TrainNumber)) + 14 + i
     FullTrainNumber = output[i:j]
     return FullTrainNumber
 
 def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin, MaxPtHardBin, Year, AliPhysicsVersion, TestMode, GridTestMode, GridUpdate):
-    for Dataset,TrainNumber in zip(sorted(Datasets.iterkeys()),TrainNumbers):
-        
-        AlienPath="/alice/sim/"+str(Year)+"/"+Dataset
+    for Dataset, TrainNumber in zip(sorted(Datasets.iterkeys()), TrainNumbers):
+
+        AlienPath = "/alice/sim/" + str(Year) + "/" + Dataset
         FirtRun = Datasets[Dataset][0]
         SearchPath = "{0}/{1}".format(AlienPath, FirtRun)
         FullTrainNumber = GetFullTrainNumber(SearchPath, TrainName, TrainNumber)
@@ -95,21 +95,21 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
         AlienCopy("./MergeFiles.C", "alien://{0}".format(macroFile), 3, GridUpdate)
         AlienCopy("./grid_merge_train_pt_hard_validation.sh", "alien://{0}".format(validationScript), 3, GridUpdate)
 
-        for PtHardBin in range(MinPtHardBin, MaxPtHardBin+1):
+        for PtHardBin in range(MinPtHardBin, MaxPtHardBin + 1):
 
             localDest = "{0}/{1}/{2}".format(LocalPath, Dataset, PtHardBin)
             if not os.path.isdir(localDest):
-                print "Creating directory "+localDest
+                print "Creating directory " + localDest
                 os.makedirs(localDest)
 
             alienOutputFile = "{0}/{1}/output".format(dest, PtHardBin)
-            
+
             if AlienFileExists("{0}/AnalysisResults.root".format(alienOutputFile)):
                 print("Output file alien://{0}/AnalysisResults.root already exists. Skipping.".format(alienOutputFile))
                 continue
-            
+
             AlienDelete(alienOutputFile)
-            
+
             xmlColl = subprocessCheckOutput(["alien_find", "-x", "merge_files.xml", AlienPath, "*/{0}/PWGJE/{1}/{2}/AnalysisResults.root".format(PtHardBin, TrainName, FullTrainNumber)])
 
             subprocessCall(["alien_mkdir", "{0}/{1}".format(dest, PtHardBin)])
@@ -179,29 +179,29 @@ Validationcommand = \"{validationScript}\"; \n\
 
 def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode, GridUpdate):
     try:
-        rootPath=subprocess.check_output(["which", "root"]).rstrip()
-        alirootPath=subprocess.check_output(["which", "aliroot"]).rstrip()
-        alienPath=subprocess.check_output(["which", "alien-token-info"]).rstrip()
+        rootPath = subprocess.check_output(["which", "root"]).rstrip()
+        alirootPath = subprocess.check_output(["which", "aliroot"]).rstrip()
+        alienPath = subprocess.check_output(["which", "alien-token-info"]).rstrip()
     except subprocess.CalledProcessError:
         print "Environment is not configured correctly!"
         exit()
 
-    print "Root: "+rootPath
-    print "AliRoot: "+alirootPath
-    print "Alien: "+alienPath
+    print "Root: " + rootPath
+    print "AliRoot: " + alirootPath
+    print "Alien: " + alienPath
 
     if "JETRESULTS" in os.environ:
-        JetResults=os.environ["JETRESULTS"]
+        JetResults = os.environ["JETRESULTS"]
     else:
-        JetResults="."
+        JetResults = "."
 
     try:
         print "Token info disabled"
-        #tokenInfo=subprocess.check_output(["alien-token-info"])
+        # tokenInfo=subprocess.check_output(["alien-token-info"])
     except subprocess.CalledProcessError:
         print "Alien token not available. Creating a token for you..."
         try:
-            #tokenInit=subprocess.check_output(["alien-token-init", "saiola"], shell=True)
+            # tokenInit=subprocess.check_output(["alien-token-init", "saiola"], shell=True)
             print "Token init disabled"
         except subprocess.CalledProcessError:
             print "Error: could not create the token!"
@@ -209,37 +209,37 @@ def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode
 
     Datasets = config["datasets"]
 
-    if (len(Datasets)!=len(TrainNumbers)):
-        print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets),len(TrainNumbers))
+    if (len(Datasets) != len(TrainNumbers)):
+        print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets), len(TrainNumbers))
         print "Datasets are"
         print Datasets
         print "Trains are"
         print TrainNumbers
         exit()
 
-    LocalPath="{0}/{1}".format(JetResults, config["train"])
+    LocalPath = "{0}/{1}".format(JetResults, config["train"])
 
     for TrainNumber in TrainNumbers:
-        LocalPath+="_"+str(TrainNumber)
+        LocalPath += "_" + str(TrainNumber)
 
-    print "Train: "+config["train"]
-    print "Local path: "+LocalPath
+    print "Train: " + config["train"]
+    print "Local path: " + LocalPath
     print "Train numbers are: "
     print TrainNumbers
-    
+
     if not os.path.isdir(LocalPath):
-        print "Creating directory "+LocalPath
+        print "Creating directory " + LocalPath
         os.makedirs(LocalPath)
-        
+
     if config["pt_hard_bins"]:
-        PtHardBinMerging(LocalPath, Datasets, config["train"], TrainNumbers, config["min_pt_hard_bin"], config["max_pt_hard_bin"], 
+        PtHardBinMerging(LocalPath, Datasets, config["train"], TrainNumbers, config["min_pt_hard_bin"], config["max_pt_hard_bin"],
                          config["year"], AliPhysicsVersion, TestMode, GridTestMode, GridUpdate)
     else:
         print("Error! This is only for pt hard binned productions! Fix YAML file.")
 
 if __name__ == '__main__':
     # FinalMergeLocal.py executed as script
-    
+
     parser = argparse.ArgumentParser(description='Local final merging for LEGO train results.')
     parser.add_argument('trainNumber', metavar='trainNumber',
                         help='Train numbers to be downloaded and merged')
@@ -254,7 +254,7 @@ if __name__ == '__main__':
                         default=False, const=True,
                         help='Test grid mode')
     parser.add_argument("--update", action='store_const',
-                        default=False, const = True,
+                        default=False, const=True,
                         help='Update all scripts and macros on the grid.')
     args = parser.parse_args()
 
@@ -262,8 +262,8 @@ if __name__ == '__main__':
     TrainNumbers = []
     for TrainNumberRange in TrainNumberList:
         Range = TrainNumberRange.split(":")
-        TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range)-1])+1))
-    
+        TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range) - 1]) + 1))
+
     f = open(args.config, 'r')
     config = yaml.load(f)
     f.close()
