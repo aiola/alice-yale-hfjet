@@ -25,10 +25,7 @@
 //  fabio.colamaria@cern.ch
 //-----------------------------------------------------------------------
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include "TObject.h"
+#include <TObject.h>
 
 class AliDJetRawYieldUncertainty : public TObject
 {
@@ -103,6 +100,8 @@ public:
   Bool_t EvaluateUncertaintyDstarSideband();
   Bool_t EvaluateUncertaintyDstarSideband_CoherentTrialChoice();
 
+  Bool_t GenerateDzeroJetSpectrumSideBand(TTree* tree, Float_t mean, Float_t sigma, Float_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2);
+
   void SetDebugLevel(Int_t debug) {fDebug=debug;}
   void ClearObjects();
 
@@ -168,6 +167,7 @@ private:
   TH1D* fJetYieldCentral;		// central values of the yield of jet spectrum + syst yield uncertainty
   TH1D* fJetYieldUnc;			// yield uncertainty vs jet pT bin
   TH1F** fJetSpectrSBVars;		// array of jet spectrum histograms, one per variation (sideband approach)
+  TH1F* fJetSpectrSBDef;
   TH1F** fJetPtBinYieldDistribution;  // array of histograms with yield distributions from the trials for each pT(jet)
 
   Int_t fDebug;			// debug level
