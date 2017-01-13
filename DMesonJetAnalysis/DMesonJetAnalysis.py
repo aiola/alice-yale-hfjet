@@ -526,8 +526,8 @@ class DMesonJetAnalysisEngine:
 
         if bin.fMassFitter:
             if s.fBackground:
-                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground())
-                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError())
+                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground(2))
+                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError(2))
             if s.fMass:
                 s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
@@ -590,7 +590,7 @@ class DMesonJetAnalysisEngine:
             print("Bin: {0}".format(bin.GetTitle()))
             if sig:
                 print("The total signal+background is {0}".format(sig.Integral(0, -1)))
-            print("The signal+background from the invariant mass plot {0} or summing signal and background {1}".format(bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal() + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+            print("The signal+background from the invariant mass plot {0} or summing signal and background {1}".format(bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal(s.fBinCountSignalSigmas) + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
             peakAreaBkgError = ROOT.Double(0.)
             peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
             print("The total background in the peak area estimated from the fit is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
@@ -781,7 +781,7 @@ class DMesonJetAnalysisEngine:
             print("Bin: {0}".format(bin.GetTitle()))
             print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
             print("The estimated background in the signal window is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
-            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0, -1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal() + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(sig.Integral(0, -1), bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal(s.fBinCountSignalSigmas) + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
 
             sbTotalIntegralError = ROOT.Double(0)
             sbTotalIntegral = sbTotal.IntegralAndError(0, -1, sbTotalIntegralError)
