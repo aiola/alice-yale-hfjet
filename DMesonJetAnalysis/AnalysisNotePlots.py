@@ -123,6 +123,9 @@ def main(actions, output_path, output_type):
     if "all" in actions or "bfeed_down" in actions:
         CopyBFeedDown("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
+    if "all" in actions or "promptd_sim" in actions:
+        CopyPromptDSimulation("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+
     if "all" in actions or "theory_comparison" in actions:
         CopyTheoryComparisonFiles(configs["data_unfolding"], output_path, output_type)
 
@@ -166,6 +169,18 @@ def CopyBFeedDown(input_path, output_path, output_type):
     file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_Ratio")
     file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
     CopyFiles(input_path, full_output_path, file_list, output_type)
+
+def CopyPromptDSimulation(input_path, output_path, output_type):
+    full_output_path = "{0}/PromptDSim".format(output_path)
+    file_list = []
+    file_list.append("PromptDJetsPrediction_DPtSpectrum_GeneratorLevel_DPtSpectrum")
+    file_list.append("PromptDJetsPrediction_DPtSpectrum_GeneratorLevel_DPtSpectrum_Ratio")
+    file_list.append("PromptDJetsPrediction_DPtSpectrum_GeneratorLevel_DPtSpectrum_canvas")
+    file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum")
+    file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_Ratio")
+    file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
+    CopyFiles(input_path, full_output_path, file_list, output_type)
+
 
 def CopyDataFilesWithoutEff(config, output_path, output_type):
     full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
