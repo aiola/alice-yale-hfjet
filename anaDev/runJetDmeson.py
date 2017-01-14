@@ -6,7 +6,7 @@ import ROOT
 import helperFunctions
 import yaml
 
-def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doResponse, noInclusiveJets, efficiency,
+def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency,
          taskName="JetDmesonAna", debugLevel=0):
 
     f = open(configFileName, 'r')
@@ -195,6 +195,26 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2)
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4)
 
+        if config["MC"] and doWrongPID:
+            # D0
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.6)
+
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.4)
+
+            # D*
+            if config["charged_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.4)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.6)
+
+            if config["full_jets"]:
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.2)
+                pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.4)
+
+
         if config["MC"] and doMCTruth:
             # D0
             if config["charged_jets"]:
@@ -275,6 +295,9 @@ if __name__ == '__main__':
     parser.add_argument('--no-mc-truth', action='store_const',
                         default=False, const=True,
                         help='MC truth analysis')
+    parser.add_argument('--no-wrong-pid', action='store_const',
+                        default=False, const=True,
+                        help='Wrong PID analysis (reflections)')
     parser.add_argument('--no-incl-jets', action='store_const',
                         default=False, const=True,
                         help='No inclusive jets')
@@ -293,5 +316,5 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
 
-    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, args.response, args.no_incl_jets, args.efficiency,
+    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, not args.no_wrong_pid, args.response, args.no_incl_jets, args.efficiency,
          args.task_name, args.debug_level)
