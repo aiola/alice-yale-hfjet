@@ -5,9 +5,10 @@ import argparse
 import yaml
 import IPython
 import ROOT
-import DMesonJetCompare
 import os
 import numpy
+import DMesonJetCompare
+import MT_Spectrum_Wrapper
 
 globalList = []
 
@@ -56,7 +57,7 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
 def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
     default_spectrum = GetDefaultSpectrum(config, meson_name, jet_type, jet_radius, "_".join([spectrum, method]))
     default_spectrum.SetTitle("Def Fit, {0}".format(method))
-    default_spectrum_from_mt = GetDefaultSpectrumFromMultiTrial(method, config)
+    default_spectrum_from_mt = MT_Spectrum_Wrapper.GetDefaultSpectrumFromMultiTrial(method, config)
     default_spectrum_from_mt.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     default_spectrum_from_mt.GetXaxis().SetTitle(default_spectrum.GetXaxis().GetTitle())
     default_spectrum_from_mt.GetYaxis().SetTitle(default_spectrum.GetYaxis().GetTitle())
@@ -70,7 +71,7 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
     default_spectrum = GetDefaultSpectrum(config, meson_name, jet_type, jet_radius, "_".join([spectrum, method]))
     default_spectrum.SetTitle("Def Fit, {0}".format(method))
-    average_spectrum = GetAverageSpectrum(method, config)
+    average_spectrum = MT_Spectrum_Wrapper.GetAverageSpectrum(method, config)
     average_spectrum.SetTitle("Avg Raw Yield Extr Trials, {0}".format(method))
     average_spectrum.GetXaxis().SetTitle(default_spectrum.GetXaxis().GetTitle())
     average_spectrum.GetYaxis().SetTitle(default_spectrum.GetYaxis().GetTitle())
@@ -81,21 +82,6 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
-
-def GetAverageSpectrum(method, config):
-    fname = "{0}/{1}/{2}/RawYieldUnc/FinalRawYieldCentralPlusSystUncertainty_Dzero_{3}.root".format(config["input_path"], config["train"], config["name"], method)
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
-        file.ls()
-        exit(1)
-    h = file.Get("JetRawYieldCentral")
-    if not h:
-        print("Could not find histogram {0} in file {1}".format("JetRawYieldCentral", fname))
-        file.ls()
-        exit(1)
-    h_copy = h.Clone("{0}_copy".format(h.GetName()))
-    return h_copy
 
 def GetDefaultSpectrumInvMassFitFromMultiTrial(config):
     h = ROOT.TH1D("TrialExpoFreeSigmaInvMassFit", "Trial Expo Free Sigma Inv. Mass Fit", len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
