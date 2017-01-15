@@ -88,13 +88,18 @@ class DMesonJetUnfoldingEngine:
         return rlist
 
     def LoadNumberOfEvents(self, dataList, inputSpectrumName):
+        inputSpectrum = dataList.FindObject(inputSpectrumName)
+        if not inputSpectrum:
+            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, dataList.GetName()))
+            dataList.Print()
+            exit(1)
         normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
         normInputSpectrum = dataList.FindObject(normInputSpectrumName)
         if not normInputSpectrum:
             print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, dataList.GetName()))
             dataList.Print()
             exit(1)
-        temp = self.fInputSpectrum.Clone("temp")
+        temp = inputSpectrum.Clone("temp")
         temp.Scale(1, "width")
         temp.Divide(normInputSpectrum)
         self.fNumberOfEvents = temp.GetBinContent(1)
@@ -164,7 +169,7 @@ class DMesonJetUnfoldingEngine:
             exit(1)
         self.fInputSpectrum = inputSpectrum.Clone("{0}_InputSpectrum".format(self.fName))
         self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
-        self.LoadNumberOfEvents(dataList, inputSpectrumName)
+        self.LoadNumberOfEvents(dataList, "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName))
 
         if self.fDMesonTruth:
             dataTruthMesonList = dataFile.Get(self.fDMesonTruth)
