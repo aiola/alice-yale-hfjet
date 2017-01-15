@@ -160,12 +160,12 @@ class Spectrum:
         if not self.fFDCorrection.fFDHistogram: return
         self.fFDCorrSystHistogram = self.fHistogram.Clone("{0}_FDSystCorr".format(self.fHistogram.GetName()))
 
-        crossSection = 62.3  # mb CINT1
-        branchingRatio = 0.0393  # D0->Kpi
         self.fFDHistogram = self.fFDCorrection.fFDHistogram.Clone("{0}_FD".format(self.fHistogram.GetName()))
         self.fFDSystUncHistogram = self.fFDCorrection.fFDSystUncHistogram.Clone("{0}_FDSystUnc".format(self.fHistogram.GetName()))
 
         if not isWeighted:
+            crossSection = 62.3  # mb CINT1
+            branchingRatio = 0.0393  # D0->Kpi
             self.fFDHistogram.Scale(events / crossSection * branchingRatio)
             self.fFDSystUncHistogram.Scale(events / crossSection * branchingRatio)
         self.fFDCorrHistogram.Add(self.fFDHistogram, -1)
