@@ -150,7 +150,19 @@ def soft_clone(origin, name, title=None, yaxisTitle=None):
     h.GetYaxis().SetTitle(yaxisTitle)
     return h
 
+def CalculateFixSystematicUncertainty(config):
+    fixed_unc2 = 0
+    print("Source & Uncertainty (\\%) \\\\ \\hline")
+    for u in config["fixed_uncertainties"]:
+        fixed_unc2 += u["uncertainty"] ** 2
+        print("{0} & {1:.1f} \\\\".format(u["title"], u["uncertainty"] * 100))
+    fixed_unc = math.sqrt(fixed_unc2)
+    print("\\hline")
+    print("{0} & {1:.1f}".format("Total", fixed_unc * 100))
+    return fixed_unc
+
 def GenerateUncertainties(config, histograms):
+    fixed_syst_unc = CalculateFixSystematicUncertainty(config)
     baseline = histograms["default"]
     partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"]]
     totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
@@ -174,7 +186,7 @@ def GenerateUncertainties(config, histograms):
             part_unc = max(diff_down, diff_up)
             partialRelSystUnc[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
             tot_syst_unc2 += part_unc ** 2
-        tot_syst_unc = math.sqrt(tot_syst_unc2)
+        tot_syst_unc = math.sqrt(tot_syst_unc2 + (fixed_syst_unc * baseline.GetBinContent(ibin)) ** 2)
         stat_unc = baseline.GetBinError(ibin)
         tot_unc = math.sqrt(tot_syst_unc2 + stat_unc ** 2)
         totRelSystUnc.SetBinContent(ibin, tot_syst_unc / baseline.GetBinContent(ibin))
@@ -191,14 +203,27 @@ def PlotSystematicUncertaintySummary(name, results):
     h = results["Uncertainties"]["tot_unc"]
     baseline = h.Clone("{0}_copy".format(h.GetName()))
 
+    print("Source & Uncertainty (\\%) \\\\ \\hline")
+    print(" & ".join(["\\ptchjet (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(baseline.GetXaxis().GetBinLowEdge(ibin), baseline.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\ \hline")
+
     h = results["Uncertainties"]["stat_unc"]
-    sources.append(h.Clone("{0}_copy".format(h.GetName())))
+    stat_unc = h.Clone("{0}_copy".format(h.GetName()))
+    sources.append(stat_unc)
 
     h = results["Uncertainties"]["tot_rel_syst_unc"]
-    sources.append(h.Clone("{0}_copy".format(h.GetName())))
+    tot_rel_syst_unc = h.Clone("{0}_copy".format(h.GetName()))
+    sources.append(tot_rel_syst_unc)
     for h in results["Uncertainties"]["PartialSystematicUncertainties"]:
+        print(" & ".join([h.GetTitle()] + ["{0:.1f}".format(h.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
         h_copy = h.Clone("{0}_copy".format(h.GetName()))
         sources.append(h_copy)
+
+    print("\\hline")
+    print(" & ".join([tot_rel_syst_unc.GetTitle()] + ["{0:.1f}".format(tot_rel_syst_unc.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc.GetNbinsX() + 1)]) + "\\\\")
+    print("\\hline")
+    print(" & ".join([stat_unc.GetTitle()] + ["{0:.1f}".format(stat_unc.GetBinContent(ibin) * 100) for ibin in range(1, stat_unc.GetNbinsX() + 1)]) + "\\\\")
+    print("\\hline")
+    print(" & ".join([baseline.GetTitle()] + ["{0:.1f}".format(baseline.GetBinContent(ibin) * 100) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\")
 
     globalList.extend(sources)
     globalList.append(baseline)

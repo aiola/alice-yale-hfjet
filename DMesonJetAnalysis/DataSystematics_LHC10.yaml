@@ -4,6 +4,27 @@ default:
   title: "Central Values"
   input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt
   histogram_name: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+fixed_uncertainties:
+-
+  name: unfolding
+  title: "Unfolding"
+  uncertainty: 0.05
+-
+  name: cuts
+  title: "Selection Cuts"
+  uncertainty: 0.05
+-
+  name: tracking_efficiency_dmeson
+  title: "Tracking Efficiency (D-Meson)"
+  uncertainty: 0.04
+-
+  name: branching_ratio
+  title: "Branching Ratio"
+  uncertainty: 0.01
+-
+  name: luminosity
+  title: "Luminosity"
+  uncertainty: 0.035
 sources:
 -
   name: tracking_efficiency
