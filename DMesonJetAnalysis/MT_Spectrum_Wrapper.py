@@ -51,13 +51,14 @@ class MT_Spectrum_Wrapper:
         h_copy.SetTitle("Trial Expo Free Sigma Inv. Mass Fit")
         return h
 
-    def GetDefaultSpectrumFromMultiTrial(self, method, fd=False, fd_error_band=0):
+    def GetDefaultSpectrumFromMultiTrial(self, method, fd=False, fd_error_band=0, ry_error_band=0):
         if method == "SideBand": h = self.GetDefaultSpectrumSideBandFromMultiTrial()
         elif method == "InvMassFit": h = self.GetDefaultSpectrumInvMassFitFromMultiTrial()
         else:
             print("Method {0} unknown!".format(method))
             exit(1)
         if fd: self.ApplyFDCorrection(h, fd_error_band)
+        if ry_error_band <> 0: self.ApplyRawYieldSyst(h, method, ry_error_band)
         return h
 
     def GetAverageSpectrum(self, method, fd=False, fd_error_band=0):
@@ -98,3 +99,23 @@ class MT_Spectrum_Wrapper:
         fdSyst.Scale(self.fEvents / crossSection * branchingRatio)
         h.Add(fdHist, -1)
         if error_band > 0: h.Add(fdSyst, error_band)
+
+    def ApplyRawYieldSyst(self, h, method, error_band):
+        if error_band == 0:
+            print("No raw yield systematic to apply!")
+            return
+        print("Applying raw yield systematic with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
+
+        fname = "{0}/{1}/{2}/RawYieldUnc/FinalRawYieldUncertainty_Dzero_{3}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, method)
+        file = ROOT.TFile(fname)
+        if not file or file.IsZombie():
+            print("Could not open file {0}".format(fname))
+            file.ls()
+            exit(1)
+        rySyst = file.Get("JetRawYieldUncert")
+        if not rySyst:
+            print("Could not find histogram {0} in file {1}".format("JetRawYieldUncert", fname))
+            file.ls()
+            exit(1)
+
+        h.Add(rySyst, error_band)

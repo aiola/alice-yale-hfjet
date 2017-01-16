@@ -16,7 +16,9 @@ import MT_Spectrum_Wrapper
 globalList = []
 
 class DMesonJetUnfoldingEngine:
-    def __init__(self, input_path, dataTrain, analysisName, config):
+    def __init__(self, input_path, dataTrain, analysisName, config, fd_error_band=0, ry_error_band=0):
+        self.fFDErrorBand = fd_error_band
+        self.fRYErrorBand = ry_error_band
         self.fInputPath = input_path
         self.fDataTrain = dataTrain
         self.fAnalysisName = analysisName
@@ -32,6 +34,14 @@ class DMesonJetUnfoldingEngine:
         self.fDefaultMethod = config["default_method"]
         self.fDoErrorCrossChecks = True
         self.fName = config["name"]
+        if self.fFDErrorBand > 0:
+            self.fName += "_FDUpperBand"
+        elif self.fFDErrorBand < 0:
+            self.fName += "_FDLowerBand"
+        if self.fRYErrorBand > 0:
+            self.fName += "_RYUpperBand"
+        elif self.fRYErrorBand < 0:
+            self.fName += "_RYLowerBand"
         if "d_meson_truth" in config: self.fDMesonTruth = config["d_meson_truth"]
         else: self.fDMesonTruth = None
         if "spectrum_truth" in config: self.fSpectrumTruthName = config["spectrum_truth"]
@@ -233,7 +243,7 @@ class DMesonJetUnfoldingEngine:
             return None
         print("Getting input spectrum from the multi-trial analysis, with method {0}".format(method))
         wrap = MT_Spectrum_Wrapper.MT_Spectrum_Wrapper(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fNumberOfEvents)
-        inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(method, True)
+        inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(method, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
     def Start(self, doPlotting=True):
@@ -463,6 +473,7 @@ class DMesonJetUnfoldingEngine:
             globalList.append(h)
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingStatisticalUncertaintyCompareMethods".format(self.fName))
         comp.fOptSpectrum = "hist"
+        comp.fOptSpectrumBaseline = "hist"
         comp.fDoSpectraPlot = "lineary"
         comp.fDoRatioPlot = False
         r = comp.CompareSpectra(baseline, spectra)
@@ -490,6 +501,7 @@ class DMesonJetUnfoldingEngine:
         if len(spectra) > 0:
             comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingStatisticalUncertainty_{1}_Prior{2}".format(self.fName, method, prior))
             comp.fOptSpectrum = "hist"
+            comp.fOptSpectrumBaseline = "hist"
             comp.fDoSpectraPlot = "lineary"
             comp.fDoRatioPlot = False
             r = comp.CompareSpectra(baseline, spectra)
@@ -519,6 +531,7 @@ class DMesonJetUnfoldingEngine:
 
             comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingStatisticalUncertaintyStrategy_{1}_Reg{2}_Prior{3}".format(self.fName, method, reg, prior))
             comp.fOptSpectrum = "hist"
+            comp.fOptSpectrumBaseline = "hist"
             comp.fDoSpectraPlot = "lineary"
             comp.fDoRatioPlot = False
             r = comp.CompareSpectra(baseline, spectra)
@@ -1130,15 +1143,15 @@ class DMesonJetUnfolding:
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fDataTrain, self.fAnalysisName))
         self.fResponseFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fResponseTrain, self.fResponseAnalysisName))
 
-    def StartUnfolding(self, config, eff, use_overflow):
-        eng = DMesonJetUnfoldingEngine(self.fInputPath, self.fDataTrain, self.fAnalysisName, config)
+    def StartUnfolding(self, config, eff, use_overflow, fd_error_band, ry_error_band, plot):
+        eng = DMesonJetUnfoldingEngine(self.fInputPath, self.fDataTrain, self.fAnalysisName, config, fd_error_band, ry_error_band)
         self.fUnfoldingEngine.append(eng)
         if self.fUseMultiTrial:
             eng.GetInputSpectrum = eng.GetInputSpectrumFromMT
         else:
             eng.GetInputSpectrum = eng.GetInputSpectrumFromMyOwnAnalysis
         r = eng.LoadData(self.fDataFile, self.fResponseFile, eff, use_overflow)
-        if r: eng.Start()
+        if r: eng.Start(plot)
 
     def SaveRootFile(self):
         path = "{0}/{1}".format(self.fInputPath, self.fName)
