@@ -5,6 +5,7 @@ import os
 import ROOT
 import math
 import array
+from collections import OrderedDict
 
 def ConvertDMesonName(dmeson):
     if "D0" in dmeson:
@@ -14,6 +15,31 @@ def ConvertDMesonName(dmeson):
 
 def binom(n, k):
     return math.factorial(n) / math.factorial(n - k) / math.factorial(k)
+
+def GetObject(obj, name):
+    slash = name.find("/")
+    if slash < 0:
+        name_lookup = name
+        name = None
+    else:
+        name_lookup = name[:slash]
+        name = name[slash + 1:]
+    if isinstance(obj, ROOT.TCollection):
+        res = obj.FindObject(name_lookup)
+        name_obj = obj.GetName()
+    elif isinstance(obj, dict) or isinstance(obj, OrderedDict):
+        res = obj[name_lookup]
+        name_obj = obj
+    elif isinstance(obj, ROOT.TDirectory):
+        res = obj.Get(name_lookup)
+        name_obj = obj.GetName()
+    if not res:
+        print("Could not find object {0} in collection '{1}'".format(name_lookup, name_obj))
+        return None
+    if name:
+        return GetObject(res, name)
+    else:
+        return res
 
 def GenerateMultiCanvas(cname, n):
     rows = int(math.floor(math.sqrt(n)))
