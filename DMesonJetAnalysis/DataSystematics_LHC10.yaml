@@ -1,0 +1,35 @@
+name: DataSystematics_LHC10
+input_path: /Volumes/DATA/ALICE/JetResults
+default:
+  title: "Central Values"
+  input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt
+  histogram_name: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+sources:
+-
+  name: tracking_efficiency
+  active: yes
+  title: "Tracking Efficiency"
+  symmetrize: yes
+  input_name: LHC10_Train823_LHC15i2_Train998_efficiency_mt
+  histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  histogram_title_down: "0.95 #epsilon_{tracking}" 
+-
+  name: raw_yield_extraction
+  active: yes
+  title: "Raw Yield Extraction"
+  symmetrize: yes
+  input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt
+  histogram_name_up: SideBand_DPt_30_RYUpperBand/Bayes/SideBand_DPt_30_RYUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  histogram_title_up: "Raw Yield Extraction (high)"
+  histogram_name_down: SideBand_DPt_30_RYLowerBand/Bayes/SideBand_DPt_30_RYLowerBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  histogram_title_down: "Raw Yield Extraction (low)"
+-
+  name: b_feed_down
+  active: yes
+  title: "B Feed-Down"
+  symmetrize: yes
+  input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt
+  histogram_name_up: SideBand_DPt_30_FDUpperBand/Bayes/SideBand_DPt_30_FDUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  histogram_title_up: "B Feed-Down (high)"
+  histogram_name_down: SideBand_DPt_30_FDLowerBand/Bayes/SideBand_DPt_30_FDLowerBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  histogram_title_down: "B Feed-Down (low)"
