@@ -49,6 +49,7 @@ class DMesonJetCompare:
         self.fBaselineForRatio = None
         self.fSeparateBaselineUncertainty = False
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
+        self.fGridyRatio = False
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -153,6 +154,8 @@ class DMesonJetCompare:
             self.fLegendRatio.SetBorderSize(0)
             self.fLegendRatio.SetTextFont(43)
             self.fLegendRatio.SetTextSize(self.fLegTextSize)
+
+        if self.fGridyRatio: self.fCanvasRatio.SetGridy()
 
         if self.fSeparateBaselineUncertainty:
             self.SetRatioRelativeUncertaintyFromHistogram(self.fBaselineHistogram)
