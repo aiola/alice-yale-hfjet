@@ -162,8 +162,8 @@ def CalculateFixSystematicUncertainty(config):
     return fixed_unc
 
 def GenerateUncertainties(config, histograms):
-    fixed_syst_unc = CalculateFixSystematicUncertainty(config)
     baseline = histograms["default"]
+    fixed_syst_unc = CalculateFixSystematicUncertainty(config)
     partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"]]
     totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
     statUnc = soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
@@ -195,7 +195,7 @@ def GenerateUncertainties(config, histograms):
         centralSystUnc.SetBinContent(ibin, baseline.GetBinContent(ibin))
         centralSystUnc.SetBinError(ibin, tot_syst_unc)
 
-    result = {"PartialSystematicUncertainties" : partialRelSystUnc, totRelSystUnc.GetName() : totRelSystUnc, centralSystUnc.GetName() : centralSystUnc, statUnc.GetName() : statUnc, totUnc.GetName() : totUnc}
+    result = {"PartialSystematicUncertainties" : partialRelSystUnc, "correlated_uncertainty" : fixed_syst_unc, totRelSystUnc.GetName() : totRelSystUnc, centralSystUnc.GetName() : centralSystUnc, statUnc.GetName() : statUnc, totUnc.GetName() : totUnc}
     return result
 
 def PlotSystematicUncertaintySummary(name, results):
@@ -218,6 +218,8 @@ def PlotSystematicUncertaintySummary(name, results):
         h_copy = h.Clone("{0}_copy".format(h.GetName()))
         sources.append(h_copy)
 
+    print("\\hline")
+    print("Correlated Uncertainty & {0:.1f} \\\\".format(results["Uncertainties"]["correlated_uncertainty"] * 100))
     print("\\hline")
     print(" & ".join([tot_rel_syst_unc.GetTitle()] + ["{0:.1f}".format(tot_rel_syst_unc.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
