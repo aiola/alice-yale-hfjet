@@ -19,57 +19,70 @@ globalList = []
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
+    ROOT.gStyle.SetOptStat(0)
 
-    robjects = CompareVariations(config)
+    results = Start(config)
 
-    if robjects:
-        output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
-        outputFile = ROOT.TFile(output_file_name, "recreate")
-        if not outputFile or outputFile.IsZombie():
-            print("Could not open output file {0}".format(output_file_name))
-            exit(1)
-        for obj in robjects:
-            obj.Write(obj.GetName(), ROOT.TObject.kSingleKey)
-        outputFile.Close()
+    output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
+    print("Storing results in {0}".format(output_file_name))
+    outputFile = ROOT.TFile(output_file_name, "recreate")
+    if not outputFile or outputFile.IsZombie():
+       print("Could not open output file {0}".format(output_file_name))
+       exit(1)
+    for name, r in results.iteritems():
+       rlist = GenerateRootList(r, name)
+       rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
+    outputFile.Close()
+    globalList.append(rlist)
 
     SaveCanvases(config["input_path"])
 
-    print("Done")
+def Start(config):
+    histograms = LoadHistograms(config)
+    results = dict()
+    results["Variations"] = CompareVariations(config, histograms)
+    results["SystematicUncertainties"] = GenerateUncertainties(config, histograms)
+    results["FinalSpectrum"] = PlotSpectrumStatAndSyst(config["name"], results)
+    return results
 
-def CompareVariations(config):
+def LoadHistograms(config):
+    crossSection = 62.3  # mb CINT1
+    branchingRatio = 0.0393  # D0->Kpi
+    antiPartNorm = 2.0  # D0 / D0bar
+
     files = OpenFiles(config)
+    events = LoadEvents(files, config)
 
-    variations = []
+    histograms = dict()
+
     h = DMesonJetUtils.GetObject(files[config["default"]["input_name"]], config["default"]["histogram_name"])
+    h.Scale(crossSection / (events[config["default"]["input_name"]] * branchingRatio * antiPartNorm), "width")
     if not h: exit(1)
-    baseline = h.Clone("default")
-    baseline.SetTitle(config["default"]["title"])
+    histograms["default"] = h
     for s in config["sources"]:
+        histograms[s["name"]] = dict()
         if "histogram_name_down" in s:
             h = DMesonJetUtils.GetObject(files[s["input_name"]], s["histogram_name_down"])
+            h.Scale(crossSection / (events[s["input_name"]] * branchingRatio * antiPartNorm), "width")
             if not h: exit(1)
-            h_copy = h.Clone("{0}_down".format(s["name"]))
-            h_copy.SetTitle(s["histogram_title_down"])
-            variations.append(h_copy)
+            histograms[s["name"]]["down"] = h
         if "histogram_name_up" in s:
             h = DMesonJetUtils.GetObject(files[s["input_name"]], s["histogram_name_up"])
+            h.Scale(crossSection / (events[s["input_name"]] * branchingRatio * antiPartNorm), "width")
             if not h: exit(1)
-            h_copy = h.Clone("{0}_up".format(s["name"]))
-            h_copy.SetTitle(s["histogram_title_up"])
-            variations.append(h_copy)
+            histograms[s["name"]]["up"] = h
 
-    globalList.extend(variations)
-    globalList.append(baseline)
-    comp = DMesonJetCompare.DMesonJetCompare(config["name"])
-    comp.fOptRatio = "hist"
-    comp.fX1LegRatio = 0.45
-    comp.fX1LegSpectrum = 0.45
-    comp.fLegLineHeight = 0.05
-    comp.fGridyRatio = True
-    comp.fLogUpperSpace = 3
-    r = comp.CompareSpectra(baseline, variations)
-    for obj in r:
-        globalList.append(obj)
+    return histograms
+
+def LoadEvents(files, config):
+    events = dict()
+    for name, f in files.iteritems():
+        slash = config["default"]["histogram_name"].find("/")
+        heventsName = config["default"]["histogram_name"][:slash + 1]
+        heventsName += "Events"
+        hevents = DMesonJetUtils.GetObject(files[name], heventsName)
+        events[name] = hevents.GetBinContent(1)
+    return events
 
 def OpenFiles(config):
     files = dict()
@@ -92,79 +105,116 @@ def OpenFiles(config):
 
     return files
 
-def PlotFSspectraAndSyst(results):
-    stat = GetSpectrum(results["default"], name)
-    if not stat: return
-    hname = name[name.rfind("/") + 1:]
-    syst = results["SystematicUncertainty"][name]["{0}_CentralAsymmSyst".format(hname)]
-    canvas = ROOT.TCanvas("{0}_canvas".format(name), "{0}_canvas".format(name))
+def CompareVariations(config, histograms):
+    result = dict()
+    variations = []
+    h = histograms["default"]
+    baseline = h.Clone("default")
+    baseline.SetTitle(config["default"]["title"])
+    result[baseline.GetName()] = baseline
+    for s in config["sources"]:
+        if "down" in histograms[s["name"]]:
+            h = histograms[s["name"]]["down"]
+            h_copy = h.Clone("{0}_down".format(s["name"]))
+            h_copy.SetTitle(s["histogram_title_down"])
+            result[h_copy.GetName()] = h_copy
+            variations.append(h_copy)
+        if "up" in histograms[s["name"]]:
+            h = histograms[s["name"]]["up"]
+            h_copy = h.Clone("{0}_up".format(s["name"]))
+            h_copy.SetTitle(s["histogram_title_up"])
+            result[h_copy.GetName()] = h_copy
+            variations.append(h_copy)
+
+    globalList.extend(variations)
+    globalList.append(baseline)
+    comp = DMesonJetCompare.DMesonJetCompare("CompareVariations_{0}".format(config["name"]))
+    comp.fOptRatio = "hist"
+    comp.fX1LegRatio = 0.45
+    comp.fX1LegSpectrum = 0.45
+    comp.fLegLineHeight = 0.05
+    comp.fGridyRatio = True
+    comp.fLogUpperSpace = 3
+    r = comp.CompareSpectra(baseline, variations)
+    for obj in r:
+        globalList.append(obj)
+    return result
+
+def soft_clone(origin, name, title=None, yaxisTitle=None):
+    if not title: title = name
+    if not yaxisTitle: yaxisTitle = origin.GetYaxis().GetTitle()
+    h = ROOT.TH1D(name, title, origin.GetNbinsX(), origin.GetXaxis().GetXbins().GetArray())
+    h.GetXaxis().SetTitle(origin.GetXaxis().GetTitle())
+    h.GetYaxis().SetTitle(yaxisTitle)
+    return h
+
+def GenerateUncertainties(config, histograms):
+    baseline = histograms["default"]
+    partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "rel. syst. unc.") for s in config["sources"]]
+    totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "total relative systematic uncertainty", "rel. syst. unc.")
+    centralSystUnc = soft_clone(baseline, "central_syst_unc")
+
+    for ibin in range(1, baseline.GetNbinsX() + 1):
+        tot_unc2 = 0
+        for ivar, s in enumerate(config["sources"]):
+            if "down" in histograms[s["name"]]:
+                h = histograms[s["name"]]["down"]
+                diff_down = abs(baseline.GetBinContent(ibin) - h.GetBinContent(ibin))
+            else:
+                diff_down = 0
+            if "up" in histograms[s["name"]]:
+                h = histograms[s["name"]]["up"]
+                diff_up = abs(baseline.GetBinContent(ibin) - h.GetBinContent(ibin))
+            else:
+                diff_up = 0
+            part_unc = max(diff_down, diff_up)
+            partialRelSystUnc[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
+            tot_unc2 += part_unc ** 2
+        tot_unc = math.sqrt(tot_unc2)
+        totRelSystUnc.SetBinContent(ibin, tot_unc / baseline.GetBinContent(ibin))
+        centralSystUnc.SetBinContent(ibin, baseline.GetBinContent(ibin))
+        centralSystUnc.SetBinError(ibin, tot_unc)
+
+    result = {"PartialSystematicUncertainties" : partialRelSystUnc, totRelSystUnc.GetName() : totRelSystUnc, centralSystUnc.GetName() : centralSystUnc}
+    return result
+
+def PlotSpectrumStatAndSyst(name, results):
+    stat = results["Variations"]["default"]
+    syst = results["SystematicUncertainties"]["central_syst_unc"]
+    canvas = ROOT.TCanvas(name, name)
     canvas.SetLogy()
     canvas.SetLeftMargin(0.13)
     canvas.cd()
-    syst_copy = syst.Clone()
-    syst_copy.SetFillColor(ROOT.kCyan + 1)
-    syst_copy.SetMarkerColor(ROOT.kCyan + 1)
+    syst_copy = syst.DrawCopy("e2")
+    syst_copy.SetFillColor(ROOT.kGray)
+    syst_copy.SetMarkerColor(ROOT.kGray)
+    syst_copy.SetLineColor(ROOT.kGray)
     syst_copy.GetYaxis().SetTitleOffset(1.5)
-    syst_copy.Draw("a e2")
+    syst_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+    syst_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     stat_copy = stat.DrawCopy("same p e0 x0")
-    stat_copy.Scale(1., "width")
-    stat_copy.SetMarkerColor(ROOT.kBlue + 1)
+    stat_copy.SetMarkerColor(ROOT.kRed + 2)
+    stat_copy.SetLineColor(ROOT.kRed + 2)
     stat_copy.SetMarkerStyle(ROOT.kFullCircle)
-    stat_copy.SetMarkerSize(0.6)
-    stat_copy.SetLineColor(ROOT.kBlue + 1)
+    stat_copy.SetMarkerSize(0.9)
     leg = ROOT.TLegend(0.35, 0.71, 0.89, 0.89, "NB")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
     leg.SetTextFont(43)
     leg.SetTextSize(20)
-    leg.AddEntry(stat_copy, "Central values with stat. unc.", "pe")
-    leg.AddEntry(syst_copy, "Systematic uncertainty", "f")
+    leg.AddEntry(stat_copy, "ALICE", "pe")
+    leg.AddEntry(syst_copy, "Systematic Uncertainty", "f")
     leg.Draw()
     globalList.append(syst_copy)
-    globalList.append(syst_copy.GetHistogram())
     globalList.append(stat_copy)
     globalList.append(leg)
     globalList.append(canvas)
-
-def GenerateSystematicUncertainty(baseline, spectra):
-    hname = baseline.GetName().replace("_copy", "")
-    upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(hname), "{0}_UpperSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
-    lowerLimitsHist = ROOT.TH1D("{0}_LowerSyst".format(hname), "{0}_LowerSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
-    symmetricLimitsHist = ROOT.TH1D("{0}_SymmSyst".format(hname), "{0}_SymmSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
-    relativeSystHist = ROOT.TH1D("{0}_RelSyst".format(hname), "{0}_RelSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
-    result = OrderedDict()
-    result[upperLimitsHist.GetName()] = upperLimitsHist
-    result[lowerLimitsHist.GetName()] = lowerLimitsHist
-    result[symmetricLimitsHist.GetName()] = symmetricLimitsHist
-    result[relativeSystHist.GetName()] = relativeSystHist
-    for ibin in range(1, baseline.GetNbinsX() + 1):
-        centralValue = baseline.GetBinContent(ibin)
-        for var in spectra:
-            diff = var.GetBinContent(ibin) - centralValue
-            if diff > upperLimitsHist.GetBinContent(ibin):
-                upperLimitsHist.SetBinContent(ibin, diff)
-                print("Bin {0}, upper limit {1}".format(ibin, diff))
-            if -diff > lowerLimitsHist.GetBinContent(ibin):
-                lowerLimitsHist.SetBinContent(ibin, -diff)
-                print("Bin {0}, lower limit {1}".format(ibin, -diff))
-        symmetricLimitsHist.SetBinContent(ibin, max(upperLimitsHist.GetBinContent(ibin), lowerLimitsHist.GetBinContent(ibin)))
-        relativeSystHist.SetBinContent(ibin, symmetricLimitsHist.GetBinContent(ibin) / baseline.GetBinContent(ibin))
-    xArray = numpy.array([baseline.GetXaxis().GetBinCenter(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
-    xArrayErr = numpy.array([baseline.GetXaxis().GetBinWidth(ibin) / 2 for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
-    yArray = numpy.array([baseline.GetBinContent(ibin) / baseline.GetXaxis().GetBinWidth(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
-    yArrayErrUp = numpy.array([upperLimitsHist.GetBinContent(ibin) / upperLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, upperLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
-    yArrayErrLow = numpy.array([lowerLimitsHist.GetBinContent(ibin) / lowerLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, lowerLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
-    yArrayErrSym = numpy.array([symmetricLimitsHist.GetBinContent(ibin) / symmetricLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, symmetricLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
-    symmetricUncGraph = ROOT.TGraphErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, yArrayErrSym)
-    symmetricUncGraph.SetName("{0}_CentralSymmSyst".format(hname))
-    symmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
-    symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-    asymmetricUncGraph = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, xArrayErr, yArrayErrLow, yArrayErrUp)
-    asymmetricUncGraph.SetName("{0}_CentralAsymmSyst".format(hname))
-    asymmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
-    asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-    result[symmetricUncGraph.GetName()] = symmetricUncGraph
-    result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
+    result = dict()
+    syst_copy_copy = syst_copy.Clone("CentralPointsSystematicUncertainty")
+    stat_copy_copy = stat_copy.Clone("CentralPointsStatisticalUncertainty")
+    result["CentralPointsSystematicUncertainty"] = syst_copy_copy
+    result["CentralPointsStatisticalUncertainty"] = stat_copy_copy
+    result["FinalSpectrumCanvas"] = canvas
     return result
 
 def SaveCanvases(input_path):
@@ -177,10 +227,15 @@ def GenerateRootList(pdict, name):
     rlist = ROOT.TList()
     rlist.SetName(name)
     print("Loop in {0}".format(name))
-    for nobj, obj in pdict.iteritems():
+    if isinstance(pdict, dict) or isinstance(pdict, OrderedDict):
+        objects = pdict.iteritems()
+    else:
+        objects = zip([inner_obj.GetName() for inner_obj in pdict], pdict)
+    for nobj, obj in objects:
         if isinstance(obj, ROOT.TObject):
+            print("Adding in {0}".format(nobj))
             rlist.Add(obj)
-        elif isinstance(obj, dict) or isinstance(obj, OrderedDict):
+        elif isinstance(obj, dict) or isinstance(obj, OrderedDict) or isinstance(obj, list):
             print("Recursion in {0}".format(nobj))
             rlist.Add(GenerateRootList(obj, nobj))
         else:
