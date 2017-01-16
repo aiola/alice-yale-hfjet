@@ -11,11 +11,15 @@ import ROOT
 import DMesonJetUtils
 import DMesonJetCompare
 import UnfoldingResponseMatrix
+import MT_Spectrum_Wrapper
 
 globalList = []
 
 class DMesonJetUnfoldingEngine:
-    def __init__(self, config):
+    def __init__(self, input_path, dataTrain, analysisName, config):
+        self.fInputPath = input_path
+        self.fDataTrain = dataTrain
+        self.fAnalysisName = analysisName
         self.fDMeson = config["d_meson"]
         self.fJetType = config["jet_type"]
         self.fJetRadius = config["jet_radius"]
@@ -87,41 +91,28 @@ class DMesonJetUnfoldingEngine:
             unfoldingHistos["BinByBin"].Add(h)
         return rlist
 
-    def LoadNumberOfEvents(self, dataList, inputSpectrumName):
-        inputSpectrum = dataList.FindObject(inputSpectrumName)
-        if not inputSpectrum:
-            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, dataList.GetName()))
-            dataList.Print()
-            exit(1)
-        normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
-        normInputSpectrum = dataList.FindObject(normInputSpectrumName)
-        if not normInputSpectrum:
-            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, dataList.GetName()))
-            dataList.Print()
-            exit(1)
-        temp = inputSpectrum.Clone("temp")
-        temp.Scale(1, "width")
-        temp.Divide(normInputSpectrum)
-        self.fNumberOfEvents = temp.GetBinContent(1)
-        self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
-        self.fEvents.SetBinContent(1, self.fNumberOfEvents)
-
     def LoadData(self, dataFile, responseFile, eff, use_overflow):
         self.fUseOverflow = use_overflow
+        self.fDataFile = dataFile
+        self.fResponseFile = responseFile
         print("Now loading data")
-        if not self.LoadResponse(responseFile, eff): return False
-        return self.LoadInputSpectrum(dataFile)
+        res = self.LoadResponse(eff)
+        if not res: return False
+        res = self.LoadInputSpectrum()
+        if not res: return False
+        res = self.LoadTruthSpectrum()
+        return res
 
-    def LoadResponse(self, responseFile, eff):
+    def LoadResponse(self, eff):
         responseListName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
-        responseList = responseFile.Get(responseListName)
+        responseList = self.fResponseFile.Get(responseListName)
         if not responseList:
             print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
             exit(1)
         detectorResponseName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_DetectorResponse".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
         detectorResponse = responseList.FindObject(detectorResponseName)
         if not detectorResponse:
-            print("Could not find histogram {0} in list {1} in file {2}". format(detectorResponseName, responseListName, responseFile.GetName()))
+            print("Could not find histogram {0} in list {1} in file {2}". format(detectorResponseName, responseListName, self.fResponseFile.GetName()))
             exit(1)
         self.fDetectorResponse = detectorResponse.Clone("{0}_DetectorResponse".format(self.fName))
         self.fDetectorResponse.SetTitle("{0} Detector Response".format(self.fName))
@@ -130,7 +121,7 @@ class DMesonJetUnfoldingEngine:
             detTrainTruthName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_Truth".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
             detTrainTruth = responseList.FindObject(detTrainTruthName)
             if not detTrainTruth:
-                print("Could not find histogram {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, responseFile.GetName()))
+                print("Could not find histogram {0} in list {1} in file {2}". format(detTrainTruthName, responseListName, self.fResponseFile.GetName()))
                 exit(1)
             self.fDetectorTrainTruth = detTrainTruth.Clone("{0}_ResponseTruth".format(self.fName))
         else:
@@ -138,7 +129,56 @@ class DMesonJetUnfoldingEngine:
         self.fDetectorTrainTruth.SetTitle("{0} Response Truth".format(self.fName))
         return True
 
-    def LoadInputSpectrum(self, dataFile):
+    def LoadTruthSpectrum(self):
+        if not self.fDMesonTruth:
+            self.fTruthSpectrum = None
+            return True
+
+        dataTruthMesonList = self.fDataFile.Get(self.fDMesonTruth)
+        if not dataTruthMesonList:
+            print("Could not find list {0} in file {1}". format(self.fDMesonTruth, self.fDataFile.GetName()))
+            exit(1)
+        dataTruthJetListName = "_".join([self.fJetType, self.fJetRadius])
+        dataTruthJetList = dataTruthMesonList.FindObject(dataTruthJetListName)
+        if not dataTruthJetList:
+            print("Could not find list {0}/{1} in file {2}". format(self.fDMesonTruth, dataTruthJetListName, self.fDataFile.GetName()))
+            exit(1)
+        dataTruthListName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
+        dataTruthList = dataTruthJetList.FindObject(dataTruthListName)
+        if not dataTruthList:
+            print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMesonTruth, dataTruthJetListName, dataTruthListName, self.fDataFile.GetName()))
+            exit(1)
+        truthSpectrumName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
+        truthSpectrum = dataTruthList.FindObject(truthSpectrumName)
+        if not truthSpectrum:
+            print("Could not find histogram {0} in list {1} in file {2}". format(truthSpectrumName, dataTruthListName, self.fDataFile.GetName()))
+            exit(1)
+        self.fTruthSpectrum = truthSpectrum.Clone("{0}_TruthSpectrum".format(self.fName))
+        self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
+
+        return True
+
+    def LoadNumberOfEvents(self):
+        inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName])
+        inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
+        if not inputSpectrum:
+            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, dataList.GetName()))
+            self.fDataList.Print()
+            exit(1)
+        normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
+        normInputSpectrum = self.fDataList.FindObject(normInputSpectrumName)
+        if not normInputSpectrum:
+            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, dataList.GetName()))
+            self.fDataList.Print()
+            exit(1)
+        temp = inputSpectrum.Clone("temp")
+        temp.Scale(1, "width")
+        temp.Divide(normInputSpectrum)
+        self.fNumberOfEvents = temp.GetBinContent(1)
+        self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
+        self.fEvents.SetBinContent(1, self.fNumberOfEvents)
+
+    def LoadInputSpectrum(self):
         if self.fName == "__self_unfolding__":
             self.fInputSpectrum = self.fDetectorResponse.ProjectionX("temp", 1, self.fDetectorResponse.GetNbinsY()).Rebin(len(self.fBins) - 1, "{0}_InputSpectrum".format(self.fName), array.array('d', self.fBins))
             self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
@@ -146,57 +186,55 @@ class DMesonJetUnfoldingEngine:
             self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
             return True
 
-        dataMesonList = dataFile.Get(self.fDMeson)
+        dataMesonList = self.fDataFile.Get(self.fDMeson)
         if not dataMesonList:
-            print("Could not find list {0} in file {1}". format(self.fDMeson, dataFile.GetName()))
+            print("Could not find list {0} in file {1}". format(self.fDMeson, self.fDataFile.GetName()))
             exit(1)
         dataJetListName = "_".join([self.fJetType, self.fJetRadius])
         dataJetList = dataMesonList.FindObject(dataJetListName)
         if not dataJetList:
-            print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, dataFile.GetName()))
+            print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, self.fDataFile.GetName()))
             dataMesonList.Print()
             exit(1)
         dataListName = "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName)
-        dataList = dataJetList.FindObject(dataListName)
-        if not dataList:
-            print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, dataFile.GetName()))
+        self.fDataList = dataJetList.FindObject(dataListName)
+        if not self.fDataList:
+            print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
             dataJetList.Print()
             exit(1)
-        inputSpectrumName = "{0}_{1}_{2}_FDCorr".format(self.fDMeson, dataJetListName, self.fSpectrumName)
-        inputSpectrum = dataList.FindObject(inputSpectrumName)
+
+        self.LoadNumberOfEvents()
+
+        inputSpectrum = self.GetInputSpectrum()
         if not inputSpectrum:
-            print("Could not find histogram {0} in list {1} in file {2}". format(inputSpectrumName, dataListName, dataFile.GetName()))
+            print("Could not find input spectrum!")
             exit(1)
         self.fInputSpectrum = inputSpectrum.Clone("{0}_InputSpectrum".format(self.fName))
         self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
-        self.LoadNumberOfEvents(dataList, "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName))
-
-        if self.fDMesonTruth:
-            dataTruthMesonList = dataFile.Get(self.fDMesonTruth)
-            if not dataTruthMesonList:
-                print("Could not find list {0} in file {1}". format(self.fDMesonTruth, dataFile.GetName()))
-                exit(1)
-            dataTruthJetListName = "_".join([self.fJetType, self.fJetRadius])
-            dataTruthJetList = dataTruthMesonList.FindObject(dataTruthJetListName)
-            if not dataTruthJetList:
-                print("Could not find list {0}/{1} in file {2}". format(self.fDMesonTruth, dataTruthJetListName, dataFile.GetName()))
-                exit(1)
-            dataTruthListName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
-            dataTruthList = dataTruthJetList.FindObject(dataTruthListName)
-            if not dataTruthList:
-                print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMesonTruth, dataTruthJetListName, dataTruthListName, dataFile.GetName()))
-                exit(1)
-            truthSpectrumName = "{0}_{1}_{2}".format(self.fDMesonTruth, dataTruthJetListName, self.fSpectrumTruthName)
-            truthSpectrum = dataTruthList.FindObject(truthSpectrumName)
-            if not truthSpectrum:
-                print("Could not find histogram {0} in list {1} in file {2}". format(truthSpectrumName, dataTruthListName, dataFile.GetName()))
-                exit(1)
-            self.fTruthSpectrum = truthSpectrum.Clone("{0}_TruthSpectrum".format(self.fName))
-            self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
-        else:
-            self.fTruthSpectrum = None
 
         return True
+
+    def GetInputSpectrumFromMyOwnAnalysis(self):
+        print("Getting input spectrum from my own analysis")
+        inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, "FDCorr"])
+        inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
+        if not inputSpectrum:
+            print("Could not find histogram {0} in list {1} in file {2}". format(inputSpectrumName, self.fDataList.GetName(), dataFile.GetName()))
+            return None
+        return inputSpectrum
+
+    def GetInputSpectrumFromMT(self):
+        if "SideBand" in self.fSpectrumName:
+            method = "SideBand"
+        elif "InvMassFit" in self.fSpectrumName:
+            method = "InvMassFit"
+        else:
+            print("Raw yield method of spectrum {0} not recognized!".format(self.fSpectrumName))
+            return None
+        print("Getting input spectrum from the multi-trial analysis, with method {0}".format(method))
+        wrap = MT_Spectrum_Wrapper.MT_Spectrum_Wrapper(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fNumberOfEvents)
+        inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(method, True)
+        return inputSpectrum
 
     def Start(self, doPlotting=True):
         self.GenerateResponse()
@@ -1074,38 +1112,49 @@ class DMesonJetUnfoldingEngine:
         return resp
 
 class DMesonJetUnfolding:
-    def __init__(self, name, input_path, dataTrain, data, responseTrain, response):
-        self.fName = name
+    def __init__(self, name, input_path, dataTrain, data, responseTrain, response, mt):
+        if mt:
+            self.fName = "{0}_mt".format(name)
+        else:
+            self.fName = name
         self.fInputPath = input_path
         self.fDataTrain = dataTrain
-        self.fData = data
+        self.fAnalysisName = data
         self.fResponseTrain = responseTrain
-        self.fResponse = response
+        self.fResponseAnalysisName = response
+        self.fUseMultiTrial = mt
         self.fUnfoldingEngine = []
         self.OpenFiles()
 
     def OpenFiles(self):
-        self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fDataTrain, self.fData))
-        self.fResponseFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fResponseTrain, self.fResponse))
+        self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fDataTrain, self.fAnalysisName))
+        self.fResponseFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fResponseTrain, self.fResponseAnalysisName))
 
     def StartUnfolding(self, config, eff, use_overflow):
-        eng = DMesonJetUnfoldingEngine(config)
+        eng = DMesonJetUnfoldingEngine(self.fInputPath, self.fDataTrain, self.fAnalysisName, config)
         self.fUnfoldingEngine.append(eng)
+        if self.fUseMultiTrial:
+            eng.GetInputSpectrum = eng.GetInputSpectrumFromMT
+        else:
+            eng.GetInputSpectrum = eng.GetInputSpectrumFromMyOwnAnalysis
         r = eng.LoadData(self.fDataFile, self.fResponseFile, eff, use_overflow)
-        if r:
-            eng.Start()
+        if r: eng.Start()
 
-    def SaveRootFile(self, path):
+    def SaveRootFile(self):
+        path = "{0}/{1}".format(self.fInputPath, self.fName)
         if not os.path.isdir(path):
             os.makedirs(path)
-        file = ROOT.TFile("{0}/{1}.root".format(path, self.fName), "recreate")
+        fname = "{0}/{1}.root".format(path, self.fName)
+        print("Storing results in file {0}".format(fname))
+        file = ROOT.TFile(fname, "recreate")
         file.cd()
         for eng in self.fUnfoldingEngine:
             rlist = eng.GenerateRootList()
             rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
         file.Close()
 
-    def SavePlots(self, path, format):
+    def SavePlots(self, format):
+        path = "{0}/{1}/{2}".format(self.fInputPath, self.fName, format)
         if not os.path.isdir(path):
             os.makedirs(path)
         for eng in self.fUnfoldingEngine:
