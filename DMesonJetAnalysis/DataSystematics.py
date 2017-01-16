@@ -23,6 +23,8 @@ def main(config):
 
     results = Start(config)
 
+    PlotSystematicUncertaintySummary(config["name"], results)
+
     output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
     print("Storing results in {0}".format(output_file_name))
     outputFile = ROOT.TFile(output_file_name, "recreate")
@@ -41,7 +43,7 @@ def Start(config):
     histograms = LoadHistograms(config)
     results = dict()
     results["Variations"] = CompareVariations(config, histograms)
-    results["SystematicUncertainties"] = GenerateUncertainties(config, histograms)
+    results["Uncertainties"] = GenerateUncertainties(config, histograms)
     results["FinalSpectrum"] = PlotSpectrumStatAndSyst(config["name"], results)
     return results
 
@@ -150,12 +152,14 @@ def soft_clone(origin, name, title=None, yaxisTitle=None):
 
 def GenerateUncertainties(config, histograms):
     baseline = histograms["default"]
-    partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "rel. syst. unc.") for s in config["sources"]]
-    totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "total relative systematic uncertainty", "rel. syst. unc.")
+    partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"]]
+    totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
+    statUnc = soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
+    totUnc = soft_clone(baseline, "tot_unc", "Total Uncertainty", "relative uncertainty")
     centralSystUnc = soft_clone(baseline, "central_syst_unc")
 
     for ibin in range(1, baseline.GetNbinsX() + 1):
-        tot_unc2 = 0
+        tot_syst_unc2 = 0
         for ivar, s in enumerate(config["sources"]):
             if "down" in histograms[s["name"]]:
                 h = histograms[s["name"]]["down"]
@@ -169,18 +173,49 @@ def GenerateUncertainties(config, histograms):
                 diff_up = 0
             part_unc = max(diff_down, diff_up)
             partialRelSystUnc[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
-            tot_unc2 += part_unc ** 2
-        tot_unc = math.sqrt(tot_unc2)
-        totRelSystUnc.SetBinContent(ibin, tot_unc / baseline.GetBinContent(ibin))
+            tot_syst_unc2 += part_unc ** 2
+        tot_syst_unc = math.sqrt(tot_syst_unc2)
+        stat_unc = baseline.GetBinError(ibin)
+        tot_unc = math.sqrt(tot_syst_unc2 + stat_unc ** 2)
+        totRelSystUnc.SetBinContent(ibin, tot_syst_unc / baseline.GetBinContent(ibin))
+        statUnc.SetBinContent(ibin, stat_unc / baseline.GetBinContent(ibin))
+        totUnc.SetBinContent(ibin, tot_unc / baseline.GetBinContent(ibin))
         centralSystUnc.SetBinContent(ibin, baseline.GetBinContent(ibin))
-        centralSystUnc.SetBinError(ibin, tot_unc)
+        centralSystUnc.SetBinError(ibin, tot_syst_unc)
 
-    result = {"PartialSystematicUncertainties" : partialRelSystUnc, totRelSystUnc.GetName() : totRelSystUnc, centralSystUnc.GetName() : centralSystUnc}
+    result = {"PartialSystematicUncertainties" : partialRelSystUnc, totRelSystUnc.GetName() : totRelSystUnc, centralSystUnc.GetName() : centralSystUnc, statUnc.GetName() : statUnc, totUnc.GetName() : totUnc}
     return result
+
+def PlotSystematicUncertaintySummary(name, results):
+    sources = []
+    h = results["Uncertainties"]["tot_unc"]
+    baseline = h.Clone("{0}_copy".format(h.GetName()))
+
+    h = results["Uncertainties"]["stat_unc"]
+    sources.append(h.Clone("{0}_copy".format(h.GetName())))
+
+    h = results["Uncertainties"]["tot_rel_syst_unc"]
+    sources.append(h.Clone("{0}_copy".format(h.GetName())))
+    for h in results["Uncertainties"]["PartialSystematicUncertainties"]:
+        h_copy = h.Clone("{0}_copy".format(h.GetName()))
+        sources.append(h_copy)
+
+    globalList.extend(sources)
+    globalList.append(baseline)
+    comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
+    comp.fOptSpectrum = "hist"
+    comp.fOptSpectrumBaseline = "hist"
+    comp.fX1LegSpectrum = 0.45
+    comp.fLegLineHeight = 0.05
+    comp.fDoSpectraPlot = "lineary"
+    comp.fDoRatioPlot = False
+    r = comp.CompareSpectra(baseline, sources)
+    for obj in r:
+        globalList.append(obj)
 
 def PlotSpectrumStatAndSyst(name, results):
     stat = results["Variations"]["default"]
-    syst = results["SystematicUncertainties"]["central_syst_unc"]
+    syst = results["Uncertainties"]["central_syst_unc"]
     canvas = ROOT.TCanvas(name, name)
     canvas.SetLogy()
     canvas.SetLeftMargin(0.13)
