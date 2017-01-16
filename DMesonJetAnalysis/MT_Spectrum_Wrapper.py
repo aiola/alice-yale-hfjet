@@ -98,7 +98,7 @@ class MT_Spectrum_Wrapper:
         fdHist.Scale(self.fEvents / crossSection * branchingRatio)
         fdSyst.Scale(self.fEvents / crossSection * branchingRatio)
         h.Add(fdHist, -1)
-        if error_band > 0: h.Add(fdSyst, error_band)
+        if error_band <> 0: h.Add(fdSyst, error_band)
 
     def ApplyRawYieldSyst(self, h, method, error_band):
         if error_band == 0:
