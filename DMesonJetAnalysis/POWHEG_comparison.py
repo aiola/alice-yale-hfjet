@@ -211,9 +211,11 @@ def pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radi
     pythiaSpectrum2D.GetYaxis().SetRangeUser(3, 30)
     pythiaSpectrumDPt = pythiaSpectrum2D.ProjectionY("{0}_DPt_PYTHIA6".format(spectrumName), pythiaSpectrum2D.GetXaxis().FindBin(5), pythiaSpectrum2D.GetXaxis().FindBin(30 - 1e-3))
     pythiaSpectrumDPt.SetTitle("PYTHIA6 (LHC15i2bcde)")
+    pythiaSpectrumDPt.GetYaxis().SetTitle("arb. units")
     pythiaSpectrum2D.GetXaxis().SetRangeUser(5, 30)
     pythiaSpectrumJetPt = pythiaSpectrum2D.ProjectionX("{0}_JetPt_PYTHIA6".format(spectrumName), pythiaSpectrum2D.GetYaxis().FindBin(3), pythiaSpectrum2D.GetYaxis().FindBin(30 - 1e-3))
     pythiaSpectrumJetPt.SetTitle("PYTHIA6 (LHC15i2bcde)")
+    pythiaSpectrumJetPt.GetYaxis().SetTitle("arb. units")
     # a factor of 1/4 comes from the fact that this is the sum of 4 cross sections
     # (the periods; in principle it should be 8 because there is a MB cross section as well
     # but at high pt the MB has vanishing statistics); a factor 1/2 comes from the antiparticles
@@ -261,8 +263,10 @@ def pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radi
     powhegSpectrum2D = GetTotalMCSpectrum(quarks, jet_type, jet_radius, spectrumName, genTitle)
     powhegSpectrum2D.GetYaxis().SetRangeUser(3, 30)
     powhegSpectrumDPt = powhegSpectrum2D.ProjectionY("{0}_DPt_POWHEG_PYTHIA6".format(spectrumName), powhegSpectrum2D.GetXaxis().FindBin(5), powhegSpectrum2D.GetXaxis().FindBin(30 - 1e-3))
+    powhegSpectrumDPt.GetYaxis().SetTitle("arb. units")
     powhegSpectrum2D.GetXaxis().SetRangeUser(5, 30)
     powhegSpectrumJetPt = powhegSpectrum2D.ProjectionX("{0}_JetPt_POWHEG_PYTHIA6".format(spectrumName), powhegSpectrum2D.GetYaxis().FindBin(3), powhegSpectrum2D.GetYaxis().FindBin(30 - 1e-3))
+    powhegSpectrumJetPt.GetYaxis().SetTitle("arb. units")
 
     ratioAxis = "PYTHIA6 / POWHEG+PYTHIA6"
 
