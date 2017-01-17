@@ -434,7 +434,7 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
     if(!fRefl) {cout << " Reflection file not found! Exiting... " << endl; return kFALSE;}
     TH1F *hTemplRefl=(TH1F*)fRefl->Get(fReflHistoName.Data());
     if(!hTemplRefl) {cout << " Reflection histo not found! Exiting... " << endl; return kFALSE;}
-    hTemplRefl->Draw();
+    //hTemplRefl->Draw();
 
     if(fFixRiflOverS<0){
       cout<< " MC signal file: " << fSigMCFilenameInput.Data() << " - MC signal histo name:  " << fSigMCHistoName.Data() << endl;
