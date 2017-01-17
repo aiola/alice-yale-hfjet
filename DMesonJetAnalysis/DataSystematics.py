@@ -203,7 +203,7 @@ def PlotSystematicUncertaintySummary(name, results):
     h = results["Uncertainties"]["tot_unc"]
     baseline = h.Clone("{0}_copy".format(h.GetName()))
 
-    print("Source & Uncertainty (\\%) \\\\ \\hline")
+    print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(baseline.GetNbinsX()))
     print(" & ".join(["\\ptchjet (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(baseline.GetXaxis().GetBinLowEdge(ibin), baseline.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\ \hline")
 
     h = results["Uncertainties"]["stat_unc"]
@@ -219,7 +219,7 @@ def PlotSystematicUncertaintySummary(name, results):
         sources.append(h_copy)
 
     print("\\hline")
-    print("Correlated Uncertainty & {0:.1f} \\\\".format(results["Uncertainties"]["correlated_uncertainty"] * 100))
+    print("Correlated Uncertainty & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(baseline.GetNbinsX(), results["Uncertainties"]["correlated_uncertainty"] * 100))
     print("\\hline")
     print(" & ".join([tot_rel_syst_unc.GetTitle()] + ["{0:.1f}".format(tot_rel_syst_unc.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
