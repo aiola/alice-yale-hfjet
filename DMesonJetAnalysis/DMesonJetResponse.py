@@ -195,7 +195,7 @@ class DMesonJetResponseEngine:
             c.SetLeftMargin(0.12)
             c.SetLogz()
             h = resp.fResponseMatrix.DrawCopy("colz")
-            h.SetMinimum(h.GetMinimum() / 1.5)
+            h.SetMinimum(DMesonJetUtils.FindMinimum(h) / 2)
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.3)
             h.GetXaxis().SetTitleSize(21)
