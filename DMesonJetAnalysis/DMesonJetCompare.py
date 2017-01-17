@@ -285,7 +285,6 @@ class DMesonJetCompare:
         if self.fCanvasRatio: self.fResults.append(self.fCanvasRatio)
         if self.fLegendSpectra: self.fResults.append(self.fLegendSpectra)
         if self.fLegendRatio: self.fResults.append(self.fLegendRatio)
-        if self.fBaselineRatio: self.fResults.append(self.fBaselineRatio)
         if self.fRatioRelativeUncertainty: self.fResults.append(self.fRatioRelativeUncertainty)
 
     def AdjustYLimits(self):
