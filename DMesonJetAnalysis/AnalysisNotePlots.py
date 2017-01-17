@@ -126,6 +126,9 @@ def main(actions, output_path, output_type):
     if "all" in actions or "promptd_sim" in actions:
         CopyPromptDSimulation("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
+    if "all" in actions or "data_systematics" in actions:
+        CopDataSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+
     if "all" in actions or "theory_comparison" in actions:
         CopyTheoryComparisonFiles(configs["data_unfolding"], output_path, output_type)
 
@@ -170,6 +173,15 @@ def CopyBFeedDown(input_path, output_path, output_type):
     file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
+def CopDataSystematics(input_path, output_path, output_type):
+    full_output_path = "{0}/DataSystematics".format(output_path)
+    file_list = []
+    file_list.append("DataSystematics_LHC10")
+    file_list.append("CompareVariations_DataSystematics_LHC10")
+    file_list.append("CompareVariations_DataSystematics_LHC10_Ratio")
+    file_list.append("CompareUncertainties_DataSystematics_LHC10")
+    CopyFiles(input_path, full_output_path, file_list, output_type)
+
 def CopyPromptDSimulation(input_path, output_path, output_type):
     full_output_path = "{0}/PromptDSim".format(output_path)
     file_list = []
@@ -180,7 +192,6 @@ def CopyPromptDSimulation(input_path, output_path, output_type):
     file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_Ratio")
     file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
     CopyFiles(input_path, full_output_path, file_list, output_type)
-
 
 def CopyDataFilesWithoutEff(config, output_path, output_type):
     full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
@@ -265,7 +276,7 @@ def CopyMCFilesWithEffCharmOnly(config, output_path, output_type):
     pass
 
 def CopyDataUnfoldingFiles(config, output_path, output_type):
-    full_input_path = "{0}/{1}".format(config["input_path"], config["name"])
+    full_input_path = "{0}/{1}_mt/{2}".format(config["input_path"], config["name"], output_type)
     full_output_path = "{0}/DataUnfolding".format(output_path)
     file_list = []
     file_list.append("SideBand_DPt_30_Response_PriorResponseTruth")
@@ -283,7 +294,7 @@ def CopyDataUnfoldingFiles(config, output_path, output_type):
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyMCUnfoldingFiles(config, output_path, output_type):
-    full_input_path = "{0}/{1}".format(config["input_path"], config["name"])
+    full_input_path = "{0}/{1}/{2}".format(config["input_path"], config["name"], output_type)
     full_output_path = "{0}/MCUnfolding".format(output_path)
     file_list = []
     file_list.append("SideBand_DPt_30_UnfoldingPrior_Bayes_Ratio")
