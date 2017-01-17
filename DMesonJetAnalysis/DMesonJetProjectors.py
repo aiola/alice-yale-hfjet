@@ -17,28 +17,31 @@ class SimpleWeight:
 
 class EfficiencyWeightCalculator:
     def __init__(self, filename="", listname="", objectname=""):
-        self.fBreakpoints = []
-        self.fEfficiencyValues = []
         self.fRootObject = None
-        if filename and listname and objectname:
+        if filename and objectname:
             self.LoadEfficiency(filename, listname, objectname)
 
     def GetObjectFromRootFile(self, file, listname, objectname):
-        rlist = file.Get(listname)
-        if not rlist:
-            print("Could not find list '{0}' in file '{1}'".format(listname, file.GetName()))
-            file.ls()
-            return None
-        obj = rlist.FindObject(objectname)
-        if not obj:
-            print("Could not find object '{0}' in list '{1}'".format(objectname, listname))
-            rlist.Print()
-            return None
+        if listname:
+            rlist = file.Get(listname)
+            if not rlist:
+                print("Could not find list '{0}' in file '{1}'".format(listname, file.GetName()))
+                file.ls()
+                return None
+            obj = rlist.FindObject(objectname)
+            if not obj:
+                print("Could not find object '{0}' in list '{1}'".format(objectname, listname))
+                rlist.Print()
+                return None
+        else:
+            obj = file.Get(objectname)
+            if not obj:
+                print("Could not find object '{0}' in file '{1}'".format(objectname, file.GetName()))
+                rlist.Print()
+                return None
         return obj
 
     def LoadEfficiency(self, filename, listname, objectname):
-        self.fBreakpoints = []
-        self.fEfficiencyValues = []
         file = ROOT.TFile.Open(filename)
         if not file or file.IsZombie():
             print("Could not open file '{0}'! Effieciency could not be loaded!".format(filename))
