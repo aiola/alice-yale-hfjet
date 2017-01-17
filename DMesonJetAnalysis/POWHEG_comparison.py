@@ -255,6 +255,7 @@ def feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_rad
             histos = []
             for quark in quarks.itervalues():
                 h = GetSpectrum(quark.file, "D0_MCTruth", jet_type, jet_radius, spectrumDef.name)
+                h.Scale(1., "width")
                 h.SetName("{0}_{1}".format(quark.name, h.GetName()))
                 h.SetTitle("{0} #rightarrow D^{{0}}, {1}".format(quark.name[0], spectrumDef.title))
                 histos.append(h)
@@ -319,7 +320,7 @@ def GetSpectrum(file, meson_name, jet_type, jet_radius, spectrum):
         print("Could not get list {0} from list {1} in list {2} in file {3}".format(spectrumlistname, jetlistname, mesonlistname, file.GetName()))
         jetlist.Print()
         exit(1)
-    spectrumname = "_".join([meson_name, jet_type, jet_radius, spectrum, "Normalized"])
+    spectrumname = "_".join([meson_name, jet_type, jet_radius, spectrum])
     h = spectrumlist.FindObject(spectrumname)
     if not h:
         print("Could not find object {0} in list {1}/{2}/{3} in file {4}".format(spectrumname, mesonlistname, jetlistname, spectrumlistname, file.GetName()))
