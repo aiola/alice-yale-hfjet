@@ -123,14 +123,14 @@ analysis:
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
       list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_NoJet
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
-        bins: [5, 6, 8, 10, 14, 20, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
         coarse: [5, 6, 8, 10, 14, 20, 30]
       d_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-        coarse: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
     cuts:
     -
       object: jet
@@ -138,19 +138,19 @@ analysis:
       min: -0.5
       max: 0.5
   -
-    name: JetPtDPtSpectrum_FineBins
+    name: JetPtDPtSpectrum
     active: yes
     efficiency:
       file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_FineBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_FineBins_Efficiency_NoJet
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]
         coarse: [5, 6, 8, 10, 14, 20, 30]
       d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
-        coarse: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
     cuts:
     -
       object: jet
