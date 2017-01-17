@@ -63,24 +63,44 @@ def find_file(path, file_name):
 
 def FindMinimum(histogram, limit=0., errors=True):
     m = None
-    for ibin in range(1, histogram.GetNbinsX() + 1):
-        if errors:
-            cont = histogram.GetBinContent(ibin) - histogram.GetBinError(ibin)
-        else:
-            cont = histogram.GetBinContent(ibin)
-        if cont <= limit: continue
-        if m is None or cont < m: m = cont
+    if histogram.GetDimension() == 1:
+        for ibin in range(1, histogram.GetNbinsX() + 1):
+            if errors:
+                cont = histogram.GetBinContent(ibin) - histogram.GetBinError(ibin)
+            else:
+                cont = histogram.GetBinContent(ibin)
+            if cont <= limit: continue
+            if m is None or cont < m: m = cont
+    elif histogram.GetDimension() == 2:
+        for xbin in range(1, histogram.GetNbinsX() + 1):
+            for ybin in range(1, histogram.GetNbinsY() + 1):
+                if errors:
+                    cont = histogram.GetBinContent(xbin, ybin) - histogram.GetBinError(xbin, ybin)
+                else:
+                    cont = histogram.GetBinContent(xbin, ybin)
+                if cont <= limit: continue
+                if m is None or cont < m: m = cont
     return m
 
 def FindMaximum(histogram, limit=0., errors=True):
     m = None
-    for ibin in range(1, histogram.GetNbinsX() + 1):
-        if errors:
-            cont = histogram.GetBinContent(ibin) + histogram.GetBinError(ibin)
-        else:
-            cont = histogram.GetBinContent(ibin)
-        if cont <= limit: continue
-        if m is None or cont > m: m = cont
+    if histogram.GetDimension() == 1:
+        for ibin in range(1, histogram.GetNbinsX() + 1):
+            if errors:
+                cont = histogram.GetBinContent(ibin) + histogram.GetBinError(ibin)
+            else:
+                cont = histogram.GetBinContent(ibin)
+            if cont <= limit: continue
+            if m is None or cont > m: m = cont
+    elif histogram.GetDimension() == 2:
+        for xbin in range(1, histogram.GetNbinsX() + 1):
+            for ybin in range(1, histogram.GetNbinsY() + 1):
+                if errors:
+                    cont = histogram.GetBinContent(xbin, ybin) + histogram.GetBinError(xbin, ybin)
+                else:
+                    cont = histogram.GetBinContent(xbin, ybin)
+                if cont <= limit: continue
+                if m is None or cont > m: m = cont
     return m
 
 def DivideNoErrors(ratio, den):
