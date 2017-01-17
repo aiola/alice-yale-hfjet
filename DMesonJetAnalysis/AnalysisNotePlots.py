@@ -145,8 +145,7 @@ def CopyFiles(input_path, output_path, file_list, output_type):
 def CopyTheoryComparisonFiles(config, output_path, output_type):
     full_output_path = "{0}/TheoryComparison".format(output_path)
     file_list = []
-    file_list.append("TheoryComparison_powheg_Charged_R040")
-    file_list.append("TheoryComparison_powheg_Charged_R040_Ratio")
+    file_list.append("D0JetCrossSection_pp7TeV")
     CopyFiles(config["input_path"], full_output_path, file_list, output_type)
 
 def CopypPbComparisonFiles(config, output_path, output_type):

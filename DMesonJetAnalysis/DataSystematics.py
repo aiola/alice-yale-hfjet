@@ -186,7 +186,8 @@ def GenerateUncertainties(config, histograms):
             part_unc = max(diff_down, diff_up)
             partialRelSystUnc[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
             tot_syst_unc2 += part_unc ** 2
-        tot_syst_unc = math.sqrt(tot_syst_unc2 + (fixed_syst_unc * baseline.GetBinContent(ibin)) ** 2)
+        tot_syst_unc2 += (fixed_syst_unc * baseline.GetBinContent(ibin)) ** 2
+        tot_syst_unc = math.sqrt(tot_syst_unc2)
         stat_unc = baseline.GetBinError(ibin)
         tot_unc = math.sqrt(tot_syst_unc2 + stat_unc ** 2)
         totRelSystUnc.SetBinContent(ibin, tot_syst_unc / baseline.GetBinContent(ibin))

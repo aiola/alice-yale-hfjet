@@ -17,12 +17,19 @@ def binom(n, k):
     return math.factorial(n) / math.factorial(n - k) / math.factorial(k)
 
 def GetObject(obj, name):
-    slash = name.find("/")
+    slash = 0
+    while(slash >= 0):
+        slash = name.find("/", slash)
+        if name[slash + 1] == '/':
+            slash += 2
+        else:
+            break
+
     if slash < 0:
-        name_lookup = name
+        name_lookup = name.replace("//", "/")
         name = None
     else:
-        name_lookup = name[:slash]
+        name_lookup = name[:slash].replace("//", "/")
         name = name[slash + 1:]
     if isinstance(obj, ROOT.TCollection):
         res = obj.FindObject(name_lookup)
