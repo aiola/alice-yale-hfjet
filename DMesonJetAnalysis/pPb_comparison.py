@@ -2,7 +2,6 @@
 # python script to do extract B feed down correction factors
 
 import argparse
-import yaml
 import IPython
 import ROOT
 import DMesonJetCompare
