@@ -178,14 +178,14 @@ class DMesonJetAnalysisEngine:
 
     def Start(self, ana):
         self.fEngines = ana.fAnalysisEngine
-        if not "MCTruth" in self.fDMeson:
+        if not "MCTruth" and not "WrongPID" in self.fDMeson:
             self.FitInvMassPlots()
-        if not "BackgroundOnly" in self.fDMeson:
+        if not "BackgroundOnly" and not "WrongPID" in self.fDMeson:
             self.GenerateSpectra()
 
         if not "MCTruth" in self.fDMeson:
             self.PlotInvMassPlots()
-        if not "BackgroundOnly" in self.fDMeson:
+        if not "BackgroundOnly" and not "WrongPID" in self.fDMeson:
             self.PlotSpectra()
 
     def PlotSpectra(self):
@@ -1113,7 +1113,8 @@ class DMesonJetAnalysis:
                     fitOptions = "0 L S"
                 else:
                     fitOptions = "0 WL S"
-
+            if not "spectra" in binLists:
+                binLists["spectra"] = []
             binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, bin_count_analysis, effWeight, fitOptions))
 
         for trigger in config["trigger"]:

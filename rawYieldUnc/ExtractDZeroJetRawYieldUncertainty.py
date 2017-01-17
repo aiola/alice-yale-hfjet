@@ -23,7 +23,7 @@ ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
 def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, debug=2):
-    interface = GeneratDzeroJetRawYieldUnc(config, specie)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+    interface = GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin, ptmax, refl)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
     interface.SetPtBinEdgesForMassPlot(float(ptmin), float(ptmax))
@@ -46,7 +46,7 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     return interface
 
 def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=10, allowRepet=False, debug=2):
-    interface = GeneratDzeroJetRawYieldUnc(config, specie)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+    interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
     interface.SetAllowRepetitionOfTrialExtraction(allowRepet)
@@ -63,7 +63,7 @@ def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=10, allowRepe
     return interface
 
 def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nTrials=10, debug=2):
-    interface = GeneratDzeroJetRawYieldUnc(config, specie)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+    interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(ROOT.AliDJetRawYieldUncertainty.kSideband)
     interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
 
@@ -119,7 +119,7 @@ def LoadEfficiency(config):
         if ibinDest + 1 >= len(ptDbins): break
     return eff_values
 
-def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
+def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=False):
     # Dzero cfg
     ana = config["analysis"][0]
 
@@ -175,15 +175,19 @@ def GeneratDzeroJetRawYieldUnc(config, specie, refl=False):
     interface.SetDmesonSpecie(specie)
 
     if refl:  # ATTENTION: the histograms to be set are pT-dependent!!
-        interface.SetReflFilename("reflections_fitted_DoubleGaus.root")  # file with refl template histo
-        interface.SetMCSigFilename("reflections_fitted_DoubleGaus.root")  # file with MC signal histo
-        interface.SetReflHistoname("histRflFittedDoubleGaus_ptBin5")  # name of template histo
-        interface.SetMCSigHistoname("histSgn_5")  # name of template histo
-        interface.SetValueOfReflOverSignal(-1, 1.72, 2.00)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
+        if method == ROOT.AliDJetRawYieldUncertainty.kEffScale:
+            varname = "JetPt"
+        elif method == ROOT.AliDJetRawYieldUncertainty.kSideband:
+            varname = "DPt"
+        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"]))  # file with refl template histo
+        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"]))  # file with MC signal histo
+        interface.SetReflHistoname("histReflection_{0}_{1:.0f}_{2:.0f}".format(varname, ptmin, ptmax))  # name of template histo
+        interface.SetMCSigHistoname("histSignal_{0}_{1:.0f}_{2:.0f}".format(varname, ptmin, ptmax))  # name of template histo
+        interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
     return interface
 
-def main(config, skip_binbybin, debug):
+def main(config, skip_binbybin, refl, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
 
@@ -211,18 +215,18 @@ def main(config, skip_binbybin, debug):
 
     if not skip_binbybin:
         for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
-            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt)
+            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl)
             rawYieldUncInvMassFit.append(interface)
     rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
 
     if not skip_binbybin:
         for minPt, maxPt in zip(ptDbins[:-1], ptDbins[1:]):
-            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt)
+            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl)
             rawYieldUncSideBand.append(interface)
     rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
     outputPath = "{0}/{1}/{2}".format(config["input_path"], config["train"], config["name"])
-    MoveFiles(outputPath)
+    # MoveFiles(outputPath)
 
 def MoveFiles(outputPath):
     outputPath += "/RawYieldUnc"
@@ -242,12 +246,14 @@ if __name__ == '__main__':
                         default=2)
     parser.add_argument('--skip-binbybin', action='store_const',
                         default=False, const=True)
+    parser.add_argument('--refl', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.skip_binbybin, args.debug)
+    main(config, args.skip_binbybin, args.refl, args.debug)
 
     IPython.embed()
