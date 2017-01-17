@@ -6,6 +6,7 @@ import yaml
 import IPython
 import ROOT
 import DMesonJetCompare
+import DMesonJetUtils
 
 globalList = []
 
@@ -29,7 +30,7 @@ class QuarkSetting:
         self.name = _name
         self.histos = dict()
 
-def main(charm_ts, beauty_ts, jet_type, jet_radius, data):
+def main(charm_ts, beauty_ts, jet_type, jet_radius, data, pythia):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -37,6 +38,8 @@ def main(charm_ts, beauty_ts, jet_type, jet_radius, data):
     for gen in generators:
         if data:
             data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, data)
+        elif pythia:
+            pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, pythia)
         else:
             feed_down_analysis_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius)
 
@@ -116,7 +119,10 @@ def GetTotalMCSpectrum(quarks, jet_type, jet_radius, spectrumName, title):
             res = h.Clone(hname)
             res.SetTitle(title)
     res.Scale(1. / 2)  # particle/antiparticle normalization
-    res.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
+    if res.GetDimension() == 1:
+        res.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
+    else:
+        res.GetZaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
     return res
 
 def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, data):
@@ -182,6 +188,113 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
         globalList.append(obj)
         if isinstance(obj, ROOT.TCanvas):
             obj.SaveAs("{0}/{1}.pdf".format(rootPath, obj.GetName()))
+
+def GetPYTHIASpectrum(pythiaFile, jet_type, jet_radius, spectrumName):
+    hpath = "D0_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}/D0_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}_Truth".format(jet_type=jet_type, jet_radius=jet_radius, spectrum=spectrumName)
+    return DMesonJetUtils.GetObject(pythiaFile, hpath)
+
+def pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, pythia):
+    f = open("{0}.yaml".format(pythia), 'r')
+    pythiaConfig = yaml.load(f)
+    f.close()
+
+    spectrumName = "JetPtDPtSpectrum"
+
+    pythiaFileName = "{0}/{1}/{2}.root".format(pythiaConfig["input_path"], pythiaConfig["train"], pythiaConfig["name"])
+    pythiaFile = ROOT.TFile(pythiaFileName)
+    if not pythiaFile or pythiaFile.IsZombie():
+        print("Could not open file {0}".format(pythiaFileName))
+        exit(1)
+    else:
+        print("File {0} successfully open".format(pythiaFileName))
+    pythiaSpectrum2D = GetPYTHIASpectrum(pythiaFile, jet_type, jet_radius, spectrumName)
+    pythiaSpectrum2D.GetYaxis().SetRangeUser(3, 30)
+    pythiaSpectrumDPt = pythiaSpectrum2D.ProjectionY("{0}_DPt_PYTHIA6".format(spectrumName), pythiaSpectrum2D.GetXaxis().FindBin(5), pythiaSpectrum2D.GetXaxis().FindBin(30 - 1e-3))
+    pythiaSpectrumDPt.SetTitle("PYTHIA6 (LHC15i2bcde)")
+    pythiaSpectrum2D.GetXaxis().SetRangeUser(5, 30)
+    pythiaSpectrumJetPt = pythiaSpectrum2D.ProjectionX("{0}_JetPt_PYTHIA6".format(spectrumName), pythiaSpectrum2D.GetYaxis().FindBin(3), pythiaSpectrum2D.GetYaxis().FindBin(30 - 1e-3))
+    pythiaSpectrumJetPt.SetTitle("PYTHIA6 (LHC15i2bcde)")
+    # a factor of 1/4 comes from the fact that this is the sum of 4 cross sections
+    # (the periods; in principle it should be 8 because there is a MB cross section as well
+    # but at high pt the MB has vanishing statistics); a factor 1/2 comes from the antiparticles
+    # so there is a missing factor 1/2
+    pythiaSpectrumDPt.Scale(0.25, "width")
+    pythiaSpectrumJetPt.Scale(0.25, "width")
+
+    input_path = pythiaConfig["input_path"]
+
+    quarks = dict()
+
+    if charm_ts:
+        charmQuark = QuarkSetting("charm")
+        (charmQuark.ts, charmQuark.stage) = get_ts_stage(charm_ts)
+        quarks["charm"] = charmQuark
+
+    if beauty_ts:
+        beautyQuark = QuarkSetting("beauty")
+        (beautyQuark.ts, beautyQuark.stage) = get_ts_stage(beauty_ts)
+        quarks["beauty"] = beautyQuark
+
+
+    cnameDPt = "_".join(["PYTHIA_POWHEG_DPtSpectrumComparison", jet_type, jet_radius, pythia])
+    cnameJetPt = "_".join(["PYTHIA_POWHEG_JetPtSpectrumComparison", jet_type, jet_radius, pythia])
+    fname = "_".join(["PYTHIA_POWHEG_Comparison", jet_type, jet_radius, pythia])
+    for quark in quarks.itervalues():
+        cnameDPt += "_{0}_{1}".format(quark.name, quark.ts)
+        cnameJetPt += "_{0}_{1}".format(quark.name, quark.ts)
+        fname += "_{0}_{1}".format(quark.name, quark.ts)
+        if quark.stage >= 0:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(input_path, gen, quark.name, quark.ts, quark.stage)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        else:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/output".format(input_path, gen, quark.name, quark.ts)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}.root".format(quark.path, gen, quark.name)
+        quark.file = ROOT.TFile(quark.filename)
+        if not quark.file or quark.file.IsZombie():
+            print("Could not open file {0}".format(quark.filename))
+            exit(1)
+
+    if gen == "powheg":
+        genTitle = "POWHEG+PYTHIA6"
+    else:
+        genTitle = "MC"
+    powhegSpectrum2D = GetTotalMCSpectrum(quarks, jet_type, jet_radius, spectrumName, genTitle)
+    powhegSpectrum2D.GetYaxis().SetRangeUser(3, 30)
+    powhegSpectrumDPt = powhegSpectrum2D.ProjectionY("{0}_DPt_POWHEG_PYTHIA6".format(spectrumName), powhegSpectrum2D.GetXaxis().FindBin(5), powhegSpectrum2D.GetXaxis().FindBin(30 - 1e-3))
+    powhegSpectrum2D.GetXaxis().SetRangeUser(5, 30)
+    powhegSpectrumJetPt = powhegSpectrum2D.ProjectionX("{0}_JetPt_POWHEG_PYTHIA6".format(spectrumName), powhegSpectrum2D.GetYaxis().FindBin(3), powhegSpectrum2D.GetYaxis().FindBin(30 - 1e-3))
+
+    ratioAxis = "PYTHIA6 / POWHEG+PYTHIA6"
+
+    powhegSpectrumDPt.Scale(1., "width")
+    powhegSpectrumJetPt.Scale(1., "width")
+
+    globalList.append(powhegSpectrumDPt)
+    globalList.append(pythiaSpectrumDPt)
+    globalList.append(powhegSpectrumJetPt)
+    globalList.append(pythiaSpectrumJetPt)
+
+    comp = DMesonJetCompare.DMesonJetCompare(cnameJetPt)
+    comp.fYaxisRatio = ratioAxis
+    rJetPt = comp.CompareSpectra(powhegSpectrumJetPt, [pythiaSpectrumJetPt])
+
+    comp = DMesonJetCompare.DMesonJetCompare(cnameDPt)
+    comp.fYaxisRatio = ratioAxis
+    rDPt = comp.CompareSpectra(powhegSpectrumDPt, [pythiaSpectrumDPt])
+
+    file_out = ROOT.TFile("{0}/{1}.root".format(input_path, fname), "recreate")
+    file_out.cd()
+    powhegSpectrumDPt.Write()
+    pythiaSpectrumDPt.Write()
+    powhegSpectrumJetPt.Write()
+    pythiaSpectrumJetPt.Write()
+    for obj in rJetPt + rDPt:
+        globalList.append(obj)
+        if isinstance(obj, ROOT.TCanvas):
+            obj.SaveAs("{0}/{1}.pdf".format(pythiaConfig["input_path"], obj.GetName()))
+        if isinstance(obj, ROOT.TH1):
+            file_out.cd()
+            obj.Write()
 
 def get_ts_stage(ts_stage):
     b = ts_stage.split(":")
@@ -341,8 +454,10 @@ if __name__ == '__main__':
                         default="R040")
     parser.add_argument('--data', metavar='LHC10_Train823_LHC15i2_Train961_efficiency',
                         default=None)
+    parser.add_argument('--pythia', metavar='LHC15i2analysis_Train961',
+                        default=None)
     args = parser.parse_args()
 
-    main(args.charm, args.beauty, args.jet_type, args.jet_radius, args.data)
+    main(args.charm, args.beauty, args.jet_type, args.jet_radius, args.data, args.pythia)
 
     IPython.embed()
