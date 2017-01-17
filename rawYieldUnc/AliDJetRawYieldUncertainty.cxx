@@ -437,7 +437,7 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
     hTemplRefl->Draw();
 
     if(fFixRiflOverS<0){
-      cout<< " MC signal file: " << fSigMCFilenameInput.Data() << " - MC signal histo name:  " << fReflHistoName.Data() << endl;
+      cout<< " MC signal file: " << fSigMCFilenameInput.Data() << " - MC signal histo name:  " << fSigMCHistoName.Data() << endl;
       TFile *fSigMC=TFile::Open(fSigMCFilenameInput.Data(),"read"); //needed if refl/sigMC ratio is not fixed
       if(!fSigMC) {cout << " MC signal file not found! Exiting... " << endl; return kFALSE;}
       TH1F *hSignMC=(TH1F*)fSigMC->Get(fSigMCHistoName.Data());
