@@ -174,7 +174,7 @@ def GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectru
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
     wrap.fSpectrumName = "_".join([spectrum, method])
-    wrap.fDataList = None
+    wrap.fDataSpectrumList = None
     wrap.fDataFile = None
     h = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(method)
     h_copy = h.Clone("{0}_copy".format(spectrum))

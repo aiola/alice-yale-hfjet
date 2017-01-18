@@ -19,9 +19,11 @@ class RawYieldSpectrumLoader:
         self.fJetType = None
         self.fJetRadius = None
         self.fSpectrumName = None
-        self.fDataList = None
+        self.fDataSpectrumList = None
         self.fDataFile = None
         self.fMultiTrialSubDir = None
+        self.fDataJetList = None
+        self.fDataMesonList = None
 
     def LoadDataFileFromDMesonJetAnalysis(self):
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName))
@@ -29,23 +31,26 @@ class RawYieldSpectrumLoader:
 
     def LoadDataListFromDMesonJetAnalysis(self):
         if not self.fDataFile: self.LoadDataFileFromDMesonJetAnalysis()
-        dataMesonList = self.fDataFile.Get(self.fDMeson)
-        if not dataMesonList:
-            print("Could not find list {0} in file {1}". format(self.fDMeson, self.fDataFile.GetName()))
-            exit(1)
-        dataJetListName = "_".join([self.fJetType, self.fJetRadius])
-        dataJetList = dataMesonList.FindObject(dataJetListName)
-        if not dataJetList:
-            print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, self.fDataFile.GetName()))
-            dataMesonList.Print()
-            exit(1)
-        dataListName = "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName)
-        self.fDataList = dataJetList.FindObject(dataListName)
-        if not self.fDataList:
-            print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
-            dataJetList.Print()
-            exit(1)
-        return self.fDataList
+        if self.fDMeson:
+            self.fDataMesonList = self.fDataFile.Get(self.fDMeson)
+            if not self.fDataMesonList:
+                print("Could not find list {0} in file {1}". format(self.fDMeson, self.fDataFile.GetName()))
+                exit(1)
+            if self.fJetType and self.fJetRadius:
+                dataJetListName = "_".join([self.fJetType, self.fJetRadius])
+                self.fDataJetList = self.fDataMesonList.FindObject(dataJetListName)
+                if not self.fDataJetList:
+                    print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, self.fDataFile.GetName()))
+                    self.fDataMesonList.Print()
+                    exit(1)
+                if self.fSpectrumName:
+                    dataListName = "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName)
+                    self.fDataSpectrumList = self.fDataJetList.FindObject(dataListName)
+                    if not self.fDataSpectrumList:
+                        print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
+                        self.fDataJetList.Print()
+                        exit(1)
+        return self.fDataSpectrumList
 
     def GetDefaultSpectrumFromDMesonJetAnalysis(self, method, fd=False, fd_error_band=0, ry_error_band=0):
         if not (method == "SideBand" or method == "InvMassFit"):
@@ -55,11 +60,11 @@ class RawYieldSpectrumLoader:
             print("****Attention Attention Attention****")
             print("You asked for reflections, but reflections are not available outside of the multi-trial code!")
             print("The reflection option will be ignored!")
-        if not self.fDataList: self.LoadDataListFromDMesonJetAnalysis()
+        if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
         inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName])
-        h = self.fDataList.FindObject(inputSpectrumName)
+        h = self.fDataSpectrumList.FindObject(inputSpectrumName)
         if not h:
-            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataList.GetName()))
+            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
             exit(1)
         if fd: self.ApplyFDCorrection(h, fd_error_band)
         if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, method, ry_error_band)
