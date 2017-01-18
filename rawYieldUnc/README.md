@@ -87,6 +87,6 @@ The input file names and the histogram names are set in the `SetInputParameterDz
 
 After these setting.
 
-It is possible to smoothen the reflection templates retrived from the MC analysis using the `FitReflDistr` in the steering macro: it needs an input file with the templates for each *p*~T~ bin inside (named `histRefl_N`, with N the *p*~T~ bin number from 0 to `nbins`), the number of _p_~T~ bins (`nbins`) and a distribution to be used as guideline for the template smoothing (choose among `DoubleGaus`, `pol3`, `pol6`, `gaus` with the first as default).
+It is possible to smoothen the reflection templates retrived from the MC analysis using the `FitReflDistr` in the steering macro: it needs an input file with the templates for each *p*~T~ bin inside (named `histRfl_N` and `histSgn_N`, with N the *p*~T~ bin number from 0 to `nbins`), the number of _p_~T~ bins (`nbins`) and a distribution to be used as guideline for the template smoothing (choose among `DoubleGaus`, `pol3`, `pol6`, `gaus` with the first as default).
 
 This function can be used also to produce template variations (using different guide functions), which, together with variations of the refl/true signal ratio (by fixing it externally to different values) can help in evaluating the impact of the reflection template on the yield extraction, and its stability against template variations.

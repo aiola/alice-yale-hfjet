@@ -2113,8 +2113,10 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband_CoherentTria
 //___________________________________________________________________________________________
 void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType) {
 
+    Printf("Fitting reflections.");
   TFile *fReflections = new TFile(inputfile.Data());
-  TFile *fFitReflection = new TFile(Form("reflections_fitted_%s.root",fitType.Data()), "recreate");
+  TString inputfileNoExt = inputfile.ReplaceAll(".root", "");
+  TFile *fFitReflection = new TFile(Form("%s_fitted_%s.root",inputfileNoExt.Data(),fitType.Data()), "recreate");
 
   for (Int_t i=0; i<nPtBins; i++){
     TH1F *hSignMC= (TH1F*)fReflections->Get(Form("histSgn_%d",i));
@@ -2124,15 +2126,16 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     }
   }
 
-  TCanvas *cy = new TCanvas("fitCanv", "fitCanv");
+  TCanvas *cy = new TCanvas(Form("%s_fitCanv", inputfileNoExt.Data()), Form("%s_fitCanv", inputfileNoExt.Data()));
   cy->Divide(4,3);
-  TCanvas *cy2 = new TCanvas("fitCanv2", "fitCanv2");
+  TCanvas *cy2 = new TCanvas(Form("%s_fitCanv2", inputfileNoExt.Data()), Form("%s_fitCanv2", inputfileNoExt.Data()));
   cy2->Divide(4,3);
-  TCanvas *cyRatio = new TCanvas("fitCanvRatio", "fitCanvRatio");
+  TCanvas *cyRatio = new TCanvas(Form("%s_fitCanvRatio", inputfileNoExt.Data()), Form("%s_fitCanvRatio", inputfileNoExt.Data()));
   cyRatio->Divide(4,3);
 
 
   for (Int_t iBin=0; iBin<nPtBins; iBin++){
+    Printf("Bin %d", iBin);
     TH1F *hfitRefl= (TH1F*)fReflections->Get(Form("histRfl_%d", iBin));
     hfitRefl->SetName(Form("histoRfl_%d",iBin));
     hfitRefl->SetMarkerStyle(1);
@@ -2165,6 +2168,7 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     }
 
     hfitRefl->Fit("finput", "MLFI");
+    Printf("Fit done");
     TF1 *fFitRefl = hfitRefl->GetFunction("finput");
 
     TH1F *hFitReflNewTemp = (TH1F*)hfitRefl->Clone(Form("histRflFitted%s_ptBin%d", fitType.Data(), iBin));
