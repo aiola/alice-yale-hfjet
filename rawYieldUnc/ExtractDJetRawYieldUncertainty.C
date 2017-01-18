@@ -129,10 +129,13 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl)
 
   //Dzero cfg
   const Int_t nDbins = 8;
-  Double_t ptDbins[nDbins+1] = {3, 4, 5, 6, 7, 8, 10, 16, 30};
+  Double_t ptDbins[nDbins+1] = {3, 4, 5, 6, 7, 8, 10, 12, 16, 30};
   const Int_t nJetbins = 6;
   Double_t ptJetbins[nJetbins+1] = {5, 6, 8, 10, 14, 20, 30}; //used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
   Double_t DMesonEff[nDbins] = {/*0.0118323, 0.02011807,  0.03644752, */0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591}; //chopping 0-1, 1-2
+
+  Double_t sigmafixed_DPtBins[nDbins] = {0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027};  // chopping 0-1, 1-2, 2-3
+  Double_t sigmafixed_JetPtBins[nJetbins] = {0.012, 0.015, 0.014, 0.016, 0.018, 0.020};
 
   Double_t sigmafixed=0.014; //ATTENTION: the fixed sigma value to be set is pT-dependent!!
   Double_t chi2cut=3;
@@ -178,7 +181,8 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl)
   interface->SetDmesonEfficiency(DMesonEff);
 
   interface->SetSigmaForSignalRegion(2.); //only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
-  interface->SetSigmaToFix(sigmafixed);
+  interface->SetSigmaToFixDPtBins(sigmafixed_DPtBins);
+  interface->SetSigmaToFixJetPtBins(sigmafixed_JetPtBins);
   interface->SetChi2Cut(chi2cut);
   interface->SetMeanSigmaVariations(meansigmaVar);
   interface->SetBkgVariations(bkgVar);
@@ -202,7 +206,9 @@ void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface){
   Double_t ptJetbins[7] = {4,6,8,10,12,16,24}; //used for eff.scale approach only (for sideband approach, jet bins are hardcoded in the THnSparses)
   Double_t DMesonEff[8] = {0.0274342, 0.06084, 0.104142, 0.164893, 0.209574, 0.288254, 0.316152, 0.372691};
 
-  Double_t sigmafixed=0.0006;
+
+  Double_t sigmafixed_DPtBins[nDbins] = {0.0006, 0.0006, 0.0006, 0.0006, 0.0006, 0.0006, 0.0006, 0.0006, 0.0006};  // chopping 0-1, 1-2, 2-3
+  Double_t sigmafixed_JetPtBins[nJetbins] = {0.0006, 0.0006, 0.0006, 0.0006, 0.0006, 0.0006};
   Double_t chi2cut=3;
   Bool_t meansigmaVar[6] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE}; //set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
   Bool_t bkgVar[8] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kTRUE,kTRUE}; //set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
@@ -236,7 +242,8 @@ void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface){
   interface->SetRebinSpectrumIfSBApproach(kTRUE); //kTRUE=rebin the jet spectrum with ptJetbins[] vals, otherwise use the binning from THnSparse projection
 
   interface->SetSigmaForSignalRegion(3.); //only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
-  interface->SetSigmaToFix(sigmafixed);
+  interface->SetSigmaToFixDPtBins(sigmafixed_DPtBins);
+  interface->SetSigmaToFixJetPtBins(sigmafixed_JetPtBins);
   interface->SetChi2Cut(chi2cut);
   interface->SetMeanSigmaVariations(meansigmaVar);
   interface->SetBkgVariations(bkgVar);

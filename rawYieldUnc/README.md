@@ -26,10 +26,9 @@ gROOT->LoadMacro("AliDJetRawYieldUncertainty.cxx++")
 ## Configuration of the trials
 There's no precise recipe (even in D2H on how to define the variations, and on their number). In the following, some information on the different possibilities, which can be enabled via the steering macro, are given.
 
-* `sigmafixed` $\to$ MC value of the sigma for the pT bin under exam. Needs to be set carefully, for each pT bin you look at.
-
+* `sigmafixed_DPtBins` $\to$ array with the values of the sigma of the invariant mass fits in each *p*~T,D~ bin, taken from MC with only real D mesons
+* `sigmafixed_JetPtBins` $\to$ array with the values of the sigma of the invariant mass fits in each *p*~T,ch~ ~jet~ bin, taken from MC with only real D mesons
 * `chi2cut` $\to$ upper threshold of the chi^2/ndf for the fit. If the fit is worse than this threshold, is excluded from further operations.
-
 * `meansigmaVar[6] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE}` $\to$ Variations of the mean and sigma configuration, can be activated or excluded. From left to right: fixed sigma, fixed sigma (increased by 15%), fixed sigma (decreased by 15%), free mean and sigma, free sigma and fixed mean, fixed mean and sigma
 
 
@@ -73,19 +72,17 @@ This feature enters in play only during the bin-by-bin fitting phase (when calli
 
 The ingredients needed are:
 
-\- A 1D histogram with the template distribution in the _p_~T~ bin under analysis
+- A 1D histogram with the template distribution in the _p_~T~ bin under analysis
+- The reflection/true signal ratio in the mass fit range OR the true signal mass distribution in the _p_~T~ bin under analysis (the ratio can be indeed fixed by hand, or evaluated by the reflection and true signal histograms).
 
-\- The reflection/true signal ratio in the mass fit range OR the true signal mass distribution in the _p_~T~ bin under analysis (the ratio can be indeed fixed by hand, or evaluated by the reflection and true signal histograms).
-
-An example of these plots (in several _p_~T~ bins) is given as an attachment in the JIRA ticket (file reflections_fitted_DoubleGaus.root). Note that these histograms are (strongly) _p_~T~-dependent. It's not mandatory that these histograms have the same binning and mass range of the data mass distribution.
+An example of these plots (in several _p_~T~ bins) is given as an attachment in the JIRA ticket (file `reflections_fitted_DoubleGaus.root`). Note that these histograms are (strongly) _p_~T~-dependent. It's not mandatory that these histograms have the same binning and mass range of the data mass distribution.
 
 The input file names and the histogram names are set in the `SetInputParameterDzero` section, together with:
 
-\- The value of the reflection/true signal ratio, if fixed from the user (first argument of `SetValueOfReflOverSignal`)
+- The value of the reflection/true signal ratio, if fixed from the user (first argument of `SetValueOfReflOverSignal`)
+- The mass fit range of the bin under study, to automatically evaluate that ratio from the input histograms (in this case the first argument has to be set to -1)
 
-\- The mass fit range of the bin under study, to automatically evaluate that ratio from the input histograms (in this case the first argument has to be set to -1)
-
-After these setting.
+### After these settings
 
 It is possible to smoothen the reflection templates retrived from the MC analysis using the `FitReflDistr` in the steering macro: it needs an input file with the templates for each *p*~T~ bin inside (named `histRfl_N` and `histSgn_N`, with N the *p*~T~ bin number from 0 to `nbins`), the number of _p_~T~ bins (`nbins`) and a distribution to be used as guideline for the template smoothing (choose among `DoubleGaus`, `pol3`, `pol6`, `gaus` with the first as default).
 
