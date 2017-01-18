@@ -21,32 +21,51 @@ def main(config):
         print("Could not open file {0}".format(fname))
         exit(1)
 
-    fname = "reflTemp/{0}.root".format(config["name"])
-    fileOut = ROOT.TFile(fname, "recreate")
-
-    for ptmin, ptmax in zip(ptJetbins[:-1], ptJetbins[1:]):
+    fnameJetPt = "reflTemp/{0}_JetPt.root".format(config["name"])
+    fileOutJetPt = ROOT.TFile(fnameJetPt, "recreate")
+    for ibin, (ptmin, ptmax) in enumerate(zip(ptJetbins[:-1], ptJetbins[1:])):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_JetPtBins_DPt_30/InvMass_D0_kSignalOnly_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hSig: exit(1)
-        hSig.SetName("histSignal_JetPt_{0:.0f}_{1:.0f}".format(ptmin, ptmax))
+        hSig.SetName("histSgn_{0}".format(ibin))
         hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_JetPtBins_DPt_30/InvMass_D0_WrongPID_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hRefl: exit(1)
-        hRefl.SetName("histReflection_JetPt_{0:.0f}_{1:.0f}".format(ptmin, ptmax))
-        fileOut.cd()
+        hRefl.SetName("histRfl_{0}".format(ibin))
+        fileOutJetPt.cd()
         hSig.Write()
         hRefl.Write()
+    fileOutJetPt.Close()
 
-    for ptmin, ptmax in zip(ptDbins[:-1], ptDbins[1:]):
+    fnameDPt = "reflTemp/{0}_DPt.root".format(config["name"])
+    fileOutDPt = ROOT.TFile(fnameDPt, "recreate")
+    for ibin, (ptmin, ptmax) in enumerate(zip(ptDbins[:-1], ptDbins[1:])):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hSig: exit(1)
-        hSig.SetName("histSignal_DPt_{0:.0f}_{1:.0f}".format(ptmin, ptmax))
+        hSig.SetName("histSgn_{0}".format(ibin))
         hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_WrongPID_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hRefl: exit(1)
-        hRefl.SetName("histReflection_DPt_{0:.0f}_{1:.0f}".format(ptmin, ptmax))
-        fileOut.cd()
+        hRefl.SetName("histRfl_{0}".format(ibin))
+        fileOutDPt.cd()
         hSig.Write()
         hRefl.Write()
+    fileOutDPt.Close()
 
-    fileOut.Close()
+    ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
+    ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
+    ROOT.gInterpreter.AddIncludePath("$FASTJET/include");
+
+    # load fastjet libraries 3.x
+    ROOT.gSystem.Load("libCGAL")
+
+    ROOT.gSystem.Load("libfastjet")
+    ROOT.gSystem.Load("libsiscone")
+    ROOT.gSystem.Load("libsiscone_spherical")
+    ROOT.gSystem.Load("libfastjetplugins")
+    ROOT.gSystem.Load("libfastjetcontribfragile")
+
+    ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
+
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "gaus");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "gaus");
 
 if __name__ == '__main__':
 
