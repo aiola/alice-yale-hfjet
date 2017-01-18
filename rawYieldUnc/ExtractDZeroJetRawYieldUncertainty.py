@@ -226,7 +226,7 @@ def main(config, skip_binbybin, refl, debug):
     rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
     outputPath = "{0}/{1}/{2}".format(config["input_path"], config["train"], config["name"])
-    # MoveFiles(outputPath)
+    MoveFiles(outputPath)
 
 def MoveFiles(outputPath):
     outputPath += "/RawYieldUnc"
