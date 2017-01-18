@@ -2186,9 +2186,10 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
       ratio->SetBinContent(iBin2, 0.);
 
       hFitReflNewTemp->SetBinContent(iBin2, fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2)));
-      if(fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))>=0.) hFitReflNewTemp->SetBinError(iBin2, TMath::Sqrt(fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))));
-      else hFitReflNewTemp->SetBinError(iBin2, 0.);
+      //if(fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))>=0.) hFitReflNewTemp->SetBinError(iBin2, TMath::Sqrt(fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))));
+      //else hFitReflNewTemp->SetBinError(iBin2, 0.);
       ratio->SetBinContent(iBin2, (hfitRefl->GetBinContent(iBin2) / fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))));
+      ratio->SetBinError(iBin2, (hfitRefl->GetBinError(iBin2) / fFitRefl->Eval(hfitRefl->GetBinCenter(iBin2))));
     }
 
     cy2->cd(iBin+1);
@@ -2203,6 +2204,7 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     gPad->Update();
 
     fFitReflection->cd();
+    hfitRefl->Write();
     hFitReflNewTemp->Write();
     ratio->Write();
   }
