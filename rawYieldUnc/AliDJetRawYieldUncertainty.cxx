@@ -62,7 +62,8 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fnDbins(0),
   fDbinpTedges(0x0),
   fDEffValues(0x0),
-  fMassPlot(0x0)
+  fMassPlot(0x0),
+  fnSigmaBC(0x0)
 {
 
 }
@@ -79,7 +80,8 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fnDbins(source.fnDbins),
   fDbinpTedges(source.fDbinpTedges),
   fDEffValues(source.fDEffValues),
-  fMassPlot(source.fMassPlot)
+  fMassPlot(source.fMassPlot),
+  fnSigmaBC(0x0)
 {
 
 }
