@@ -19,6 +19,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -40,6 +41,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -61,6 +63,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -82,6 +85,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -102,6 +106,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -123,6 +128,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
@@ -143,6 +149,7 @@ analysis:
       file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
       list_name: ""
       object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio
+      apply_to_truth: yes
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]

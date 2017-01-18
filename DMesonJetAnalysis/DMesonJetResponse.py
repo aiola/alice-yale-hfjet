@@ -404,6 +404,10 @@ class DMesonJetResponse:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"]), resp["efficiency"]["list_name"], resp["efficiency"]["object_name"])
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
+            if "apply_to_truth" in resp["efficiency"]:
+                apply_to_truth = resp["efficiency"]["apply_to_truth"]
+            else:
+                apply_to_truth = False
             axis_list = []
             for axis_name, bins in resp["bins"].iteritems():
                 if "bins" in bins:
@@ -422,7 +426,7 @@ class DMesonJetResponse:
             else:
                 cut_list = []
 
-            axis[resp["name"]] = axis_list, effWeight, cut_list
+            axis[resp["name"]] = axis_list, effWeight, apply_to_truth, cut_list
 
         for d_meson in config["d_meson"]:
             eng = DMesonJetResponseEngine(d_meson, config["jets"], axis, self.fProjector)
