@@ -7,6 +7,21 @@ import math
 import array
 from collections import OrderedDict
 
+def soft_clone(origin, name, title=None, yaxisTitle=None):
+    if not title: title = name
+    if not yaxisTitle: yaxisTitle = origin.GetYaxis().GetTitle()
+    h = ROOT.TH1D(name, title, origin.GetNbinsX(), origin.GetXaxis().GetXbins().GetArray())
+    h.GetXaxis().SetTitle(origin.GetXaxis().GetTitle())
+    h.GetYaxis().SetTitle(yaxisTitle)
+    return h
+
+def GetRelativeUncertaintyHistogram(h):
+    h_unc = soft_clone(h, "{0}_unc".format(h.GetName()), "{0} Rel. Unc.".format(h.GetTitle()), "rel. unc.")
+    for ibin in range(0, h.GetNbinsX() + 2):
+        if h.GetBinContent(ibin) == 0: continue
+        h_unc.SetBinContent(ibin, h.GetBinError(ibin) / h.GetBinContent(ibin))
+    return h_unc
+
 def ConvertDMesonName(dmeson):
     if "D0" in dmeson:
         return "D^{0} #rightarrow K^{-}#pi^{+} and c.c."

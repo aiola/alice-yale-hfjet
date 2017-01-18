@@ -62,3 +62,11 @@ sources:
   input_name: LHC10_Train823_LHC15i2_Train961_mcshape_efficiency_mt
   histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
   histogram_title_down: "POWHEG+PYTHIA6 #it{p}_{T}-spectrum"
+-
+  name: reflections
+  active: yes
+  title: "D^{0} Reflections"
+  symmetrize: yes
+  input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl
+  histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  histogram_title_down: "D^{0} Reflections"

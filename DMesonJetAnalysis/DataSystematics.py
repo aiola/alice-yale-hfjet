@@ -145,14 +145,6 @@ def CompareVariations(config, histograms):
         globalList.append(obj)
     return result
 
-def soft_clone(origin, name, title=None, yaxisTitle=None):
-    if not title: title = name
-    if not yaxisTitle: yaxisTitle = origin.GetYaxis().GetTitle()
-    h = ROOT.TH1D(name, title, origin.GetNbinsX(), origin.GetXaxis().GetXbins().GetArray())
-    h.GetXaxis().SetTitle(origin.GetXaxis().GetTitle())
-    h.GetYaxis().SetTitle(yaxisTitle)
-    return h
-
 def CalculateFixSystematicUncertainty(config):
     fixed_unc2 = 0
     print("Source & Uncertainty (\\%) \\\\ \\hline")
@@ -167,11 +159,11 @@ def CalculateFixSystematicUncertainty(config):
 def GenerateUncertainties(config, histograms):
     baseline = histograms["default"]
     fixed_syst_unc = CalculateFixSystematicUncertainty(config)
-    partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
-    totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
-    statUnc = soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
-    totUnc = soft_clone(baseline, "tot_unc", "Total Uncertainty", "relative uncertainty")
-    centralSystUnc = soft_clone(baseline, "central_syst_unc")
+    partialRelSystUnc = [DMesonJetUtils.soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
+    totRelSystUnc = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
+    statUnc = DMesonJetUtils.soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
+    totUnc = DMesonJetUtils.soft_clone(baseline, "tot_unc", "Total Uncertainty", "relative uncertainty")
+    centralSystUnc = DMesonJetUtils.soft_clone(baseline, "central_syst_unc")
 
     for ibin in range(1, baseline.GetNbinsX() + 1):
         tot_syst_unc2 = 0
