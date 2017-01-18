@@ -56,7 +56,7 @@ sources:
   histogram_title_down: "B Feed-Down (low)"
 -
   name: mc_shape
-  active: yes
+  active: no
   title: "MC #it{p}_{T}-spectrum Shape"
   symmetrize: yes
   input_name: LHC10_Train823_LHC15i2_Train961_mcshape_efficiency_mt
