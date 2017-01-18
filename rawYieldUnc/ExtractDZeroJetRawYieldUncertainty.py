@@ -225,11 +225,11 @@ def main(config, skip_binbybin, refl, debug):
             rawYieldUncSideBand.append(interface)
     rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
-    outputPath = "{0}/{1}/{2}".format(config["input_path"], config["train"], config["name"])
+    outputPath = "{0}/{1}/{2}/RawYieldUnc".format(config["input_path"], config["train"], config["name"])
+    if refl: outputPath += "_refl"
     MoveFiles(outputPath)
 
 def MoveFiles(outputPath):
-    outputPath += "/RawYieldUnc"
     print("Results will be moved to {0}".format(outputPath))
     if not os.path.isdir(outputPath):
         os.makedirs(outputPath)
