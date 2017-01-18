@@ -18,8 +18,13 @@ globalList = []
 ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
-def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, debug=2):
-    interface = GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin, ptmax, refl)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, singleTrial=False, debug=2):
+    # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+    if singleTrial:
+        interface = GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin, ptmax, refl)
+    else:
+        interface = GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin, ptmax, refl)
+    if singleTrial: interface.SetSaveInvMassFitCanvases(True)
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
     interface.SetPtBinEdgesForMassPlot(float(ptmin), float(ptmax))
@@ -185,7 +190,72 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
 
     return interface
 
-def main(config, skip_binbybin, refl, debug):
+def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptmax=-1, refl=False):
+    # Dzero cfg
+    ana = config["analysis"][0]
+
+    DMesonEff = LoadEfficiency(config)
+    print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
+    sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027]  # chopping 0-1, 1-2, 2-3
+    sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
+
+    chi2cut = 3
+    meansigmaVar = [False, False, False, True, False, False]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
+    bkgVar = [True, False, False, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
+    rebinStep = [1]
+    minMassStep = [1.715]
+    maxMassStep = [2.015]
+    nSigmasBC = []
+    # WARNING! set nmask value to active mean/sigma*active bkg variations!
+    # And adjust consequently the following matrix (put an entry for each variation, with value: 0=don't consider it, 1=consider it in the final syst eval)
+    mask = [
+        1  # free sigma, free mean
+        ]
+
+    interface = ROOT.AliDJetRawYieldUncertainty()
+    interface.AddInputFileName("{0}/{1}/LHC10b/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    interface.AddInputFileName("{0}/{1}/LHC10c/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    interface.AddInputFileName("{0}/{1}/LHC10d/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    interface.AddInputFileName("{0}/{1}/LHC10e/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    interface.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
+    interface.SetInputDBranchname("DmesonJet")
+    interface.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
+
+    interface.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
+    interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
+    interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
+    interface.SetDmesonEfficiency(numpy.array(DMesonEff))
+
+    interface.SetSigmaForSignalRegion(2.)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
+    interface.SetSigmaToFixDPtBins(numpy.array(sigmafixed_DPtBins, dtype=numpy.float64))
+    interface.SetSigmaToFixJetPtBins(numpy.array(sigmafixed_JetPtBins, dtype=numpy.float64))
+    interface.SetChi2Cut(chi2cut)
+    interface.SetMeanSigmaVariations(numpy.array(meansigmaVar, dtype=bool))
+    interface.SetBkgVariations(numpy.array(bkgVar, dtype=bool))
+    interface.SetRebinSteps(len(rebinStep), numpy.array(rebinStep, dtype=numpy.int32))
+    interface.SetMinMassSteps(len(minMassStep), numpy.array(minMassStep, dtype=numpy.float64))
+    interface.SetMaxMassSteps(len(maxMassStep), numpy.array(maxMassStep, dtype=numpy.float64))
+    if len(nSigmasBC) > 0: interface.SetSigmaBinCounting(len(nSigmasBC), numpy.array(nSigmasBC, dtype=numpy.float64))
+    interface.SetMaskOfVariations(len(mask), numpy.array(mask, dtype=bool))
+
+    interface.SetDmesonSpecie(specie)
+
+    if refl:  # ATTENTION: the histograms to be set are pT-dependent!!
+        if method == ROOT.AliDJetRawYieldUncertainty.kEffScale:
+            varname = "JetPt"
+            iBin = ptJetbins.index(ptmin)
+        elif method == ROOT.AliDJetRawYieldUncertainty.kSideband:
+            varname = "DPt"
+            iBin = ptDbins.index(ptmin)
+        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with refl template histo
+        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with MC signal histo
+        interface.SetReflHistoname("histRflFittedgaus_ptBin{0}".format(iBin))  # name of template histo
+        interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
+        interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
+
+    return interface
+
+def main(config, skip_binbybin, skip_combine, single_trial, refl, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
 
@@ -213,19 +283,21 @@ def main(config, skip_binbybin, refl, debug):
 
     if not skip_binbybin:
         for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
-            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl)
+            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl, single_trial)
             rawYieldUncInvMassFit.append(interface)
-    rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
+    if not skip_combine: rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
 
     if not skip_binbybin:
         for minPt, maxPt in zip(ptDbins[:-1], ptDbins[1:]):
-            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl)
+            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl, single_trial)
             rawYieldUncSideBand.append(interface)
-    rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
+    if not skip_combine: rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
-    outputPath = "{0}/{1}/{2}/RawYieldUnc".format(config["input_path"], config["train"], config["name"])
-    if refl: outputPath += "_refl"
-    MoveFiles(outputPath)
+    # only move files if the full chain was done
+    if not (skip_binbybin or skip_combine or single_trial):
+        outputPath = "{0}/{1}/{2}/RawYieldUnc".format(config["input_path"], config["train"], config["name"])
+        if refl: outputPath += "_refl"
+        MoveFiles(outputPath)
 
 def MoveFiles(outputPath):
     print("Results will be moved to {0}".format(outputPath))
@@ -244,6 +316,10 @@ if __name__ == '__main__':
                         default=2)
     parser.add_argument('--skip-binbybin', action='store_const',
                         default=False, const=True)
+    parser.add_argument('--skip-combine', action='store_const',
+                        default=False, const=True)
+    parser.add_argument('--single-trial', action='store_const',
+                        default=False, const=True)
     parser.add_argument('--refl', action='store_const',
                         default=False, const=True)
     args = parser.parse_args()
@@ -252,6 +328,6 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    main(config, args.skip_binbybin, args.refl, args.debug)
+    main(config, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.debug)
 
     IPython.embed()

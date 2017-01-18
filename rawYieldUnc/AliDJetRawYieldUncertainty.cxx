@@ -53,6 +53,7 @@
 
 //___________________________________________________________________________________________
 AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
+  fSaveInvMassFitCanvases(kFALSE),
   fFileInput(0x0),
   fDmesonSpecie(kD0toKpi),
   fDmesonLabel("Dzero"),
@@ -71,6 +72,7 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
 //___________________________________________________________________________________________
 AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUncertainty &source):
   // copy constructor
+  fSaveInvMassFitCanvases(kFALSE),
   fFileInput(source.fFileInput),
   fDmesonSpecie(source.fDmesonSpecie),
   fDmesonLabel(source.fDmesonLabel),
@@ -187,8 +189,9 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroEffScale() {
     }//end of D-meson pT bin loop
   }
 
+  TString hname = TString::Format("invMass_JetPt_%.0f_%.0f", fpTmin, fpTmax);
   for (int j=0; j<fnDbins; j++) {
-    if (!j) fMassPlot = (TH1D*)hmassjet_scale[j]->Clone("inputSpectrum");
+    if (!j) fMassPlot = (TH1D*)hmassjet_scale[j]->Clone(hname);
     else fMassPlot->Add(hmassjet_scale[j]);
   }
 
@@ -218,7 +221,8 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlotDzeroSideband() {
     return kFALSE;
   }
 
-  fMassPlot = new TH1D("inputSpectrum","hmassjet",(fmassmax-fmassmin)/fmasswidth,fmassmin,fmassmax);
+  TString hname = TString::Format("invMass_DPt_%.0f_%.0f", fpTmin, fpTmax);
+  fMassPlot = new TH1D(hname,hname,(fmassmax-fmassmin)/fmasswidth,fmassmin,fmassmax);
   fMassPlot->Sumw2();
 
   for(int k=0; k<tree->GetEntries(); k++) {
@@ -419,6 +423,10 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
   mt->ConfigureRebinSteps(fnRebinSteps,fRebinSteps);
   mt->ConfigureLowLimFitSteps(fnMinMassSteps,fMinMassSteps);
   mt->ConfigureUpLimFitSteps(fnMaxMassSteps,fMaxMassSteps);
+  if (fSaveInvMassFitCanvases) {
+    mt->AddInvMassFitSaveAsFormat("pdf");
+    mt->AddInvMassFitSaveAsFormat("root");
+  }
   printf("sigmaBC=%d\n",fnSigmaBC);
   if (fnSigmaBC) mt->ConfigurenSigmaBinCSteps(fnSigmaBC,fSigmaBC);
   mt->SetSaveBkgValue(kTRUE,fnSigmaSignReg);

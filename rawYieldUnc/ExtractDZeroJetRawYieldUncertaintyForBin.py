@@ -18,7 +18,7 @@ import ExtractDZeroJetRawYieldUncertainty
 
 globalList = []
 
-def main(config, method, minPt, maxPt, refl, debug):
+def main(config, method, minPt, maxPt, refl, singleTrial, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
 
@@ -42,11 +42,12 @@ def main(config, method, minPt, maxPt, refl, debug):
     ROOT.gStyle.SetOptStat(0)
 
     if method == "invmassfit":
-        interface = ExtractDZeroJetRawYieldUncertainty.EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl)
+        interface = ExtractDZeroJetRawYieldUncertainty.EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl, singleTrial)
     elif method == "sideband":
-        interface = ExtractDZeroJetRawYieldUncertainty.EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl)
+        interface = ExtractDZeroJetRawYieldUncertainty.EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl, singleTrial)
     else:
         print("Method {0} unknown!".format(method))
+
     globalList.append(interface)
 
 if __name__ == '__main__':
@@ -63,12 +64,14 @@ if __name__ == '__main__':
                         default="invmassfit")
     parser.add_argument('--refl', action='store_const',
                         default=False, const=True)
+    parser.add_argument('--single-trial', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.method, args.ptmin, args.ptmax, args.refl, args.debug)
+    main(config, args.method, args.ptmin, args.ptmax, args.refl, args.single_trial, args.debug)
 
     IPython.embed()
