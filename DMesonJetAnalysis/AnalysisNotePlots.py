@@ -7,6 +7,7 @@ import IPython
 import ROOT
 import DMesonJetUtils
 import DMesonJetCompare
+import RawYieldSpectrumLoader
 import array
 import shutil
 import os
@@ -65,6 +66,10 @@ def main(actions, output_path, output_type):
     configs["LHC10_eff"] = yaml.load(f)
     f.close()
 
+    f = open("LHC10analysis_Train823_mcshape_efficiency.yaml", 'r')
+    configs["LHC10_mcshape_eff"] = yaml.load(f)
+    f.close()
+
     f = open("LHC10_Train823_LHC15i2_Train961_efficiency.yaml", 'r')
     configs["data_unfolding"] = yaml.load(f)
     f.close()
@@ -93,10 +98,13 @@ def main(actions, output_path, output_type):
         EfficiencyComparison(cname, title_c, histograms["LHC15i2_c"], title_b, histograms["LHC15i2_b"])
 
     if "all" in actions or "mcshape" in actions:
+        title1 = "PYTHIA6 efficiency"
+        title2 = "POWHEG+PYTHIA6 reweighing"
         cname = "DataSystematics/ReconstructionEfficiencyMCShape"
-        title_c = "PYTHIA6"
-        title_mcshape = "POWHEG+PYTHIA6"
-        EfficiencyComparison(cname, title_c, histograms["LHC15i2_c"], title_mcshape, histograms["LHC15i2_c_mcshape"])
+        EfficiencyComparison(cname, title1, histograms["LHC15i2_c"], title2, histograms["LHC15i2_c_mcshape"])
+        cname = "DataSystematics/RawYieldComparisonMCShape"
+        RawYieldComparison(cname, title1, configs["LHC10_eff"], title2, configs["LHC10_mcshape_eff"])
+
         CopyMCShapeSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "fd_fold_unfold" in actions:
@@ -155,6 +163,37 @@ def CopyFiles(input_path, output_path, file_list, output_type):
     for file_name in file_list:
         print("Copying {0}...".format(file_name))
         shutil.copy("{0}/{1}.{2}".format(input_path, file_name, output_type), output_path)
+
+def RawYieldComparison(cname, title1, config1, title2, config2):
+    comp = DMesonJetCompare.DMesonJetCompare(cname)
+    comp.fOptRatio = "hist"
+    comp.fX1LegRatio = 0.15
+    comp.fX1LegSpectrum = 0.20
+    comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLinUpperSpace = 0.3  # this factor will be used to adjust the y axis in linear scale
+    comp.fLinLowerSpace = 0.1  # this factor will be used to adjust the y axis in linear scale
+    comp.fNoErrorInBaseline = True
+    comp.fColors = [ROOT.kBlue + 2, ROOT.kRed + 2]
+    comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
+    loader1 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config1["input_path"], config1["train"], config1["name"])
+    spectrum1 = loader1.GetDefaultSpectrumFromMultiTrial("SideBand")
+    spectrum1.SetTitle(title1)
+    spectrum1.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    spectrum1.GetYaxis().SetTitle("raw yield")
+    loader2 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config2["input_path"], config2["train"], config2["name"])
+    spectrum2 = loader2.GetDefaultSpectrumFromMultiTrial("SideBand")
+    spectrum2.SetTitle(title2)
+    spectrum2.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    spectrum2.GetYaxis().SetTitle("raw yield")
+    globalList.append(spectrum1)
+    globalList.append(spectrum2)
+    r = comp.CompareSpectra(spectrum1, [spectrum2])
+    for obj in r:
+        if not obj in globalList:
+            globalList.append(obj)
+        if isinstance(obj, ROOT.TCanvas):
+            canvases.append(obj)
 
 def CopyTheoryComparisonFiles(config, output_path, output_type):
     full_output_path = "{0}/TheoryComparison".format(output_path)
@@ -252,6 +291,8 @@ def CopyDataFilesWithEff(config, output_path, output_type):
     file_list = []
     file_list.append("AverageRawYieldVsDefault")
     file_list.append("AverageRawYieldVsDefault_Ratio")
+    file_list.append("ReflectionComparison")
+    file_list.append("ReflectionComparison_Ratio")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyEfficiencyFiles(config, output_path, output_type):

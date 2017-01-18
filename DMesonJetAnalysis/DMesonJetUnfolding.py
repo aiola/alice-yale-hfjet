@@ -225,7 +225,7 @@ class DMesonJetUnfoldingEngine:
         wrap.fJetType = self.fDMeson
         wrap.fJetRadius = self.fJetRadius
         wrap.fSpectrumName = self.fSpectrumName
-        wrap.fDataList = self.fDataList
+        wrap.fDataSpectrumList = self.fDataList
         inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(method, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
