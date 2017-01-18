@@ -9,21 +9,28 @@ ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
 class MT_Spectrum_Wrapper:
-    def __init__(self, input_path=None, train=None, ana_name=None, events=None):
+    def __init__(self, input_path=None, train=None, ana_name=None, refl=False, events=None):
         self.fInputPath = input_path
         self.fTrain = train
         self.fAnalysisName = ana_name
+        self.fUseReflections = refl
         self.fEvents = events
+        if self.fUseReflections:
+            self.fSubDir = "RawYieldUnc_refl"
+        else:
+            self.fSubDir = "RawYieldUnc"
 
     def GetDefaultSpectrumInvMassFitFromMultiTrial(self):
         h = ROOT.TH1D("TrialExpoFreeSigmaInvMassFit", "Trial Expo Free Sigma Inv. Mass Fit", len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
         for ibin, (ptmin, ptmax) in enumerate(zip(ptJetbins[:-1], ptJetbins[1:])):
-            fname = "{0}/{1}/{2}/RawYieldUnc/RawYieldVariations_Dzero_InvMassFit_{3:.1f}to{4:.1f}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, ptmin, ptmax)
+            fname = "{0}/{1}/{2}/{3}/RawYieldVariations_Dzero_InvMassFit_{4:.1f}to{5:.1f}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fSubDir, ptmin, ptmax)
             file = ROOT.TFile(fname)
             if not file or file.IsZombie():
                 print("Could not open file {0}".format(fname))
                 file.ls()
                 exit(1)
+            else:
+                print("File {0} open successfully".format(fname))
             hry = file.Get("hRawYieldTrialExpoFreeS")
             if not hry:
                 print("Could not find histogram {0} in file {1}".format("hRawYieldTrialExpoFreeS", fname))
@@ -36,12 +43,14 @@ class MT_Spectrum_Wrapper:
         return h
 
     def GetDefaultSpectrumSideBandFromMultiTrial(self):
-        fname = "{0}/{1}/{2}/RawYieldUnc/TrialExpoFreeS_Dzero_SideBand.root".format(self.fInputPath, self.fTrain, self.fAnalysisName)
+        fname = "{0}/{1}/{2}/{3}/TrialExpoFreeS_Dzero_SideBand.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fSubDir)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
             file.ls()
             exit(1)
+        else:
+            print("File {0} open successfully".format(fname))
         h = file.Get("fJetSpectrSBDef")
         if not h:
             print("Could not find histogram {0} in file {1}".format("fJetSpectrSBDef", fname))

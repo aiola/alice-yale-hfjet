@@ -33,6 +33,7 @@ class DMesonJetUnfoldingEngine:
         self.fDefaultPrior = config["default_prior"]
         self.fDefaultMethod = config["default_method"]
         self.fDoErrorCrossChecks = True
+        self.fUseReflections = False
         self.fName = config["name"]
         if self.fFDErrorBand > 0:
             self.fName += "_FDUpperBand"
@@ -226,6 +227,10 @@ class DMesonJetUnfoldingEngine:
 
     def GetInputSpectrumFromMyOwnAnalysis(self):
         print("Getting input spectrum from my own analysis")
+        if self.fUseReflections:
+            print("****Attention Attention Attention****")
+            print("You asked for reflections, but reflections are not available outside of the multi-trial code!")
+            print("The reflection option will be ignored!")
         inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, "FDCorr"])
         inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
         if not inputSpectrum:
@@ -242,7 +247,7 @@ class DMesonJetUnfoldingEngine:
             print("Raw yield method of spectrum {0} not recognized!".format(self.fSpectrumName))
             return None
         print("Getting input spectrum from the multi-trial analysis, with method {0}".format(method))
-        wrap = MT_Spectrum_Wrapper.MT_Spectrum_Wrapper(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fNumberOfEvents)
+        wrap = MT_Spectrum_Wrapper.MT_Spectrum_Wrapper(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
         inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(method, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
@@ -1125,17 +1130,17 @@ class DMesonJetUnfoldingEngine:
         return resp
 
 class DMesonJetUnfolding:
-    def __init__(self, name, input_path, dataTrain, data, responseTrain, response, mt):
-        if mt:
-            self.fName = "{0}_mt".format(name)
-        else:
-            self.fName = name
+    def __init__(self, name, input_path, dataTrain, data, responseTrain, response, mt, refl):
+        self.fName = name
+        if mt: self.fName += "_mt"
+        if refl: self.fName += "_refl"
         self.fInputPath = input_path
         self.fDataTrain = dataTrain
         self.fAnalysisName = data
         self.fResponseTrain = responseTrain
         self.fResponseAnalysisName = response
         self.fUseMultiTrial = mt
+        self.fUseReflections = refl
         self.fUnfoldingEngine = []
         self.OpenFiles()
 
@@ -1150,6 +1155,7 @@ class DMesonJetUnfolding:
             eng.GetInputSpectrum = eng.GetInputSpectrumFromMT
         else:
             eng.GetInputSpectrum = eng.GetInputSpectrumFromMyOwnAnalysis
+        eng.fUseReflections = self.fUseReflections
         r = eng.LoadData(self.fDataFile, self.fResponseFile, eff, use_overflow)
         if r: eng.Start(plot)
 
