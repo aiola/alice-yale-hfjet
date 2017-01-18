@@ -92,11 +92,12 @@ def main(actions, output_path, output_type):
         title_b = "b #rightarrow D^{0}"
         EfficiencyComparison(cname, title_c, histograms["LHC15i2_c"], title_b, histograms["LHC15i2_b"])
 
-    if "all" in actions or "eff_comp_mcshape" in actions:
+    if "all" in actions or "mcshape" in actions:
         cname = "DataSystematics/ReconstructionEfficiencyMCShape"
         title_c = "PYTHIA6"
         title_mcshape = "POWHEG+PYTHIA6"
         EfficiencyComparison(cname, title_c, histograms["LHC15i2_c"], title_mcshape, histograms["LHC15i2_c_mcshape"])
+        CopyMCShapeSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "fd_fold_unfold" in actions:
         FD_FoldUnfold_Comparison(histograms["BFeedDown"]["default"]["JetPtSpectrum_DPt_30"])
@@ -160,6 +161,15 @@ def CopyTheoryComparisonFiles(config, output_path, output_type):
     file_list = []
     file_list.append("D0JetCrossSection_pp7TeV")
     CopyFiles(config["input_path"], full_output_path, file_list, output_type)
+
+def CopyMCShapeSystematics(input_path, output_path, output_type):
+    full_output_path = "{0}/DataSystematics".format(output_path)
+    file_list = []
+    file_list.append("PYTHIA_POWHEG_DPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026")
+    file_list.append("PYTHIA_POWHEG_DPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026_Ratio")
+    file_list.append("PYTHIA_POWHEG_JetPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026")
+    file_list.append("PYTHIA_POWHEG_JetPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026_Ratio")
+    CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopypPbComparisonFiles(config, output_path, output_type):
     full_output_path = "{0}/pPbComparison".format(output_path)
