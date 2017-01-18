@@ -79,6 +79,7 @@ public:
   void SetReflHistoname(TString histoname) {fReflHistoName=histoname;}
   void SetMCSigHistoname(TString histoname) {fSigMCHistoName=histoname;}
   void SetValueOfReflOverSignal(Double_t ratio, Double_t minrange=1.7, Double_t maxrange=2.1) {fFixRiflOverS=ratio; fReflRangeL=minrange; fReflRangeR=maxrange;}
+  void SetSaveInvMassFitCanvases(Bool_t s) { fSaveInvMassFitCanvases = s; }
 
   static void FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType="DoubleGaus");
 
@@ -107,6 +108,7 @@ public:
 
 private:
 
+  Bool_t fSaveInvMassFitCanvases; // switch to save the invariant mass fit canvases
   TFile *fFileInput;      		// file containing the task output (Dstar)
   TString fFileNameInput;		// name of input file (Dstar)
   TString fDirName; 			// name of input directory in the root file (Dstar)
