@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import argparse
 import yaml
 import IPython
 import ROOT
@@ -156,14 +155,14 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c., #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.Draw()
 
     return canvas
 
-def main(charm_ts, beauty_ts, jet_type, jet_radius, data):
+def main():
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -174,19 +173,6 @@ def main(charm_ts, beauty_ts, jet_type, jet_radius, data):
     canvas.SaveAs("{0}/D0JetCrossSection_pp7TeV.pdf".format(input_path))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='B feed-down.')
-    parser.add_argument('--charm', metavar='timestamp',
-                        default=None)
-    parser.add_argument('--beauty', metavar='timestamp',
-                        default=None)
-    parser.add_argument('--jet-type', metavar='TYPE',
-                        default="Charged")
-    parser.add_argument('--jet-radius', metavar='RADIUS',
-                        default="R040")
-    parser.add_argument('--data', metavar='LHC10_Train823_LHC15i2_Train961_efficiency',
-                        default=None)
-    args = parser.parse_args()
-
-    main(args.charm, args.beauty, args.jet_type, args.jet_radius, args.data)
+    main()
 
     IPython.embed()
