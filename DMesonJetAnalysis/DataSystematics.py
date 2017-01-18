@@ -62,6 +62,7 @@ def LoadHistograms(config):
     if not h: exit(1)
     histograms["default"] = h
     for s in config["sources"]:
+        if not s["active"]: continue
         histograms[s["name"]] = dict()
         if "histogram_name_down" in s:
             h = DMesonJetUtils.GetObject(files[s["input_name"]], s["histogram_name_down"])
@@ -97,6 +98,7 @@ def OpenFiles(config):
     files[config["default"]["input_name"]] = f
 
     for s in config["sources"]:
+        if not s["active"]: continue
         if not s["input_name"] in files:
             fname = "{0}/{1}/{1}.root".format(config["input_path"], s["input_name"])
             f = ROOT.TFile(fname)
@@ -115,6 +117,7 @@ def CompareVariations(config, histograms):
     baseline.SetTitle(config["default"]["title"])
     result[baseline.GetName()] = baseline
     for s in config["sources"]:
+        if not s["active"]: continue
         if "down" in histograms[s["name"]]:
             h = histograms[s["name"]]["down"]
             h_copy = h.Clone("{0}_down".format(s["name"]))
@@ -164,7 +167,7 @@ def CalculateFixSystematicUncertainty(config):
 def GenerateUncertainties(config, histograms):
     baseline = histograms["default"]
     fixed_syst_unc = CalculateFixSystematicUncertainty(config)
-    partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"]]
+    partialRelSystUnc = [soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
     totRelSystUnc = soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
     statUnc = soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
     totUnc = soft_clone(baseline, "tot_unc", "Total Uncertainty", "relative uncertainty")
@@ -172,7 +175,9 @@ def GenerateUncertainties(config, histograms):
 
     for ibin in range(1, baseline.GetNbinsX() + 1):
         tot_syst_unc2 = 0
-        for ivar, s in enumerate(config["sources"]):
+        ivar = 0
+        for s in config["sources"]:
+            if not s["active"]: continue
             if "down" in histograms[s["name"]]:
                 h = histograms[s["name"]]["down"]
                 diff_down = abs(baseline.GetBinContent(ibin) - h.GetBinContent(ibin))
@@ -186,6 +191,7 @@ def GenerateUncertainties(config, histograms):
             part_unc = max(diff_down, diff_up)
             partialRelSystUnc[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
             tot_syst_unc2 += part_unc ** 2
+            ivar += 1
         tot_syst_unc2 += (fixed_syst_unc * baseline.GetBinContent(ibin)) ** 2
         tot_syst_unc = math.sqrt(tot_syst_unc2)
         stat_unc = baseline.GetBinError(ibin)
