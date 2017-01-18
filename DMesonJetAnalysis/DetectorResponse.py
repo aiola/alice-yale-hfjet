@@ -12,8 +12,9 @@ import StatisticSet
 import BinSet
 
 class DetectorResponse:
-    def __init__(self, name, jetName, axis, cuts, weightEff):
+    def __init__(self, name, jetName, axis, cuts, weightEff, applyEffToTruth):
         self.fWeightEfficiency = weightEff
+        self.fApplyEfficiencyToTruth = applyEffToTruth
         self.fAxis = axis
         self.fCuts = DMesonJetCuts.DMesonJetCuts(cuts)
         self.fJetInfo = False
@@ -492,7 +493,11 @@ class DetectorResponse:
         dMesonTruth = dmeson.DmesonJet.fGenerated
         dMesonMeasured = dmeson.DmesonJet.fReconstructed
 
-        weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
+        if self.fApplyEfficiencyToTruth:
+            w *= self.fWeightEfficiency.GetEfficiencyWeight(dMesonTruth, jetTruth)
+            weff = 1
+        else:
+            weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
 
         if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
             if self.fCuts.ApplyCuts(dMesonMeasured, jetMeasured):
