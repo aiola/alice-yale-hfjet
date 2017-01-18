@@ -177,12 +177,14 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
     if refl:  # ATTENTION: the histograms to be set are pT-dependent!!
         if method == ROOT.AliDJetRawYieldUncertainty.kEffScale:
             varname = "JetPt"
+            iBin = ptJetbins.index(ptmin)
         elif method == ROOT.AliDJetRawYieldUncertainty.kSideband:
             varname = "DPt"
-        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"]))  # file with refl template histo
-        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"]))  # file with MC signal histo
-        interface.SetReflHistoname("histReflection_{0}_{1:.0f}_{2:.0f}".format(varname, ptmin, ptmax))  # name of template histo
-        interface.SetMCSigHistoname("histSignal_{0}_{1:.0f}_{2:.0f}".format(varname, ptmin, ptmax))  # name of template histo
+            iBin = ptDbins.index(ptmin)
+        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with refl template histo
+        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with MC signal histo
+        interface.SetReflHistoname("histRflFittedgaus_ptBin{0}".format(iBin))  # name of template histo
+        interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
         interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
     return interface
