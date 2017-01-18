@@ -11,7 +11,7 @@ import ROOT
 import DMesonJetUtils
 import DMesonJetCompare
 import UnfoldingResponseMatrix
-import MT_Spectrum_Wrapper
+import RawYieldSpectrumLoader
 
 globalList = []
 
@@ -21,6 +21,7 @@ class DMesonJetUnfoldingEngine:
         self.fRYErrorBand = ry_error_band
         self.fInputPath = input_path
         self.fDataTrain = dataTrain
+        self.fDataList = None
         self.fAnalysisName = analysisName
         self.fDMeson = config["d_meson"]
         self.fJetType = config["jet_type"]
@@ -34,6 +35,7 @@ class DMesonJetUnfoldingEngine:
         self.fDefaultMethod = config["default_method"]
         self.fDoErrorCrossChecks = True
         self.fUseReflections = False
+        self.fNumberOfEvents = None
         self.fName = config["name"]
         if self.fFDErrorBand > 0:
             self.fName += "_FDUpperBand"
@@ -197,22 +199,13 @@ class DMesonJetUnfoldingEngine:
             self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
             return True
 
-        dataMesonList = self.fDataFile.Get(self.fDMeson)
-        if not dataMesonList:
-            print("Could not find list {0} in file {1}". format(self.fDMeson, self.fDataFile.GetName()))
-            exit(1)
-        dataJetListName = "_".join([self.fJetType, self.fJetRadius])
-        dataJetList = dataMesonList.FindObject(dataJetListName)
-        if not dataJetList:
-            print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, self.fDataFile.GetName()))
-            dataMesonList.Print()
-            exit(1)
-        dataListName = "{0}_{1}_{2}".format(self.fDMeson, dataJetListName, self.fSpectrumName)
-        self.fDataList = dataJetList.FindObject(dataListName)
-        if not self.fDataList:
-            print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
-            dataJetList.Print()
-            exit(1)
+        wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName)
+        wrap.fDMeson = self.fDMeson
+        wrap.fJetType = self.fJetType
+        wrap.fJetRadius = self.fJetRadius
+        wrap.fSpectrumName = self.fSpectrumName
+        wrap.fDataFile = self.fDataFile
+        self.fDataList = wrap.LoadDataListFromDMesonJetAnalysis()
 
         self.LoadNumberOfEvents()
 
@@ -227,15 +220,13 @@ class DMesonJetUnfoldingEngine:
 
     def GetInputSpectrumFromMyOwnAnalysis(self):
         print("Getting input spectrum from my own analysis")
-        if self.fUseReflections:
-            print("****Attention Attention Attention****")
-            print("You asked for reflections, but reflections are not available outside of the multi-trial code!")
-            print("The reflection option will be ignored!")
-        inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, "FDCorr"])
-        inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
-        if not inputSpectrum:
-            print("Could not find histogram {0} in list {1} in file {2}". format(inputSpectrumName, self.fDataList.GetName(), dataFile.GetName()))
-            return None
+        wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
+        wrap.fDMeson = self.fDMeson
+        wrap.fJetType = self.fDMeson
+        wrap.fJetRadius = self.fJetRadius
+        wrap.fSpectrumName = self.fSpectrumName
+        wrap.fDataList = self.fDataList
+        inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(method, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
     def GetInputSpectrumFromMT(self):
@@ -247,7 +238,7 @@ class DMesonJetUnfoldingEngine:
             print("Raw yield method of spectrum {0} not recognized!".format(self.fSpectrumName))
             return None
         print("Getting input spectrum from the multi-trial analysis, with method {0}".format(method))
-        wrap = MT_Spectrum_Wrapper.MT_Spectrum_Wrapper(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
+        wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
         inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(method, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 

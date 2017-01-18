@@ -48,6 +48,7 @@ class DMesonJetCompare:
         self.fLegLineHeight = 0.04
         self.fBaselineForRatio = None
         self.fSeparateBaselineUncertainty = False
+        self.fNoErrorInBaseline = False
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
         self.fGridyRatio = False
 
@@ -157,10 +158,12 @@ class DMesonJetCompare:
 
         if self.fGridyRatio: self.fCanvasRatio.SetGridy()
 
-        if self.fSeparateBaselineUncertainty:
-            self.SetRatioRelativeUncertaintyFromHistogram(self.fBaselineHistogram)
+        if self.fSeparateBaselineUncertainty or self.fNoErrorInBaseline:
             for ibin in range(0, self.fBaselineForRatio.GetNbinsX() + 2):
                 self.fBaselineForRatio.SetBinError(ibin, 0)
+
+        if self.fSeparateBaselineUncertainty:
+            self.SetRatioRelativeUncertaintyFromHistogram(self.fBaselineHistogram)
             opt = "e2"
             if "same" in self.fOptRatio:
                 opt += "same"
@@ -277,6 +280,14 @@ class DMesonJetCompare:
                 self.PlotRatio(color, marker, line, h)
         self.AdjustYLimits()
         self.GenerateResults()
+        return self.fResults
+
+    def CompareUncertainties(self, baseline, histos):
+        baseline_unc = DMesonJetUtils.GetRelativeUncertaintyHistogram(baseline)
+        histos_unc = [DMesonJetUtils.GetRelativeUncertaintyHistogram(h) for h in histos]
+        self.CompareSpectra(baseline_unc, histos_unc)
+        self.fResults.append(baseline_unc)
+        self.fResults.extend(histos_unc)
         return self.fResults
 
     def GenerateResults(self):
