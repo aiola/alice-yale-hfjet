@@ -41,6 +41,10 @@ def main(actions, output_path, output_type):
     configs["LHC15i2_c"] = yaml.load(f)
     f.close()
 
+    f = open("LHC15i2analysis_Train961_mcshape.yaml", 'r')
+    configs["LHC15i2_c_mcshape"] = yaml.load(f)
+    f.close()
+
     f = open("LHC15i2analysis_Train961_efficiency.yaml", 'r')
     configs["LHC15i2_c_eff"] = yaml.load(f)
     f.close()
@@ -83,7 +87,16 @@ def main(actions, output_path, output_type):
         JetPtResolutionComparison(histograms["LHC15i2_c_eff"], histograms["LHC15i2_b_eff"])
 
     if "all" in actions or "eff_comp" in actions:
-        EfficiencyComparison(histograms["LHC15i2_c"], histograms["LHC15i2_b"])
+        cname = "BFeedDown/ReconstructionEfficiencyPromptNonPromptComparison"
+        title_c = "c #rightarrow D^{0}"
+        title_b = "b #rightarrow D^{0}"
+        EfficiencyComparison(cname, title_c, histograms["LHC15i2_c"], title_b, histograms["LHC15i2_b"])
+
+    if "all" in actions or "eff_comp_mcshape" in actions:
+        cname = "DataSystematics/ReconstructionEfficiencyMCShape"
+        title_c = "PYTHIA6"
+        title_mcshape = "POWHEG+PYTHIA6"
+        EfficiencyComparison(cname, title_c, histograms["LHC15i2_c"], title_mcshape, histograms["LHC15i2_c_mcshape"])
 
     if "all" in actions or "fd_fold_unfold" in actions:
         FD_FoldUnfold_Comparison(histograms["BFeedDown"]["default"]["JetPtSpectrum_DPt_30"])
@@ -235,8 +248,8 @@ def CopyEfficiencyFiles(config, output_path, output_type):
     full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)
     full_output_path = "{0}/RecoEfficiency".format(output_path)
     file_list = []
-    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_FineBins_PartialEfficiency")
-    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_FineBins_PartialEfficiencyRatios")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_PartialEfficiency")
+    file_list.append("D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_PartialEfficiencyRatios")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyResponseFiles(config, output_path, output_type):
@@ -325,16 +338,15 @@ def FD_FoldUnfold_Comparison(histograms):
         if isinstance(obj, ROOT.TCanvas):
             canvases.append(obj)
 
-def EfficiencyComparison(hist_c, hist_b):
-    spectrumName = "JetPtDPtSpectrum_FineBins"
+def EfficiencyComparison(cname, title_c, hist_c, title_b, hist_b):
+    spectrumName = "JetPtDPtSpectrum"
     jetName = "Jet_AKTChargedR040_pt_scheme"
     dmesonName = "D0"
     prefix = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
     jetPtLimits = [5, 30]
     detResp_c = hist_c[prefix]
     detResp_b = hist_b[prefix]
-    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-    cname = "BFeedDown/ReconstructionEfficiencyPromptNonPromptComparison"
+    DPtBins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     comp = DMesonJetCompare.DMesonJetCompare(cname)
     comp.fOptSpectrum = "hist"
     comp.fDoSpectraPlot = "lineary"
@@ -355,12 +367,12 @@ def EfficiencyComparison(hist_c, hist_b):
         bTruth = detResp_b[truthName].Rebin(len(DPtBins) - 1, "{0}_b_rebin".format(truthName), array.array('d', DPtBins))
         c_hist_Ratio = cRecoTruth.Clone(recoTruthName.replace("RecontructedTruth", "Efficiency"))
         c_hist_Ratio.Divide(cTruth)
-        c_hist_Ratio.SetTitle("c #rightarrow D^{{0}}, {0}".format(c_hist_Ratio.GetTitle()))
+        c_hist_Ratio.SetTitle("{0}, {1}".format(title_c, c_hist_Ratio.GetTitle()))
         c_hist_Ratio.GetYaxis().SetTitle("Reconstruction Efficiency")
         c_hist_Ratio.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
         b_hist_Ratio = bRecoTruth.Clone(recoTruthName.replace("RecontructedTruth", "Efficiency"))
         b_hist_Ratio.Divide(bTruth)
-        b_hist_Ratio.SetTitle("b #rightarrow D^{{0}}, {0}".format(b_hist_Ratio.GetTitle()))
+        b_hist_Ratio.SetTitle("{0}, {1}".format(title_b, b_hist_Ratio.GetTitle()))
         globalList.append(c_hist_Ratio)
         globalList.append(b_hist_Ratio)
         r = comp.CompareSpectra(c_hist_Ratio, [b_hist_Ratio])
