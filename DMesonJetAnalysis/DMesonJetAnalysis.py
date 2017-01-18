@@ -147,7 +147,7 @@ class DMesonJetAnalysisEngine:
             sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
             GaussConst = sig / math.sqrt(2 * math.pi) / massWidth
 
-            fitter = ROOT.MassFitter("MyMassFitter", ROOT.MassFitter.kDzeroKpi, minMass, maxMass)
+            fitter = ROOT.MassFitter(name, ROOT.MassFitter.kDzeroKpi, minMass, maxMass)
             fitter.SetFitRange(minMass, maxMass)
             fitter.SetHistogram(invMassHist)
             fitter.GetFitFunction().SetParameter(0, expoParBkg0)
