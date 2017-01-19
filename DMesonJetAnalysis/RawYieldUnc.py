@@ -16,7 +16,7 @@ wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader()
 xaxisTitle = ""
 yaxisTitle = ""
 
-def main(config, meson_name, jet_type, jet_radius, spectrum):
+def main(config, meson_name, jet_type, jet_radius):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -24,6 +24,8 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     wrap.fInputPath = config["input_path"]
     wrap.fTrain = config["train"]
     wrap.fAnalysisName = config["name"]
+    spectrum = "JetPtSpectrum"
+    kincuts = "DPt_30"
 
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
     comp.fOptSpectrum = "p x0"
@@ -39,12 +41,12 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
     comp.fFills = [3245] * 2
     comp.fOptSpectrumBaseline = "e2"
-    default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum)
+    default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
     comp.fColors = [ROOT.kRed + 2] * 2
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fFills = [3254] * 2
     comp.fOptSpectrumBaseline = "e2 same"
-    default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
+    default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefault")
     comp.fOptRatio = "hist"
@@ -57,11 +59,11 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     comp.fNoErrorInBaseline = True
     comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum)
+    default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
     comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fOptSpectrumBaseline = "same"
-    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
+    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefaultUncertainties")
     comp.fDoSpectraPlot = "lineary"
@@ -76,10 +78,10 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     comp.fLinLowerSpace = 0.1  # this factor will be used to adjust the y axis in linear scale
     comp.fNoErrorInBaseline = True
     comp.fColors = [ROOT.kBlue + 2, ROOT.kBlue + 2]
-    default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum)
+    default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
     comp.fColors = [ROOT.kRed + 2, ROOT.kRed + 2]
     comp.fOptSpectrumBaseline = "same hist"
-    default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
+    default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("ReflectionComparison")
     comp.fX1LegRatio = 0.15
@@ -92,11 +94,11 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
     comp.fNoErrorInBaseline = True
     comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum)
+    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
     comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fOptSpectrumBaseline = "same"
-    reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum)
+    reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
     outputPath = "{0}/{1}/{2}/RawYieldUnc/pdf".format(config["input_path"], config["train"], config["name"])
     if not os.listdir(outputPath): os.makedirs(outputPath)
@@ -105,8 +107,8 @@ def main(config, meson_name, jet_type, jet_radius, spectrum):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
             obj.SaveAs(fname)
 
-def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
-    default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum)
+def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+    default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
     default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial(method)
@@ -120,8 +122,8 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
-def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
-    default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum)
+def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+    default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
     default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial(method)
@@ -135,7 +137,7 @@ def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_ra
         if not obj in globalList:
             globalList.append(obj)
 
-def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
+def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
     default_spectrum = wrap.GetDefaultSpectrumFromMultiTrial(method)
     default_spectrum.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     wrap.fUseReflections = False
@@ -151,7 +153,7 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
         if not obj in globalList:
             globalList.append(obj)
 
-def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum):
+def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
     wrap.fUseReflections = True
     default_spectrum_wrefl = wrap.GetDefaultSpectrumFromMultiTrial(method)
     default_spectrum_wrefl.SetTitle("Trial Expo Free Sigma w/ refl, {0}".format(method))
@@ -168,12 +170,13 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
-def GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum):
+def GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts):
     wrap.fUseReflections = False
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = "_".join([spectrum, method])
+    wrap.fSpectrumName = spectrum
+    wrap.fKinematicCuts = kincuts
     wrap.fDataSpectrumList = None
     wrap.fDataFile = None
     h = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(method)
@@ -191,14 +194,12 @@ if __name__ == '__main__':
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
                         default="R040")
-    parser.add_argument('--spectrum', metavar='spectrum',
-                        default="JetPtSpectrum_DPt_30")
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.meson, args.jet_type, args.jet_radius, args.spectrum)
+    main(config, args.meson, args.jet_type, args.jet_radius)
 
     IPython.embed()
