@@ -122,9 +122,6 @@ def main(actions, output_path, output_type):
     if not os.path.isdir(BFeedDownPath):
         os.makedirs(BFeedDownPath)
 
-    for c in canvases:
-        c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
-
     if "all" in actions or "data" in actions:
         CopyDataFilesWithoutEff(configs["LHC10"], output_path, output_type)
         CopyDataFilesWithEff(configs["LHC10_eff"], output_path, output_type)
@@ -164,6 +161,10 @@ def main(actions, output_path, output_type):
 
     if "all" in actions or "misc" in actions:
         CopypMiscFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+        PlotStatUncEff(histograms["LHC15i2_c"])
+
+    for c in canvases:
+        c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
 
 def CopyFiles(input_path, output_path, file_list, output_type):
     if not os.path.isdir(output_path):
@@ -417,6 +418,35 @@ def FD_FoldUnfold_Comparison(histograms):
         globalList.append(obj)
         if isinstance(obj, ROOT.TCanvas):
             canvases.append(obj)
+
+def PlotStatUncEff(histograms):
+    spectrumName = "JetPtDPtSpectrum"
+    jetName = "Jet_AKTChargedR040_pt_scheme"
+    dmesonName = "D0"
+    prefix = "{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
+    minJetPt = 5
+    maxJetPt = 30
+    detResp = histograms[prefix]
+    DPtBins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    recoTruthName = "{0}_ReconstructedTruth_JetPt_{1}_{2}".format(prefix, minJetPt * 100, maxJetPt * 100)
+    truthName = "{0}_Truth_JetPt_{1}_{2}".format(prefix, minJetPt * 100, maxJetPt * 100)
+    recoTruth = detResp[recoTruthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(recoTruthName), array.array('d', DPtBins))
+    truth = detResp[truthName].Rebin(len(DPtBins) - 1, "{0}_c_rebin".format(truthName), array.array('d', DPtBins))
+    hist_Ratio = recoTruth.Clone(recoTruthName.replace("RecontructedTruth", "Efficiency"))
+    hist_Ratio.Divide(truth)
+    hist_Ratio.GetYaxis().SetTitle("Reconstruction Efficiency")
+    hist_Ratio.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
+    hist_RatioUnc = DMesonJetUtils.GetRelativeUncertaintyHistogram(hist_Ratio)
+    hist_RatioUnc.GetYaxis().SetTitle("relative statistical uncertainty")
+    hist_RatioUnc.GetYaxis().SetTitleOffset(1.3)
+    globalList.append(hist_RatioUnc)
+    cname = "Misc/RecoEfficiencyRelStatUnc"
+    canvas = ROOT.TCanvas(cname, cname)
+    canvases.append(canvas)
+    globalList.append(canvas)
+    canvas.cd()
+    canvas.SetTicks(1, 1)
+    hist_RatioUnc.Draw()
 
 def EfficiencyComparison(cname, title_c, hist_c, title_b, hist_b):
     spectrumName = "JetPtDPtSpectrum"
