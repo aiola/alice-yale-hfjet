@@ -281,10 +281,25 @@ def pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radi
     comp = DMesonJetCompare.DMesonJetCompare(cnameJetPt)
     comp.fYaxisRatio = ratioAxis
     rJetPt = comp.CompareSpectra(powhegSpectrumJetPt, [pythiaSpectrumJetPt])
+    ratioJetPt = comp.fRatios[0]
+    fJetPt = ROOT.TF1("{0}_fit".format(ratioJetPt.GetName()), "pol4", ratioJetPt.GetXaxis().GetXmin(), ratioJetPt.GetXaxis().GetXmax())
+    comp.fCanvasRatio.cd()
+    ratioJetPt.Fit(fJetPt, "", "")
 
     comp = DMesonJetCompare.DMesonJetCompare(cnameDPt)
     comp.fYaxisRatio = ratioAxis
     rDPt = comp.CompareSpectra(powhegSpectrumDPt, [pythiaSpectrumDPt])
+    ratioDPt = comp.fRatios[0]
+    fDPt = ROOT.TF1("{0}_fit".format(ratioDPt.GetName()), "pol4", ratioDPt.GetXaxis().GetXmin(), ratioDPt.GetXaxis().GetXmax())
+    comp.fCanvasRatio.cd()
+    # to avoid a flucutation in the last bin... not very elegant
+    temp = ratioDPt.GetBinContent(ratioDPt.GetXaxis().FindBin(29))
+    tempErr = ratioDPt.GetBinError(ratioDPt.GetXaxis().FindBin(29))
+    ratioDPt.SetBinContent(ratioDPt.GetXaxis().FindBin(29), 0.9)
+    ratioDPt.SetBinError(ratioDPt.GetXaxis().FindBin(29), 0.1)
+    ratioDPt.Fit(fDPt, "", "", 3, 30)
+    ratioDPt.SetBinContent(ratioDPt.GetXaxis().FindBin(29), temp)
+    ratioDPt.SetBinError(ratioDPt.GetXaxis().FindBin(29), tempErr)
 
     file_out = ROOT.TFile("{0}/{1}.root".format(input_path, fname), "recreate")
     file_out.cd()
@@ -299,6 +314,9 @@ def pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radi
         if isinstance(obj, ROOT.TH1):
             file_out.cd()
             obj.Write()
+    file_out.cd()
+    fJetPt.Write(fJetPt.GetName())
+    fDPt.Write(fDPt.GetName())
 
 def get_ts_stage(ts_stage):
     b = ts_stage.split(":")
