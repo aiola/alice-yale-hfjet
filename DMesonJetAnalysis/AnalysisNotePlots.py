@@ -78,6 +78,11 @@ def main(actions, output_path, output_type):
     configs["mc_unfolding"] = yaml.load(f)
     f.close()
 
+    f = open("LHC14j4_Train982_LHC15i2_Train961_efficiency.yaml", 'r')
+    configs["prompt_d_sim"] = yaml.load(f)
+    f.close()
+
+
     histograms = dict()
 
     for name, c in configs.iteritems():
@@ -146,16 +151,16 @@ def main(actions, output_path, output_type):
         CopyBFeedDown("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "promptd_sim" in actions:
-        CopyPromptDSimulation("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+        CopyPromptDSimulation("/Volumes/DATA/ALICE/JetResults", "1483386026", 2, output_path, output_type)
 
     if "all" in actions or "data_systematics" in actions:
         CopDataSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "theory_comparison" in actions:
-        CopyTheoryComparisonFiles(configs["data_unfolding"], output_path, output_type)
+        CopyTheoryComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "ppb_comparison" in actions:
-        CopypPbComparisonFiles(configs["data_unfolding"], output_path, output_type)
+        CopypPbComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
 def CopyFiles(input_path, output_path, file_list, output_type):
     if not os.path.isdir(output_path):
@@ -177,11 +182,15 @@ def RawYieldComparison(cname, title1, config1, title2, config2):
     comp.fColors = [ROOT.kBlue + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     loader1 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config1["input_path"], config1["train"], config1["name"])
+    loader1.fSpectrumName = "JetPtSpectrum"
+    loader1.fKinematicCuts = "DPt_30"
     spectrum1 = loader1.GetDefaultSpectrumFromMultiTrial("SideBand")
     spectrum1.SetTitle(title1)
     spectrum1.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     spectrum1.GetYaxis().SetTitle("raw yield")
     loader2 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config2["input_path"], config2["train"], config2["name"])
+    loader2.fSpectrumName = "JetPtSpectrum"
+    loader2.fKinematicCuts = "DPt_30"
     spectrum2 = loader2.GetDefaultSpectrumFromMultiTrial("SideBand")
     spectrum2.SetTitle(title2)
     spectrum2.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
@@ -195,11 +204,11 @@ def RawYieldComparison(cname, title1, config1, title2, config2):
         if isinstance(obj, ROOT.TCanvas):
             canvases.append(obj)
 
-def CopyTheoryComparisonFiles(config, output_path, output_type):
+def CopyTheoryComparisonFiles(input_path, output_path, output_type):
     full_output_path = "{0}/TheoryComparison".format(output_path)
     file_list = []
     file_list.append("D0JetCrossSection_pp7TeV")
-    CopyFiles(config["input_path"], full_output_path, file_list, output_type)
+    CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyMCShapeSystematics(input_path, output_path, output_type):
     full_output_path = "{0}/DataSystematics".format(output_path)
@@ -210,12 +219,12 @@ def CopyMCShapeSystematics(input_path, output_path, output_type):
     file_list.append("PYTHIA_POWHEG_JetPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026_Ratio")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
-def CopypPbComparisonFiles(config, output_path, output_type):
+def CopypPbComparisonFiles(input_path, output_path, output_type):
     full_output_path = "{0}/pPbComparison".format(output_path)
     file_list = []
     file_list.append("pPbComparison_Charged_R040")
     file_list.append("pPbComparison_Charged_R040_Ratio")
-    CopyFiles(config["input_path"], full_output_path, file_list, output_type)
+    CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyBFeedDown(input_path, output_path, output_type):
     full_output_path = "{0}/BFeedDown".format(output_path)
@@ -243,8 +252,9 @@ def CopDataSystematics(input_path, output_path, output_type):
     file_list.append("CompareUncertainties_DataSystematics_LHC10")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
-def CopyPromptDSimulation(input_path, output_path, output_type):
+def CopyPromptDSimulation(input_path, ts, stage, output_path, output_type):
     full_output_path = "{0}/PromptDSim".format(output_path)
+
     file_list = []
     file_list.append("PromptDJetsPrediction_DPtSpectrum_GeneratorLevel_DPtSpectrum")
     file_list.append("PromptDJetsPrediction_DPtSpectrum_GeneratorLevel_DPtSpectrum_Ratio")
@@ -253,6 +263,16 @@ def CopyPromptDSimulation(input_path, output_path, output_type):
     file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_Ratio")
     file_list.append("PromptDJetsPrediction_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
     CopyFiles(input_path, full_output_path, file_list, output_type)
+
+    file_list = []
+    file_list.append("D0_MCTruth_Charged_R040_jet_pt_SpectraComparison")
+    file_list.append("D0_MCTruth_Charged_R040_jet_pt_SpectraComparison_Ratio")
+    if stage < 0:
+        full_input_path = "{0}/FastSim_powheg_charm_{1}/output/FastSimAnalysis_powheg_charm_{1}/{2}".format(input_path, ts, output_type)
+    else:
+        full_input_path = "{0}/FastSim_powheg_charm_{1}/stage_{3}/output/FastSimAnalysis_powheg_charm_{1}/{2}".format(input_path, ts, output_type, stage)
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
+
 
 def CopyDataFilesWithoutEff(config, output_path, output_type):
     full_input_path = "{0}/{1}/{2}/{3}".format(config["input_path"], config["train"], config["name"], output_type)

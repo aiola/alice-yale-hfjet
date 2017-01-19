@@ -329,30 +329,6 @@ class DMesonJetAnalysisEngine:
         if s.fSignalHistograms and s.fSideBandHistograms:
             self.PlotMultiCanvasBkgVsSigSpectra("{0}_BkgVsSig".format(s.fName), s.fSignalHistograms, "Sig. Window", s.fSideBandHistograms, "SB Window")
 
-        self.CompareFeedDown(s)
-
-    def CompareFeedDown(self, s):
-        if not s.fFDHistogram: return
-        before = s.fHistogram.Clone("{0}_compareFD".format(s.fHistogram.GetName()))
-        before.SetTitle("Before FD correction")
-        globalList.append(before)
-
-        after = s.fFDCorrHistogram.Clone("{0}_compareFD".format(s.fFDCorrHistogram.GetName()))
-        after.SetTitle("After FD correction")
-        globalList.append(after)
-
-        fd = s.fFDHistogram.Clone("{0}_compareFD".format(s.fFDHistogram.GetName()))
-        fd.SetTitle("FD correction")
-        globalList.append(fd)
-
-        cname = "{0}_FDCorrection".format(s.fName)
-        comp = DMesonJetCompare.DMesonJetCompare(cname)
-        r = comp.CompareSpectra(before, [after, fd])
-        for obj in r:
-            globalList.append(obj)
-            if isinstance(obj, ROOT.TCanvas):
-                self.fCanvases.append(obj)
-
     def PlotMultiCanvasBkgVsSigSpectra(self, cname, sigHistograms, sigTitle, bkgHistograms, bkgTitle):
         ncanvases = len(sigHistograms)
         c = DMesonJetUtils.GenerateMultiCanvas(cname, ncanvases)
@@ -492,7 +468,6 @@ class DMesonJetAnalysisEngine:
                         self.GenerateSpectrum3D(s)
                     else:
                         print("Not able to generate spectra with dim > 3!")
-                    s.GenerateFDCorrectedSpectrum(self.fEvents, self.fIsWeighted)
                     s.GenerateNormalizedSpectrum(self.fEvents, self.fIsWeighted)
 
     def GenerateSpectrum1DInvMassFit(self, s):
