@@ -404,7 +404,7 @@ class DMesonJetResponse:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"]), resp["efficiency"]["list_name"], resp["efficiency"]["object_name"])
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
-            if "apply_to_truth" in resp["efficiency"]:
+            if resp["efficiency"] and "apply_to_truth" in resp["efficiency"]:
                 apply_to_truth = resp["efficiency"]["apply_to_truth"]
             else:
                 apply_to_truth = False
