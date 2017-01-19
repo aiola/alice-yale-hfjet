@@ -162,6 +162,9 @@ def main(actions, output_path, output_type):
     if "all" in actions or "ppb_comparison" in actions:
         CopypPbComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
+    if "all" in actions or "misc" in actions:
+        CopypMiscFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+
 def CopyFiles(input_path, output_path, file_list, output_type):
     if not os.path.isdir(output_path):
         os.makedirs(output_path)
@@ -208,6 +211,12 @@ def CopyTheoryComparisonFiles(input_path, output_path, output_type):
     full_output_path = "{0}/TheoryComparison".format(output_path)
     file_list = []
     file_list.append("D0JetCrossSection_pp7TeV")
+    CopyFiles(input_path, full_output_path, file_list, output_type)
+
+def CopypMiscFiles(input_path, output_path, output_type):
+    full_output_path = "{0}/Misc".format(output_path)
+    file_list = []
+    file_list.append("Comparison_DPt_JetPt_Spectra")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyMCShapeSystematics(input_path, output_path, output_type):
