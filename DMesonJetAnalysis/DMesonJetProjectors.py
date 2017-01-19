@@ -55,6 +55,9 @@ class EfficiencyWeightCalculator:
         if isinstance(self.fRootObject, ROOT.TGraph):
             print("The ROOT object is of type TGraph")
             self.GetEfficiencyWeight = self.GetEfficiencyWeightTGraph
+        elif isinstance(self.fRootObject, ROOT.TF1):
+            print("The ROOT object is of type TF1")
+            self.GetEfficiencyWeight = self.GetEfficiencyWeightTF1
         elif isinstance(self.fRootObject, ROOT.TH2):
             print("The ROOT object is of type TH2")
             self.GetEfficiencyWeight = self.GetEfficiencyWeightTH2
@@ -66,6 +69,13 @@ class EfficiencyWeightCalculator:
             self.fRootObject.Print()
 
     def GetEfficiencyWeightTGraph(self, dmeson, jet):
+        eff = self.fRootObject.Eval(dmeson.fPt)
+        if eff == 0:
+            return 0
+        else:
+            return 1. / eff
+
+    def GetEfficiencyWeightTF1(self, dmeson, jet):
         eff = self.fRootObject.Eval(dmeson.fPt)
         if eff == 0:
             return 0
