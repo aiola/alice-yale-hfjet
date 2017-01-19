@@ -13,7 +13,9 @@ analysis:
   jet_type: Charged
   jet_radius: R040
   d_meson: D0
-  spectrum: JetPtSpectrum_DPt_30_InvMassFit
+  spectrum: JetPtSpectrum
+  raw_yield_method: InvMassFit
+  kinematic_cuts: DPt_30
   d_meson_response: D0
   spectrum_response: JetPtSpectrum_DPt_30
   default_prior: ResponseTruth
@@ -41,7 +43,9 @@ analysis:
   jet_type: Charged
   jet_radius: R040
   d_meson: D0
-  spectrum: JetPtSpectrum_DPt_30_SideBand
+  spectrum: JetPtSpectrum
+  raw_yield_method: SideBand
+  kinematic_cuts: DPt_30
   d_meson_response: D0
   spectrum_response: JetPtSpectrum_DPt_30
   default_prior: ResponseTruth

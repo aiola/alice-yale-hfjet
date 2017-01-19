@@ -27,6 +27,9 @@ class DMesonJetUnfoldingEngine:
         self.fJetType = config["jet_type"]
         self.fJetRadius = config["jet_radius"]
         self.fSpectrumName = config["spectrum"]
+        self.fKinematicCuts = config["kinematic_cuts"]
+        self.fRawYieldMethod = config["raw_yield_method"]
+        self.fFullSpectrumName = "_".join([s for s in [self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         self.fDMesonResponse = config["d_meson_response"]
         self.fSpectrumResponseName = config["spectrum_response"]
         self.fPriors = config["priors"]
@@ -172,7 +175,7 @@ class DMesonJetUnfoldingEngine:
         return True
 
     def LoadNumberOfEvents(self):
-        inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName])
+        inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fFullSpectrumName])
         inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
         if not inputSpectrum:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, dataList.GetName()))
@@ -204,8 +207,9 @@ class DMesonJetUnfoldingEngine:
         wrap.fJetType = self.fJetType
         wrap.fJetRadius = self.fJetRadius
         wrap.fSpectrumName = self.fSpectrumName
+        wrap.fKinematicCuts = self.fKinematicCuts
         wrap.fDataFile = self.fDataFile
-        self.fDataList = wrap.LoadDataListFromDMesonJetAnalysis()
+        self.fDataList = wrap.LoadDataListFromDMesonJetAnalysis(self.fRawYieldMethod)
 
         self.LoadNumberOfEvents()
 
@@ -225,21 +229,15 @@ class DMesonJetUnfoldingEngine:
         wrap.fJetType = self.fDMeson
         wrap.fJetRadius = self.fJetRadius
         wrap.fSpectrumName = self.fSpectrumName
+        wrap.fKinematicCuts = self.fKinematicCuts
         wrap.fDataSpectrumList = self.fDataList
         inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(method, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
     def GetInputSpectrumFromMT(self):
-        if "SideBand" in self.fSpectrumName:
-            method = "SideBand"
-        elif "InvMassFit" in self.fSpectrumName:
-            method = "InvMassFit"
-        else:
-            print("Raw yield method of spectrum {0} not recognized!".format(self.fSpectrumName))
-            return None
-        print("Getting input spectrum from the multi-trial analysis, with method {0}".format(method))
+        print("Getting input spectrum from the multi-trial analysis, with method {0}".format(self.fRawYieldMethod))
         wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
-        inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(method, True, self.fFDErrorBand, self.fRYErrorBand)
+        inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(self.fRawYieldMethod, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
     def Start(self, doPlotting=True):
