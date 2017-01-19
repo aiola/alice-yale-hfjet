@@ -137,7 +137,7 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl)
   Double_t sigmafixed_DPtBins[nDbins] = {0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027};  // chopping 0-1, 1-2, 2-3
   Double_t sigmafixed_JetPtBins[nJetbins] = {0.012, 0.015, 0.014, 0.016, 0.018, 0.020};
 
-  Double_t sigmafixed=0.014; //ATTENTION: the fixed sigma value to be set is pT-dependent!!
+  //Double_t sigmafixed=0.014; //ATTENTION: the fixed sigma value to be set is pT-dependent!!
   Double_t chi2cut=3;
   Bool_t meansigmaVar[6] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE}; //set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
   Bool_t bkgVar[8] = {kTRUE,kFALSE,kTRUE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE}; //set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
