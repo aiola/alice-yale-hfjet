@@ -8,7 +8,6 @@ import collections
 import ROOT
 
 import DMesonJetProjectors
-import DMesonJetFDCorrection
 import DMesonJetCuts
 import Axis
 import Spectrum
@@ -111,11 +110,7 @@ class BinSet:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(inputPath, s["efficiency"]["file_name"]), s["efficiency"]["list_name"], s["efficiency"]["object_name"])
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
-            if "FD" in s and s["FD"]:
-                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(s["FD"], s["name"], inputPath, dmeson, jtype, jradius)
-            else:
-                FD = DMesonJetFDCorrection.DMesonJetFDCorrection(None, None)
-            spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight, FD)
+            spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
             self.fSpectra[spectrum.fName] = spectrum
         if "MCTruth" in dmeson and not isinstance(self.fWeightEfficiency , DMesonJetProjectors.SimpleWeight):
             self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
