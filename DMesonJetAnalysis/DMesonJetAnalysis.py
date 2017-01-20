@@ -727,7 +727,7 @@ class DMesonJetAnalysisEngine:
             if not bin.fMassFitter or not bin.fMassFitter.FitSuccessfull():
                 print("Skipping bin {0} because fit was unsuccessful".format(bin.GetTitle()))
                 continue
-
+            print("Bin: {0}".format(bin.GetTitle()))
             sigma = bin.fMassFitter.GetSignalWidth()
             mean = bin.fMassFitter.GetSignalMean()
             print("Sigma={0:.3f}, Mean={1:.3f}".format(sigma, mean))
@@ -750,41 +750,80 @@ class DMesonJetAnalysisEngine:
             s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
             s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
 
-            sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
-            sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
-            sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+            if bin.fBinCountAnalysisHisto.GetDimension() == 2:
+                sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
+                sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
+                sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+            elif bin.fBinCountAnalysisHisto.GetDimension() == 3:
+                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(binSBL_1, binSBL_2)
+                sbL = bin.fBinCountAnalysisHisto.Project3D("zye")
+                sbL.SetName("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()))
+                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(binSBR_1, binSBR_2)
+                sbR = bin.fBinCountAnalysisHisto.Project3D("zye")
+                sbR.SetName("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()))
+                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(binSig_1, binSig_2)
+                sig = bin.fBinCountAnalysisHisto.Project3D("zye")
+                sig.SetName("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()))
+                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(1, bin.fBinCountAnalysisHisto.GetNbinsX())
+
             sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
             sbTotal.Add(sbR)
 
             # peakAreaBkgError = ROOT.Double(0.)
             # peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
             intSigErr = ROOT.Double(0.)
-            intSig = sig.IntegralAndError(0, -1, intSigErr)
+            if sig.GetDimension() == 1:
+                intSig = sig.IntegralAndError(0, -1, intSigErr)
+            elif sig.GetDimension() == 2:
+                intSig = sig.IntegralAndError(0, -1, 0, -1, intSigErr)
             peakAreaBkgError = math.sqrt(intSigErr ** 2 + (bin.fMassFitter.GetSignalError(effSigma1) / 2) ** 2 + (bin.fMassFitter.GetSignalError(effSigma2) / 2) ** 2)
             peakAreaBkg = intSig - bin.fMassFitter.GetSignal(effSigma1) / 2 - bin.fMassFitter.GetSignal(effSigma2) / 2
-            print("Bin: {0}".format(bin.GetTitle()))
-            print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
+            if sbL.GetDimension() == 1:
+                print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
+            elif sbL.GetDimension() == 2:
+                print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1, 0, -1), sbR.Integral(0, -1, 0, -1), sbTotal.Integral(0, -1, 0, -1)))
             print("The estimated background in the signal window is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
             print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(intSig, bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal(s.fBinCountSignalSigmas) + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
 
             sbTotalIntegralError = ROOT.Double(0)
-            sbTotalIntegral = sbTotal.IntegralAndError(0, -1, sbTotalIntegralError)
+            if sbTotal.GetDimension() == 1:
+                sbTotalIntegral = sbTotal.IntegralAndError(0, -1, sbTotalIntegralError)
+            elif sbTotal.GetDimension() == 2:
+                sbTotalIntegral = sbTotal.IntegralAndError(0, -1, 0, -1, sbTotalIntegralError)
             if sbTotalIntegral > 0:
-                for xbin in range(0, sbTotal.GetNbinsX() + 2):
-                    if sbTotal.GetBinContent(xbin) == 0:
-                        continue
-                    # Error propagation
-                    error2_1 = peakAreaBkgError ** 2 * sbTotal.GetBinContent(xbin) ** 2
-                    error2_2 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinError(xbin) ** 2 * (sbTotalIntegral - sbTotal.GetBinContent(xbin)) ** 2
-                    error2_3 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinContent(xbin) ** 2 * (sbTotalIntegralError ** 2 - sbTotal.GetBinError(xbin) ** 2)
-                    # print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/sbTotalIntegral, math.sqrt(error2_2)/sbTotalIntegral, math.sqrt(error2_3)/sbTotalIntegral))
-                    error = math.sqrt(error2_1 + error2_2 + error2_3) / sbTotalIntegral
-                    cont = sbTotal.GetBinContent(xbin) * peakAreaBkg / sbTotalIntegral
-                    sbTotal.SetBinError(xbin, error)
-                    sbTotal.SetBinContent(xbin, cont)
+                if sbTotal.GetDimension() == 1:
+                    for xbin in range(0, sbTotal.GetNbinsX() + 2):
+                        if sbTotal.GetBinContent(xbin) == 0:
+                            continue
+                        # Error propagation
+                        error2_1 = peakAreaBkgError ** 2 * sbTotal.GetBinContent(xbin) ** 2
+                        error2_2 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinError(xbin) ** 2 * (sbTotalIntegral - sbTotal.GetBinContent(xbin)) ** 2
+                        error2_3 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinContent(xbin) ** 2 * (sbTotalIntegralError ** 2 - sbTotal.GetBinError(xbin) ** 2)
+                        # print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/sbTotalIntegral, math.sqrt(error2_2)/sbTotalIntegral, math.sqrt(error2_3)/sbTotalIntegral))
+                        error = math.sqrt(error2_1 + error2_2 + error2_3) / sbTotalIntegral
+                        cont = sbTotal.GetBinContent(xbin) * peakAreaBkg / sbTotalIntegral
+                        sbTotal.SetBinError(xbin, error)
+                        sbTotal.SetBinContent(xbin, cont)
+                elif sbTotal.GetDimension() == 2:
+                    for xbin in range(0, sbTotal.GetNbinsX() + 2):
+                        for ybin in range(0, sbTotal.GetNbinsY() + 2):
+                            if sbTotal.GetBinContent(xbin, ybin) == 0: continue
+                            # Error propagation
+                            error2_1 = peakAreaBkgError ** 2 * sbTotal.GetBinContent(xbin, ybin) ** 2
+                            error2_2 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinError(xbin, ybin) ** 2 * (sbTotalIntegral - sbTotal.GetBinContent(xbin, ybin)) ** 2
+                            error2_3 = peakAreaBkg ** 2 / sbTotalIntegral ** 2 * sbTotal.GetBinContent(xbin, ybin) ** 2 * (sbTotalIntegralError ** 2 - sbTotal.GetBinError(xbin, ybin) ** 2)
+                            # print("bin {0}: error1 = {1}, error2 = {2}, error3 = {3}".format(xbin, math.sqrt(error2_1)/sbTotalIntegral, math.sqrt(error2_2)/sbTotalIntegral, math.sqrt(error2_3)/sbTotalIntegral))
+                            error = math.sqrt(error2_1 + error2_2 + error2_3) / sbTotalIntegral
+                            cont = sbTotal.GetBinContent(xbin, ybin) * peakAreaBkg / sbTotalIntegral
+                            sbTotal.SetBinError(xbin, ybin, error)
+                            sbTotal.SetBinContent(xbin, ybin, cont)
 
-            integralError = ROOT.Double(0.)
-            integral = sbTotal.IntegralAndError(0, -1, integralError)
+            if sbTotal.GetDimension() == 1:
+                integralError = ROOT.Double(0.)
+                integral = sbTotal.IntegralAndError(0, -1, integralError)
+            elif sbTotal.GetDimension() == 2:
+                integralError = ROOT.Double(0.)
+                integral = sbTotal.IntegralAndError(0, -1, 0, -1, integralError)
             print("The total normalized side-band background is {0} +/- {1}".format(integral, integralError))
 
             w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
@@ -810,14 +849,21 @@ class DMesonJetAnalysisEngine:
 
         s.fHistogram.Add(s.fSignalWindowTotalHistogram)
         s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
-        if s.fBackground:
-            s.fBackground.Add(s.fSideBandWindowTotalHistogram)
+        if s.fBackground: s.fBackground.Add(s.fSideBandWindowTotalHistogram)
 
-        for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
-            if s.fHistogram.GetBinContent(xbin) > 0:
-                s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
-            else:
-                s.fUncertainty.SetBinContent(xbin, 0)
+        if s.fHistogram.GetDimension() == 1:
+            for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
+                if s.fHistogram.GetBinContent(xbin) > 0:
+                    s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
+                else:
+                    s.fUncertainty.SetBinContent(xbin, 0)
+        if s.fHistogram.GetDimension() == 2:
+            for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
+                for ybin in range(0, s.fHistogram.GetNbinsY() + 2):
+                    if s.fHistogram.GetBinContent(xbin, ybin) > 0:
+                        s.fUncertainty.SetBinContent(xbin, ybin, s.fHistogram.GetBinError(xbin, ybin) / s.fHistogram.GetBinContent(xbin, ybin))
+                    else:
+                        s.fUncertainty.SetBinContent(xbin, ybin, 0)
 
     def GenerateSpectrum1DTruth(self, s):
         # The truth spectrum is already done, only need to apply the efficiency
@@ -855,6 +901,8 @@ class DMesonJetAnalysisEngine:
         print("Generating spectrum {0}".format(s.fName))
         if s.fAnalysisType == AnalysisType.InvMassFit:
             self.GenerateSpectrum2DInvMassFit(s)
+        if s.fAnalysisType == AnalysisType.SideBand:
+            self.GenerateSpectrum1DSideBandMethod(s)
         elif s.fAnalysisType == AnalysisType.Truth:
             self.GenerateSpectrum2DTruth(s)
         else:
