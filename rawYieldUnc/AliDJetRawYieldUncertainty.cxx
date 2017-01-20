@@ -447,14 +447,16 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial(){
     //hTemplRefl->Draw();
 
     if(fFixRiflOverS<0){
+      Double_t factor = -fFixRiflOverS;
       cout<< " MC signal file: " << fSigMCFilenameInput.Data() << " - MC signal histo name:  " << fSigMCHistoName.Data() << endl;
       TFile *fSigMC=TFile::Open(fSigMCFilenameInput.Data(),"read"); //needed if refl/sigMC ratio is not fixed
       if(!fSigMC) {cout << " MC signal file not found! Exiting... " << endl; return kFALSE;}
       TH1F *hSignMC=(TH1F*)fSigMC->Get(fSigMCHistoName.Data());
       if(!hSignMC) {cout << " MC signal histo not found! Exiting... " << endl; return kFALSE;}
-      fFixRiflOverS=hTemplRefl->Integral(hTemplRefl->FindBin(fReflRangeL+0.00001),hTemplRefl->FindBin(fReflRangeR-0.00001))/hSignMC->Integral(hSignMC->FindBin(fReflRangeL+0.00001),hSignMC->FindBin(fReflRangeR-0.00001));
+      fFixRiflOverS=factor*hTemplRefl->Integral(hTemplRefl->FindBin(fReflRangeL+0.00001),hTemplRefl->FindBin(fReflRangeR-0.00001))/hSignMC->Integral(hSignMC->FindBin(fReflRangeL+0.00001),hSignMC->FindBin(fReflRangeR-0.00001));
       printf("Sign over Refl bin %1.1f-%1.1f = %f",fpTmin,fpTmax,fFixRiflOverS);
     }
+    //fRefl->Close();
 
     mt->SetTemplateRefl(hTemplRefl);
     mt->SetFixRefoS(fFixRiflOverS);
@@ -777,6 +779,8 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes(){
   hUnc->SetBinError(1,rms*aver/100.);
   hUnc->SaveAs(Form("Hist_%s",outfilnam.Data()));
 
+  fil->Close();
+  delete fil;
   return kTRUE;
 }
 
@@ -842,6 +846,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroEffScale() {
     fJetYieldUnc->SetBinContent(ibin+1,rmsPct);
     fJetYieldCentral->SetBinContent(ibin+1,centrYield);
     fJetYieldCentral->SetBinError(ibin+1,rmsPct);
+    f->Close();
+    delete f;
   }
 
   fJetYieldUnc->SetStats(kFALSE);
@@ -859,6 +865,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroEffScale() {
     TH1F *hDist = (TH1F*)c->FindObject("hRawYieldDistAll");
     hDist->SetStats(kTRUE);
     hDist->SaveAs(Form("YieldDistribution_%s_%s_%1.1fto%1.1f.root",fDmesonLabel.Data(),fMethodLabel.Data(),fJetbinpTedges[ibin],fJetbinpTedges[ibin+1]));
+    f2->Close();
+    delete f2;
   }
 
   return kTRUE;
@@ -968,7 +976,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
     TH1F *hSigmaDef = (TH1F*)fileMultVar->Get("hSigmaTrialExpoFreeS");
     TH1F *hBkgDef = (TH1F*)fileMultVar->Get("hBkgTrialExpoFreeS");
     TH1F *hRawYieldDef = (TH1F*)fileMultVar->Get("hRawYieldTrialExpoFreeS");
-
+    fileMultVar->Close();
+    delete fileMultVar;
     Double_t meanDef = hMeanDef->GetBinContent(1);
     Double_t sigmaDef = hSigmaDef->GetBinContent(1);
     Double_t bkgDef = hBkgDef->GetBinContent(1);
@@ -1008,7 +1017,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband() {
     TH1F *hMean = (TH1F*)c->FindObject("hMeanAll");
     TH1F *hSigma = (TH1F*)c->FindObject("hSigmaAll");
     TH1F *hBkg = (TH1F*)c->FindObject("hBkgAll");
-
+    fileMult->Close();
+    delete fileMult;
     Int_t extracted[fnMaxTrials];
     for (int iTrial = 0; iTrial<fnMaxTrials; iTrial++) extracted[iTrial] = -1;
 
@@ -1232,7 +1242,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDzeroSideband_CoherentTria
     TH1F *hMean = (TH1F*)c->FindObject("hMeanAll");
     TH1F *hSigma = (TH1F*)c->FindObject("hSigmaAll");
     TH1F *hBkg = (TH1F*)c->FindObject("hBkgAll");
-
+    fileMult->Close();
+    delete fileMult;
     Int_t extracted[fnMaxTrials];
     for(int iTrial=0; iTrial<fnMaxTrials; iTrial++) extracted[iTrial] = -1;    
 
@@ -1463,6 +1474,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarEffScale() {
     fJetYieldUnc->SetBinContent(ibin+1,rmsPct);
     fJetYieldCentral->SetBinContent(ibin+1,centrYield);
     fJetYieldCentral->SetBinError(ibin+1,rmsPct);
+    f->Close();
+    delete f;
   }
 
   fJetYieldUnc->SetStats(kFALSE);
@@ -1481,6 +1494,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarEffScale() {
     TH1F *hDist = (TH1F*)c->FindObject("hRawYieldDistAll");
     hDist->SetStats(kTRUE);
     hDist->SaveAs(Form("YieldDistribution_%s_%s_%1.1fto%1.1f.root",fDmesonLabel.Data(),fMethodLabel.Data(),fJetbinpTedges[ibin],fJetbinpTedges[ibin+1]));
+    f2->Close();
+    delete f2;
   } 
 
   return kTRUE;
@@ -1558,7 +1573,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband() {
     TH1F *hMean = (TH1F*)c->FindObject("hMeanAll");
     TH1F *hSigma = (TH1F*)c->FindObject("hSigmaAll");
     TH1F *hBkg = (TH1F*)c->FindObject("hBkgAll");
-
+    fileMult->Close();
+    delete fileMult;
     Int_t extracted[fnMaxTrials];
     for(int iTrial=0; iTrial<fnMaxTrials; iTrial++) extracted[iTrial] = -1;    
 
@@ -1887,7 +1903,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyDstarSideband_CoherentTria
     TH1F *hMean = (TH1F*)c->FindObject("hMeanAll");
     TH1F *hSigma = (TH1F*)c->FindObject("hSigmaAll");
     TH1F *hBkg = (TH1F*)c->FindObject("hBkgAll");
-
+    fileMult->Close();
+    delete fileMult;
     Int_t extracted[fnMaxTrials];
     for(int iTrial=0; iTrial<fnMaxTrials; iTrial++) extracted[iTrial] = -1;    
 

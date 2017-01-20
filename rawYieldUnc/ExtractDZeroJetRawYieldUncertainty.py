@@ -120,7 +120,7 @@ def LoadEfficiency(config):
         if ibinDest + 1 >= len(ptDbins): break
     return eff_values
 
-def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=False):
+def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
     # Dzero cfg
     ana = config["analysis"][0]
 
@@ -182,9 +182,9 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
         elif method == ROOT.AliDJetRawYieldUncertainty.kSideband:
             varname = "DPt"
             iBin = ptDbins.index(ptmin)
-        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with refl template histo
-        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with MC signal histo
-        interface.SetReflHistoname("histRflFittedgaus_ptBin{0}".format(iBin))  # name of template histo
+        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(var=varname, fit=reflFitFunc)))  # file with refl template histo
+        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(var=varname, fit=reflFitFunc)))  # file with MC signal histo
+        interface.SetReflHistoname("histRflFitted{fit}_ptBin{bin}".format(fit=reflFitFunc, bin=iBin))  # name of template histo
         interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
         interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
@@ -299,11 +299,11 @@ def main(config, skip_binbybin, skip_combine, single_trial, refl, debug):
         if refl: outputPath += "_refl"
         MoveFiles(outputPath)
 
-def MoveFiles(outputPath):
+def MoveFiles(outputPath, filetype="root"):
     print("Results will be moved to {0}".format(outputPath))
     if not os.path.isdir(outputPath):
         os.makedirs(outputPath)
-    for file in glob.glob(r'./*.root'):
+    for file in glob.glob("./*.{0}".format(filetype)):
         print("Moving file {0}".format(file))
         shutil.copy(file, outputPath)
         os.remove(file)
