@@ -2134,11 +2134,11 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     }
   }
 
-  TCanvas *cy = new TCanvas(Form("%s_fitCanv", inputfileNoExt.Data()), Form("%s_fitCanv", inputfileNoExt.Data()));
+  TCanvas *cy = new TCanvas(Form("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data()));
   cy->Divide(4,3);
-  TCanvas *cy2 = new TCanvas(Form("%s_fitCanv2", inputfileNoExt.Data()), Form("%s_fitCanv2", inputfileNoExt.Data()));
+  TCanvas *cy2 = new TCanvas(Form("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data()));
   cy2->Divide(4,3);
-  TCanvas *cyRatio = new TCanvas(Form("%s_fitCanvRatio", inputfileNoExt.Data()), Form("%s_fitCanvRatio", inputfileNoExt.Data()));
+  TCanvas *cyRatio = new TCanvas(Form("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data()));
   cyRatio->Divide(4,3);
 
 
@@ -2155,29 +2155,47 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
 
     TF1 *finput=0x0;
     if (fitType == "DoubleGaus"){//DoubleGaus
-      finput= new TF1 ("finput","[0]/(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))+[3]/( TMath::Sqrt(2.*TMath::Pi())*[5])*TMath::Exp(-(x-[4])*(x-[4])/(2.*[5]*[5]))");
+      finput= new TF1 ("finput","[0]/(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))+[3]/( TMath::Sqrt(2.*TMath::Pi())*[5])*TMath::Exp(-(x-[4])*(x-[4])/(2.*[5]*[5]))", hfitRefl->GetXaxis()->GetXmin(), hfitRefl->GetXaxis()->GetXmax());
 
-      finput->SetParameter(0, 1);
-      finput->SetParameter(1, 1);
-      finput->SetParameter(2, 1);
-      finput->SetParameter(3, 1);
-      finput->SetParameter(4, 1);
-      finput->SetParameter(5, 1);
+      finput->SetParameter(0,30);
+      finput->SetParameter(1,1.85);
+      finput->SetParameter(2,0.2);
+      finput->SetParameter(3,0.0001);
+      finput->SetParameter(4,1.9);
+      finput->SetParameter(5,0.05);
 
     }
     else if (fitType == "pol3"){
       finput= new TF1 ("finput", "pol3");
+      finput->SetParameter(0,-2.5);
+      finput->SetParameter(1,1.5);
+      finput->SetParameter(2,0.5);
+      finput->SetParameter(3,-0.4);
     }
     else if (fitType == "pol6"){
       finput= new TF1 ("finput", "pol6");
+      finput->SetParameter(0,-2.5);
+      finput->SetParameter(1,1.5);
+      finput->SetParameter(2,0.5);
+      finput->SetParameter(3,-0.4);
+      finput->SetParameter(4,0.02);
+      finput->SetParameter(5,0.005);
+      finput->SetParameter(6,-0.005);
     }
     else if (fitType == "gaus"){
       finput= new TF1 ("finput", "gaus");
+      finput->SetParameter(0,30);
+      finput->SetParameter(1,1.85);
+      finput->SetParameter(2,0.2);
     }
 
     hfitRefl->Fit("finput", "MLFI");
+
     Printf("Fit done");
+
+
     TF1 *fFitRefl = hfitRefl->GetFunction("finput");
+
 
     TH1F *hFitReflNewTemp = (TH1F*)hfitRefl->Clone(Form("histRflFitted%s_ptBin%d", fitType.Data(), iBin));
     TH1F *ratio = (TH1F*)hfitRefl->Clone(Form("ratioRelDistr_%s_bin%d", fitType.Data(), iBin));
