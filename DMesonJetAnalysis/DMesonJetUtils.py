@@ -57,6 +57,7 @@ def GetObject(obj, name):
         name_obj = obj.GetName()
     if not res:
         print("Could not find object {0} in collection '{1}'".format(name_lookup, name_obj))
+        if isinstance(obj, ROOT.TObject): obj.ls()
         return None
     if name:
         return GetObject(res, name)

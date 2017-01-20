@@ -5,32 +5,32 @@ import ROOT
 import numpy
 import DMesonJetFDCorrection
 
-ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
-
 class RawYieldSpectrumLoader:
-    def __init__(self, input_path=None, train=None, ana_name=None, refl=False, events=None):
+    def __init__(self, input_path=None, train=None, ana_name=None):
         self.fInputPath = input_path
         self.fTrain = train
         self.fAnalysisName = ana_name
-        self.fUseReflections = refl
-        self.fReflFitFunc = "DoubleGaus"
-        self.fFixedReflOverSignal = 0
-        self.fEvents = events
+        self.fDPtBins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        self.fJetPtBins = [5, 6, 8, 10, 14, 20, 30]
+        self.fUseReflections = True
+        self.fReflectionFit = "DoubleGaus"
+        self.fReflectionRoS = 0
+        self.fEvents = None
         self.fDMeson = None
         self.fJetType = None
         self.fJetRadius = None
         self.fSpectrumName = None
         self.fKinematicCuts = None
+        self.fRawYieldMethod = None
         self.fDataSpectrumList = None
         self.fDataFile = None
         self.fMultiTrialSubDir = None
         self.fDataJetList = None
         self.fDataMesonList = None
 
-    def LoadNumberOfEvents(self, method):
-        if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis(method)
-        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, method] if s])
+    def LoadNumberOfEvents(self):
+        if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
+        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         inputSpectrum = self.fDataSpectrumList.FindObject(inputSpectrumName)
         if not inputSpectrum:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
@@ -52,7 +52,7 @@ class RawYieldSpectrumLoader:
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName))
         return self.fDataFile
 
-    def LoadDataListFromDMesonJetAnalysis(self, method):
+    def LoadDataListFromDMesonJetAnalysis(self,):
         if not self.fDataFile: self.LoadDataFileFromDMesonJetAnalysis()
         if self.fDMeson:
             self.fDataMesonList = self.fDataFile.Get(self.fDMeson)
@@ -67,14 +67,14 @@ class RawYieldSpectrumLoader:
                     self.fDataMesonList.Print()
                     exit(1)
                 if self.fSpectrumName:
-                    dataListName = "_".join([s for s in [self.fDMeson, dataJetListName, self.fSpectrumName, self.fKinematicCuts, method] if s])
+                    dataListName = "_".join([s for s in [self.fDMeson, dataJetListName, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
                     self.fDataSpectrumList = self.fDataJetList.FindObject(dataListName)
                     if not self.fDataSpectrumList:
                         print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
                         self.fDataJetList.Print()
                         exit(1)
             if self.fSpectrumName and not (self.fJetType and self.fJetRadius):
-                dataListName = "_".join([s for s in [self.fDMeson, self.fSpectrumName, self.fKinematicCuts, method] if s])
+                dataListName = "_".join([s for s in [self.fDMeson, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
                 self.fDataSpectrumList = self.fDataMesonList.FindObject(dataListName)
                 if not self.fDataSpectrumList:
                     print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataListName, self.fDataFile.GetName()))
@@ -82,26 +82,26 @@ class RawYieldSpectrumLoader:
                     exit(1)
         return self.fDataSpectrumList
 
-    def GetDefaultSpectrumFromDMesonJetAnalysis(self, method, fd=False, fd_error_band=0, ry_error_band=0):
+    def GetDefaultSpectrumFromDMesonJetAnalysis(self, fd=False, fd_error_band=0, ry_error_band=0):
         if not self.fSpectrumName:
             print("No spectrum name provided!")
             exit(1)
-        if not (method == "SideBand" or method == "InvMassFit"):
-            print("Method {0} unknown!".format(method))
+        if not (self.fRawYieldMethod == "SideBand" or self.fRawYieldMethod == "InvMassFit"):
+            print("Method {0} unknown!".format(self.fRawYieldMethod))
             exit(1)
         if self.fUseReflections:
             print("****Attention Attention Attention****")
-            print("You asked for reflections, but reflections are not available outside of the multi-trial code!")
-            print("The reflection option will be ignored!")
-        if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis(method)
-        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, method] if s])
+            print("You asked for reflections, but reflections are not available in DMesonJetAnalysis!")
+            exit(1)
+        if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
+        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         h = self.fDataSpectrumList.FindObject(inputSpectrumName)
         if not h:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
             self.fDataSpectrumList.Print()
             exit(1)
         if fd: self.ApplyFDCorrection(h, fd_error_band)
-        if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, method, ry_error_band)
+        if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, ry_error_band)
         return h
 
     def GetDefaultSpectrumInvMassFitFromMultiTrial(self):
@@ -109,12 +109,12 @@ class RawYieldSpectrumLoader:
             print("No spectrum name provided!")
             exit(1)
         if self.fUseReflections:
-            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
-            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
+            if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        h = ROOT.TH1D("TrialExpoFreeSigmaInvMassFit", "Trial Expo Free Sigma Inv. Mass Fit", len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
-        for ibin, (ptmin, ptmax) in enumerate(zip(ptJetbins[:-1], ptJetbins[1:])):
+        h = ROOT.TH1D("TrialExpoFreeSigmaInvMassFit", "Trial Expo Free Sigma Inv. Mass Fit", len(self.fJetPtBins) - 1, numpy.array(self.fJetPtBins, dtype=numpy.float64))
+        for ibin, (ptmin, ptmax) in enumerate(zip(self.fJetPtBins[:-1], self.fJetPtBins[1:])):
             fname = "{0}/{1}/{2}/{3}/RawYieldVariations_Dzero_InvMassFit_{4:.1f}to{5:.1f}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, ptmin, ptmax)
             file = ROOT.TFile(fname)
             if not file or file.IsZombie():
@@ -139,8 +139,8 @@ class RawYieldSpectrumLoader:
             print("No spectrum name provided!")
             exit(1)
         if self.fUseReflections:
-            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
-            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
+            if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
         fname = "{0}/{1}/{2}/{3}/TrialExpoFreeS_Dzero_SideBand.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir)
@@ -160,26 +160,26 @@ class RawYieldSpectrumLoader:
         h_copy.SetTitle("Trial Expo Free Sigma Inv. Mass Fit")
         return h
 
-    def GetDefaultSpectrumFromMultiTrial(self, method, fd=False, fd_error_band=0, ry_error_band=0):
-        if method == "SideBand": h = self.GetDefaultSpectrumSideBandFromMultiTrial()
-        elif method == "InvMassFit": h = self.GetDefaultSpectrumInvMassFitFromMultiTrial()
+    def GetDefaultSpectrumFromMultiTrial(self, fd=False, fd_error_band=0, ry_error_band=0):
+        if self.fRawYieldMethod == "SideBand": h = self.GetDefaultSpectrumSideBandFromMultiTrial()
+        elif self.fRawYieldMethod == "InvMassFit": h = self.GetDefaultSpectrumInvMassFitFromMultiTrial()
         else:
-            print("Method {0} unknown!".format(method))
+            print("Method {0} unknown!".format(self.fRawYieldMethod))
             exit(1)
         if fd: self.ApplyFDCorrection(h, fd_error_band)
-        if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, method, ry_error_band)
+        if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, ry_error_band)
         return h
 
-    def GetAverageSpectrumFromMultiTrial(self, method, fd=False, fd_error_band=0):
+    def GetAverageSpectrumFromMultiTrial(self, fd=False, fd_error_band=0):
         if not self.fSpectrumName:
             print("No spectrum name provided!")
             exit(1)
         if self.fUseReflections:
-            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
-            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
+            if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{0}/{1}/{2}/{3}/FinalRawYieldCentralPlusSystUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, method)
+        fname = "{0}/{1}/{2}/{3}/FinalRawYieldCentralPlusSystUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, self.fRawYieldMethod)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
@@ -225,22 +225,23 @@ class RawYieldSpectrumLoader:
 
         crossSection = 62.3  # mb CINT1
         branchingRatio = 0.0393  # D0->Kpi
+        if self.fEvents is None: self.LoadNumberOfEvents()
         fdHist.Scale(self.fEvents / crossSection * branchingRatio)
         fdSyst.Scale(self.fEvents / crossSection * branchingRatio)
         h.Add(fdHist, -1)
         if error_band <> 0: h.Add(fdSyst, error_band)
 
-    def ApplyRawYieldSystFromMultiTrial(self, h, method, error_band):
+    def ApplyRawYieldSystFromMultiTrial(self, h, error_band):
         if error_band == 0:
             print("No raw yield systematic to apply!")
             return
         print("Applying raw yield systematic with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
         if self.fUseReflections:
-            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
-            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
+            if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{0}/{1}/{2}/{3}/FinalRawYieldUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, method)
+        fname = "{0}/{1}/{2}/{3}/FinalRawYieldUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, self.fRawYieldMethod)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
