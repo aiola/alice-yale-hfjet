@@ -17,9 +17,18 @@ globalList = []
 
 class DMesonJetUnfoldingEngine:
     def __init__(self, input_path, dataTrain, analysisName, config, fd_error_band=0, ry_error_band=0):
-        self.fFDErrorBand = fd_error_band
-        self.fRYErrorBand = ry_error_band
+        # input path
         self.fInputPath = input_path
+
+        # response matrix
+        self.fDMesonResponse = config["d_meson_response"]
+        self.fSpectrumResponseName = config["spectrum_response"]
+        if "d_meson_truth" in config: self.fDMesonTruth = config["d_meson_truth"]
+        else: self.fDMesonTruth = None
+        if "spectrum_truth" in config: self.fSpectrumTruthName = config["spectrum_truth"]
+        else: self.fSpectrumTruthName = None
+
+        # data
         self.fDataTrain = dataTrain
         self.fDataList = None
         self.fAnalysisName = analysisName
@@ -30,15 +39,29 @@ class DMesonJetUnfoldingEngine:
         self.fKinematicCuts = config["kinematic_cuts"]
         self.fRawYieldMethod = config["raw_yield_method"]
         self.fFullSpectrumName = "_".join([s for s in [self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
-        self.fDMesonResponse = config["d_meson_response"]
-        self.fSpectrumResponseName = config["spectrum_response"]
+        self.fUseMultiTrialInput = True
+
+        # feed-down systematic uncertainty
+        self.fFDErrorBand = fd_error_band
+
+        # raw yield extraction systematic uncertainty
+        self.fRYErrorBand = ry_error_band
+
+        # use raw yield with reflections
+        self.fUseReflections = True
+
+        # reflection systematic uncertainties
+        self.fReflectionFit = "DoubleGaus"
+        self.fReflectionRoS = 0
+
+        # unfolding settings
         self.fPriors = config["priors"]
         self.fUnfoldingConfig = config["methods"]
         self.fDefaultPrior = config["default_prior"]
         self.fDefaultMethod = config["default_method"]
         self.fDoErrorCrossChecks = True
-        self.fUseReflections = False
-        self.fNumberOfEvents = None
+
+        # name
         self.fName = config["name"]
         if self.fFDErrorBand > 0:
             self.fName += "_FDUpperBand"
@@ -48,15 +71,16 @@ class DMesonJetUnfoldingEngine:
             self.fName += "_RYUpperBand"
         elif self.fRYErrorBand < 0:
             self.fName += "_RYLowerBand"
-        if "d_meson_truth" in config: self.fDMesonTruth = config["d_meson_truth"]
-        else: self.fDMesonTruth = None
-        if "spectrum_truth" in config: self.fSpectrumTruthName = config["spectrum_truth"]
-        else: self.fSpectrumTruthName = None
+
+        # self unfolding option (for debugging)
         if self.fName == "__self_unfolding__":
             self.fNumberOfEvents = config["self_unfolding_events"]
             self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
             self.fEvents.SetBinContent(1, self.fNumberOfEvents)
             self.fBins = config["self_unfolding_bins"]
+
+        # variables computed during execution
+        self.fNumberOfEvents = None
         self.fResponseMatrices = collections.OrderedDict()
         self.fUnfoldedSpectra = collections.OrderedDict()
         self.fUnfoldedSpectraErrors = collections.OrderedDict()
@@ -174,26 +198,6 @@ class DMesonJetUnfoldingEngine:
 
         return True
 
-    def LoadNumberOfEvents(self):
-        inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fFullSpectrumName])
-        inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
-        if not inputSpectrum:
-            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataList.GetName()))
-            self.fDataList.Print()
-            exit(1)
-        normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
-        normInputSpectrum = self.fDataList.FindObject(normInputSpectrumName)
-        if not normInputSpectrum:
-            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, self.fDataList.GetName()))
-            self.fDataList.Print()
-            exit(1)
-        temp = inputSpectrum.Clone("temp")
-        temp.Scale(1, "width")
-        temp.Divide(normInputSpectrum)
-        self.fNumberOfEvents = temp.GetBinContent(1)
-        self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
-        self.fEvents.SetBinContent(1, self.fNumberOfEvents)
-
     def LoadInputSpectrum(self):
         if self.fName == "__self_unfolding__":
             self.fInputSpectrum = self.fDetectorResponse.ProjectionX("temp", 1, self.fDetectorResponse.GetNbinsY()).Rebin(len(self.fBins) - 1, "{0}_InputSpectrum".format(self.fName), array.array('d', self.fBins))
@@ -203,17 +207,32 @@ class DMesonJetUnfoldingEngine:
             return True
 
         wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName)
+
+        wrap.fDataFile = self.fDataFile
         wrap.fDMeson = self.fDMeson
         wrap.fJetType = self.fJetType
         wrap.fJetRadius = self.fJetRadius
         wrap.fSpectrumName = self.fSpectrumName
         wrap.fKinematicCuts = self.fKinematicCuts
-        wrap.fDataFile = self.fDataFile
-        self.fDataList = wrap.LoadDataListFromDMesonJetAnalysis(self.fRawYieldMethod)
+        wrap.fDataSpectrumList = self.fDataList
+        wrap.fUseReflections = self.fUseReflections
+        wrap.fReflectionFit = self.fReflectionFit
+        wrap.fReflectionRoS = self.fReflectionRoS
+        wrap.fRawYieldMethod = self.fRawYieldMethod
 
-        self.LoadNumberOfEvents()
+        self.fNumberOfEvents = wrap.LoadNumberOfEvents()
+        self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
+        self.fEvents.SetBinContent(1, self.fNumberOfEvents)
 
-        inputSpectrum = self.GetInputSpectrum()
+        self.fDataList = wrap.fDataSpectrumList
+
+        if self.fUseMultiTrialInput:
+            print("Getting input spectrum from the multi-trial analysis, with method {0}".format(self.fRawYieldMethod))
+            inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(True, self.fFDErrorBand, self.fRYErrorBand)
+        else:
+            print("Getting input spectrum from DMesonJetAnalysis, with method {0}".format(self.fRawYieldMethod))
+            inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(True, self.fFDErrorBand, self.fRYErrorBand)
+
         if not inputSpectrum:
             print("Could not find input spectrum!")
             exit(1)
@@ -221,26 +240,6 @@ class DMesonJetUnfoldingEngine:
         self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
 
         return True
-
-    def GetInputSpectrumFromMyOwnAnalysis(self):
-        print("Getting input spectrum from my own analysis")
-        wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
-        wrap.fDMeson = self.fDMeson
-        wrap.fJetType = self.fDMeson
-        wrap.fJetRadius = self.fJetRadius
-        wrap.fSpectrumName = self.fSpectrumName
-        wrap.fKinematicCuts = self.fKinematicCuts
-        wrap.fDataSpectrumList = self.fDataList
-        inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(method, True, self.fFDErrorBand, self.fRYErrorBand)
-        return inputSpectrum
-
-    def GetInputSpectrumFromMT(self):
-        print("Getting input spectrum from the multi-trial analysis, with method {0}".format(self.fRawYieldMethod))
-        wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
-        wrap.fReflFitFunc = self.fReflectionFit
-        wrap.fFixedReflOverSignal = self.fReflectionRoS
-        inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(self.fRawYieldMethod, True, self.fFDErrorBand, self.fRYErrorBand)
-        return inputSpectrum
 
     def Start(self, doPlotting=True):
         self.GenerateResponse()
@@ -1146,10 +1145,7 @@ class DMesonJetUnfolding:
     def StartUnfolding(self, config, eff, use_overflow, fd_error_band, ry_error_band, plot):
         eng = DMesonJetUnfoldingEngine(self.fInputPath, self.fDataTrain, self.fAnalysisName, config, fd_error_band, ry_error_band)
         self.fUnfoldingEngine.append(eng)
-        if self.fUseMultiTrial:
-            eng.GetInputSpectrum = eng.GetInputSpectrumFromMT
-        else:
-            eng.GetInputSpectrum = eng.GetInputSpectrumFromMyOwnAnalysis
+        eng.fUseMultiTrialInput = self.fUseMultiTrial
         eng.fUseReflections = self.fUseReflections
         eng.fReflectionFit = self.fReflectionFit
         eng.fReflectionRoS = self.fReflectionRoS

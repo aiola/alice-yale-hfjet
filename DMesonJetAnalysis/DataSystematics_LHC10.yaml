@@ -46,7 +46,7 @@ sources:
   histogram_title_down: "Raw Yield Extraction (low)"
 -
   name: reflection_template_fit
-  active: yes
+  active: no
   title: "Reflection Template Fit"
   symmetrize: yes
   input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_refl_pol3
@@ -58,14 +58,14 @@ sources:
 -
   name: reflection_over_signal
   active: yes
-  title: "Reflection/Signal Ratio"
+  title: "Refl/Sign Ratio"
   symmetrize: yes
-  input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_5
-  histogram_name_up: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_up: "Reflection/Signal Ratio (low)"
+  #input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_5
+  #histogram_name_up: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+  #histogram_title_up: "Refl/Sign #times 0.5"
   input_name_down: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_15
   histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_down: "Reflection/Signal Ratio (high)"
+  histogram_title_down: "Refl/Sign #times 1.5"
 -
   name: b_feed_down
   active: yes

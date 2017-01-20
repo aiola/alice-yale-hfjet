@@ -67,9 +67,8 @@ def LoadHistograms(config):
         if "input_name" in s:
             input_name_up = s["input_name"]
             input_name_down = s["input_name"]
-        else:
-            input_name_up = s["input_name_up"]
-            input_name_down = s["input_name_down"]
+        if "input_name_up" in s: input_name_up = s["input_name_up"]
+        if "input_name_down" in s: input_name_down = s["input_name_down"]
         if "histogram_name_down" in s:
             h = DMesonJetUtils.GetObject(files[input_name_down], s["histogram_name_down"])
             h.Scale(crossSection / (events[input_name_down] * branchingRatio * antiPartNorm), "width")
@@ -116,11 +115,11 @@ def OpenFiles(config):
                 files[input_name] = f
     return files
 
-def LoadInputName(s):
+def LoadInputNames(s):
     input_names = []
-    if "input_name" in s: input_name.append(s["input_name"])
-    if "input_name_up" in s: input_name.append(s["input_name_up"])
-    if "input_name_down" in s: input_name.append(s["input_name_down"])
+    if "input_name" in s: input_names.append(s["input_name"])
+    if "input_name_up" in s: input_names.append(s["input_name_up"])
+    if "input_name_down" in s: input_names.append(s["input_name_down"])
     return input_names
 
 def CompareVariations(config, histograms):
