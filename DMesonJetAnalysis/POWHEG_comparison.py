@@ -7,6 +7,7 @@ import IPython
 import ROOT
 import DMesonJetCompare
 import DMesonJetUtils
+import RawYieldSpectrumLoader
 
 globalList = []
 
@@ -30,7 +31,7 @@ class QuarkSetting:
         self.name = _name
         self.histos = dict()
 
-def main(charm_ts, beauty_ts, jet_type, jet_radius, data, pythia):
+def main(charm_ts, beauty_ts, jet_type, jet_radius, data, pythia, data_raw):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -38,6 +39,8 @@ def main(charm_ts, beauty_ts, jet_type, jet_radius, data, pythia):
     for gen in generators:
         if data:
             data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, data)
+        elif data_raw:
+            data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, data_raw)
         elif pythia:
             pythia_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, pythia)
         else:
@@ -188,6 +191,108 @@ def data_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius
         globalList.append(obj)
         if isinstance(obj, ROOT.TCanvas):
             obj.SaveAs("{0}/{1}.pdf".format(rootPath, obj.GetName()))
+
+def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_radius, data_raw):
+    rootPath = "/Volumes/DATA/ALICE/JetResults"
+
+    quarks = dict()
+
+    if charm_ts:
+        charmQuark = QuarkSetting("charm")
+        (charmQuark.ts, charmQuark.stage) = get_ts_stage(charm_ts)
+        quarks["charm"] = charmQuark
+
+    if beauty_ts:
+        beautyQuark = QuarkSetting("beauty")
+        (beautyQuark.ts, beautyQuark.stage) = get_ts_stage(beauty_ts)
+        quarks["beauty"] = beautyQuark
+
+    for quark in quarks.itervalues():
+        if quark.stage >= 0:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/stage_{4}/output".format(rootPath, gen, quark.name, quark.ts, quark.stage)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}_{3}.root".format(quark.path, gen, quark.name, quark.ts)
+        else:
+            quark.path = "{0}/FastSim_{1}_{2}_{3}/output".format(rootPath, gen, quark.name, quark.ts)
+            quark.filename = "{0}/FastSimAnalysis_{1}_{2}.root".format(quark.path, gen, quark.name)
+        quark.file = ROOT.TFile(quark.filename)
+        if not quark.file or quark.file.IsZombie():
+            print("Could not open file {0}".format(quark.filename))
+            exit(1)
+
+    crossSection = 62.3  # mb CINT1
+    branchingRatio = 0.0393  # D0->Kpi
+
+    f = open(data_raw, 'r')
+    data_raw_config = yaml.load(f)
+    f.close()
+    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(data_raw_config["input_path"], data_raw_config["train"], data_raw_config["name"])
+    loader.fDMeson = "D0"
+    loader.fJetType = jet_type
+    loader.fJetRadius = jet_radius
+    loader.fKinematicCuts = "DPt_30"
+
+    loader.fSpectrumName = "DZSpectrum"
+    events = loader.LoadNumberOfEvents("SideBand")
+    print("The number of events is {0}".format(events))
+    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis("SideBand")
+    data_JetZSpectrum_JetPt_5_30_DPt_30 = h.Clone("data_JetZSpectrum_JetPt_5_7_DPt_30")
+    data_JetZSpectrum_JetPt_5_30_DPt_30.SetTitle("Data, 5 < #it{p}_{T, ch jet} < 30 GeV/#it{c}")
+    data_JetZSpectrum_JetPt_5_30_DPt_30.Scale(crossSection / events / branchingRatio / 25 / 2, "width")
+
+    loader.fDataSpectrumList = None
+    loader.fSpectrumName = "DZJetPtSpectrum"
+    data_JetZPtSpectrum_DPt_30 = loader.GetDefaultSpectrumFromDMesonJetAnalysis("SideBand")
+
+    h = data_JetZPtSpectrum_DPt_30.ProjectionX("data_JetZSpectrum_JetPt_5_7_DPt_30", 1, 1)
+    data_JetZSpectrum_JetPt_5_7_DPt_30 = h.Clone("data_JetZSpectrum_JetPt_5_7_DPt_30")
+    data_JetZSpectrum_JetPt_5_7_DPt_30.SetTitle("Data, 5 < #it{p}_{T, ch jet} < 7 GeV/#it{c}")
+    data_JetZSpectrum_JetPt_5_7_DPt_30.Scale(crossSection / events / branchingRatio / 2 / 2, "width")
+    data_JetZSpectrum_JetPt_7_12_DPt_30 = data_JetZPtSpectrum_DPt_30.ProjectionX("data_JetZSpectrum_JetPt_7_12_DPt_30", 2, 2)
+    data_JetZSpectrum_JetPt_7_12_DPt_30.SetTitle("Data, 7 < #it{p}_{T, ch jet} < 12 GeV/#it{c}")
+    data_JetZSpectrum_JetPt_7_12_DPt_30.Scale(crossSection / events / branchingRatio / 5 / 2, "width")
+    data_JetZSpectrum_JetPt_12_30_DPt_30 = data_JetZPtSpectrum_DPt_30.ProjectionX("data_JetZSpectrum_JetPt_12_30_DPt_30", 3, 3)
+    data_JetZSpectrum_JetPt_12_30_DPt_30.SetTitle("Data, 12 < #it{p}_{T, ch jet} < 30 GeV/#it{c}")
+    data_JetZSpectrum_JetPt_12_30_DPt_30.Scale(crossSection / events / branchingRatio / 18 / 2, "width")
+
+    MC_JetZSpectrum_JetPt_5_30_DPt_30 = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "JetZSpectrum_JetPt_5_30_DPt_30", "POWHEG, 5 < #it{p}_{T, ch jet} < 30 GeV/#it{c}")
+    MC_JetZSpectrum_JetPt_5_30_DPt_30.Scale(1. / 25, "width")
+    MC_JetZSpectrum_JetPt_5_7_DPt_30 = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "JetZSpectrum_JetPt_5_7_DPt_30", "POWHEG, 5 < #it{p}_{T, ch jet} < 7 GeV/#it{c}")
+    MC_JetZSpectrum_JetPt_5_7_DPt_30.Scale(1. / 2, "width")
+    MC_JetZSpectrum_JetPt_7_12_DPt_30 = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "JetZSpectrum_JetPt_7_12_DPt_30", "POWHEG, 7 < #it{p}_{T, ch jet} < 12 GeV/#it{c}")
+    MC_JetZSpectrum_JetPt_7_12_DPt_30.Scale(1. / 5, "width")
+    MC_JetZSpectrum_JetPt_12_30_DPt_30 = GetTotalMCSpectrum(quarks, jet_type, jet_radius, "JetZSpectrum_JetPt_12_30_DPt_30", "POWHEG, 12 < #it{p}_{T, ch jet} < 30 GeV/#it{c}")
+    MC_JetZSpectrum_JetPt_12_30_DPt_30.Scale(1. / 18, "width")
+
+    MChistos = [MC_JetZSpectrum_JetPt_5_30_DPt_30, MC_JetZSpectrum_JetPt_5_7_DPt_30, MC_JetZSpectrum_JetPt_7_12_DPt_30, MC_JetZSpectrum_JetPt_12_30_DPt_30]
+    datahistos = [data_JetZSpectrum_JetPt_5_30_DPt_30, data_JetZSpectrum_JetPt_5_7_DPt_30, data_JetZSpectrum_JetPt_7_12_DPt_30, data_JetZSpectrum_JetPt_12_30_DPt_30]
+
+    globalList.extend(datahistos)
+    globalList.extend(MChistos)
+
+    cname = "_".join(["TheoryComparison", "ZSpectra", gen, jet_type, jet_radius])
+    comp = DMesonJetCompare.DMesonJetCompare(cname)
+    comp.fYaxisRatio = "data / theory"
+    comp.fNColsLegSpectrum = 2
+    comp.fX1LegRatio = 0.2
+    comp.fX1LegSpectrum = 0.1
+    comp.fLinUpperSpace = 0.3
+    comp.fLogUpperSpace = 30
+    comp.fLegTextSize = 17
+    colors = comp.fColors
+    openMarkers = [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenDiamond, ROOT.kOpenCross]
+    fullMarkers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullDiamond, ROOT.kFullCross]
+    for i, (mc, data) in enumerate(zip(MChistos, datahistos)):
+        mc.GetYaxis().SetTitle("#frac{d^{3}#sigma}{d#it{z}_{||,D} d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
+        comp.fColors = [colors[i], colors[i + 2]]
+        comp.fMarkers = [openMarkers[i], fullMarkers[i]]
+        r = comp.CompareSpectra(mc, [data])
+        comp.fOptSpectrumBaseline = "same"
+        for obj in r:
+            if not obj in globalList: globalList.append(obj)
+
+    comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasRatio.GetName()))
+    comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasSpectra.GetName()))
+
 
 def GetPYTHIASpectrum(pythiaFile, jet_type, jet_radius, spectrumName):
     hpath = "D0_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}/D0_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}_Truth".format(jet_type=jet_type, jet_radius=jet_radius, spectrum=spectrumName)
@@ -476,10 +581,12 @@ if __name__ == '__main__':
                         default="R040")
     parser.add_argument('--data', metavar='LHC10_Train823_LHC15i2_Train961_efficiency',
                         default=None)
+    parser.add_argument('--data-raw', metavar='LHC10analysis_Train847_efficiency.yaml',
+                        default=None)
     parser.add_argument('--pythia', metavar='LHC15i2analysis_Train961',
                         default=None)
     args = parser.parse_args()
 
-    main(args.charm, args.beauty, args.jet_type, args.jet_radius, args.data, args.pythia)
+    main(args.charm, args.beauty, args.jet_type, args.jet_radius, args.data, args.pythia, args.data_raw)
 
     IPython.embed()

@@ -199,6 +199,122 @@ analysis:
       type: truth
       active_mesons: [D0_MCTruth]
   -
+    name: JetZBins_JetPt_5_30_DPt_30
+    title: "5 < #it{p}_{T,jet} < 30 GeV/#it{c}"
+    active_mesons: [D0_MCTruth]
+    need_inv_mass: []
+    efficiency: no
+    bins:
+      d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3
+    spectra:
+    -
+      name: JetZSpectrum_JetPt_5_30_DPt_30
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+  -
+    name: JetZBins_JetPt_5_7_DPt_30
+    title: "5 < #it{p}_{T,jet} < 7 GeV/#it{c}"
+    active_mesons: [D0_MCTruth]
+    need_inv_mass: []
+    efficiency: no
+    bins:
+      d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 7
+    -
+      object: d
+      variable: fPt
+      min: 3
+    spectra:
+    -
+      name: JetZSpectrum_JetPt_5_7_DPt_30
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+  -
+    name: JetZBins_JetPt_7_12_DPt_30
+    title: "7 < #it{p}_{T,jet} < 12 GeV/#it{c}"
+    active_mesons: [D0_MCTruth]
+    need_inv_mass: []
+    efficiency: no
+    bins:
+      d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 7
+      max: 12
+    -
+      object: d
+      variable: fPt
+      min: 3
+    spectra:
+    -
+      name: JetZSpectrum_JetPt_7_12_DPt_30
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+  -
+    name: JetZBins_JetPt_12_30_DPt_30
+    title: "12 < #it{p}_{T,jet} < 30 GeV/#it{c}"
+    active_mesons: [D0_MCTruth]
+    need_inv_mass: []
+    efficiency: no
+    bins:
+      d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 12
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3
+    spectra:
+    -
+      name: JetZSpectrum_JetPt_12_30_DPt_30
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+  -
     name: JetPtBins_DPt_0
     title: "#it{p}_{T,D} > 0 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
