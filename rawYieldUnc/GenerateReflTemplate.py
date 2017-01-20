@@ -27,9 +27,15 @@ def main(config):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_JetPtBins_DPt_30/InvMass_D0_kSignalOnly_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hSig: exit(1)
         hSig.SetName("histSgn_{0}".format(ibin))
+        # sigInt = hSig.Integral(hSig.GetXaxis().FindBin(1.715), hSig.GetXaxis().FindBin(2.015))
+
         hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_JetPtBins_DPt_30/InvMass_D0_WrongPID_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hRefl: exit(1)
         hRefl.SetName("histRfl_{0}".format(ibin))
+        # refInt = hSig.Integral(hRefl.GetXaxis().FindBin(1.715), hRefl.GetXaxis().FindBin(2.015))
+
+        hSig.Scale(1. / hRefl.Integral())
+        hRefl.Scale(1. / hRefl.Integral())
         fileOutJetPt.cd()
         hSig.Write()
         hRefl.Write()
@@ -41,9 +47,11 @@ def main(config):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hSig: exit(1)
         hSig.SetName("histSgn_{0}".format(ibin))
+        hSig.Scale(1. / hSig.Integral())
         hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_WrongPID_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hRefl: exit(1)
         hRefl.SetName("histRfl_{0}".format(ibin))
+        hRefl.Scale(1. / hRefl.Integral())
         fileOutDPt.cd()
         hSig.Write()
         hRefl.Write()
@@ -64,8 +72,17 @@ def main(config):
 
     ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
 
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "DoubleGaus");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "DoubleGaus");
+
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "gaus");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "gaus");
+
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol3");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol3");
+
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol6");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol6");
 
 if __name__ == '__main__':
 
