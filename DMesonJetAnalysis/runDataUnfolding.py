@@ -10,7 +10,7 @@ import ROOT
 
 globalList = []
 
-def main(config, mt, refl, fd_syst, ry_syst, format):
+def main(config, mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format):
     # subprocess.call("make")
     # ROOT.gSystem.Load("MassFitter.so")
 
@@ -18,7 +18,7 @@ def main(config, mt, refl, fd_syst, ry_syst, format):
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
 
-    ana = DMesonJetUnfolding.DMesonJetUnfolding(config["name"], config["input_path"], config["data_train"], config["data"], config["response_train"], config["response"], mt, refl)
+    ana = DMesonJetUnfolding.DMesonJetUnfolding(config["name"], config["input_path"], config["data_train"], config["data"], config["response_train"], config["response"], mt, not no_refl, refl_fit, refl_ros)
 
     for anaConfig in config["analysis"]:
         if anaConfig["active"]:
@@ -41,9 +41,15 @@ if __name__ == '__main__':
     parser.add_argument("--mt", action='store_const',
                         default=False, const=True,
                         help='Use results from Multi-Trial analysis.')
-    parser.add_argument("--refl", action='store_const',
+    parser.add_argument('--refl-fit',
+                        default="DoubleGaus",
+                        help='Use results from Multi-Trial analysis with reflections with fit.')
+    parser.add_argument('--refl-ros',
+                        default=0, type=int,
+                        help='Use results from Multi-Trial analysis with reflections with R/S.')
+    parser.add_argument('--no-refl', action='store_const',
                         default=False, const=True,
-                        help='Use results from Multi-Trial analysis with reflections.')
+                        help='Use results from Multi-Trial analysis without reflections.')
     parser.add_argument("--fd-syst", action='store_const',
                         default=False, const=True,
                         help='Do feed-down systematics.')
@@ -56,6 +62,6 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    main(config, args.mt, args.refl, args.fd_syst, args.ry_syst, args.format)
+    main(config, args.mt, args.no_refl, args.refl_fit, args.refl_ros, args.fd_syst, args.ry_syst, args.format)
 
     IPython.embed()

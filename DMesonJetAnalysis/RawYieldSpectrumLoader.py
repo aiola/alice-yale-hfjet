@@ -14,6 +14,8 @@ class RawYieldSpectrumLoader:
         self.fTrain = train
         self.fAnalysisName = ana_name
         self.fUseReflections = refl
+        self.fReflFitFunc = "DoubleGaus"
+        self.fFixedReflOverSignal = 0
         self.fEvents = events
         self.fDMeson = None
         self.fJetType = None
@@ -107,7 +109,8 @@ class RawYieldSpectrumLoader:
             print("No spectrum name provided!")
             exit(1)
         if self.fUseReflections:
-            self.fMultiTrialSubDir = "RawYieldUnc_refl"
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
+            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
         h = ROOT.TH1D("TrialExpoFreeSigmaInvMassFit", "Trial Expo Free Sigma Inv. Mass Fit", len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
@@ -136,7 +139,8 @@ class RawYieldSpectrumLoader:
             print("No spectrum name provided!")
             exit(1)
         if self.fUseReflections:
-            self.fMultiTrialSubDir = "RawYieldUnc_refl"
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
+            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
         fname = "{0}/{1}/{2}/{3}/TrialExpoFreeS_Dzero_SideBand.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir)
@@ -170,7 +174,12 @@ class RawYieldSpectrumLoader:
         if not self.fSpectrumName:
             print("No spectrum name provided!")
             exit(1)
-        fname = "{0}/{1}/{2}/RawYieldUnc/FinalRawYieldCentralPlusSystUncertainty_Dzero_{3}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, method)
+        if self.fUseReflections:
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
+            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
+        else:
+            self.fMultiTrialSubDir = "RawYieldUnc"
+        fname = "{0}/{1}/{2}/{3}/FinalRawYieldCentralPlusSystUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, method)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
@@ -226,8 +235,12 @@ class RawYieldSpectrumLoader:
             print("No raw yield systematic to apply!")
             return
         print("Applying raw yield systematic with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
-
-        fname = "{0}/{1}/{2}/RawYieldUnc/FinalRawYieldUncertainty_Dzero_{3}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, method)
+        if self.fUseReflections:
+            self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflFitFunc)
+            if not self.fFixedReflOverSignal == 0: self.fMultiTrialSubDir += "_{0}".format(self.fFixedReflOverSignal)
+        else:
+            self.fMultiTrialSubDir = "RawYieldUnc"
+        fname = "{0}/{1}/{2}/{3}/FinalRawYieldUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, method)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))

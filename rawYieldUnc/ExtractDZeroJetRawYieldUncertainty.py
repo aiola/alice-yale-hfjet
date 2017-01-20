@@ -28,7 +28,8 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
     interface.SetPtBinEdgesForMassPlot(float(ptmin), float(ptmax))
-    interface.SetFitReflections(refl)
+    if refl: interface.SetFitReflections(True)
+    else: interface.SetFitReflections(False)
 
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
 
@@ -247,17 +248,19 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
         elif method == ROOT.AliDJetRawYieldUncertainty.kSideband:
             varname = "DPt"
             iBin = ptDbins.index(ptmin)
-        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with refl template histo
-        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(varname)))  # file with MC signal histo
-        interface.SetReflHistoname("histRflFittedgaus_ptBin{0}".format(iBin))  # name of template histo
+        interface.SetReflFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(var=varname, fit=refl)))  # file with refl template histo
+        interface.SetMCSigFilename("reflTemp/{0}.root".format(config["reflection_templates"].format(var=varname, fit=refl)))  # file with MC signal histo
+        interface.SetReflHistoname("histRflFitted{fit}_ptBin{bin}".format(fit=refl, bin=iBin))  # name of template histo
         interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
         interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
     return interface
 
-def main(config, skip_binbybin, skip_combine, single_trial, refl, debug):
+def main(config, skip_binbybin, skip_combine, single_trial, refl, no_refl, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
+
+    if no_refl: refl = None
 
     ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
     ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
@@ -282,9 +285,9 @@ def main(config, skip_binbybin, skip_combine, single_trial, refl, debug):
     rawYieldUncSideBand = []
 
     if not skip_binbybin:
-        for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
-            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl, single_trial)
-            rawYieldUncInvMassFit.append(interface)
+       for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
+           interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl, single_trial)
+           rawYieldUncInvMassFit.append(interface)
     if not skip_combine: rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
 
     if not skip_binbybin:
@@ -296,7 +299,7 @@ def main(config, skip_binbybin, skip_combine, single_trial, refl, debug):
     # only move files if the full chain was done
     if not (skip_binbybin or skip_combine or single_trial):
         outputPath = "{0}/{1}/{2}/RawYieldUnc".format(config["input_path"], config["train"], config["name"])
-        if refl: outputPath += "_refl"
+        if refl: outputPath += "_refl_{0}".format(refl)
         MoveFiles(outputPath)
 
 def MoveFiles(outputPath, filetype="root"):
@@ -320,7 +323,9 @@ if __name__ == '__main__':
                         default=False, const=True)
     parser.add_argument('--single-trial', action='store_const',
                         default=False, const=True)
-    parser.add_argument('--refl', action='store_const',
+    parser.add_argument('--refl',
+                        default="DoubleGaus")
+    parser.add_argument('--no-refl', action='store_const',
                         default=False, const=True)
     args = parser.parse_args()
 
@@ -328,6 +333,6 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    main(config, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.debug)
+    main(config, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.no_refl, args.debug)
 
     IPython.embed()

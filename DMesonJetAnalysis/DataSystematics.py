@@ -64,14 +64,20 @@ def LoadHistograms(config):
     for s in config["sources"]:
         if not s["active"]: continue
         histograms[s["name"]] = dict()
+        if "input_name" in s:
+            input_name_up = s["input_name"]
+            input_name_down = s["input_name"]
+        else:
+            input_name_up = s["input_name_up"]
+            input_name_down = s["input_name_down"]
         if "histogram_name_down" in s:
-            h = DMesonJetUtils.GetObject(files[s["input_name"]], s["histogram_name_down"])
-            h.Scale(crossSection / (events[s["input_name"]] * branchingRatio * antiPartNorm), "width")
+            h = DMesonJetUtils.GetObject(files[input_name_down], s["histogram_name_down"])
+            h.Scale(crossSection / (events[input_name_down] * branchingRatio * antiPartNorm), "width")
             if not h: exit(1)
             histograms[s["name"]]["down"] = h
         if "histogram_name_up" in s:
-            h = DMesonJetUtils.GetObject(files[s["input_name"]], s["histogram_name_up"])
-            h.Scale(crossSection / (events[s["input_name"]] * branchingRatio * antiPartNorm), "width")
+            h = DMesonJetUtils.GetObject(files[input_name_up], s["histogram_name_up"])
+            h.Scale(crossSection / (events[input_name_up] * branchingRatio * antiPartNorm), "width")
             if not h: exit(1)
             histograms[s["name"]]["up"] = h
 
@@ -99,15 +105,23 @@ def OpenFiles(config):
 
     for s in config["sources"]:
         if not s["active"]: continue
-        if not s["input_name"] in files:
-            fname = "{0}/{1}/{1}.root".format(config["input_path"], s["input_name"])
-            f = ROOT.TFile(fname)
-            if not f or f.IsZombie():
-                print("Could not open file '{0}'".format(fname))
-                exit(1)
-            files[s["input_name"]] = f
-
+        input_names = LoadInputNames(s)
+        for input_name in input_names:
+            if not input_name in files:
+                fname = "{0}/{1}/{1}.root".format(config["input_path"], input_name)
+                f = ROOT.TFile(fname)
+                if not f or f.IsZombie():
+                    print("Could not open file '{0}'".format(fname))
+                    exit(1)
+                files[input_name] = f
     return files
+
+def LoadInputName(s):
+    input_names = []
+    if "input_name" in s: input_name.append(s["input_name"])
+    if "input_name_up" in s: input_name.append(s["input_name_up"])
+    if "input_name_down" in s: input_name.append(s["input_name_down"])
+    return input_names
 
 def CompareVariations(config, histograms):
     result = dict()

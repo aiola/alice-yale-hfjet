@@ -83,31 +83,37 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fOptSpectrumBaseline = "same hist"
     default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
-    comp = DMesonJetCompare.DMesonJetCompare("ReflectionComparison")
+    comp = DMesonJetCompare.DMesonJetCompare("ReflectionVariationComparison")
     comp.fX1LegRatio = 0.15
     comp.fX1LegSpectrum = 0.20
     comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
     comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
-    comp.fLinUpperSpace = 0.15  # this factor will be used to adjust the y axis in linear scale
-    comp.fLinLowerSpace = -0.4  # this factor will be used to adjust the y axis in linear scale
+    comp.fLinUpperSpace = 0.8  # this factor will be used to adjust the y axis in linear scale
+    comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
     comp.fGridyRatio = True
     comp.fNoErrorInBaseline = True
-    comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
-    comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
-    comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
-    comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
-    comp.fOptSpectrumBaseline = "same"
+    # comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
+    # comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
+    # reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    # comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
+    # comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
+    # comp.fOptSpectrumBaseline = "same"
     reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
-    outputPath = "{0}/{1}/{2}/RawYieldUnc/pdf".format(config["input_path"], config["train"], config["name"])
-    if not os.listdir(outputPath): os.makedirs(outputPath)
+    outputPath = "{0}/{1}/{2}/RawYieldUnc_pdf".format(config["input_path"], config["train"], config["name"])
+    # if not os.listdir(outputPath): os.makedirs(outputPath)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
             obj.SaveAs(fname)
 
 def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+    wrap.fDMeson = meson_name
+    wrap.fJetType = jet_type
+    wrap.fJetRadius = jet_radius
+    wrap.fSpectrumName = spectrum
+    wrap.fKinematicCuts = kincuts
+
     default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
@@ -123,6 +129,12 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
             globalList.append(obj)
 
 def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+    wrap.fDMeson = meson_name
+    wrap.fJetType = jet_type
+    wrap.fJetRadius = jet_radius
+    wrap.fSpectrumName = spectrum
+    wrap.fKinematicCuts = kincuts
+
     default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
@@ -138,9 +150,17 @@ def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_ra
             globalList.append(obj)
 
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+    wrap.fDMeson = meson_name
+    wrap.fJetType = jet_type
+    wrap.fJetRadius = jet_radius
+    wrap.fSpectrumName = spectrum
+    wrap.fKinematicCuts = kincuts
+
+    wrap.fUseReflections = True
+    wrap.fReflFitFunc = "DoubleGaus"
+    wrap.fFixedReflOverSignal = 0
     default_spectrum = wrap.GetDefaultSpectrumFromMultiTrial(method)
     default_spectrum.SetTitle("Trial Expo Free Sigma, {0}".format(method))
-    wrap.fUseReflections = False
     average_spectrum = wrap.GetAverageSpectrumFromMultiTrial(method)
     average_spectrum.SetTitle("Avg Raw Yield Extr Trials, {0}".format(method))
     average_spectrum.GetXaxis().SetTitle(xaxisTitle)
@@ -154,18 +174,72 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
             globalList.append(obj)
 
 def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+    wrap.fDMeson = meson_name
+    wrap.fJetType = jet_type
+    wrap.fJetRadius = jet_radius
+    wrap.fSpectrumName = spectrum
+    wrap.fKinematicCuts = kincuts
+
+    histos = []
     wrap.fUseReflections = True
-    default_spectrum_wrefl = wrap.GetDefaultSpectrumFromMultiTrial(method)
-    default_spectrum_wrefl.SetTitle("Trial Expo Free Sigma w/ refl, {0}".format(method))
+    wrap.fReflFitFunc = "DoubleGaus"
+    wrap.fFixedReflOverSignal = 0
+    default_spectrum_wrefl_DoubleGaus = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_wrefl_DoubleGaus.SetTitle("Trial Expo Free Sigma w/ refl double gaus, {0}".format(method))
+    globalList.append(default_spectrum_wrefl_DoubleGaus)
+    # histos.append(default_spectrum_wrefl_DoubleGaus)
+
+    wrap.fUseReflections = True
+    wrap.fReflFitFunc = "DoubleGaus"
+    wrap.fFixedReflOverSignal = 5
+    default_spectrum_wrefl_DoubleGaus_5 = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_wrefl_DoubleGaus_5.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 0.5 R/S, {0}".format(method))
+    globalList.append(default_spectrum_wrefl_DoubleGaus_5)
+    histos.append(default_spectrum_wrefl_DoubleGaus_5)
+
+    wrap.fUseReflections = True
+    wrap.fReflFitFunc = "DoubleGaus"
+    wrap.fFixedReflOverSignal = 15
+    default_spectrum_wrefl_DoubleGaus_15 = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_wrefl_DoubleGaus_15.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 1.5 R/S, {0}".format(method))
+    globalList.append(default_spectrum_wrefl_DoubleGaus_15)
+    histos.append(default_spectrum_wrefl_DoubleGaus_15)
+
+    wrap.fUseReflections = True
+    wrap.fReflFitFunc = "gaus"
+    wrap.fFixedReflOverSignal = 0
+    default_spectrum_wrefl_gaus = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_wrefl_gaus.SetTitle("Trial Expo Free Sigma w/ refl gaus, {0}".format(method))
+    globalList.append(default_spectrum_wrefl_gaus)
+    histos.append(default_spectrum_wrefl_gaus)
+
+    wrap.fUseReflections = True
+    wrap.fReflFitFunc = "pol3"
+    wrap.fFixedReflOverSignal = 0
+    default_spectrum_wrefl_pol3 = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_wrefl_pol3.SetTitle("Trial Expo Free Sigma w/ refl pol3, {0}".format(method))
+    globalList.append(default_spectrum_wrefl_pol3)
+    histos.append(default_spectrum_wrefl_pol3)
+
+    wrap.fUseReflections = True
+    wrap.fReflFitFunc = "pol6"
+    wrap.fFixedReflOverSignal = 0
+    default_spectrum_wrefl_pol6 = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_wrefl_pol6.SetTitle("Trial Expo Free Sigma w/ refl pol6, {0}".format(method))
+    globalList.append(default_spectrum_wrefl_pol6)
+    histos.append(default_spectrum_wrefl_pol6)
+
     wrap.fUseReflections = False
     default_spectrum_worefl = wrap.GetAverageSpectrumFromMultiTrial(method)
     default_spectrum_worefl.SetTitle("Trial Expo Free Sigma w/o refl, {0}".format(method))
     default_spectrum_worefl.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_worefl.GetYaxis().SetTitle(yaxisTitle)
-    globalList.append(default_spectrum_wrefl)
     globalList.append(default_spectrum_worefl)
+    histos.append(default_spectrum_worefl)
+
     comp.fRatioRelativeUncertaintyTitle = "Rel. Stat. Unc., {0}".format(method)
-    r = comp.CompareSpectra(default_spectrum_wrefl, [default_spectrum_worefl])
+    comp.fOptRatio = "hist"
+    r = comp.CompareSpectra(default_spectrum_wrefl_DoubleGaus, histos)
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
