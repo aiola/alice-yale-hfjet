@@ -237,6 +237,8 @@ class DMesonJetUnfoldingEngine:
     def GetInputSpectrumFromMT(self):
         print("Getting input spectrum from the multi-trial analysis, with method {0}".format(self.fRawYieldMethod))
         wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName, self.fUseReflections, self.fNumberOfEvents)
+        wrap.fReflFitFunc = self.fReflectionFit
+        wrap.fFixedReflOverSignal = self.fReflectionRoS
         inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(self.fRawYieldMethod, True, self.fFDErrorBand, self.fRYErrorBand)
         return inputSpectrum
 
@@ -1119,10 +1121,12 @@ class DMesonJetUnfoldingEngine:
         return resp
 
 class DMesonJetUnfolding:
-    def __init__(self, name, input_path, dataTrain, data, responseTrain, response, mt, refl):
+    def __init__(self, name, input_path, dataTrain, data, responseTrain, response, mt, refl, refl_fit, refl_ros):
         self.fName = name
         if mt: self.fName += "_mt"
-        if refl: self.fName += "_refl"
+        if refl:
+            self.fName += "_refl_{0}".format(refl_fit)
+            if not refl_ros == 0: self.fName += "_{0}".format(refl_ros)
         self.fInputPath = input_path
         self.fDataTrain = dataTrain
         self.fAnalysisName = data
@@ -1130,6 +1134,8 @@ class DMesonJetUnfolding:
         self.fResponseAnalysisName = response
         self.fUseMultiTrial = mt
         self.fUseReflections = refl
+        self.fReflectionFit = refl_fit
+        self.fReflectionRoS = refl_ros
         self.fUnfoldingEngine = []
         self.OpenFiles()
 
@@ -1145,6 +1151,8 @@ class DMesonJetUnfolding:
         else:
             eng.GetInputSpectrum = eng.GetInputSpectrumFromMyOwnAnalysis
         eng.fUseReflections = self.fUseReflections
+        eng.fReflectionFit = self.fReflectionFit
+        eng.fReflectionRoS = self.fReflectionRoS
         r = eng.LoadData(self.fDataFile, self.fResponseFile, eff, use_overflow)
         if r: eng.Start(plot)
 
