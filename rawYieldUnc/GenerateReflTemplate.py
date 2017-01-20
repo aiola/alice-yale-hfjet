@@ -47,10 +47,12 @@ def main(config):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hSig: exit(1)
         hSig.SetName("histSgn_{0}".format(ibin))
-        hSig.Scale(1. / hSig.Integral())
+
         hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_WrongPID_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
         if not hRefl: exit(1)
         hRefl.SetName("histRfl_{0}".format(ibin))
+
+        hSig.Scale(1. / hRefl.Integral())
         hRefl.Scale(1. / hRefl.Integral())
         fileOutDPt.cd()
         hSig.Write()
