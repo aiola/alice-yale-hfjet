@@ -88,6 +88,8 @@ class Spectrum:
 
         if (self.fAnalysisType == AnalysisType.SideBand or self.fAnalysisType == AnalysisType.LikeSign or self.fAnalysisType == AnalysisType.LikeSignFit):
             self.fAxis.append(binSet.fBinCountAnalysisAxis)
+            if binSet.fBinCountAnalysisSecondAxis:
+                self.fAxis.append(binSet.fBinCountAnalysisSecondAxis)
         else:
             for axis in binSet.fAxis:
                 self.fAxis.append(axis)
@@ -219,7 +221,15 @@ class Spectrum:
         elif len(self.fAxis) == 2:
             self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "counts")
             self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "relative statistical uncertainty")
-            if self.fAnalysisType == AnalysisType.InvMassFit:
+            if self.fAnalysisType == AnalysisType.SideBand:
+                self.fSideBandHistograms = []
+                self.fSignalHistograms = []
+                self.fMass = None
+                self.fMassWidth = None
+                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(self.fBinCountSignalSigmas)))
+                self.fSideBandWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SideBandWindowTotal".format(self.fName), "counts")
+                self.fSignalWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SignalWindowTotal".format(self.fName), "counts")
+            elif self.fAnalysisType == AnalysisType.InvMassFit:
                 self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "mass")
                 self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
         else:

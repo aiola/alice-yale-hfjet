@@ -269,8 +269,8 @@ class DMesonJetDataProjector:
 
                 bins = binMultiSet.FindBin(dmeson, jet, DMesonDef)
                 for bin, weight in bins:
-                    if bin.fCounts == 0: bin.CreateInvMassHisto(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
-                    bin.FillInvariantMass(dmeson, jet, weight * self.fWeight)
+                    if bin.fCounts == 0: bin.CreateHistograms(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
+                    bin.Fill(dmeson, jet, weight * self.fWeight)
 
                 spectra = binMultiSet.FindSpectra(dmeson, jet)
                 for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
