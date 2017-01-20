@@ -26,6 +26,26 @@ class RawYieldSpectrumLoader:
         self.fDataJetList = None
         self.fDataMesonList = None
 
+    def LoadNumberOfEvents(self, method):
+        if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis(method)
+        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, method] if s])
+        inputSpectrum = self.fDataSpectrumList.FindObject(inputSpectrumName)
+        if not inputSpectrum:
+            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
+            self.fDataSpectrumList.Print()
+            exit(1)
+        normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
+        normInputSpectrum = self.fDataSpectrumList.FindObject(normInputSpectrumName)
+        if not normInputSpectrum:
+            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, self.fDataSpectrumList.GetName()))
+            self.fDataSpectrumList.Print()
+            exit(1)
+        temp = inputSpectrum.Clone("temp")
+        temp.Scale(1, "width")
+        temp.Divide(normInputSpectrum)
+        self.fEvents = temp.GetBinContent(1)
+        return self.fEvents
+
     def LoadDataFileFromDMesonJetAnalysis(self):
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName))
         return self.fDataFile
@@ -76,6 +96,7 @@ class RawYieldSpectrumLoader:
         h = self.fDataSpectrumList.FindObject(inputSpectrumName)
         if not h:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
+            self.fDataSpectrumList.Print()
             exit(1)
         if fd: self.ApplyFDCorrection(h, fd_error_band)
         if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, method, ry_error_band)

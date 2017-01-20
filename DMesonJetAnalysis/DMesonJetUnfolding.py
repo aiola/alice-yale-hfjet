@@ -178,13 +178,13 @@ class DMesonJetUnfoldingEngine:
         inputSpectrumName = "_".join([self.fDMeson, self.fJetType, self.fJetRadius, self.fFullSpectrumName])
         inputSpectrum = self.fDataList.FindObject(inputSpectrumName)
         if not inputSpectrum:
-            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, dataList.GetName()))
+            print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataList.GetName()))
             self.fDataList.Print()
             exit(1)
         normInputSpectrumName = "{0}_Normalized".format(inputSpectrumName)
         normInputSpectrum = self.fDataList.FindObject(normInputSpectrumName)
         if not normInputSpectrum:
-            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, dataList.GetName()))
+            print("Could not find histogram {0} in list {1}". format(normInputSpectrumName, self.fDataList.GetName()))
             self.fDataList.Print()
             exit(1)
         temp = inputSpectrum.Clone("temp")
