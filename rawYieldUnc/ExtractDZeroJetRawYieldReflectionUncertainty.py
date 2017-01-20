@@ -90,7 +90,18 @@ def ExtractDJetRawYieldReflUncertainty(config, specie, method, debug=2):
 
     reflFitFuncs = ["gaus", "pol3", "pol6"]
     for reflFitFunc in reflFitFuncs:
-        outputPath = "{0}/{1}/{2}/RawYieldUnc_refl/ReflUnc_Fit{3}".format(config["input_path"], config["train"], config["name"], reflFitFunc)
+        outputPath = "{0}/{1}/{2}/RawYieldUnc_refl_{3}".format(config["input_path"], config["train"], config["name"], reflFitFunc)
+        CopyFilesBack(outputPath)
+        evalunc = interface.EvaluateUncertainty()
+        if not evalunc:
+            print("Error in evaluating the yield uncertainty! Exiting...")
+            exit(1)
+        ExtractDZeroJetRawYieldUncertainty.MoveFiles(outputPath)
+
+    reflFitFunc = "DoubleGaus"
+    rovers_factors = [0.5, 1.5]
+    for rovers_factor in rovers_factors:
+        outputPath = "{0}/{1}/{2}/RawYieldUnc_refl_{3}_{4:.0f}".format(config["input_path"], config["train"], config["name"], reflFitFunc, rovers_factor * 10)
         CopyFilesBack(outputPath)
         evalunc = interface.EvaluateUncertainty()
         if not evalunc:
