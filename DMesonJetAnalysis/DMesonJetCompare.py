@@ -11,6 +11,7 @@ class DMesonJetCompare:
         self.fBaselineHistogram = None
         self.fHistograms = None
         self.fRatios = []
+        self.fFitResults = []
         self.fOptSpectrumBaseline = ""
         self.fOptSpectrum = ""
         self.fOptRatio = ""
@@ -51,6 +52,7 @@ class DMesonJetCompare:
         self.fNoErrorInBaseline = False
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
         self.fGridyRatio = False
+        self.fFitFunction = "[0]*e^([1]*x) + [2]*e^([3]*x)"
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -219,9 +221,42 @@ class DMesonJetCompare:
             h.SetMarkerSize(1.2)
             self.fLegendSpectra.AddEntry(h, h.GetTitle(), "pe")
 
+    def FitAndMakeConsistent(self, h, templateH):
+        fit_func = ROOT.TF1("{0}_fit".format(h.GetName()), self.fFitFunction, h.GetXaxis().GetXmin(), h.GetXaxis().GetXmax())
+        fit_func.SetParameter(0, 1)
+        fit_func.SetParameter(1, -0.5)
+        fit_func.SetParameter(2, 0)
+        fit_func.SetParameter(3, 0)
+        fit_func.SetParameter(0, 1. / fit_func.Eval(h.GetXaxis().GetBinCenter(1)))
+        fit_func.SetParameter(2, 1)
+        fit_func.SetParameter(3, -0.2)
+        fit_func.SetParameter(2, 1. / fit_func.Eval(h.GetXaxis().GetBinCenter(int(h.GetNbinsX() / 2))))
+        fitR = h.Fit(fit_func, "NS")
+        fitOk = int(fitR)
+        if not fitOk == 0: return None
+        h_fit = DMesonJetUtils.soft_clone(templateH, "{0}_fith".format(h.GetName()))
+        for ibin in range(1, h_fit.GetNbinsX() + 1):
+            valErr = fit_func.IntegralError(h_fit.GetXaxis().GetBinLowEdge(ibin), h_fit.GetXaxis().GetBinUpEdge(ibin)) / (h_fit.GetXaxis().GetBinUpEdge(ibin) - h_fit.GetXaxis().GetBinLowEdge(ibin))
+            val = fit_func.Integral(h_fit.GetXaxis().GetBinLowEdge(ibin), h_fit.GetXaxis().GetBinUpEdge(ibin)) / (h_fit.GetXaxis().GetBinUpEdge(ibin) - h_fit.GetXaxis().GetBinLowEdge(ibin))
+            print("integral = {0:.5f}, central = {1:.5f}".format(val, fit_func.Eval((h_fit.GetXaxis().GetBinCenter(ibin)))))
+            h_fit.SetBinContent(ibin, val)
+            h_fit.SetBinError(ibin, valErr)
+        self.fFitResults.append(fit_func)
+        self.fFitResults.append(h_fit)
+        fit_func.SetLineColor(h.GetLineColor())
+        self.fCanvasSpectra.cd()
+        fit_func.Draw("same")
+        return h_fit
+
     def PlotRatio(self, color, marker, line, h):
-        self.fCanvasRatio.cd()
-        hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
+        if self.CheckConsistency(h, self.fBaselineForRatio):
+            hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
+        else:
+            print("Trying to fit histogram {0} with function {1}".format(h.GetName(), self.fFitFunction))
+            hRatio = self.FitAndMakeConsistent(h, self.fBaselineForRatio)
+            if not hRatio:
+                print("Fin unsuccessfull!")
+                return
         hRatio.GetYaxis().SetTitle(self.fYaxisRatio)
         if not self.fBaselineRatio:
             self.fBaselineRatio = hRatio
@@ -239,6 +274,7 @@ class DMesonJetCompare:
         self.fRatios.append(hRatio)
         hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
         hRatio.Divide(self.fBaselineForRatio)
+        self.fCanvasRatio.cd()
         hRatio.Draw(self.fOptRatio)
         if not self.fMainRatioHistogram:
             self.fMainRatioHistogram = hRatio
@@ -292,6 +328,7 @@ class DMesonJetCompare:
 
     def GenerateResults(self):
         self.fResults.extend(self.fRatios)
+        self.fResults.extend(self.fFitResults)
         if self.fCanvasSpectra: self.fResults.append(self.fCanvasSpectra)
         if self.fCanvasRatio: self.fResults.append(self.fCanvasRatio)
         if self.fLegendSpectra: self.fResults.append(self.fLegendSpectra)
@@ -324,3 +361,9 @@ class DMesonJetCompare:
             self.fMainHistogram.SetMaximum(max)
             self.fCanvasSpectra.cd()
             self.fLegendSpectra.Draw()
+
+    def CheckConsistency(self, h1, h2):
+        if h1.GetNbinsX() != h2.GetNbinsX(): return False
+        for ibin in range(0, h2.GetNbinsX() + 2):
+            if h1.GetXaxis().GetBinLowEdge(ibin) != h2.GetXaxis().GetBinLowEdge(ibin): return False
+        return True

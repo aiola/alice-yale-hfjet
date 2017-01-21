@@ -7,6 +7,7 @@ import ROOT
 import DMesonJetUtils
 import RawYieldSpectrumLoader
 import subprocess
+import DMesonJetCompare
 
 globalList = []
 
@@ -54,38 +55,98 @@ def GetDPtSpectrum(kincuts=None, jet_radius=None, jet_type=None):
     loader.fJetType = jet_type
     loader.fJetRadius = jet_radius
     loader.fKinematicCuts = kincuts
-    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis("InvMassFit")
+    loader.fRawYieldMethod = "InvMassFit"
+    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis()
     h.Scale(crossSection / (events * branchingRatio * antiPartNorm), "width")
     return h
+
+def GetTheoryJetPtCrossSection():
+    fname = "{0}/PromptDJetsPrediction.root".format(input_path)
+    file = ROOT.TFile(fname)
+    if not file or file.IsZombie():
+        print("Could not open file {0}".format(fname))
+        exit(1)
+    hStat = DMesonJetUtils.GetObject(file, "default/JetPtSpectrum_DPt_30/GeneratorLevel_JetPtSpectrum")
+    if not hStat:
+        print("Cannot get theory cross section with statistical uncertainty!")
+        exit(1)
+    hSystUp = DMesonJetUtils.GetObject(file, "SystematicUncertainty/JetPtSpectrum_DPt_30//GeneratorLevel_JetPtSpectrum/GeneratorLevel_JetPtSpectrum_UpperSyst")
+    if not hSystUp:
+        print("Cannot get theory cross section upper systematic uncertainty!")
+        exit(1)
+    hSystLow = DMesonJetUtils.GetObject(file, "SystematicUncertainty/JetPtSpectrum_DPt_30//GeneratorLevel_JetPtSpectrum/GeneratorLevel_JetPtSpectrum_LowerSyst")
+    if not hSystUp:
+        print("Cannot get theory cross section lower systematic uncertainty!")
+        exit(1)
+
+    # scale for the bin width and the antiparticle factor
+    hStat.Scale(0.5, "width")
+    hSystUp.Scale(0.5, "width")
+    hSystLow.Scale(0.5, "width")
+    return hStat, hSystUp, hSystLow
+
+def GetTheoryDPtCrossSection():
+    fname = "{0}/PromptDJetsPrediction.root".format(input_path)
+    file = ROOT.TFile(fname)
+    if not file or file.IsZombie():
+        print("Could not open file {0}".format(fname))
+        exit(1)
+    hStat = DMesonJetUtils.GetObject(file, "default/DPtSpectrum/GeneratorLevel_DPtSpectrum")
+    if not hStat:
+        print("Cannot get theory cross section with statistical uncertainty!")
+        exit(1)
+    hSystUp = DMesonJetUtils.GetObject(file, "SystematicUncertainty/DPtSpectrum//GeneratorLevel_DPtSpectrum/GeneratorLevel_DPtSpectrum_UpperSyst")
+    if not hSystUp:
+        print("Cannot get theory cross section upper systematic uncertainty!")
+        exit(1)
+    hSystLow = DMesonJetUtils.GetObject(file, "SystematicUncertainty/DPtSpectrum//GeneratorLevel_DPtSpectrum/GeneratorLevel_DPtSpectrum_LowerSyst")
+    if not hSystUp:
+        print("Cannot get theory cross section lower systematic uncertainty!")
+        exit(1)
+
+    # scale for the bin width and the antiparticle factor
+    hStat.Scale(0.5, "width")
+    hSystUp.Scale(0.5, "width")
+    hSystLow.Scale(0.5, "width")
+    return hStat, hSystUp, hSystLow
 
 def CompareJetPtvsDPt():
     jetPtSpectrumHist = GetJetPtSpectrum()
     dptSpectrumHist = GetDPtSpectrum()
+    jetPtSpectrumHist.SetTitle("Data, D^{0}-jet")
+    dptSpectrumHist.SetTitle("Data, D^{0}")
 
-    canvas = ROOT.TCanvas("Comparison_DPt_JetPt_Spectra", "Comparison_DPt_JetPt_Spectra")
-    canvas.SetLogy()
-    canvas.SetTicks(1, 1)
-    globalList.append(canvas)
-    canvas.cd()
+    jetPtSpectrumHist_theory = GetTheoryJetPtCrossSection()[0]
+    dptSpectrumHist_theory = GetTheoryDPtCrossSection()[0]
+    jetPtSpectrumHist_theory.SetTitle("POWHEG, D^{0}-jet")
+    dptSpectrumHist_theory.SetTitle("POWHEG, D^{0}")
 
-    h = dptSpectrumHist.DrawCopy("axis")
-    globalList.append(h)
-    h.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [mb (GeV/#it{c})^{-1}]")
-    h.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+    canvasSpectrum = ROOT.TCanvas("Comparison_DPt_JetPt_Spectra")
+    canvasSpectrum.SetTicks(1, 1)
+    canvasSpectrum.cd()
+    h_axis = dptSpectrumHist.DrawCopy("axis")
+    h_axis.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [mb (GeV/#it{c})^{-1}]")
+    h_axis.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
 
-    dptSpectrumHist_copy = dptSpectrumHist.DrawCopy("same")
-    globalList.append(dptSpectrumHist_copy)
-    dptSpectrumHist_copy.SetMarkerStyle(ROOT.kOpenCircle)
-    dptSpectrumHist_copy.SetMarkerSize(1.2)
-    dptSpectrumHist_copy.SetMarkerColor(ROOT.kRed + 1)
-    dptSpectrumHist_copy.SetLineColor(ROOT.kRed + 1)
+    comp = DMesonJetCompare.DMesonJetCompare("Comparison_DPt_JetPt_Spectra")
+    comp.fCanvasSpectra = canvasSpectrum
+    comp.fOptSpectrumBaseline = "same"
+    comp.fOptSpectrum = "same"
+    comp.fX1LegSpectrum = 0.58
+    comp.fY1LegSpectrum = 0.52
 
-    jetPtSpectrumHist_copy = jetPtSpectrumHist.DrawCopy("same")
-    globalList.append(jetPtSpectrumHist_copy)
-    jetPtSpectrumHist_copy.SetMarkerStyle(ROOT.kFullCircle)
-    jetPtSpectrumHist_copy.SetMarkerSize(1.0)
-    jetPtSpectrumHist_copy.SetMarkerColor(ROOT.kBlue + 1)
-    jetPtSpectrumHist_copy.SetLineColor(ROOT.kBlue + 1)
+    comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare]
+    comp.fColors = [ROOT.kRed + 2, ROOT.kBlue + 2]
+    comp.CompareSpectra(jetPtSpectrumHist, [dptSpectrumHist])
+
+    comp.fMarkers = [ROOT.kOpenCircle, ROOT.kOpenSquare]
+    comp.fColors = [ROOT.kOrange + 2, ROOT.kGreen + 2]
+    r = comp.CompareSpectra(jetPtSpectrumHist_theory, [dptSpectrumHist_theory])
+    for obj in r:
+        if not obj in globalList:
+            globalList.append(obj)
+
+    canvasSpectrum.cd()
 
     pave = ROOT.TPaveText(0.19, 0.80, 0.60, 0.90, "NB NDC")
     globalList.append(pave)
@@ -98,19 +159,17 @@ def CompareJetPtvsDPt():
     pave.AddText("Fully corrected spectra, statistical uncertainty only")
     pave.Draw()
 
-    leg = ROOT.TLegend(0.35, 0.50, 0.81, 0.75, "", "NB NDC")
-    globalList.append(leg)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0)
-    leg.SetTextFont(43)
-    leg.SetTextSize(20)
-    leg.SetTextAlign(13)
-    leg.SetMargin(0.2)
-    leg.AddEntry(jetPtSpectrumHist_copy, "Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4", "pe")
-    leg.AddEntry(ROOT.nullptr, "|#eta_{jet}| < 0.5", "")
-    leg.AddEntry(ROOT.nullptr, "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "")
-    leg.AddEntry(dptSpectrumHist_copy, "D^{0}, |#eta_{D}| < 0.5", "pe")
-    leg.Draw()
+    pave = ROOT.TPaveText(0.35, 0.55, 0.81, 0.75, "NB NDC")
+    globalList.append(pave)
+    pave.SetBorderSize(0)
+    pave.SetFillStyle(0)
+    pave.SetTextFont(43)
+    pave.SetTextSize(20)
+    pave.SetTextAlign(13)
+    pave.AddText("Charged D^{0}-jets: Anti-#it{k}_{T}, #it{R}=0.4")
+    pave.AddText("|#eta_{jet}| < 0.5 with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
+    pave.AddText("D^{0}: |#eta_{D}| < 0.5")
+    pave.Draw()
 
 def main():
     ROOT.TH1.AddDirectory(False)
