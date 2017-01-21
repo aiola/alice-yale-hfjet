@@ -245,6 +245,8 @@ class Spectrum:
                 values.append(jet.fEta)
             elif axis.fName == "jet_phi":
                 values.append(jet.fPhi)
+            elif axis.fName == "jet_n":
+                values.append(jet.fN)
             elif axis.fName == "d_z":
                 values.append(jet.fZ)
             elif axis.fName == "d_pt":
@@ -257,5 +259,7 @@ class Spectrum:
             self.fHistogram.Fill(values[0], w)
         elif len(values) == 2:
             self.fHistogram.Fill(values[0], values[1], w)
+        elif len(values) == 3:
+            self.fHistogram.Fill(values[0], values[1], values[2], w)
         else:
             print("Cannot handle histograms with more than two axis!")

@@ -184,8 +184,7 @@ class DMesonJetAnalysisEngine:
             print("Skipping spectra generation for {0}".format(self.fDMeson))
             self.GenerateSpectra()
 
-        if not "MCTruth" in self.fDMeson:
-            self.PlotInvMassPlots()
+        self.PlotInvMassPlots()
         if not "BackgroundOnly" in self.fDMeson and not "WrongPID" in self.fDMeson:
             self.PlotSpectra()
 
@@ -986,7 +985,8 @@ class DMesonJetAnalysisEngine:
     def FitInvMassPlots(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
-                self.FitInvMassPlotsBinSet(binSet.fName, binSet.fBins, binSet.fFitOptions)
+                if self.fDMeson in binSet.fNeedInvMass:
+                    self.FitInvMassPlotsBinSet(binSet.fName, binSet.fBins, binSet.fFitOptions)
 
     def FitInvMassPlotsBinSet(self, name, bins, fitOptions):
         print("Fitting {0}".format(name))
@@ -1009,7 +1009,8 @@ class DMesonJetAnalysisEngine:
     def PlotInvMassPlots(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
-                self.PlotInvMassPlotsBinSet(binSet.fName, binSet.fBins)
+                if self.fDMeson in binSet.fNeedInvMass:
+                    self.PlotInvMassPlotsBinSet(binSet.fName, binSet.fBins)
 
     def PlotInvMassLikeSign(self, bin):
         hls = bin.fInvMassHisto.DrawCopy("hist same")
