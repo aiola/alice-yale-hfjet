@@ -126,3 +126,82 @@ analysis:
         max_signal_sigmas: 2
         backup_mean: 1.86484
         backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_5_30_1D_NJetConst
+    title: ""
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency: no
+    bins:
+      d_pt: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    bin_count_analysis:
+      jet_n: [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5]
+    spectra:
+    -
+      name: JetNConst_DPt_30
+      suffix: SideBand
+      title: "#it{p}_{D} < 3 GeV/#it{c}"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      active_mesons: [D0]
+      side_band:
+        skip_bins: []
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_5_30_2D_NJetConst
+    title: ""
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency: no
+    bins:
+      d_pt: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    bin_count_analysis:
+      jet_pt: [5, 7, 12, 30]
+      jet_n: [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5]
+    spectra:
+    -
+      name: JetPtNConst_DPt_30
+      suffix: SideBand
+      title: "#it{p}_{D} < 3 GeV/#it{c}"
+      type: side_band
+      efficiency:
+        file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      active_mesons: [D0]
+      side_band:
+        skip_bins: []
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
