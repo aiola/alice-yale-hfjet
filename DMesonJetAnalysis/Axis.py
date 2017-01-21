@@ -69,6 +69,8 @@ class Axis:
                 title = "#it{{p}}_{{T,{jetLabel}}}^{{{label}}}".format(jetLabel=jetLabel, label=label)
             else:
                 title = "#it{{p}}_{{T,{jetLabel}}}".format(jetLabel=jetLabel)
+        elif self.fName == "jet_n":
+            title = "N jet constituents"
         elif self.fName == "d_pt":
             if label:
                 title = "#it{{p}}_{{T,D}}^{{{0}}}".format(label)

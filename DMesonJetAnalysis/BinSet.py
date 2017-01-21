@@ -133,6 +133,8 @@ class BinSet:
                 rlist.Add(bin.fMassFitter)
             if bin.fNJetConstHisto:
                 rlist.Add(bin.fNJetConstHisto)
+            if bin.fBinCountAnalysisHisto:
+                rlist.Add(bin.fBinCountAnalysisHisto)
         return rlist
 
     def AddBinsRecursive(self, limitSetList, limits):
@@ -184,11 +186,15 @@ class BinLimits:
                     obsValX = jet.fPt
                 elif self.fBinCountAnalysisAxis.fName == "d_z":
                     obsValX = jet.fZ
+                elif self.fBinCountAnalysisAxis.fName == "jet_n":
+                    obsValX = jet.fN
             if self.fBinCountAnalysisSecondAxis:
                 if self.fBinCountAnalysisSecondAxis.fName == "jet_pt":
                     obsValY = jet.fPt
                 elif self.fBinCountAnalysisSecondAxis.fName == "d_z":
                     obsValY = jet.fZ
+                elif self.fBinCountAnalysisSecondAxis.fName == "jet_n":
+                    obsValY = jet.fN
 
             if self.fBinCountAnalysisHisto.GetDimension() == 2:
                 self.fBinCountAnalysisHisto.Fill(dmeson.fInvMass, obsValX, w)
@@ -323,7 +329,7 @@ class BinLimits:
             if self.fBinCountAnalysisAxis:
                 hnameSB = "InvMassBinCounting_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
                 if self.fBinCountAnalysisSecondAxis:
-                    htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5};{6}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), self.fBinCountAnalysisSecondAxis.GetTitle(), yAxis)
+                    htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), self.fBinCountAnalysisSecondAxis.GetTitle())
                 else:
                     htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         else:
@@ -332,9 +338,9 @@ class BinLimits:
             if self.fBinCountAnalysisAxis:
                 hnameSB = "InvMassBinCounting_{0}_{1}".format(DMesonDef, self.GetName())
                 if self.fBinCountAnalysisSecondAxis:
-                    htitleSB = "{0} Invariant Mass: {1};{2};{3};{4};{5}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), self.fBinCountAnalysisSecondAxis.GetTitle(), yAxis)
+                    htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), self.fBinCountAnalysisSecondAxis.GetTitle())
                 else:
-                    htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
+                    htitleSB = "{0} Invariant Mass: {1};{2};{3}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
 
         if not "MCTruth" in DMesonDef:
             self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
