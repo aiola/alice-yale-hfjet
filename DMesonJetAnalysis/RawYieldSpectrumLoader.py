@@ -86,9 +86,6 @@ class RawYieldSpectrumLoader:
         if not self.fSpectrumName:
             print("No spectrum name provided!")
             exit(1)
-        if not (self.fRawYieldMethod == "SideBand" or self.fRawYieldMethod == "InvMassFit"):
-            print("Method {0} unknown!".format(self.fRawYieldMethod))
-            exit(1)
         if self.fUseReflections:
             print("****Attention Attention Attention****")
             print("You asked for reflections, but reflections are not available in DMesonJetAnalysis!")
