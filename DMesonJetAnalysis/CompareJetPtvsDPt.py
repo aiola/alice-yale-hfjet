@@ -59,7 +59,7 @@ def GetDPtSpectrum(kincuts=None, jet_radius=None, jet_type=None):
     loader.fJetRadius = jet_radius
     loader.fKinematicCuts = kincuts
     loader.fRawYieldMethod = "InvMassFit"
-    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis()
+    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis(True)
     h.Scale(crossSection / (events * branchingRatio * antiPartNorm), "width")
     return h
 
@@ -216,6 +216,7 @@ def CompareJetPtvsDPt():
     globalList.append(dptSpectrumHist_copy)
 
     comp = DMesonJetCompare.DMesonJetCompare("Comparison_DPt_Pass4_Spectra")
+    comp.fLinUpperSpace = 0.2
     hpass4_copy.SetTitle("D^{0} from pass4 analysis")
     dptSpectrumHist_copy.SetTitle("D^{0} from D^{0}-jet analysis")
     hpub = GetPublishedDmeson()
@@ -223,6 +224,8 @@ def CompareJetPtvsDPt():
     hpub.Scale(1e-3)
 
     r = comp.CompareSpectra(hpass4_copy, [dptSpectrumHist_copy])
+    # ratio = comp.fRatios[0]
+    # ratio.Fit("pol0")
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
