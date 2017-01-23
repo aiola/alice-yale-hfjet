@@ -47,7 +47,7 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=10, allowRepet=False, debug=2):
+def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=30, allowRepet=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
@@ -64,7 +64,7 @@ def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=10, allowRepe
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nTrials=10, debug=2):
+def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nTrials=30, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(ROOT.AliDJetRawYieldUncertainty.kSideband)
     interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
@@ -256,9 +256,11 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
 
     return interface
 
-def main(config, skip_binbybin, skip_combine, single_trial, refl, no_refl, debug):
+def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl, no_refl, bg, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
+
+    if bg: ROOT.gROOT.SetBatch(True)
 
     if no_refl: refl = None
 
@@ -284,23 +286,25 @@ def main(config, skip_binbybin, skip_combine, single_trial, refl, no_refl, debug
     rawYieldUncInvMassFit = []
     rawYieldUncSideBand = []
 
-    if not skip_binbybin:
+    outputPath = "{0}/{1}/{2}/RawYieldUnc".format(config["input_path"], config["train"], config["name"])
+    if refl: outputPath += "_refl_{0}".format(refl)
+
+    if reuse_binbybin: CopyFilesBack(outputPath)
+
+    if not skip_binbybin and not reuse_binbybin:
        for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl, single_trial)
            rawYieldUncInvMassFit.append(interface)
     if not skip_combine: rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
 
-    if not skip_binbybin:
+    if not skip_binbybin and not reuse_binbybin:
         for minPt, maxPt in zip(ptDbins[:-1], ptDbins[1:]):
             interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl, single_trial)
             rawYieldUncSideBand.append(interface)
     if not skip_combine: rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
     # only move files if the full chain was done
-    if not (skip_binbybin or skip_combine or single_trial):
-        outputPath = "{0}/{1}/{2}/RawYieldUnc".format(config["input_path"], config["train"], config["name"])
-        if refl: outputPath += "_refl_{0}".format(refl)
-        MoveFiles(outputPath)
+    if not (skip_binbybin or skip_combine or single_trial): MoveFiles(outputPath)
 
 def MoveFiles(outputPath, filetype="root"):
     print("Results will be moved to {0}".format(outputPath))
@@ -311,6 +315,12 @@ def MoveFiles(outputPath, filetype="root"):
         shutil.copy(file, outputPath)
         os.remove(file)
 
+def CopyFilesBack(outputPath, filetype="root"):
+    print("Results will be copied from {0}".format(outputPath))
+    for file in glob.glob("{0}/*.{1}".format(outputPath, filetype)):
+        print("Copying file {0}".format(file))
+        shutil.copy(file, "./")
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Extract Dzero jet raw yield uncertainties.')
@@ -318,6 +328,8 @@ if __name__ == '__main__':
     parser.add_argument('--debug', metavar='debug',
                         default=2)
     parser.add_argument('--skip-binbybin', action='store_const',
+                        default=False, const=True)
+    parser.add_argument('--reuse-binbybin', action='store_const',
                         default=False, const=True)
     parser.add_argument('--skip-combine', action='store_const',
                         default=False, const=True)
@@ -327,12 +339,14 @@ if __name__ == '__main__':
                         default="DoubleGaus")
     parser.add_argument('--no-refl', action='store_const',
                         default=False, const=True)
+    parser.add_argument('-b', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.no_refl, args.debug)
+    main(config, args.reuse_binbybin, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.no_refl, args.b, args.debug)
 
     IPython.embed()
