@@ -52,7 +52,7 @@ class DMesonJetCompare:
         self.fNoErrorInBaseline = False
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
         self.fGridyRatio = False
-        self.fFitFunction = "[0]*e^([1]*x) + [2]*e^([3]*x)"
+        self.fFitFunction = "expo(0)+expo(2)"
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -69,7 +69,6 @@ class DMesonJetCompare:
         if not self.fCanvasSpectra:
             self.fCanvasSpectra = ROOT.TCanvas(self.fName, self.fName)
 
-        self.fCanvasSpectra.cd()
         if self.fDoSpectraPlot == "logy":
             self.fCanvasSpectra.SetLogy()
 
@@ -107,7 +106,8 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetMarkerSize(1.2)
             self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
 
-        print("Plotting hist {0} with option {1}".format(self.fBaselineHistogram.GetName(), self.fOptSpectrumBaseline))
+        print("Plotting histogram '{0}' with option '{1}'".format(self.fBaselineHistogram.GetName(), self.fOptSpectrumBaseline))
+        self.fCanvasSpectra.cd()
         self.fBaselineHistogram.Draw(self.fOptSpectrumBaseline)
         if "frac" in self.fBaselineHistogram.GetYaxis().GetTitle():
             self.fCanvasSpectra.SetLeftMargin(0.12)
@@ -207,7 +207,7 @@ class DMesonJetCompare:
                 self.fMaxSpectrum = m
             else:
                 self.fMaxSpectrum = max(self.fMaxSpectrum, m)
-
+        print("Plotting histogram '{0}' with option '{1}'".format(h.GetName(), self.fOptSpectrum))
         h.Draw(self.fOptSpectrum)
         if "hist" in self.fOptSpectrum:
             h.SetLineColor(color)
