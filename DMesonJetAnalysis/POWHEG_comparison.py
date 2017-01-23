@@ -230,18 +230,20 @@ def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_ra
     loader.fJetType = jet_type
     loader.fJetRadius = jet_radius
     loader.fKinematicCuts = "DPt_30"
+    loader.fRawYieldMethod = "SideBand"
+    loader.fUseReflections = False
 
     loader.fSpectrumName = "DZSpectrum"
-    events = loader.LoadNumberOfEvents("SideBand")
+    events = loader.LoadNumberOfEvents()
     print("The number of events is {0}".format(events))
-    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis("SideBand")
+    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis()
     data_JetZSpectrum_JetPt_5_30_DPt_30 = h.Clone("data_JetZSpectrum_JetPt_5_7_DPt_30")
     data_JetZSpectrum_JetPt_5_30_DPt_30.SetTitle("Data, 5 < #it{p}_{T, ch jet} < 30 GeV/#it{c}")
     data_JetZSpectrum_JetPt_5_30_DPt_30.Scale(crossSection / events / branchingRatio / 25 / 2, "width")
 
     loader.fDataSpectrumList = None
     loader.fSpectrumName = "DZJetPtSpectrum"
-    data_JetZPtSpectrum_DPt_30 = loader.GetDefaultSpectrumFromDMesonJetAnalysis("SideBand")
+    data_JetZPtSpectrum_DPt_30 = loader.GetDefaultSpectrumFromDMesonJetAnalysis()
 
     h = data_JetZPtSpectrum_DPt_30.ProjectionX("data_JetZSpectrum_JetPt_5_7_DPt_30", 1, 1)
     data_JetZSpectrum_JetPt_5_7_DPt_30 = h.Clone("data_JetZSpectrum_JetPt_5_7_DPt_30")
@@ -266,10 +268,29 @@ def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_ra
     MChistos = [MC_JetZSpectrum_JetPt_5_30_DPt_30, MC_JetZSpectrum_JetPt_5_7_DPt_30, MC_JetZSpectrum_JetPt_7_12_DPt_30, MC_JetZSpectrum_JetPt_12_30_DPt_30]
     datahistos = [data_JetZSpectrum_JetPt_5_30_DPt_30, data_JetZSpectrum_JetPt_5_7_DPt_30, data_JetZSpectrum_JetPt_7_12_DPt_30, data_JetZSpectrum_JetPt_12_30_DPt_30]
 
+    comp = PlotComparison(datahistos, MChistos, "_".join(["TheoryComparison", "ZSpectra", gen, jet_type, jet_radius]))
+    comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasRatio.GetName()))
+    comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasSpectra.GetName()))
+
+    datahistos_norm = []
+    MChistos_norm = []
+
+    for data_h, mc_h in zip(datahistos, MChistos):
+        data_h_norm = data_h.Clone("{0}_norm".format(data_h.GetName()))
+        data_h_norm.Scale(1. / data_h_norm.Integral(), "width")
+        datahistos_norm.append(data_h_norm)
+        mc_h_norm = mc_h.Clone("{0}_norm".format(mc_h.GetName()))
+        mc_h_norm.Scale(1. / mc_h_norm.Integral(), "width")
+        MChistos_norm.append(mc_h_norm)
+
+    comp = PlotComparison(datahistos_norm, MChistos_norm, "_".join(["TheoryComparison", "ZSpectraNorm", gen, jet_type, jet_radius]))
+    comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasRatio.GetName()))
+    comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasSpectra.GetName()))
+
+def PlotComparison(datahistos, MChistos, cname):
     globalList.extend(datahistos)
     globalList.extend(MChistos)
 
-    cname = "_".join(["TheoryComparison", "ZSpectra", gen, jet_type, jet_radius])
     comp = DMesonJetCompare.DMesonJetCompare(cname)
     comp.fYaxisRatio = "data / theory"
     comp.fNColsLegSpectrum = 2
@@ -290,9 +311,7 @@ def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_ra
         for obj in r:
             if not obj in globalList: globalList.append(obj)
 
-    comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasRatio.GetName()))
-    comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasSpectra.GetName()))
-
+    return comp
 
 def GetPYTHIASpectrum(pythiaFile, jet_type, jet_radius, spectrumName):
     hpath = "D0_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}/D0_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}_Truth".format(jet_type=jet_type, jet_radius=jet_radius, spectrum=spectrumName)
