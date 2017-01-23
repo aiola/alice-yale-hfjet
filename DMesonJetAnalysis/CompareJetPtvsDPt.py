@@ -8,10 +8,13 @@ import DMesonJetUtils
 import RawYieldSpectrumLoader
 import subprocess
 import DMesonJetCompare
+import numpy
 
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
+
+pass4DmesonAna = "HFPtSpectrum_Pass4_combinedFDForLow_mergeThr1.root"
 
 crossSection = 62.3  # mb CINT1
 branchingRatio = 0.0393  # D0->Kpi
@@ -110,14 +113,25 @@ def GetTheoryDPtCrossSection():
     hSystLow.Scale(0.5, "width")
     return hStat, hSystUp, hSystLow
 
+def GetPass4AnalysisSpectrum():
+    file = ROOT.TFile(pass4DmesonAna)
+    h = file.Get("histoSigmaCorr")
+    if not h:
+        print("Cannot get pass 4 analysis spectrum!")
+        exit(1)
+    h_copy = h.Clone("pass4")
+    file.Close()
+    return h_copy
+
+
 def CompareJetPtvsDPt():
     jetPtSpectrumHist = GetJetPtSpectrum()
     dptSpectrumHist = GetDPtSpectrum()
     jetPtSpectrumHist.SetTitle("Data, D^{0}-jet")
     dptSpectrumHist.SetTitle("Data, D^{0}")
 
-    jetPtSpectrumHist_theory = GetTheoryJetPtCrossSection()[0]
-    dptSpectrumHist_theory = GetTheoryDPtCrossSection()[0]
+    jetPtSpectrumHist_theory, jetPtSpectrumHist_theory_systup, jetPtSpectrumHist_theory_systdown = GetTheoryJetPtCrossSection()
+    dptSpectrumHist_theory, dptSpectrumHist_theory_systup, dptSpectrumHist_theory_systdown = GetTheoryDPtCrossSection()
     jetPtSpectrumHist_theory.SetTitle("POWHEG, D^{0}-jet")
     dptSpectrumHist_theory.SetTitle("POWHEG, D^{0}")
 
@@ -148,6 +162,24 @@ def CompareJetPtvsDPt():
 
     canvasSpectrum.cd()
 
+#     h = jetPtSpectrumHist_theory.DrawCopy("same hist l")
+#     h.Add(jetPtSpectrumHist_theory_systup, 1)
+#     h.SetLineColor(ROOT.kOrange + 2)
+#     globalList.append(h)
+#     h = jetPtSpectrumHist_theory.DrawCopy("same hist l")
+#     h.Add(jetPtSpectrumHist_theory_systdown, -1)
+#     h.SetLineColor(ROOT.kOrange + 2)
+#     globalList.append(h)
+#
+#     h = dptSpectrumHist_theory.DrawCopy("same hist l")
+#     h.Add(dptSpectrumHist_theory_systup, 1)
+#     h.SetLineColor(ROOT.kGreen + 2)
+#     globalList.append(h)
+#     h = dptSpectrumHist_theory.DrawCopy("same hist l")
+#     h.Add(dptSpectrumHist_theory_systdown, -1)
+#     h.SetLineColor(ROOT.kGreen + 2)
+#     globalList.append(h)
+
     pave = ROOT.TPaveText(0.19, 0.80, 0.60, 0.90, "NB NDC")
     globalList.append(pave)
     pave.SetBorderSize(0)
@@ -170,6 +202,40 @@ def CompareJetPtvsDPt():
     pave.AddText("|#eta_{jet}| < 0.5 with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
     pave.AddText("D^{0}: |#eta_{D}| < 0.5")
     pave.Draw()
+
+    dptBins = [3, 4, 5, 6, 7, 8, 12, 16]
+
+    hpass4 = GetPass4AnalysisSpectrum()
+    hpass4_copy = DMesonJetUtils.Rebin1D_fromBins(hpass4, "hpass4_copy", len(dptBins) - 1, numpy.array(dptBins, dtype=float))
+    hpass4_copy.Scale(1e-9 / branchingRatio)
+    hpass4_copy.SetBinContent(6, hpass4_copy.GetBinContent(6) / 2)
+    globalList.append(hpass4_copy)
+
+    dptSpectrumHist_copy = DMesonJetUtils.Rebin1D_fromBins(dptSpectrumHist, "dptSpectrumHist_copy", len(dptBins) - 1, numpy.array(dptBins, dtype=float))
+    dptSpectrumHist_copy.SetBinContent(6, dptSpectrumHist_copy.GetBinContent(6) / 2)
+    globalList.append(dptSpectrumHist_copy)
+
+    comp = DMesonJetCompare.DMesonJetCompare("Comparison_DPt_Pass4_Spectra")
+    hpass4_copy.SetTitle("D^{0} from pass4 analysis")
+    dptSpectrumHist_copy.SetTitle("D^{0} from D^{0}-jet analysis")
+    hpub = GetPublishedDmeson()
+    globalList.append(hpub)
+    hpub.Scale(1e-3)
+
+    r = comp.CompareSpectra(hpass4_copy, [dptSpectrumHist_copy])
+    for obj in r:
+        if not obj in globalList:
+            globalList.append(obj)
+
+def GetPublishedDmeson():
+    dptBins = [3, 4, 5, 6, 7, 8, 12, 16]
+    yval = [59.7, 29.1, 12.5, 6.37, 3.07, 1.23, 0.215]
+    yerr = [13.313526955694348, 6.168468205316454, 2.5495097567963922, 1.2870120434556935, 0.7083784299369935, 0.2469817807045694, 0.06280127387243033]
+    h = ROOT.TH1D("published", "Published D^{0}", len(dptBins) - 1, numpy.array(dptBins, dtype=float))
+    for ibin in range(1, h.GetNbinsX() + 1):
+        h.SetBinContent(ibin, yval[ibin - 1])
+        h.SetBinError(ibin, yerr[ibin - 1])
+    return h
 
 def main():
     ROOT.TH1.AddDirectory(False)
