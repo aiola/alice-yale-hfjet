@@ -91,7 +91,7 @@ def ExtractDJetRawYieldReflUncertainty(config, specie, method, debug=2):
     reflFitFuncs = ["gaus", "pol3", "pol6"]
     for reflFitFunc in reflFitFuncs:
         outputPath = "{0}/{1}/{2}/RawYieldUnc_refl_{3}".format(config["input_path"], config["train"], config["name"], reflFitFunc)
-        CopyFilesBack(outputPath)
+        ExtractDZeroJetRawYieldUncertainty.CopyFilesBack(outputPath)
         evalunc = interface.EvaluateUncertainty()
         if not evalunc:
             print("Error in evaluating the yield uncertainty! Exiting...")
@@ -102,7 +102,7 @@ def ExtractDJetRawYieldReflUncertainty(config, specie, method, debug=2):
     rovers_factors = [0.5, 1.5]
     for rovers_factor in rovers_factors:
         outputPath = "{0}/{1}/{2}/RawYieldUnc_refl_{3}_{4:.0f}".format(config["input_path"], config["train"], config["name"], reflFitFunc, rovers_factor * 10)
-        CopyFilesBack(outputPath)
+        ExtractDZeroJetRawYieldUncertainty.CopyFilesBack(outputPath)
         evalunc = interface.EvaluateUncertainty()
         if not evalunc:
             print("Error in evaluating the yield uncertainty! Exiting...")
@@ -148,13 +148,6 @@ def main(config, debug):
         interface = EvaluateBinPerBinReflUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt)
         rawYieldUncSideBand.append(interface)
     rawYieldUncSummarySideBand = ExtractDJetRawYieldReflUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
-
-def CopyFilesBack(outputPath):
-    print("Results will be copied from {0}".format(outputPath))
-    if not os.path.isdir(outputPath): os.makedirs(outputPath)
-    for file in glob.glob("{0}/*.root".format(outputPath)):
-        print("Copying file {0}".format(file))
-        shutil.copy(file, "./")
 
 if __name__ == '__main__':
 
