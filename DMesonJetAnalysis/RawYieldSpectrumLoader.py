@@ -193,6 +193,10 @@ class RawYieldSpectrumLoader:
 
     def ApplyFDCorrection(self, h, error_band=0):
         print("Applying FD correction with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
+        fdHist = self.GetFDCorrection(error_band)
+        h.Add(fdHist, -1)
+
+    def GetFDCorrection(self, error_band=0):
         fdConfig = dict()
         fdConfig["file_name"] = "BFeedDown.root"
         fdConfig["central_points"] = "default"
@@ -217,16 +221,16 @@ class RawYieldSpectrumLoader:
         spectrumName = self.fSpectrumName
         if self.fKinematicCuts: spectrumName += "_{0}".format(self.fKinematicCuts)
         fdCorrection = DMesonJetFDCorrection.DMesonJetFDCorrection(fdConfig, spectrumName, self.fInputPath, "D0", "Charged", "R040")
-        fdHist = fdCorrection.fFDHistogram.Clone("{0}_FD".format(h.GetName()))
-        fdSyst = fdCorrection.fFDSystUncHistogram.Clone("{0}_FDSystUnc".format(h.GetName()))
+        fdHist = fdCorrection.fFDHistogram.Clone("FD")
+        fdSyst = fdCorrection.fFDSystUncHistogram.Clone("FDSystUnc")
 
         crossSection = 62.3  # mb CINT1
         branchingRatio = 0.0393  # D0->Kpi
         if self.fEvents is None: self.LoadNumberOfEvents()
         fdHist.Scale(self.fEvents / crossSection * branchingRatio)
         fdSyst.Scale(self.fEvents / crossSection * branchingRatio)
-        h.Add(fdHist, -1)
-        if error_band <> 0: h.Add(fdSyst, error_band)
+        if error_band <> 0: fdHist.Add(fdSyst, -error_band)
+        return fdHist
 
     def ApplyRawYieldSystFromMultiTrial(self, h, error_band):
         if error_band == 0:
