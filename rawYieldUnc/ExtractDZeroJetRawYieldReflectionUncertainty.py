@@ -84,7 +84,7 @@ def EvaluateBinPerBinReflUncertainty(config, specie, method, ptmin, ptmax, debug
 def ExtractDJetRawYieldReflUncertainty(config, specie, method, debug=2):
     interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
-    interface.SetMaxNTrialsForSidebandMethod(1)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
+    interface.SetMaxNTrialsForSidebandMethod(0)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
 
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
 
