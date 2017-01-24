@@ -186,6 +186,10 @@ def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode
         print "Environment is not configured correctly!"
         exit()
 
+    if not AliPhysicsVersion:
+        print("Please provide the AliPhysics version!")
+        exit(1)
+
     print "Root: " + rootPath
     print "AliRoot: " + alirootPath
     print "Alien: " + alienPath
