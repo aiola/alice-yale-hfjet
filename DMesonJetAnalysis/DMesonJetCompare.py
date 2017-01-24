@@ -65,6 +65,7 @@ class DMesonJetCompare:
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
         self.fGridyRatio = False
         self.fFitFunction = "expo(0)+expo(2)"
+        self.fDoSpectrumLegend = True
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -85,7 +86,7 @@ class DMesonJetCompare:
         if self.fDoSpectraPlot == "logy":
             self.fCanvasSpectra.SetLogy()
 
-        if self.fLegendSpectra:
+        if self.fDoSpectrumLegend and self.fLegendSpectra:
             y1 = self.fLegendSpectra.GetY1() - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
             if y1 < 0.2: y1 = 0.2
             self.fLegendSpectra.SetY1(y1)
@@ -104,20 +105,20 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
             self.fBaselineHistogram.SetLineWidth(2)
             self.fBaselineHistogram.SetLineStyle(self.fLines[0])
-            self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "l")
+            if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "l")
         elif "e2" in self.fOptSpectrumBaseline:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
             self.fBaselineHistogram.SetFillColor(self.fColors[0])
             self.fBaselineHistogram.SetLineWidth(1)
             self.fBaselineHistogram.SetLineStyle(self.fLines[0])
             self.fBaselineHistogram.SetFillStyle(self.fFills[0])
-            self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "f")
+            if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "f")
         else:
             self.fBaselineHistogram.SetMarkerColor(self.fColors[0])
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
             self.fBaselineHistogram.SetMarkerStyle(self.fMarkers[0])
             self.fBaselineHistogram.SetMarkerSize(1.2)
-            self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
+            if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
 
         print("Plotting histogram '{0}' with option '{1}'".format(self.fBaselineHistogram.GetName(), self.fOptSpectrumBaseline))
         self.fCanvasSpectra.cd()
@@ -227,15 +228,15 @@ class DMesonJetCompare:
 
         if "hist" in self.fOptSpectrum:
             h.SetLineColor(color)
-            h.SetLineWidth(3)
+            h.SetLineWidth(2)
             h.SetLineStyle(line)
-            self.fLegendSpectra.AddEntry(h, h.GetTitle(), "l")
+            if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(h, h.GetTitle(), "l")
         else:
             h.SetMarkerColor(color)
             h.SetLineColor(color)
             h.SetMarkerStyle(marker)
             h.SetMarkerSize(1.2)
-            self.fLegendSpectra.AddEntry(h, h.GetTitle(), "pe")
+            if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(h, h.GetTitle(), "pe")
 
     def FitAndMakeConsistent(self, h, templateH):
         fit_func = ROOT.TF1("{0}_fit".format(h.GetName()), self.fFitFunction, h.GetXaxis().GetXmin(), h.GetXaxis().GetXmax())
