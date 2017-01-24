@@ -82,6 +82,9 @@ def main(actions, output_path, output_type):
     configs["prompt_d_sim"] = yaml.load(f)
     f.close()
 
+    f = open("LHC15i2analysis_Train1010_efficiency.yaml", 'r')
+    configs["reflections"] = yaml.load(f)
+    f.close()
 
     histograms = dict()
 
@@ -147,14 +150,14 @@ def main(actions, output_path, output_type):
     if "all" in actions or "bfeed_down" in actions:
         CopyBFeedDown("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
+    if "all" in actions or "reflections" in actions:
+        CopyReflectionFiles(configs["reflections"], output_path, output_type)
+
     if "all" in actions or "promptd_sim" in actions:
         CopyPromptDSimulation("/Volumes/DATA/ALICE/JetResults", "1483386026", 2, output_path, output_type)
 
     if "all" in actions or "data_systematics" in actions:
         CopDataSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
-
-    if "all" in actions or "theory_comparison" in actions:
-        CopyTheoryComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     # if "all" in actions or "ppb_comparison" in actions:
         # CopypPbComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
@@ -162,6 +165,9 @@ def main(actions, output_path, output_type):
     if "all" in actions or "misc" in actions:
         CopypMiscFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
         PlotStatUncEff(histograms["LHC15i2_c"])
+
+    if "all" in actions or "qm17" in actions:
+        CopypQM17Files("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     for c in canvases:
         c.SaveAs("{0}/{1}.{2}".format(output_path, c.GetName(), output_type))
@@ -212,16 +218,34 @@ def RawYieldComparison(cname, title1, config1, title2, config2, refl=True):
         if isinstance(obj, ROOT.TCanvas):
             canvases.append(obj)
 
-def CopyTheoryComparisonFiles(input_path, output_path, output_type):
-    full_output_path = "{0}/TheoryComparison".format(output_path)
+def CopypQM17Files(input_path, output_path, output_type):
+    full_output_path = "{0}/QM17".format(output_path)
     file_list = []
     file_list.append("D0JetCrossSection_pp7TeV")
+    file_list.append("BFeedDown_QM17")
+    file_list.append("Uncertainties_QM17")
+    file_list.append("SideBandInvMass_QM17")
+    file_list.append("Efficiency_QM17")
     CopyFiles(input_path, full_output_path, file_list, output_type)
+
+def CopyReflectionFiles(config, output_path, output_type):
+    full_output_path = "{0}/Reflections".format(output_path)
+    full_input_path = "{0}/{1}/{2}/reflTemp".format(config["input_path"], config["train"], config["name"])
+    file_list = []
+    file_list.append("ReflectionTemplates_DPt_DoubleGaus")
+    file_list.append("ReflectionTemplates_JetPt_DoubleGaus")
+    CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopypMiscFiles(input_path, output_path, output_type):
     full_output_path = "{0}/Misc".format(output_path)
     file_list = []
     file_list.append("Comparison_DPt_JetPt_Spectra")
+    file_list.append("Comparison_DPt_JetPt_Spectra_Ratio")
+    file_list.append("TheoryComparison_ZSpectra_powheg_Charged_R040")
+    file_list.append("TheoryComparison_ZSpectra_powheg_Charged_R040_Ratio")
+    file_list.append("TheoryComparison_ZSpectraNorm_powheg_Charged_R040")
+    file_list.append("TheoryComparison_ZSpectraNorm_powheg_Charged_R040_Ratio")
+    file_list.append("NJetConstituents_LHC10_Train847_efficiency_LHC14j4_Train1018_efficiency")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyMCShapeSystematics(input_path, output_path, output_type):
@@ -320,13 +344,17 @@ def CopyDataFilesWithEff(config, output_path, output_type):
     file_list.append("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_FDCorrection_Ratio")
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
-    full_input_path = "{0}/{1}/{2}/RawYieldUnc/{3}".format(config["input_path"], config["train"], config["name"], output_type)
+    full_input_path = "{0}/{1}/{2}/RawYieldUnc_{3}".format(config["input_path"], config["train"], config["name"], output_type)
     full_output_path = "{0}/RawYieldExtractionWithEff".format(output_path)
     file_list = []
     file_list.append("AverageRawYieldVsDefault")
     file_list.append("AverageRawYieldVsDefault_Ratio")
-    file_list.append("ReflectionComparison")
-    file_list.append("ReflectionComparison_Ratio")
+    file_list.append("ReflectionVariationComparison")
+    file_list.append("ReflectionVariationComparison_Ratio")
+    file_list.append("CompareRawYieldUncVariations_AfterDbinSum_Ratio")
+    for i in range(0, 9):
+        file_list.append("CompareRawYieldUncVariations_{i}_Ratio".format(i=i))
+        file_list.append("CompareRawYieldUncReflVariations_{i}_Ratio".format(i=i))
     CopyFiles(full_input_path, full_output_path, file_list, output_type)
 
 def CopyEfficiencyFiles(config, output_path, output_type):
