@@ -14,7 +14,7 @@ input_path = "/Volumes/DATA/ALICE/JetResults"
 
 def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
     pad.SetTicks(1, 1)
-    pad.SetLeftMargin(0.16)
+    pad.SetLeftMargin(0.22)
     pad.SetRightMargin(0.02)
     pad.SetTopMargin(0.09)
     pad.SetBottomMargin(0.13)
@@ -96,7 +96,7 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
     h.GetXaxis().SetLabelOffset(0.009)
     h.GetXaxis().SetLabelSize(18)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleOffset(3.2)
+    h.GetYaxis().SetTitleOffset(4.5)
     h.GetYaxis().SetTitleSize(19)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelOffset(0.009)
@@ -112,7 +112,7 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
     globalList.append(htitle)
 
     if plotleg:
-        leg = ROOT.TLegend(0.18, 0.58, 0.57, 0.87, "", "NB NDC")
+        leg = ROOT.TLegend(0.23, 0.58, 0.57, 0.87, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
@@ -126,10 +126,10 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
         leg.AddEntry(sbHist_copy_l, "S-B Window", "f")
         leg.Draw()
 
-def PlotSBSpectra(pad, ptmin, ptmax, sbList):
+def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     pad.SetTicks(1, 1)
-    pad.SetLogy()
-    pad.SetLeftMargin(0.16)
+    # pad.SetLogy()
+    pad.SetLeftMargin(0.22)
     pad.SetRightMargin(0.02)
     pad.SetTopMargin(0.04)
     pad.SetBottomMargin(0.13)
@@ -170,18 +170,34 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList):
     h.GetXaxis().SetLabelOffset(0.009)
     h.GetXaxis().SetLabelSize(18)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleOffset(3.2)
+    h.GetYaxis().SetTitleOffset(4.5)
     h.GetYaxis().SetTitleSize(19)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelOffset(0.009)
     h.GetYaxis().SetLabelSize(23)
 
-    miny = min([DMesonJetUtils.FindMinimum(sbHist_copy), DMesonJetUtils.FindMinimum(sigHist_copy), DMesonJetUtils.FindMinimum(subHist_copy)])
-    maxy = max([DMesonJetUtils.FindMaximum(sbHist_copy), DMesonJetUtils.FindMaximum(sigHist_copy), DMesonJetUtils.FindMaximum(subHist_copy)])
-    miny /= 2
-    maxy *= 3
+    # miny = min([DMesonJetUtils.FindMinimum(sbHist_copy), DMesonJetUtils.FindMinimum(sigHist_copy), DMesonJetUtils.FindMinimum(subHist_copy)])
+    # maxy = max([DMesonJetUtils.FindMaximum(sbHist_copy), DMesonJetUtils.FindMaximum(sigHist_copy), DMesonJetUtils.FindMaximum(subHist_copy)])
+    # miny /= 2
+    # maxy *= 3
+    diff = sigHist_copy.GetMaximum() - sigHist_copy.GetMinimum()
+    miny = sigHist_copy.GetMinimum() - 0.10 * diff
+    maxy = sigHist_copy.GetMaximum() + 0.15 * diff
     h.SetMaximum(maxy)
     h.SetMinimum(miny)
+
+    if plotleg:
+        leg = ROOT.TLegend(0.48, 0.70, 0.87, 0.90, "", "NB NDC")
+        globalList.append(leg)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(43)
+        leg.SetTextSize(20)
+        leg.SetTextAlign(13)
+        leg.AddEntry(sigHist_copy, "Signal Window", "pe")
+        leg.AddEntry(sbHist_copy, "SB Window", "pe")
+        leg.AddEntry(subHist_copy, "Signal - SB", "pe")
+        leg.Draw()
 
 def SideBandPlot():
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_823_824_825_826", "LHC10_Train823_efficiency")
@@ -201,12 +217,12 @@ def SideBandPlot():
     PlotSBInvMass(canvas.cd(1), 4, 5, sbList, dptbinList)
     PlotSBInvMass(canvas.cd(2), 6, 7, sbList, dptbinList, True)
     PlotSBInvMass(canvas.cd(3), 10, 12, sbList, dptbinList)
-    PlotSBSpectra(canvas.cd(4), 4, 5, sbList)
+    PlotSBSpectra(canvas.cd(4), 4, 5, sbList, True)
     PlotSBSpectra(canvas.cd(5), 6, 7, sbList)
     PlotSBSpectra(canvas.cd(6), 10, 12, sbList)
 
     canvas.cd(3)
-    htitle = ROOT.TPaveText(0.22, 0.71, 0.57, 0.86, "NB NDC")
+    htitle = ROOT.TPaveText(0.24, 0.71, 0.57, 0.86, "NB NDC")
     globalList.append(htitle)
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
@@ -218,7 +234,7 @@ def SideBandPlot():
     htitle.Draw()
 
     canvas.cd(1)
-    paveALICE = ROOT.TPaveText(0.18, 0.72, 0.66, 0.89, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.24, 0.72, 0.66, 0.89, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
