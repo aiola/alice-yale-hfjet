@@ -281,6 +281,7 @@ def SideBandFinalRawYieldUnc(input_path, train, ana):
             h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
             h_copy.GetYaxis().SetTitle("counts")
             histos.append(h_copy)
+            if len(histos) > 35: break
     file.Close()
     fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand.root".format(input_path, train, ana)
     file = ROOT.TFile(fname)
@@ -318,6 +319,7 @@ def SideBandRawYieldUnc(input_path, train, ana):
                 h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
                 h_copy.GetYaxis().SetTitle("counts")
                 histos.append(h_copy)
+                if len(histos) > 35: break
         file.Close()
         fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand_{3}.root".format(input_path, train, ana, ibin)
         file = ROOT.TFile(fname)
