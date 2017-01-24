@@ -21,7 +21,7 @@ def main(config):
         print("Could not open file {0}".format(fname))
         exit(1)
 
-    fnameJetPt = "reflTemp/{0}_JetPt.root".format(config["name"])
+    fnameJetPt = "{0}/{1}/{2}/reflTemp/{2}_JetPt.root".format(config["input_path"], config["train"], config["name"])
     fileOutJetPt = ROOT.TFile(fnameJetPt, "recreate")
     for ibin, (ptmin, ptmax) in enumerate(zip(ptJetbins[:-1], ptJetbins[1:])):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_JetPtBins_DPt_30/InvMass_D0_kSignalOnly_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
@@ -41,7 +41,7 @@ def main(config):
         hRefl.Write()
     fileOutJetPt.Close()
 
-    fnameDPt = "reflTemp/{0}_DPt.root".format(config["name"])
+    fnameDPt = "{0}/{1}/{2}/reflTemp/{2}_DPt.root".format(config["input_path"], config["train"], config["name"])
     fileOutDPt = ROOT.TFile(fnameDPt, "recreate")
     for ibin, (ptmin, ptmax) in enumerate(zip(ptDbins[:-1], ptDbins[1:])):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
