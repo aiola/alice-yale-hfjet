@@ -1,6 +1,6 @@
-name: LHC10_Train823
+name: LHC10_Train851
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_823_824_825_826
+train: Jets_EMC_pp_851_852_853_854
 file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
