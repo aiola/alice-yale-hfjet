@@ -178,8 +178,8 @@ def PlotBFeedDown():
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c., #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.AddText("Raw B Feed-Down Fraction from POWHEG+PYTHIA6")
-    paveALICE.AddText("Not corrected for reconstruction efficiency and")
-    paveALICE.AddText("jet momentum resolution")
+    # paveALICE.AddText("Not corrected for reconstruction efficiency and")
+    # paveALICE.AddText("jet momentum resolution")
     paveALICE.Draw()
 
     return canvas1, canvas2
