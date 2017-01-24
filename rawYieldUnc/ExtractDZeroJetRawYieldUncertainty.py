@@ -47,7 +47,7 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=30, allowRepet=False, debug=2):
+def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=100, allowRepet=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
@@ -64,7 +64,7 @@ def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=30, allowRepe
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nTrials=30, debug=2):
+def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nTrials=100, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(ROOT.AliDJetRawYieldUncertainty.kSideband)
     interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
