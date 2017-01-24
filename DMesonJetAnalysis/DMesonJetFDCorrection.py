@@ -69,13 +69,22 @@ class DMesonJetFDCorrection:
         else:
             print("List {0} loaded".format(detLevListName))
 
-        detLevSystName = "{0}_SymmSyst".format(self.fFDSpectrumName)
-        h = detLevList.FindObject(detLevSystName)
+        detLevUpSystName = "{0}_UpperSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(detLevUpSystName)
         if not h:
-            print("Could not find hist {0}".format(detLevSystName))
+            print("Could not find hist {0}".format(detLevUpSystName))
             return
         else:
-            print("Hist {0} loaded".format(detLevSystName))
-        self.fFDSystUncHistogram = h.Clone("FD_DetectorLevelSyst")
+            print("Hist {0} loaded".format(detLevUpSystName))
+        self.fFDUpSystUncHistogram = h.Clone("FD_DetectorLevelUpSyst")
+
+        detLevLowSystName = "{0}_LowerSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(detLevLowSystName)
+        if not h:
+            print("Could not find hist {0}".format(detLevLowSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(detLevLowSystName))
+        self.fFDLowSystUncHistogram = h.Clone("FD_DetectorLevelLowSyst")
 
         file.Close()

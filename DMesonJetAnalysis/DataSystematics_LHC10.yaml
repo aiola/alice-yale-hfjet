@@ -70,7 +70,7 @@ sources:
   name: b_feed_down
   active: yes
   title: "B Feed-Down"
-  symmetrize: yes
+  symmetrize: no
   input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
   histogram_name_up: SideBand_DPt_30_FDUpperBand/Bayes/SideBand_DPt_30_FDUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
   histogram_title_up: "B Feed-Down (high)"

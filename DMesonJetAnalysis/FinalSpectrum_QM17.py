@@ -66,18 +66,25 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     padRatio.SetTopMargin(0)
     padRatio.SetBottomMargin(0.27)
     padRatio.SetLeftMargin(0.15)
+    padRatio.SetGridy()
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
     padMain.SetLogy()
-    dataSyst_copy = dataSyst.DrawCopy("e2")
+    h = dataStat.DrawCopy("axis")
+    h.GetYaxis().SetRangeUser(2e-5, 5e-1)
+    h.GetYaxis().SetTitleFont(43)
+    h.GetYaxis().SetTitleSize(26)
+    h.GetYaxis().SetLabelFont(43)
+    h.GetYaxis().SetLabelSize(22)
+    h.GetYaxis().SetTitleOffset(1.6)
+    # h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+    # h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+
+    dataSyst_copy = dataSyst.Clone("{0}_copy".format(dataSyst.GetName()))
+    dataSyst_copy.Draw("2")
     globalList.append(dataSyst_copy)
-    dataSyst_copy.GetYaxis().SetRangeUser(2e-5, 5e-1)
-    dataSyst_copy.GetYaxis().SetTitleFont(43)
-    dataSyst_copy.GetYaxis().SetTitleSize(26)
-    dataSyst_copy.GetYaxis().SetLabelFont(43)
-    dataSyst_copy.GetYaxis().SetLabelSize(22)
-    dataSyst_copy.GetYaxis().SetTitleOffset(1.6)
+
     dataStat_copy = dataStat.DrawCopy("same p e0 x0")
     globalList.append(dataStat_copy)
 
@@ -101,22 +108,25 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     theorySystLow_copy.SetLineWidth(1)
 
     padRatio.cd()
-    padRatio.SetGridy()
 
-    ratioSyst = dataSyst_copy.DrawCopy("e2")
+    ratioSyst = dataSyst_copy.Clone("ratioSyst")
     globalList.append(ratioSyst)
-    ratioSyst.GetYaxis().SetTitle("data / theory")
-    ratioSyst.GetXaxis().SetTitleFont(43)
-    ratioSyst.GetXaxis().SetTitleSize(26)
-    ratioSyst.GetXaxis().SetLabelFont(43)
-    ratioSyst.GetXaxis().SetLabelSize(22)
-    ratioSyst.GetYaxis().SetTitleFont(43)
-    ratioSyst.GetYaxis().SetTitleSize(26)
-    ratioSyst.GetYaxis().SetLabelFont(43)
-    ratioSyst.GetYaxis().SetLabelSize(22)
-    ratioSyst.GetYaxis().SetTitleOffset(1.4)
-    ratioSyst.GetXaxis().SetTitleOffset(2.9)
-    ratioSyst.GetYaxis().SetRangeUser(0, 3.9)
+
+    hRatio = dataStat_copy.DrawCopy("axis")
+    hRatio.GetYaxis().SetTitle("data / theory")
+    hRatio.GetXaxis().SetTitleFont(43)
+    hRatio.GetXaxis().SetTitleSize(26)
+    hRatio.GetXaxis().SetLabelFont(43)
+    hRatio.GetXaxis().SetLabelSize(22)
+    hRatio.GetYaxis().SetTitleFont(43)
+    hRatio.GetYaxis().SetTitleSize(26)
+    hRatio.GetYaxis().SetLabelFont(43)
+    hRatio.GetYaxis().SetLabelSize(22)
+    hRatio.GetYaxis().SetTitleOffset(1.4)
+    hRatio.GetXaxis().SetTitleOffset(2.9)
+    hRatio.GetYaxis().SetRangeUser(0, 3.9)
+
+    ratioSyst.Draw("2")
     ratioStat = dataStat_copy.DrawCopy("same p e0 x0")
     globalList.append(ratioStat)
     ratioTheorySystUp = theorySystUp_copy.DrawCopy("same hist l")
@@ -124,9 +134,10 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     ratioTheorySystLow = theorySystLow_copy.DrawCopy("same hist l")
     globalList.append(ratioTheorySystLow)
 
-    for ibin in range(1, ratioSyst.GetNbinsX() + 1):
-        ratioSyst.SetBinContent(ibin, ratioSyst.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
-        ratioSyst.SetBinError(ibin, ratioSyst.GetBinError(ibin) / theoryStat_copy.GetBinContent(ibin))
+    for ibin in range(1, ratioStat.GetNbinsX() + 1):
+        ratioSyst.SetPoint(ibin - 1, ratioSyst.GetX()[ibin - 1], ratioSyst.GetY()[ibin - 1] / theoryStat_copy.GetBinContent(ibin))
+        ratioSyst.SetPointEYlow(ibin - 1, ratioSyst.GetErrorYlow(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
+        ratioSyst.SetPointEYhigh(ibin - 1, ratioSyst.GetErrorYhigh(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
         ratioStat.SetBinContent(ibin, ratioStat.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
         ratioStat.SetBinError(ibin, ratioStat.GetBinError(ibin) / theoryStat_copy.GetBinContent(ibin))
         ratioTheorySystUp.SetBinContent(ibin, ratioTheorySystUp.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
@@ -159,6 +170,10 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.Draw()
+
+    padRatio.RedrawAxis("g")
+    padRatio.RedrawAxis()
+    padMain.RedrawAxis()
 
     return canvas
 

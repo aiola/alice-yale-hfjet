@@ -128,6 +128,8 @@ def CompareVariations(config, histograms):
     h = histograms["default"]
     baseline = h.Clone("default")
     baseline.SetTitle(config["default"]["title"])
+    baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+    baseline.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     result[baseline.GetName()] = baseline
     for s in config["sources"]:
         if not s["active"]: continue
@@ -135,12 +137,16 @@ def CompareVariations(config, histograms):
             h = histograms[s["name"]]["down"]
             h_copy = h.Clone("{0}_down".format(s["name"]))
             h_copy.SetTitle(s["histogram_title_down"])
+            h_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
             result[h_copy.GetName()] = h_copy
             variations.append(h_copy)
         if "up" in histograms[s["name"]]:
             h = histograms[s["name"]]["up"]
             h_copy = h.Clone("{0}_up".format(s["name"]))
             h_copy.SetTitle(s["histogram_title_up"])
+            h_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
             result[h_copy.GetName()] = h_copy
             variations.append(h_copy)
 
@@ -172,14 +178,23 @@ def CalculateFixSystematicUncertainty(config):
 def GenerateUncertainties(config, histograms):
     baseline = histograms["default"]
     fixed_syst_unc = CalculateFixSystematicUncertainty(config)
-    partialRelSystUnc = [DMesonJetUtils.soft_clone(baseline, s["name"], s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
-    totRelSystUnc = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc", "Total Systematic Uncertainty", "relative uncertainty")
+    partialRelSystUncUp = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
+    partialRelSystUncLow = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]]
+    partialRelSystUncUp_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
+    partialRelSystUncLow_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]]
+    totRelSystUncUp = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_up", "Total Systematic Uncertainty", "relative uncertainty")
+    totRelSystUncLow = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_low", "Total Systematic Uncertainty", "relative uncertainty")
     statUnc = DMesonJetUtils.soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
-    totUnc = DMesonJetUtils.soft_clone(baseline, "tot_unc", "Total Uncertainty", "relative uncertainty")
-    centralSystUnc = DMesonJetUtils.soft_clone(baseline, "central_syst_unc")
+    totUncUp = DMesonJetUtils.soft_clone(baseline, "tot_unc_up", "Total Uncertainty", "relative uncertainty")
+    totUncLow = DMesonJetUtils.soft_clone(baseline, "tot_unc_low", "Total Uncertainty", "relative uncertainty")
+    yerrup = []
+    yerrlow = []
+    y = []
+    xerrup = []
+    xerrlow = []
+    x = []
 
     for ibin in range(1, baseline.GetNbinsX() + 1):
-        tot_syst_unc2 = 0
         ivar = 0
         for s in config["sources"]:
             if not s["active"]: continue
@@ -193,54 +208,182 @@ def GenerateUncertainties(config, histograms):
                 diff_up = abs(baseline.GetBinContent(ibin) - h.GetBinContent(ibin))
             else:
                 diff_up = 0
-            part_unc = max(diff_down, diff_up)
-            partialRelSystUnc[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
-            tot_syst_unc2 += part_unc ** 2
+            if s["symmetrize"]:
+                part_unc_up = max(diff_up, diff_down)
+                part_unc_low = part_unc_up
+                partialRelSystUncUp[ivar].SetBinContent(ibin, part_unc_up / baseline.GetBinContent(ibin))
+            else:
+                part_unc_up = diff_up
+                part_unc_low = diff_down
+                partialRelSystUncUp[ivar].SetBinContent(ibin, part_unc_up / baseline.GetBinContent(ibin))
+                partialRelSystUncLow[ivar].SetBinContent(ibin, part_unc_low / baseline.GetBinContent(ibin))
             ivar += 1
-        tot_syst_unc2 += (fixed_syst_unc * baseline.GetBinContent(ibin)) ** 2
-        tot_syst_unc = math.sqrt(tot_syst_unc2)
-        stat_unc = baseline.GetBinError(ibin)
-        tot_unc = math.sqrt(tot_syst_unc2 + stat_unc ** 2)
-        totRelSystUnc.SetBinContent(ibin, tot_syst_unc / baseline.GetBinContent(ibin))
-        statUnc.SetBinContent(ibin, stat_unc / baseline.GetBinContent(ibin))
-        totUnc.SetBinContent(ibin, tot_unc / baseline.GetBinContent(ibin))
-        centralSystUnc.SetBinContent(ibin, baseline.GetBinContent(ibin))
-        centralSystUnc.SetBinError(ibin, tot_syst_unc)
 
-    result = {"PartialSystematicUncertainties" : partialRelSystUnc, "correlated_uncertainty" : fixed_syst_unc, totRelSystUnc.GetName() : totRelSystUnc, centralSystUnc.GetName() : centralSystUnc, statUnc.GetName() : statUnc, totUnc.GetName() : totUnc}
+    # smothening procedure
+    for ibin in range(1, baseline.GetNbinsX() + 1):
+        tot_syst_unc_up2 = 0
+        tot_syst_unc_low2 = 0
+        ivar = 0
+        for s in config["sources"]:
+            if not s["active"]: continue
+            if partialRelSystUncUp[ivar]:
+                n = 1
+                part_unc_up = partialRelSystUncUp[ivar].GetBinContent(ibin)
+                if ibin > 1:
+                    part_unc_up += partialRelSystUncUp[ivar].GetBinContent(ibin - 1)
+                    n += 1
+                if ibin < baseline.GetNbinsX():
+                    part_unc_up += partialRelSystUncUp[ivar].GetBinContent(ibin + 1)
+                    n += 1
+                part_unc_up /= n
+                partialRelSystUncUp_smooth[ivar].SetBinContent(ibin, part_unc_up)
+            if partialRelSystUncLow[ivar]:
+                n = 1
+                part_unc_low = partialRelSystUncLow[ivar].GetBinContent(ibin)
+                if ibin > 1:
+                    part_unc_low += partialRelSystUncLow[ivar].GetBinContent(ibin - 1)
+                    n += 1
+                if ibin < baseline.GetNbinsX():
+                    part_unc_low += partialRelSystUncLow[ivar].GetBinContent(ibin + 1)
+                    n += 1
+                part_unc_low /= n
+                partialRelSystUncLow_smooth[ivar].SetBinContent(ibin, part_unc_low)
+            else:
+                part_unc_low = part_unc_up
+            ivar += 1
+
+    fixed_unc2 = fixed_syst_unc ** 2
+    for ibin in range(1, baseline.GetNbinsX() + 1):
+        tot_syst_unc_up2 = 0
+        tot_syst_unc_low2 = 0
+        ivar = 0
+        for s in config["sources"]:
+            if not s["active"]: continue
+            if partialRelSystUncUp_smooth[ivar]:
+                part_unc_up = partialRelSystUncUp_smooth[ivar].GetBinContent(ibin)
+                if ibin < baseline.GetNbinsX():
+                    if part_unc_up > partialRelSystUncUp_smooth[ivar].GetBinContent(ibin + 1): part_unc_up = math.floor(part_unc_up * 100) / 100
+                    else: part_unc_up = math.floor(part_unc_up * 100 + 0.5) / 100
+                else:
+                    if part_unc_up < partialRelSystUncUp_smooth[ivar].GetBinContent(ibin - 1): part_unc_up = math.ceil(part_unc_up * 100) / 100
+                    else: part_unc_up = math.floor(part_unc_up * 100 + 0.5) / 100
+                partialRelSystUncUp_smooth[ivar].SetBinContent(ibin, part_unc_up)
+            if partialRelSystUncLow_smooth[ivar]:
+                part_unc_low = partialRelSystUncLow_smooth[ivar].GetBinContent(ibin)
+                if ibin < baseline.GetNbinsX():
+                    if part_unc_low > partialRelSystUncLow_smooth[ivar].GetBinContent(ibin + 1): part_unc_low = math.floor(part_unc_low * 100) / 100
+                    else: part_unc_low = math.floor(part_unc_low * 100 + 0.5) / 100
+                else:
+                    if part_unc_low < partialRelSystUncLow_smooth[ivar].GetBinContent(ibin - 1): part_unc_low = math.ceil(part_unc_low * 100) / 100
+                    else: part_unc_low = math.floor(part_unc_low * 100 + 0.5) / 100
+                partialRelSystUncLow_smooth[ivar].SetBinContent(ibin, part_unc_low)
+            else:
+                part_unc_low = part_unc_up
+            tot_syst_unc_up2 += part_unc_up ** 2
+            tot_syst_unc_low2 += part_unc_low ** 2
+            ivar += 1
+        tot_syst_unc_up2 += fixed_unc2
+        tot_syst_unc_low2 += fixed_unc2
+        tot_syst_unc_up = math.sqrt(tot_syst_unc_up2)
+        tot_syst_unc_low = math.sqrt(tot_syst_unc_low2)
+        stat_unc = baseline.GetBinError(ibin) / baseline.GetBinContent(ibin)
+        stat_unc2 = stat_unc ** 2
+        tot_unc_up = math.sqrt(tot_syst_unc_up2 + stat_unc2)
+        tot_unc_low = math.sqrt(tot_syst_unc_low2 + stat_unc2)
+        totRelSystUncUp.SetBinContent(ibin, tot_syst_unc_up)
+        totRelSystUncLow.SetBinContent(ibin, tot_syst_unc_low)
+        statUnc.SetBinContent(ibin, stat_unc)
+        totUncUp.SetBinContent(ibin, tot_unc_up)
+        totUncLow.SetBinContent(ibin, tot_unc_low)
+
+        y.append(baseline.GetBinContent(ibin))
+        yerrup.append(tot_syst_unc_up * baseline.GetBinContent(ibin))
+        yerrlow.append(tot_syst_unc_low * baseline.GetBinContent(ibin))
+        x.append(baseline.GetXaxis().GetBinCenter(ibin))
+        xerrup.append(baseline.GetXaxis().GetBinWidth(ibin) / 2)
+        xerrlow.append(baseline.GetXaxis().GetBinWidth(ibin) / 2)
+
+
+    centralSystUnc = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(),
+                                            numpy.array(x, dtype=float), numpy.array(y, dtype=float),
+                                            numpy.array(xerrlow, dtype=float), numpy.array(xerrup, dtype=float),
+                                            numpy.array(yerrlow, dtype=float), numpy.array(yerrup, dtype=float))
+    centralSystUnc.SetName("central_syst_unc")
+    centralSystUnc.SetTitle("{0} Systematics".format(baseline.GetTitle()))
+    centralSystUnc.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+    centralSystUnc.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    result = {"PartialSystematicUncertaintiesUp" : partialRelSystUncUp_smooth, "PartialSystematicUncertaintiesLow" : partialRelSystUncLow_smooth,
+              "fixed_syst_unc" : fixed_syst_unc,
+              totRelSystUncUp.GetName() : totRelSystUncUp, totRelSystUncLow.GetName() : totRelSystUncLow,
+              statUnc.GetName() : statUnc, totUncUp.GetName() : totUncUp, totUncLow.GetName() : totUncLow,
+              centralSystUnc.GetName() : centralSystUnc}
     return result
 
 def PlotSystematicUncertaintySummary(name, results):
-    sources = []
-    h = results["Uncertainties"]["tot_unc"]
-    baseline = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesUp = []
+    sourcesLow = []
+    colorsUp = []
+    colorsLow = []
+    h = results["Uncertainties"]["tot_unc_up"]
+    tot_unc_up = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesUp.append(tot_unc_up)
+    colorsUp.append(ROOT.kBlack)
 
-    print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(baseline.GetNbinsX()))
-    print(" & ".join(["\\ptchjet (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(baseline.GetXaxis().GetBinLowEdge(ibin), baseline.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\ \hline")
+    print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(tot_unc_up.GetNbinsX()))
+    print(" & ".join(["\\ptchjet\\ (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
+
+    h = results["Uncertainties"]["tot_unc_low"]
+    tot_unc_low = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesLow.append(tot_unc_low)
+    colorsLow.append(ROOT.kBlack)
 
     h = results["Uncertainties"]["stat_unc"]
     stat_unc = h.Clone("{0}_copy".format(h.GetName()))
-    sources.append(stat_unc)
+    sourcesUp.append(stat_unc)
+    colorsUp.append(ROOT.kBlue + 2)
 
-    h = results["Uncertainties"]["tot_rel_syst_unc"]
-    tot_rel_syst_unc = h.Clone("{0}_copy".format(h.GetName()))
-    sources.append(tot_rel_syst_unc)
-    for h in results["Uncertainties"]["PartialSystematicUncertainties"]:
-        print(" & ".join([h.GetTitle()] + ["{0:.1f}".format(h.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
-        h_copy = h.Clone("{0}_copy".format(h.GetName()))
-        sources.append(h_copy)
+    h = results["Uncertainties"]["tot_rel_syst_unc_up"]
+    tot_rel_syst_unc_up = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesUp.append(tot_rel_syst_unc_up)
+    colorsUp.append(ROOT.kRed + 2)
+
+    h = results["Uncertainties"]["tot_rel_syst_unc_low"]
+    tot_rel_syst_unc_low = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesLow.append(tot_rel_syst_unc_low)
+    colorsLow.append(ROOT.kRed + 2)
+
+    colorsPart = [ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
+    cont = 0
+    for hUp, hLow in zip(results["Uncertainties"]["PartialSystematicUncertaintiesUp"], results["Uncertainties"]["PartialSystematicUncertaintiesLow"]):
+        if hLow:
+            print(" & ".join(["\multirow{{2}}{{*}}{{{}}}".format(hUp.GetTitle())] + ["+{0:.0f}".format(hUp.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
+            print(" & ".join([" "] + ["-{0:.0f}".format(hLow.GetBinContent(ibin) * 100) for ibin in range(1, hLow.GetNbinsX() + 1)]) + "\\\\")
+        else:
+            print(" & ".join([hUp.GetTitle()] + ["{0:.0f}".format(hUp.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
+        h_copy = hUp.Clone("{0}_copy".format(hUp.GetName()))
+        sourcesUp.append(h_copy)
+        colorsUp.append(colorsPart[cont])
+
+        if hLow:
+            h_copy = hLow.Clone("{0}_copy".format(hLow.GetName()))
+            sourcesLow.append(h_copy)
+            colorsLow.append(colorsPart[cont])
+
+        cont += 1
 
     print("\\hline")
-    print("Correlated Uncertainty & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(baseline.GetNbinsX(), results["Uncertainties"]["correlated_uncertainty"] * 100))
+    print("\\pt-independent Uncertainty & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
     print("\\hline")
-    print(" & ".join([tot_rel_syst_unc.GetTitle()] + ["{0:.1f}".format(tot_rel_syst_unc.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
     print(" & ".join([stat_unc.GetTitle()] + ["{0:.1f}".format(stat_unc.GetBinContent(ibin) * 100) for ibin in range(1, stat_unc.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
-    print(" & ".join([baseline.GetTitle()] + ["{0:.1f}".format(baseline.GetBinContent(ibin) * 100) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join(["\multirow{2}{*}{Total Uncertainty}"] + ["+{0:.1f}".format(tot_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join([" "] + ["-{0:.1f}".format(tot_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_low.GetNbinsX() + 1)]) + "\\\\")
 
-    globalList.extend(sources)
-    globalList.append(baseline)
+    globalList.extend(sourcesUp)
+    globalList.extend(sourcesLow)
     comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
@@ -248,7 +391,16 @@ def PlotSystematicUncertaintySummary(name, results):
     comp.fLegLineHeight = 0.05
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = False
-    r = comp.CompareSpectra(baseline, sources)
+    comp.fColors = colorsUp
+    comp.fLines = [1] * len(colorsUp)
+    r = comp.CompareSpectra(sourcesUp[0], sourcesUp[1:])
+    for obj in r:
+        globalList.append(obj)
+    comp.fOptSpectrumBaseline = "hist same"
+    comp.fColors = colorsLow
+    comp.fLines = [2] * len(colorsLow)
+    comp.fDoSpectrumLegend = False
+    r = comp.CompareSpectra(sourcesLow[0], sourcesLow[1:])
     for obj in r:
         globalList.append(obj)
 
@@ -259,13 +411,18 @@ def PlotSpectrumStatAndSyst(name, results):
     canvas.SetLogy()
     canvas.SetLeftMargin(0.13)
     canvas.cd()
-    syst_copy = syst.DrawCopy("e2")
+    h = stat.DrawCopy("axis")
+    h.GetYaxis().SetTitleOffset(1.5)
+    h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+    h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    h.GetYaxis().SetRangeUser(2.5e-5, 4e-2)
+
+    syst_copy = syst.Clone("central_syst_unc_copy")
+    syst_copy.Draw("e2")
+
     syst_copy.SetFillColor(ROOT.kGray)
     syst_copy.SetMarkerColor(ROOT.kGray)
     syst_copy.SetLineColor(ROOT.kGray)
-    syst_copy.GetYaxis().SetTitleOffset(1.5)
-    syst_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-    syst_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     stat_copy = stat.DrawCopy("same p e0 x0")
     stat_copy.SetMarkerColor(ROOT.kRed + 2)
     stat_copy.SetLineColor(ROOT.kRed + 2)
@@ -279,6 +436,7 @@ def PlotSpectrumStatAndSyst(name, results):
     leg.AddEntry(stat_copy, "ALICE", "pe")
     leg.AddEntry(syst_copy, "Systematic Uncertainty", "f")
     leg.Draw()
+    globalList.append(h)
     globalList.append(syst_copy)
     globalList.append(stat_copy)
     globalList.append(leg)
@@ -304,7 +462,7 @@ def GenerateRootList(pdict, name):
     if isinstance(pdict, dict) or isinstance(pdict, OrderedDict):
         objects = pdict.iteritems()
     else:
-        objects = zip([inner_obj.GetName() for inner_obj in pdict], pdict)
+        objects = zip([inner_obj.GetName() for inner_obj in pdict if inner_obj], pdict)
     for nobj, obj in objects:
         if isinstance(obj, ROOT.TObject):
             print("Adding in {0}".format(nobj))
