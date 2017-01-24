@@ -268,6 +268,9 @@ def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_ra
     MChistos = [MC_JetZSpectrum_JetPt_5_30_DPt_30, MC_JetZSpectrum_JetPt_5_7_DPt_30, MC_JetZSpectrum_JetPt_7_12_DPt_30, MC_JetZSpectrum_JetPt_12_30_DPt_30]
     datahistos = [data_JetZSpectrum_JetPt_5_30_DPt_30, data_JetZSpectrum_JetPt_5_7_DPt_30, data_JetZSpectrum_JetPt_7_12_DPt_30, data_JetZSpectrum_JetPt_12_30_DPt_30]
 
+    for h in MChistos: h.GetYaxis().SetTitle("#frac{d^{3}#sigma}{d#it{z}_{||,D} d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
+    for h in datahistos: h.GetYaxis().SetTitle("#frac{d^{3}#sigma}{d#it{z}_{||,D} d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
+
     comp = PlotComparison(datahistos, MChistos, "_".join(["TheoryComparison", "ZSpectra", gen, jet_type, jet_radius]))
     comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasRatio.GetName()))
     comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(rootPath, comp.fCanvasSpectra.GetName()))
@@ -278,9 +281,11 @@ def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_ra
     for data_h, mc_h in zip(datahistos, MChistos):
         data_h_norm = data_h.Clone("{0}_norm".format(data_h.GetName()))
         data_h_norm.Scale(1. / data_h_norm.Integral(), "width")
+        data_h_norm.GetYaxis().SetTitle("Probability Density")
         datahistos_norm.append(data_h_norm)
         mc_h_norm = mc_h.Clone("{0}_norm".format(mc_h.GetName()))
         mc_h_norm.Scale(1. / mc_h_norm.Integral(), "width")
+        mc_h_norm.GetYaxis().SetTitle("Probability Density")
         MChistos_norm.append(mc_h_norm)
 
     comp = PlotComparison(datahistos_norm, MChistos_norm, "_".join(["TheoryComparison", "ZSpectraNorm", gen, jet_type, jet_radius]))
@@ -303,7 +308,6 @@ def PlotComparison(datahistos, MChistos, cname):
     openMarkers = [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenDiamond, ROOT.kOpenCross]
     fullMarkers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullDiamond, ROOT.kFullCross]
     for i, (mc, data) in enumerate(zip(MChistos, datahistos)):
-        mc.GetYaxis().SetTitle("#frac{d^{3}#sigma}{d#it{z}_{||,D} d#it{p}_{T} d#eta} [mb (GeV/#it{c})^{-1}]")
         comp.fColors = [colors[i], colors[i + 2]]
         comp.fMarkers = [openMarkers[i], fullMarkers[i]]
         r = comp.CompareSpectra(mc, [data])

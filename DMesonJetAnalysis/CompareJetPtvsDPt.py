@@ -135,15 +135,23 @@ def CompareJetPtvsDPt():
     jetPtSpectrumHist_theory.SetTitle("POWHEG, D^{0}-jet")
     dptSpectrumHist_theory.SetTitle("POWHEG, D^{0}")
 
-    canvasSpectrum = ROOT.TCanvas("Comparison_DPt_JetPt_Spectra")
+    hpass4_old = GetPass4AnalysisSpectrum()
+    hpass4 = hpass4_old.Clone("hpass4")
+    hpass4.Scale(1e-9 / branchingRatio)
+    hpass4.SetTitle("Data, D^{0}")
+    globalList.append(hpass4)
+
+    canvasSpectrum = ROOT.TCanvas("Comparison_DPt_JetPt_Spectra", "Comparison_DPt_JetPt_Spectra")
+    globalList.append(canvasSpectrum)
     canvasSpectrum.SetTicks(1, 1)
     canvasSpectrum.cd()
-    h_axis = dptSpectrumHist.DrawCopy("axis")
+    h_axis = dptSpectrumHist_theory.DrawCopy("axis")
     h_axis.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [mb (GeV/#it{c})^{-1}]")
     h_axis.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
 
     comp = DMesonJetCompare.DMesonJetCompare("Comparison_DPt_JetPt_Spectra")
     comp.fCanvasSpectra = canvasSpectrum
+    comp.fMainHistogram = h_axis
     comp.fOptSpectrumBaseline = "same"
     comp.fOptSpectrum = "same"
     comp.fX1LegSpectrum = 0.58
@@ -151,7 +159,10 @@ def CompareJetPtvsDPt():
 
     comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare]
     comp.fColors = [ROOT.kRed + 2, ROOT.kBlue + 2]
-    comp.CompareSpectra(jetPtSpectrumHist, [dptSpectrumHist])
+    r = comp.CompareSpectra(jetPtSpectrumHist, [hpass4])  # , [dptSpectrumHist])
+    for obj in r:
+        if not obj in globalList:
+            globalList.append(obj)
 
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kOpenSquare]
     comp.fColors = [ROOT.kOrange + 2, ROOT.kGreen + 2]
@@ -204,10 +215,7 @@ def CompareJetPtvsDPt():
     pave.Draw()
 
     dptBins = [3, 4, 5, 6, 7, 8, 12, 16]
-
-    hpass4 = GetPass4AnalysisSpectrum()
     hpass4_copy = DMesonJetUtils.Rebin1D_fromBins(hpass4, "hpass4_copy", len(dptBins) - 1, numpy.array(dptBins, dtype=float))
-    hpass4_copy.Scale(1e-9 / branchingRatio)
     hpass4_copy.SetBinContent(6, hpass4_copy.GetBinContent(6) / 2)
     globalList.append(hpass4_copy)
 

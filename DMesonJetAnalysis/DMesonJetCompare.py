@@ -24,9 +24,21 @@ class DMesonJetCompare:
         self.fLegendRatio = None
         self.fBaselineRatio = None
         self.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
+        self.fColors += self.fColors[1:]
+        self.fColors += self.fColors[2:]
+        self.fColors += self.fColors[1:]
         self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kFullCross, ROOT.kMultiply, ROOT.kPlus]
+        self.fMarkers += self.fMarkers[0:]
+        self.fMarkers += self.fMarkers[1:]
+        self.fMarkers += self.fMarkers[0:]
         self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
+        self.fLines += self.fLines[0:]
+        self.fLines += self.fLines[1:]
+        self.fLines += self.fLines[0:]
         self.fFills = [3001, 3002, 3003, 3004, 3005, 3006, 3007]
+        self.fFills += self.fFills[0:]
+        self.fFills += self.fFills[1:]
+        self.fFills += self.fFills[0:]
         self.fMainHistogram = None
         self.fMainRatioHistogram = None
         self.fMaxSpectrum = None
@@ -67,6 +79,7 @@ class DMesonJetCompare:
 
     def PrepareSpectraCanvas(self):
         if not self.fCanvasSpectra:
+            print("Creating new canvas {0}".format(self.fName))
             self.fCanvasSpectra = ROOT.TCanvas(self.fName, self.fName)
 
         if self.fDoSpectraPlot == "logy":
@@ -109,6 +122,7 @@ class DMesonJetCompare:
         print("Plotting histogram '{0}' with option '{1}'".format(self.fBaselineHistogram.GetName(), self.fOptSpectrumBaseline))
         self.fCanvasSpectra.cd()
         self.fBaselineHistogram.Draw(self.fOptSpectrumBaseline)
+
         if "frac" in self.fBaselineHistogram.GetYaxis().GetTitle():
             self.fCanvasSpectra.SetLeftMargin(0.12)
             self.fBaselineHistogram.GetYaxis().SetTitleOffset(1.4)
@@ -194,7 +208,6 @@ class DMesonJetCompare:
                     self.fMaxRatio = max(self.fMaxRatio, m)
 
     def PlotHistogram(self, color, marker, line, h):
-        self.fCanvasSpectra.cd()
         m = DMesonJetUtils.FindMinimum(h, 0., not "hist" in self.fOptSpectrum)
         if not m is None:
             if self.fMinSpectrum is None:
@@ -207,8 +220,11 @@ class DMesonJetCompare:
                 self.fMaxSpectrum = m
             else:
                 self.fMaxSpectrum = max(self.fMaxSpectrum, m)
+
         print("Plotting histogram '{0}' with option '{1}'".format(h.GetName(), self.fOptSpectrum))
+        self.fCanvasSpectra.cd()
         h.Draw(self.fOptSpectrum)
+
         if "hist" in self.fOptSpectrum:
             h.SetLineColor(color)
             h.SetLineWidth(3)
