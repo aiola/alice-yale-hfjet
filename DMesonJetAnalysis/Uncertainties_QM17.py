@@ -11,51 +11,93 @@ import DMesonJetCompare
 globalList = []
 
 def PlotUncertainties(results):
-    sources = []
-    h = results["Uncertainties"]["tot_unc"]
-    baseline = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesUp = []
+    sourcesLow = []
+    colorsUp = []
+    colorsLow = []
+    h = results["Uncertainties"]["tot_unc_up"]
+    tot_unc_up = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesUp.append(tot_unc_up)
+    colorsUp.append(ROOT.kBlue + 2)
 
-    print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(baseline.GetNbinsX()))
-    print(" & ".join(["\\ptchjet (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(baseline.GetXaxis().GetBinLowEdge(ibin), baseline.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\ \hline")
+    print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(tot_unc_up.GetNbinsX()))
+    print(" & ".join(["\\ptchjet\\ (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
+
+    h = results["Uncertainties"]["tot_unc_low"]
+    tot_unc_low = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesLow.append(tot_unc_low)
+    colorsLow.append(ROOT.kBlue + 2)
 
     h = results["Uncertainties"]["stat_unc"]
     stat_unc = h.Clone("{0}_copy".format(h.GetName()))
-    sources.append(stat_unc)
+    sourcesUp.append(stat_unc)
+    colorsUp.append(ROOT.kRed + 2)
 
-    h = results["Uncertainties"]["tot_rel_syst_unc"]
-    tot_rel_syst_unc = h.Clone("{0}_copy".format(h.GetName()))
-    sources.append(tot_rel_syst_unc)
-    for h in results["Uncertainties"]["PartialSystematicUncertainties"]:
-        print(" & ".join([h.GetTitle()] + ["{0:.1f}".format(h.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
-        h_copy = h.Clone("{0}_copy".format(h.GetName()))
-        sources.append(h_copy)
+    h = results["Uncertainties"]["tot_rel_syst_unc_up"]
+    tot_rel_syst_unc_up = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesUp.append(tot_rel_syst_unc_up)
+    colorsUp.append(ROOT.kGreen + 2)
+
+    h = results["Uncertainties"]["tot_rel_syst_unc_low"]
+    tot_rel_syst_unc_low = h.Clone("{0}_copy".format(h.GetName()))
+    sourcesLow.append(tot_rel_syst_unc_low)
+    colorsLow.append(ROOT.kGreen + 2)
+
+    colorsPart = [ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
+    cont = 0
+    for hUp, hLow in zip(results["Uncertainties"]["PartialSystematicUncertaintiesUp"], results["Uncertainties"]["PartialSystematicUncertaintiesLow"]):
+        if hLow:
+            print(" & ".join(["\multirow{{2}}{{*}}{{{}}}".format(hUp.GetTitle())] + ["+{0:.0f}".format(hUp.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
+            print(" & ".join([" "] + ["-{0:.0f}".format(hLow.GetBinContent(ibin) * 100) for ibin in range(1, hLow.GetNbinsX() + 1)]) + "\\\\")
+        else:
+            print(" & ".join([hUp.GetTitle()] + ["{0:.0f}".format(hUp.GetBinContent(ibin) * 100) for ibin in range(1, h.GetNbinsX() + 1)]) + "\\\\")
+        h_copy = hUp.Clone("{0}_copy".format(hUp.GetName()))
+        sourcesUp.append(h_copy)
+        colorsUp.append(colorsPart[cont])
+
+        if hLow:
+            h_copy = hLow.Clone("{0}_copy".format(hLow.GetName()))
+            sourcesLow.append(h_copy)
+            colorsLow.append(colorsPart[cont])
+
+        cont += 1
 
     print("\\hline")
-    print("Correlated Uncertainty & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(baseline.GetNbinsX(), results["Uncertainties"]["correlated_uncertainty"] * 100))
+    print("\\pt-independent Uncertainty & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
     print("\\hline")
-    print(" & ".join([tot_rel_syst_unc.GetTitle()] + ["{0:.1f}".format(tot_rel_syst_unc.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
     print(" & ".join([stat_unc.GetTitle()] + ["{0:.1f}".format(stat_unc.GetBinContent(ibin) * 100) for ibin in range(1, stat_unc.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
-    print(" & ".join([baseline.GetTitle()] + ["{0:.1f}".format(baseline.GetBinContent(ibin) * 100) for ibin in range(1, baseline.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join(["\multirow{2}{*}{Total Uncertainty}"] + ["+{0:.1f}".format(tot_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join([" "] + ["-{0:.1f}".format(tot_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_low.GetNbinsX() + 1)]) + "\\\\")
 
-    globalList.extend(sources)
-    globalList.append(baseline)
-    baseline.Scale(100)
-    for s in sources: s.Scale(100)
-    comp = DMesonJetCompare.DMesonJetCompare("Uncertainties_QM17")
+    globalList.extend(sourcesUp)
+    globalList.extend(sourcesLow)
+    comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
     comp.fX1LegSpectrum = 0.15
-    comp.fY1LegSpectrum = 0.77
+    comp.fX2LegSpectrum = 0.52
+    comp.fY1LegSpectrum = 0.81
     comp.fLegLineHeight = 0.05
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = False
-    comp.fNColsLegSpectrum = 2
-    r = comp.CompareSpectra(baseline, sources)
+    comp.fColors = colorsUp
+    comp.fLines = [1] * len(colorsUp)
+    r = comp.CompareSpectra(sourcesUp[0], sourcesUp[1:])
+    for obj in r:
+        globalList.append(obj)
+    comp.fOptSpectrumBaseline = "hist same"
+    comp.fColors = colorsLow
+    comp.fLines = [2] * len(colorsLow)
+    comp.fDoSpectrumLegend = False
+    r = comp.CompareSpectra(sourcesLow[0], sourcesLow[1:])
     for obj in r:
         globalList.append(obj)
 
+    comp.fLegendSpectra.SetMargin(0.1)
     canvas = comp.fCanvasSpectra
     canvas.SetTicks(1, 1)
     canvas.SetLeftMargin(0.13)
@@ -89,6 +131,23 @@ def PlotUncertainties(results):
     paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5 with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.Draw()
+
+    legUpLow = ROOT.TLegend(0.54, 0.81, 0.93, 0.71)
+    globalList.append(legUpLow)
+    legUpLow.SetFillStyle(0)
+    legUpLow.SetBorderSize(0)
+    legUpLow.SetTextFont(43)
+    legUpLow.SetTextSize(20)
+    legUpLow.SetMargin(0.1)
+    entry = legUpLow.AddEntry(ROOT.nullptr, "Symmetric/Upper Uncertainty", "l")
+    entry.SetLineColor(ROOT.kBlack)
+    entry.SetLineWidth(2)
+    entry.SetLineStyle(1)
+    entry = legUpLow.AddEntry(ROOT.nullptr, "Lower Uncertainty", "l")
+    entry.SetLineColor(ROOT.kBlack)
+    entry.SetLineWidth(2)
+    entry.SetLineStyle(2)
+    legUpLow.Draw()
 
     return canvas
 
