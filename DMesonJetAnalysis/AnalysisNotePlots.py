@@ -108,7 +108,7 @@ def main(actions, output_path, output_type):
         cname = "DataSystematics/ReconstructionEfficiencyMCShape"
         EfficiencyComparison(cname, title1, histograms["LHC15i2_c"], title2, histograms["LHC15i2_c_mcshape"])
         cname = "DataSystematics/RawYieldComparisonMCShape"
-        RawYieldComparison(cname, title1, configs["LHC10_eff"], title2, configs["LHC10_mcshape_eff"])
+        RawYieldComparison(cname, title1, configs["LHC10_eff"], title2, configs["LHC10_mcshape_eff"], False)
 
         CopyMCShapeSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
@@ -156,8 +156,8 @@ def main(actions, output_path, output_type):
     if "all" in actions or "theory_comparison" in actions:
         CopyTheoryComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
-    if "all" in actions or "ppb_comparison" in actions:
-        CopypPbComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
+    # if "all" in actions or "ppb_comparison" in actions:
+        # CopypPbComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
     if "all" in actions or "misc" in actions:
         CopypMiscFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
@@ -173,7 +173,7 @@ def CopyFiles(input_path, output_path, file_list, output_type):
         print("Copying {0}...".format(file_name))
         shutil.copy("{0}/{1}.{2}".format(input_path, file_name, output_type), output_path)
 
-def RawYieldComparison(cname, title1, config1, title2, config2):
+def RawYieldComparison(cname, title1, config1, title2, config2, refl=True):
     comp = DMesonJetCompare.DMesonJetCompare(cname)
     comp.fOptRatio = "hist"
     comp.fX1LegRatio = 0.15
@@ -188,14 +188,18 @@ def RawYieldComparison(cname, title1, config1, title2, config2):
     loader1 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config1["input_path"], config1["train"], config1["name"])
     loader1.fSpectrumName = "JetPtSpectrum"
     loader1.fKinematicCuts = "DPt_30"
-    spectrum1 = loader1.GetDefaultSpectrumFromMultiTrial("SideBand")
+    loader1.fRawYieldMethod = "SideBand"
+    loader1.fUseReflections = False
+    spectrum1 = loader1.GetDefaultSpectrumFromMultiTrial()
     spectrum1.SetTitle(title1)
     spectrum1.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     spectrum1.GetYaxis().SetTitle("raw yield")
     loader2 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config2["input_path"], config2["train"], config2["name"])
     loader2.fSpectrumName = "JetPtSpectrum"
     loader2.fKinematicCuts = "DPt_30"
-    spectrum2 = loader2.GetDefaultSpectrumFromMultiTrial("SideBand")
+    loader2.fRawYieldMethod = "SideBand"
+    loader2.fUseReflections = False
+    spectrum2 = loader2.GetDefaultSpectrumFromMultiTrial()
     spectrum2.SetTitle(title2)
     spectrum2.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     spectrum2.GetYaxis().SetTitle("raw yield")
