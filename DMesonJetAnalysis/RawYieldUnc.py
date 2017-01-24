@@ -190,48 +190,48 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
 
     histos = []
     wrap.fUseReflections = True
-    wrap.fReflFitFunc = "DoubleGaus"
-    wrap.fFixedReflOverSignal = 0
+    wrap.fReflectionFit = "DoubleGaus"
+    wrap.fReflectionRoS = 0
     default_spectrum_wrefl_DoubleGaus = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_wrefl_DoubleGaus.SetTitle("Trial Expo Free Sigma w/ refl double gaus, {0}".format(method))
     globalList.append(default_spectrum_wrefl_DoubleGaus)
     # histos.append(default_spectrum_wrefl_DoubleGaus)
 
     wrap.fUseReflections = True
-    wrap.fReflFitFunc = "DoubleGaus"
-    wrap.fFixedReflOverSignal = 5
+    wrap.fReflectionFit = "DoubleGaus"
+    wrap.fReflectionRoS = 5
     default_spectrum_wrefl_DoubleGaus_5 = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_wrefl_DoubleGaus_5.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 0.5 R/S, {0}".format(method))
     globalList.append(default_spectrum_wrefl_DoubleGaus_5)
     histos.append(default_spectrum_wrefl_DoubleGaus_5)
 
     wrap.fUseReflections = True
-    wrap.fReflFitFunc = "DoubleGaus"
-    wrap.fFixedReflOverSignal = 15
+    wrap.fReflectionFit = "DoubleGaus"
+    wrap.fReflectionRoS = 15
     default_spectrum_wrefl_DoubleGaus_15 = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_wrefl_DoubleGaus_15.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 1.5 R/S, {0}".format(method))
     globalList.append(default_spectrum_wrefl_DoubleGaus_15)
     histos.append(default_spectrum_wrefl_DoubleGaus_15)
 
     wrap.fUseReflections = True
-    wrap.fReflFitFunc = "gaus"
-    wrap.fFixedReflOverSignal = 0
+    wrap.fReflectionFit = "gaus"
+    wrap.fReflectionRoS = 0
     default_spectrum_wrefl_gaus = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_wrefl_gaus.SetTitle("Trial Expo Free Sigma w/ refl gaus, {0}".format(method))
     globalList.append(default_spectrum_wrefl_gaus)
     histos.append(default_spectrum_wrefl_gaus)
 
     wrap.fUseReflections = True
-    wrap.fReflFitFunc = "pol3"
-    wrap.fFixedReflOverSignal = 0
+    wrap.fReflectionFit = "pol3"
+    wrap.fReflectionRoS = 0
     default_spectrum_wrefl_pol3 = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_wrefl_pol3.SetTitle("Trial Expo Free Sigma w/ refl pol3, {0}".format(method))
     globalList.append(default_spectrum_wrefl_pol3)
     histos.append(default_spectrum_wrefl_pol3)
 
     wrap.fUseReflections = True
-    wrap.fReflFitFunc = "pol6"
-    wrap.fFixedReflOverSignal = 0
+    wrap.fReflectionFit = "pol6"
+    wrap.fReflectionRoS = 0
     default_spectrum_wrefl_pol6 = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_wrefl_pol6.SetTitle("Trial Expo Free Sigma w/ refl pol6, {0}".format(method))
     globalList.append(default_spectrum_wrefl_pol6)
