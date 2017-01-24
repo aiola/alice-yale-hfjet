@@ -5,8 +5,6 @@ import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
-import RawYieldSpectrumLoader
-import DataSystematics
 import DMesonJetCompare
 import array
 
