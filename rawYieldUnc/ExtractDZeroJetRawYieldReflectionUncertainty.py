@@ -113,9 +113,11 @@ def ExtractDJetRawYieldReflUncertainty(config, specie, method, debug=2):
     globalList.append(interface)
     return interface
 
-def main(config, debug):
+def main(config, b, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
+
+    if b: ROOT.gROOT.SetBatch(True)
 
     ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
     ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
@@ -155,12 +157,14 @@ if __name__ == '__main__':
     parser.add_argument('yaml', metavar='file.yaml')
     parser.add_argument('--debug', metavar='debug',
                         default=2)
+    parser.add_argument('-b', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.debug)
+    main(config, args.b, args.debug)
 
     IPython.embed()
