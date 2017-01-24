@@ -131,8 +131,6 @@ class BinSet:
                 rlist.Add(bin.fInvMassHisto)
             if bin.fMassFitter:
                 rlist.Add(bin.fMassFitter)
-            if bin.fNJetConstHisto:
-                rlist.Add(bin.fNJetConstHisto)
             if bin.fBinCountAnalysisHisto:
                 rlist.Add(bin.fBinCountAnalysisHisto)
         return rlist
@@ -162,7 +160,6 @@ class BinLimits:
     def __init__(self, limits=dict()):
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
-        self.fNJetConstHisto = None
         self.fMassFitter = None
         self.fBinCountAnalysisAxis = None
         self.fBinCountAnalysisSecondAxis = None
@@ -173,8 +170,6 @@ class BinLimits:
     def Fill(self, dmeson, jet, w):
         self.fCounts += w
         self.fSumw2 += w * w
-        if self.fNJetConstHisto:
-            self.fNJetConstHisto.Fill(jet.fN, w)
         if self.fInvMassHisto:
             self.fInvMassHisto.Fill(dmeson.fInvMass, w)
 
@@ -308,19 +303,7 @@ class BinLimits:
         self.CreateQAHistos(trigger, DMesonDef, yAxis)
 
     def CreateQAHistos(self, trigger, DMesonDef, yAxis):
-        if trigger:
-            hname = "NJetConstituents_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
-            htitle = "{0} - {1} N Jet Constituents: {2};no. of jet constituents;{3}".format(trigger, DMesonDef, self.GetTitle(), yAxis)
-        else:
-            hname = "NJetConstituents_{0}_{1}".format(DMesonDef, self.GetName())
-            htitle = "{0} N Jet Constituents: {1};no. of jet constituents;{2}".format(DMesonDef, self.GetTitle(), yAxis)
-
-        self.fNJetConstHisto = ROOT.TH1D(hname, htitle, 50, 0.5, 50.5)
-        self.fNJetConstHisto.Sumw2()
-        self.fNJetConstHisto.SetMarkerSize(0.9)
-        self.fNJetConstHisto.SetMarkerStyle(ROOT.kFullCircle)
-        self.fNJetConstHisto.SetMarkerColor(ROOT.kBlue + 2)
-        self.fNJetConstHisto.SetLineColor(ROOT.kBlue + 2)
+        pass
 
     def CreateInvMassHisto(self, trigger, DMesonDef, xAxis, yAxis, nMassBins, minMass, maxMass):
         if trigger:
