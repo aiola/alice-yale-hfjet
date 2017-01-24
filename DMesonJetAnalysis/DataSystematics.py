@@ -48,7 +48,7 @@ def Start(config):
     return results
 
 def LoadHistograms(config):
-    crossSection = 62.3  # mb CINT1
+    crossSection = 62.2  # mb CINT1
     branchingRatio = 0.0393  # D0->Kpi
     antiPartNorm = 2.0  # D0 / D0bar
 

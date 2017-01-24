@@ -72,7 +72,7 @@ class DataSpectrumDef:
         self.fUnfoldingMethod = unfoldingMethod
         self.fUnfoldingReg = unfoldingReg
         self.fUnfoldingPrior = unfoldingPrior
-        self.fCrossSection = 62.3  # mb CINT1
+        self.fCrossSection = 62.2  # mb CINT1
         self.fBranchingRatio = 0.0393  # D0->Kpi
         self.fAntiParticleNorm = 2.0
 
