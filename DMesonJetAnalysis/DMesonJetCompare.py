@@ -52,6 +52,7 @@ class DMesonJetCompare:
         self.fX1LegRatio = 0.55
         self.fY1LegRatio = 0.87
         self.fX1LegSpectrum = 0.55
+        self.fX2LegSpectrum = 0.90
         self.fY1LegSpectrum = 0.87
         self.fLogUpperSpace = 10  # this factor will be used to adjust the y axis in log scale
         self.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
@@ -93,7 +94,7 @@ class DMesonJetCompare:
         else:
             y1 = self.fY1LegSpectrum - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
             if y1 < 0.2: y1 = 0.2
-            self.fLegendSpectra = ROOT.TLegend(self.fX1LegSpectrum, y1, 0.9, self.fY1LegSpectrum)
+            self.fLegendSpectra = ROOT.TLegend(self.fX1LegSpectrum, y1, self.fX2LegSpectrum, self.fY1LegSpectrum)
             self.fLegendSpectra.SetName("{0}_legend".format(self.fCanvasSpectra.GetName()))
             self.fLegendSpectra.SetNColumns(self.fNColsLegSpectrum)
             self.fLegendSpectra.SetFillStyle(0)
