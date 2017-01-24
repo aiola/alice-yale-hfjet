@@ -259,7 +259,7 @@ class RawYieldSpectrumLoader:
         fdHist = fdCorrection.fFDHistogram.Clone("FD")
         fdSyst = fdCorrection.fFDSystUncHistogram.Clone("FDSystUnc")
 
-        crossSection = 62.3  # mb CINT1
+        crossSection = 62.2  # mb CINT1
         branchingRatio = 0.0393  # D0->Kpi
         if self.fEvents is None: self.LoadNumberOfEvents()
         fdHist.Scale(self.fEvents / crossSection * branchingRatio)

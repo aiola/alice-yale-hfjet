@@ -16,7 +16,7 @@ input_path = "/Volumes/DATA/ALICE/JetResults"
 
 pass4DmesonAna = "HFPtSpectrum_Pass4_combinedFDForLow_mergeThr1.root"
 
-crossSection = 62.3  # mb CINT1
+crossSection = 62.2  # mb CINT1
 branchingRatio = 0.0393  # D0->Kpi
 antiPartNorm = 2.0  # D0 / D0bar
 events = 0
