@@ -157,7 +157,7 @@ def PlotBFeedDown():
     ratio2.GetYaxis().SetLabelFont(43)
     ratio2.GetYaxis().SetLabelSize(22)
     ratio2.GetYaxis().SetTitleOffset(0.9)
-    ratio2.GetYaxis().SetRangeUser(0, 0.59)
+    ratio2.GetYaxis().SetRangeUser(0, 0.69)
 
     ratio2_up = hFD_up_copy.DrawCopy("same hist l")
     globalList.append(ratio2_up)
@@ -177,7 +177,7 @@ def PlotBFeedDown():
     paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c., #it{p}_{T,D} > 3 GeV/#it{c}")
-    paveALICE.AddText("Raw B Feed-Down Fraction")
+    paveALICE.AddText("Raw B Feed-Down Fraction from POWHEG+PYTHIA6")
     paveALICE.AddText("Not corrected for reconstruction efficiency and")
     paveALICE.AddText("jet momentum resolution")
     paveALICE.Draw()
