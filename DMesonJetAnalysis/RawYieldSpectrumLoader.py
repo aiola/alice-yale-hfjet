@@ -4,6 +4,7 @@
 import ROOT
 import numpy
 import DMesonJetFDCorrection
+import DMesonJetUtils
 
 class RawYieldSpectrumLoader:
     def __init__(self, input_path=None, train=None, ana_name=None):
@@ -27,8 +28,9 @@ class RawYieldSpectrumLoader:
         self.fMultiTrialSubDir = None
         self.fDataJetList = None
         self.fDataMesonList = None
+        self.LoadNumberOfEvents = self.LoadNumberOfEventsNew
 
-    def LoadNumberOfEvents(self):
+    def LoadNumberOfEventsOld(self):
         if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
         inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         inputSpectrum = self.fDataSpectrumList.FindObject(inputSpectrumName)
@@ -46,6 +48,39 @@ class RawYieldSpectrumLoader:
         temp.Scale(1, "width")
         temp.Divide(normInputSpectrum)
         self.fEvents = temp.GetBinContent(1)
+        return self.fEvents
+
+    def LoadNumberOfEventsNew(self):
+        periods = ["LHC10b", "LHC10c", "LHC10d", "LHC10e"]
+        nRecoVertVz_LT10 = 0
+        nRecoVertVz_GT10 = 0
+        nNoVert = 0
+        nVzSPD = 0
+        for p in periods:
+            fname = "{input_path}/{train}/{period}/merge/AnalysisResults.root".format(input_path=self.fInputPath, train=self.fTrain, period=p)
+            file = ROOT.TFile(fname)
+            if not file or file.IsZombie():
+                print("Could not open file {0}".format(fname))
+                exit(1)
+            EMCALrejEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_AnyINT_histos/fHistEventRejection")
+            RDHFrejEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_AnyINT_histos/histosAliAnalysisTaskDmesonJets_AnyINT/{dmeson}/fHistEventRejectionReasons".format(dmeson=self.fDMeson))
+            accEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_AnyINT_histos/histosAliAnalysisTaskDmesonJets_AnyINT/{dmeson}/fHistNEvents".format(dmeson=self.fDMeson))
+            nRecoVertVz_LT10 += accEvents.GetBinContent(accEvents.GetXaxis().FindBin("Accepted"))
+            nRecoVertVz_GT10 += EMCALrejEvents.GetBinContent(EMCALrejEvents.GetXaxis().FindBin("Vz"))
+            nNoVert += EMCALrejEvents.GetBinContent(EMCALrejEvents.GetXaxis().FindBin("vertex contr."))
+            nNoVert += RDHFrejEvents.GetBinContent(RDHFrejEvents.GetXaxis().FindBin("NoVertex"))
+            nVzSPD += EMCALrejEvents.GetBinContent(EMCALrejEvents.GetXaxis().FindBin("VzSPD"))
+            file.Close()
+        print("Total number of accepted events (Vz < 10 cm): {0:e}".format(nRecoVertVz_LT10))
+        print("Total number of rejected events with reconstructed vertex Vz > 10 cm: {0:e}".format(nRecoVertVz_GT10))
+        print("Total number of rejected events with reconstructed vertex |Vz_V0 - Vz_SPD| > 0.5 cm: {0:e}".format(nVzSPD))
+        print("Total number of rejected events without reconstructed vertex: {0:e}".format(nNoVert))
+        nRecoVert = nRecoVertVz_LT10 + nRecoVertVz_GT10
+        normEvents = nRecoVertVz_LT10 + nNoVert * (1 - nRecoVertVz_GT10 / nRecoVert)
+        print("Number of events with Vz < 10 cm (regardless of whether the vertex was reconstructed): {0:e}".format(normEvents))
+        print("Corrective factor effective / actual accepted events: {0:e}".format(normEvents / nRecoVertVz_LT10))
+        print("Fraction of events cut because of SPD cut: {0:e}".format(nVzSPD / normEvents))
+        self.fEvents = normEvents
         return self.fEvents
 
     def LoadDataFileFromDMesonJetAnalysis(self):
