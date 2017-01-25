@@ -4,6 +4,7 @@
 import ROOT
 import math
 import DMesonJetUtils
+import random
 
 class DMesonJetCompare:
     def __init__(self, name):
@@ -24,21 +25,9 @@ class DMesonJetCompare:
         self.fLegendRatio = None
         self.fBaselineRatio = None
         self.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
-        self.fColors += self.fColors[1:]
-        self.fColors += self.fColors[2:]
-        self.fColors += self.fColors[1:]
         self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kFullCross, ROOT.kMultiply, ROOT.kPlus]
-        self.fMarkers += self.fMarkers[0:]
-        self.fMarkers += self.fMarkers[1:]
-        self.fMarkers += self.fMarkers[0:]
         self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
-        self.fLines += self.fLines[0:]
-        self.fLines += self.fLines[1:]
-        self.fLines += self.fLines[0:]
         self.fFills = [3001, 3002, 3003, 3004, 3005, 3006, 3007]
-        self.fFills += self.fFills[0:]
-        self.fFills += self.fFills[1:]
-        self.fFills += self.fFills[0:]
         self.fMainHistogram = None
         self.fMainRatioHistogram = None
         self.fMaxSpectrum = None
@@ -67,6 +56,7 @@ class DMesonJetCompare:
         self.fGridyRatio = False
         self.fFitFunction = "expo(0)+expo(2)"
         self.fDoSpectrumLegend = True
+        self.fDoRatioLegend = True
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -87,20 +77,21 @@ class DMesonJetCompare:
         if self.fDoSpectraPlot == "logy":
             self.fCanvasSpectra.SetLogy()
 
-        if self.fDoSpectrumLegend and self.fLegendSpectra:
-            y1 = self.fLegendSpectra.GetY1() - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
-            if y1 < 0.2: y1 = 0.2
-            self.fLegendSpectra.SetY1(y1)
-        else:
-            y1 = self.fY1LegSpectrum - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
-            if y1 < 0.2: y1 = 0.2
-            self.fLegendSpectra = ROOT.TLegend(self.fX1LegSpectrum, y1, self.fX2LegSpectrum, self.fY1LegSpectrum)
-            self.fLegendSpectra.SetName("{0}_legend".format(self.fCanvasSpectra.GetName()))
-            self.fLegendSpectra.SetNColumns(self.fNColsLegSpectrum)
-            self.fLegendSpectra.SetFillStyle(0)
-            self.fLegendSpectra.SetBorderSize(0)
-            self.fLegendSpectra.SetTextFont(43)
-            self.fLegendSpectra.SetTextSize(self.fLegTextSize)
+        if self.fDoSpectrumLegend:
+            if self.fLegendSpectra:
+                y1 = self.fLegendSpectra.GetY1() - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
+                if y1 < 0.2: y1 = 0.2
+                self.fLegendSpectra.SetY1(y1)
+            else:
+                y1 = self.fY1LegSpectrum - self.fLegLineHeight * (len(self.fHistograms) + 1) / self.fNColsLegSpectrum
+                if y1 < 0.2: y1 = 0.2
+                self.fLegendSpectra = ROOT.TLegend(self.fX1LegSpectrum, y1, self.fX2LegSpectrum, self.fY1LegSpectrum)
+                self.fLegendSpectra.SetName("{0}_legend".format(self.fCanvasSpectra.GetName()))
+                self.fLegendSpectra.SetNColumns(self.fNColsLegSpectrum)
+                self.fLegendSpectra.SetFillStyle(0)
+                self.fLegendSpectra.SetBorderSize(0)
+                self.fLegendSpectra.SetTextFont(43)
+                self.fLegendSpectra.SetTextSize(self.fLegTextSize)
 
         if "hist" in self.fOptSpectrumBaseline:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
@@ -159,20 +150,21 @@ class DMesonJetCompare:
         n = len(self.fHistograms)
         if self.fRatioRelativeUncertainty or self.fSeparateBaselineUncertainty: n += 1
 
-        if self.fLegendRatio:
-            y1 = self.fLegendRatio.GetY1() - self.fLegLineHeight * n / self.fNColsLegRatio
-            if y1 < 0.2: y1 = 0.2
-            self.fLegendRatio.SetY1(y1)
-        else:
-            y1 = self.fY1LegRatio - self.fLegLineHeight * n / self.fNColsLegRatio
-            if y1 < 0.2: y1 = 0.2
-            self.fLegendRatio = ROOT.TLegend(self.fX1LegRatio, y1, 0.9, self.fY1LegRatio)
-            self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
-            self.fLegendRatio.SetNColumns(self.fNColsLegRatio)
-            self.fLegendRatio.SetFillStyle(0)
-            self.fLegendRatio.SetBorderSize(0)
-            self.fLegendRatio.SetTextFont(43)
-            self.fLegendRatio.SetTextSize(self.fLegTextSize)
+        if self.fDoRatioLegend:
+            if self.fLegendRatio:
+                y1 = self.fLegendRatio.GetY1() - self.fLegLineHeight * n / self.fNColsLegRatio
+                if y1 < 0.2: y1 = 0.2
+                self.fLegendRatio.SetY1(y1)
+            else:
+                y1 = self.fY1LegRatio - self.fLegLineHeight * n / self.fNColsLegRatio
+                if y1 < 0.2: y1 = 0.2
+                self.fLegendRatio = ROOT.TLegend(self.fX1LegRatio, y1, 0.9, self.fY1LegRatio)
+                self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
+                self.fLegendRatio.SetNColumns(self.fNColsLegRatio)
+                self.fLegendRatio.SetFillStyle(0)
+                self.fLegendRatio.SetBorderSize(0)
+                self.fLegendRatio.SetTextFont(43)
+                self.fLegendRatio.SetTextSize(self.fLegTextSize)
 
         if self.fGridyRatio: self.fCanvasRatio.SetGridy()
 
@@ -190,7 +182,7 @@ class DMesonJetCompare:
             h.SetFillStyle(self.fFills[0])
             h.SetLineColor(self.fColors[0])
             h.GetYaxis().SetTitle(self.fYaxisRatio)
-            self.fLegendRatio.AddEntry(h, h.GetTitle(), "f")
+            if self.fDoRatioLegend: self.fLegendRatio.AddEntry(h, h.GetTitle(), "f")
             self.fResults.append(h)
             if not "same" in self.fOptRatio:
                 self.fOptRatio += "same"
@@ -282,13 +274,13 @@ class DMesonJetCompare:
             hRatio.SetLineColor(color)
             hRatio.SetLineWidth(3)
             hRatio.SetLineStyle(line)
-            self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "l")
+            if self.fDoRatioLegend: self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "l")
         else:
             hRatio.SetMarkerColor(color)
             hRatio.SetLineColor(color)
             hRatio.SetMarkerStyle(marker)
             hRatio.SetMarkerSize(1.2)
-            self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "pe")
+            if self.fDoRatioLegend: self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "pe")
         self.fRatios.append(hRatio)
         hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
         hRatio.Divide(self.fBaselineForRatio)
@@ -313,6 +305,10 @@ class DMesonJetCompare:
             self.fOptRatio += "same"
 
     def CompareSpectra(self, baseline, histos):
+        while len(histos) + 1 > len(self.fColors): self.fColors += random.sample(self.fColors[1:], len(self.fColors) - 1)
+        while len(histos) + 1 > len(self.fMarkers): self.fMarkers += random.sample(self.fMarkers[1:], len(self.fMarkers) - 1)
+        while len(histos) + 1 > len(self.fLines): self.fLines += random.sample(self.fLines[1:], len(self.fLines) - 1)
+        while len(histos) + 1 > len(self.fFills): self.fFills += random.sample(self.fFills[1:], len(self.fFills) - 1)
         self.fResults = []
         print("CompareSpectra: {0}".format(self.fName))
         self.fBaselineHistogram = baseline
@@ -365,7 +361,7 @@ class DMesonJetCompare:
             self.fMainRatioHistogram.SetMinimum(min)
             self.fMainRatioHistogram.SetMaximum(max)
             self.fCanvasRatio.cd()
-            self.fLegendRatio.Draw()
+            if self.fDoRatioLegend: self.fLegendRatio.Draw()
 
         if not self.fMaxSpectrum is None and not self.fMinSpectrum is None:
             if self.fDoSpectraPlot == "logy":
@@ -378,7 +374,7 @@ class DMesonJetCompare:
             self.fMainHistogram.SetMinimum(min)
             self.fMainHistogram.SetMaximum(max)
             self.fCanvasSpectra.cd()
-            self.fLegendSpectra.Draw()
+            if self.fDoSpectrumLegend: self.fLegendSpectra.Draw()
 
     def CheckConsistency(self, h1, h2):
         if h1.GetNbinsX() != h2.GetNbinsX(): return False

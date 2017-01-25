@@ -281,7 +281,6 @@ def SideBandFinalRawYieldUnc(input_path, train, ana):
             h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
             h_copy.GetYaxis().SetTitle("counts")
             histos.append(h_copy)
-            if len(histos) > 35: break
     file.Close()
     fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand.root".format(input_path, train, ana)
     file = ROOT.TFile(fname)
@@ -300,6 +299,8 @@ def SideBandFinalRawYieldUnc(input_path, train, ana):
     comp.fNColsLegSpectrum = 3
     comp.fX1LegRatio = 0.15
     comp.fX1LegSpectrum = 0.15
+    comp.fDoSpectrumLegend = False
+    comp.fDoRatioLegend = False
     r = comp.CompareSpectra(baseline_copy, histos)
     for obj in r:
         if not obj in globalList:
@@ -319,7 +320,6 @@ def SideBandRawYieldUnc(input_path, train, ana):
                 h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
                 h_copy.GetYaxis().SetTitle("counts")
                 histos.append(h_copy)
-                if len(histos) > 35: break
         file.Close()
         fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand_{3}.root".format(input_path, train, ana, ibin)
         file = ROOT.TFile(fname)
@@ -333,6 +333,8 @@ def SideBandRawYieldUnc(input_path, train, ana):
         globalList.extend(histos)
         cname = "CompareRawYieldUncVariations_{0}".format(ibin)
         comp = DMesonJetCompare.DMesonJetCompare(cname)
+        comp.fDoSpectrumLegend = False
+        comp.fDoRatioLegend = False
         comp.fOptRatio = "hist"
         comp.fNColsLegRatio = 3
         comp.fNColsLegSpectrum = 3
