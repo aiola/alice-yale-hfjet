@@ -1,0 +1,3 @@
+year: 2015
+datasets: [LHC15a2a]
+train: Jets_EMC_pp_MC
