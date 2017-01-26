@@ -47,10 +47,12 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=100, allowRepet=False, debug=2):
+def ExtractDJetRawYieldUncertainty(config, specie, method, single_trial, nTrials=100, allowRepet=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
-    interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
+    # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
+    if single_trial: interface.SetMaxNTrialsForSidebandMethod(0)
+    else: interface.SetMaxNTrialsForSidebandMethod(nTrials)
     interface.SetAllowRepetitionOfTrialExtraction(allowRepet)
 
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
@@ -64,11 +66,11 @@ def ExtractDJetRawYieldUncertainty(config, specie, method, nTrials=100, allowRep
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, nTrials=100, debug=2):
+def ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(config, specie, single_trial, nTrials=100, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(ROOT.AliDJetRawYieldUncertainty.kSideband)
-    interface.SetMaxNTrialsForSidebandMethod(nTrials)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
-
+    if single_trial: interface.SetMaxNTrialsForSidebandMethod(0)
+    else: interface.SetMaxNTrialsForSidebandMethod(nTrials)
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
 
     evalunc = interface.EvaluateUncertainty_CoherentTrialChoice()
@@ -295,13 +297,13 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
        for minPt, maxPt in zip(ptJetbins[:-1], ptJetbins[1:]):
            interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, minPt, maxPt, refl, single_trial)
            rawYieldUncInvMassFit.append(interface)
-    if not skip_combine: rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale)
+    if not skip_combine: rawYieldUncSummaryInvMassFit = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kEffScale, single_trial)
 
     if not skip_binbybin and not reuse_binbybin:
         for minPt, maxPt in zip(ptDbins[:-1], ptDbins[1:]):
             interface = EvaluateBinPerBinUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, minPt, maxPt, refl, single_trial)
             rawYieldUncSideBand.append(interface)
-    if not skip_combine: rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
+    if not skip_combine: rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, single_trial)
 
     if not do_not_move: MoveFiles(outputPath)
 
