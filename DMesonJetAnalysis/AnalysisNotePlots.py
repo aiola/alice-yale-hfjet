@@ -279,6 +279,7 @@ def CopyBFeedDown(input_path, output_path, output_type):
     file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum")
     file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_Ratio")
     file_list.append("BFeedDown_JetPtSpectrum_DPt_30_GeneratorLevel_JetPtSpectrum_canvas")
+    file_list.append("BFeedDown_InternalPlot")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopDataSystematics(input_path, output_path, output_type):
