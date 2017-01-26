@@ -44,14 +44,24 @@ def GetTheoryCrossSection():
     if not hSystUp:
         print("Cannot get theory cross section lower systematic uncertainty!")
         exit(1)
+    hSyst = DMesonJetUtils.GetObject(file, "SystematicUncertainty/JetPtSpectrum_DPt_30//GeneratorLevel_JetPtSpectrum/GeneratorLevel_JetPtSpectrum_CentralAsymmSyst")
+    if not hSystUp:
+        print("Cannot get theory cross section lower systematic uncertainty!")
+        exit(1)
 
     # scale for the bin width and the antiparticle factor
     hStat.Scale(0.5, "width")
     hSystUp.Scale(0.5, "width")
     hSystLow.Scale(0.5, "width")
-    return hStat, hSystUp, hSystLow
 
-def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLow):
+    # scale for antiparticle factor
+    for i in range(0, hSyst.GetN()):
+        hSyst.SetPoint(i, hSyst.GetX()[i], hSyst.GetY()[i] / 2)
+        hSyst.SetPointError(i, hSyst.GetErrorXlow(i), hSyst.GetErrorXhigh(i), hSyst.GetErrorYlow(i) / 2, hSyst.GetErrorYhigh(i) / 2)
+
+    return hStat, hSystUp, hSystLow, hSyst
+
+def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLow, theorySyst):
     cname = "FinalSpectrum_QM17"
     canvas = ROOT.TCanvas(cname, cname, 700, 700)
     globalList.append(canvas)
@@ -72,7 +82,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     padMain.cd()
     padMain.SetLogy()
     h = dataStat.DrawCopy("axis")
-    h.GetYaxis().SetRangeUser(2e-5, 5e-1)
+    h.GetYaxis().SetRangeUser(2e-5, 7e-1)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
@@ -95,17 +105,25 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     theoryStat_copy.SetMarkerStyle(ROOT.kOpenCircle)
     theoryStat_copy.SetMarkerSize(1.2)
 
-    theorySystUp_copy = theoryStat.DrawCopy("same hist l")
-    globalList.append(theorySystUp_copy)
-    theorySystUp_copy.Add(theorySystUp, 1)
-    theorySystUp_copy.SetLineColor(ROOT.kBlue + 2)
-    theorySystUp_copy.SetLineWidth(1)
 
-    theorySystLow_copy = theoryStat.DrawCopy("same hist l")
-    globalList.append(theorySystLow_copy)
-    theorySystLow_copy.Add(theorySystLow, -1)
-    theorySystLow_copy.SetLineColor(ROOT.kBlue + 2)
-    theorySystLow_copy.SetLineWidth(1)
+    theorySyst_copy = theorySyst.Clone("theorySyst_copy")
+    globalList.append(theorySyst_copy)
+    theorySyst_copy.Draw("2")
+    theorySyst_copy.SetFillStyle(0)
+    theorySyst_copy.SetLineWidth(2)
+    theorySyst_copy.SetLineColor(ROOT.kBlue + 2)
+
+#     theorySystUp_copy = theoryStat.DrawCopy("same hist l")
+#     globalList.append(theorySystUp_copy)
+#     theorySystUp_copy.Add(theorySystUp, 1)
+#     theorySystUp_copy.SetLineColor(ROOT.kBlue + 2)
+#     theorySystUp_copy.SetLineWidth(1)
+#
+#     theorySystLow_copy = theoryStat.DrawCopy("same hist l")
+#     globalList.append(theorySystLow_copy)
+#     theorySystLow_copy.Add(theorySystLow, -1)
+#     theorySystLow_copy.SetLineColor(ROOT.kBlue + 2)
+#     theorySystLow_copy.SetLineWidth(1)
 
     padRatio.cd()
 
@@ -124,15 +142,21 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(0, 3.9)
+    hRatio.GetYaxis().SetRangeUser(0, 2.49)
+    hRatio.GetYaxis().SetNdivisions(509)
 
     ratioSyst.Draw("2")
     ratioStat = dataStat_copy.DrawCopy("same p e0 x0")
     globalList.append(ratioStat)
-    ratioTheorySystUp = theorySystUp_copy.DrawCopy("same hist l")
-    globalList.append(ratioTheorySystUp)
-    ratioTheorySystLow = theorySystLow_copy.DrawCopy("same hist l")
-    globalList.append(ratioTheorySystLow)
+
+    ratioTheorySyst = theorySyst_copy.Clone("ratioTheorySyst")
+    globalList.append(ratioTheorySyst)
+    ratioTheorySyst.Draw("2")
+
+#     ratioTheorySystUp = theorySystUp_copy.DrawCopy("same hist l")
+#     globalList.append(ratioTheorySystUp)
+#     ratioTheorySystLow = theorySystLow_copy.DrawCopy("same hist l")
+#     globalList.append(ratioTheorySystLow)
 
     for ibin in range(1, ratioStat.GetNbinsX() + 1):
         ratioSyst.SetPoint(ibin - 1, ratioSyst.GetX()[ibin - 1], ratioSyst.GetY()[ibin - 1] / theoryStat_copy.GetBinContent(ibin))
@@ -140,8 +164,11 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
         ratioSyst.SetPointEYhigh(ibin - 1, ratioSyst.GetErrorYhigh(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
         ratioStat.SetBinContent(ibin, ratioStat.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
         ratioStat.SetBinError(ibin, ratioStat.GetBinError(ibin) / theoryStat_copy.GetBinContent(ibin))
-        ratioTheorySystUp.SetBinContent(ibin, ratioTheorySystUp.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
-        ratioTheorySystLow.SetBinContent(ibin, ratioTheorySystLow.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
+        # ratioTheorySystUp.SetBinContent(ibin, ratioTheorySystUp.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
+        # ratioTheorySystLow.SetBinContent(ibin, ratioTheorySystLow.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
+        ratioTheorySyst.SetPoint(ibin - 1, ratioTheorySyst.GetX()[ibin - 1], ratioTheorySyst.GetY()[ibin - 1] / theoryStat_copy.GetBinContent(ibin))
+        ratioTheorySyst.SetPointEYlow(ibin - 1, ratioTheorySyst.GetErrorYlow(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
+        ratioTheorySyst.SetPointEYhigh(ibin - 1, ratioTheorySyst.GetErrorYhigh(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
 
     padMain.cd()
     leg1 = ROOT.TLegend(0.34, 0.39, 0.80, 0.65, "", "NB NDC")
@@ -150,24 +177,26 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
     leg1.SetTextSize(23)
-    leg1.SetTextAlign(13)
+    leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    leg1.AddEntry(dataStat_copy, "ALICE", "pe")
+    leg1.AddEntry(dataStat_copy, "ALICE", "p")
     leg1.AddEntry(dataSyst_copy, "Systematic Uncertainty (data)", "f")
-    leg1.AddEntry(theoryStat_copy, "POWHEG+PYTHIA6", "pe")
-    leg1.AddEntry(theorySystUp_copy, "Systematic Uncertainty (theory)", "l")
+    leg1.AddEntry(theoryStat_copy, "POWHEG+PYTHIA6", "p")
+    # leg1.AddEntry(theorySystUp_copy, "Systematic Uncertainty (theory)", "l")
+    leg1.AddEntry(theorySyst_copy, "Systematic Uncertainty (theory)", "f")
     leg1.Draw()
 
     padMain.cd()
-    paveALICE = ROOT.TPaveText(0.16, 0.71, 0.55, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.16, 0.68, 0.55, 0.90, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
+    paveALICE.AddText("ALICE Preliminary")
+    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.Draw()
 
@@ -183,8 +212,8 @@ def main():
     ROOT.gStyle.SetOptStat(0)
 
     dataStat, dataSyst = GetMeasuredCrossSection()
-    theoryStat, theorySystUp, theorySystDown = GetTheoryCrossSection()
-    canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown)
+    theoryStat, theorySystUp, theorySystDown, theorySyst = GetTheoryCrossSection()
+    canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
     canvas.SaveAs("{0}/D0JetCrossSection_pp7TeV.pdf".format(input_path))
 
 if __name__ == '__main__':

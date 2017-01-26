@@ -12,11 +12,11 @@ globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
 
-def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
+def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg2=False):
     pad.SetTicks(1, 1)
     pad.SetLeftMargin(0.22)
     pad.SetRightMargin(0.02)
-    pad.SetTopMargin(0.09)
+    pad.SetTopMargin(0.04)
     pad.SetBottomMargin(0.13)
     sbHist = sbList.FindObject("InvMassSBWindow_AnyINT_D0_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
     h = sbHist.DrawCopy("axis")
@@ -70,8 +70,8 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
     invMassHist = dptbinList.FindObject("InvMass_AnyINT_D0_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
     invMassHist_copy = invMassHist.DrawCopy("p0 x0 same")
     globalList.append(invMassHist_copy)
-    invMassHist_copy.SetLineColor(ROOT.kBlue + 2)
-    invMassHist_copy.SetMarkerColor(ROOT.kBlue + 2)
+    invMassHist_copy.SetLineColor(ROOT.kBlue + 3)
+    invMassHist_copy.SetMarkerColor(ROOT.kBlue + 3)
     invMassHist_copy.SetMarkerStyle(ROOT.kFullCircle)
     invMassHist_copy.SetMarkerSize(1.0)
 
@@ -82,13 +82,12 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
     diff = invMassHist_copy.GetMaximum() - invMassHist_copy.GetMinimum()
     miny = invMassHist_copy.GetMinimum() - 0.2 * diff
     if miny < 0: miny = 0
-    maxy = invMassHist_copy.GetMaximum() + 0.8 * diff
+    maxy = invMassHist_copy.GetMaximum() + 0.85 * diff
     h.SetMaximum(maxy)
     h.SetMinimum(miny)
 
-    binTitle = "{0:.0f} < #it{{p}}_{{T,D}} < {1:.0f} GeV/#it{{c}}".format(ptmin, ptmax)
-
-    h.GetYaxis().SetTitle("counts / efficiency")
+    h.GetYaxis().SetTitle("counts / (efficiency #times acceptance)")
+    h.GetXaxis().SetTitle("M(K#pi) (GeV/#it{c}^{2})")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(2.2)
     h.GetXaxis().SetTitleSize(19)
@@ -96,34 +95,57 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg=False):
     h.GetXaxis().SetLabelOffset(0.009)
     h.GetXaxis().SetLabelSize(18)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleOffset(4.5)
+    h.GetYaxis().SetTitleOffset(3.3)
     h.GetYaxis().SetTitleSize(19)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelOffset(0.009)
     h.GetYaxis().SetLabelSize(23)
-    htitle = ROOT.TPaveText(0.15, 0.90, 0.95, 0.99, "NB NDC")
+
+    binTitle = "{0:.0f} < #it{{p}}_{{T,D}} < {1:.0f} GeV/#it{{c}}".format(ptmin, ptmax)
+    htitle = ROOT.TPaveText(0.22, 0.86, 0.98, 0.92, "NB NDC")
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
     htitle.SetTextSize(20)
-    htitle.SetTextAlign(21)
+    htitle.SetTextAlign(22)
     htitle.AddText(binTitle)
     htitle.Draw()
     globalList.append(htitle)
 
-    if plotleg:
-        leg = ROOT.TLegend(0.23, 0.58, 0.57, 0.87, "", "NB NDC")
+    fitInfo = ROOT.TPaveText(0.25, 0.76, 0.58, 0.85, "NB NDC")
+    fitInfo.SetBorderSize(0)
+    fitInfo.SetFillStyle(0)
+    fitInfo.SetTextFont(43)
+    fitInfo.SetTextSize(18)
+    fitInfo.SetTextAlign(12)
+    fitInfo.AddText(fitter.GetSignalMeanString().Data())
+    fitInfo.AddText(fitter.GetSignalWidthString().Data())
+    fitInfo.Draw()
+    globalList.append(fitInfo)
+
+    if plotleg1:
+        leg = ROOT.TLegend(0.25, 0.54, 0.58, 0.73, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(43)
-        leg.SetTextSize(20)
-        leg.SetTextAlign(13)
-        leg.AddEntry(invMassHist_copy, "D^{0}-jet Candidates", "pe")
+        leg.SetTextSize(18)
+        leg.SetTextAlign(12)
+        leg.AddEntry(invMassHist_copy, "D^{0}-Jet Candidates", "p")
         leg.AddEntry(fitter.GetFitFunction(), "Fit Sig+Bkg", "l")
         leg.AddEntry(fitter.GetBkgFunction(), "Fit Bkg-only", "l")
-        leg.AddEntry(sigHist_copy, "Signal Window", "f")
-        leg.AddEntry(sbHist_copy_l, "S-B Window", "f")
+        leg.Draw()
+
+    if plotleg2:
+        leg = ROOT.TLegend(0.25, 0.61, 0.58, 0.73, "", "NB NDC")
+        globalList.append(leg)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(43)
+        leg.SetTextSize(18)
+        leg.SetTextAlign(12)
+        leg.AddEntry(sigHist_copy, "Signal Region", "f")
+        leg.AddEntry(sbHist_copy_l, "Side Bands", "f")
         leg.Draw()
 
 def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
@@ -162,7 +184,7 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     subHist_copy.SetMarkerStyle(ROOT.kOpenDiamond)
     subHist_copy.SetMarkerSize(1.7)
 
-    h.GetYaxis().SetTitle("counts / efficiency")
+    h.GetYaxis().SetTitle("counts / (efficiency #times acceptance)")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(2.2)
     h.GetXaxis().SetTitleSize(19)
@@ -170,7 +192,7 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     h.GetXaxis().SetLabelOffset(0.009)
     h.GetXaxis().SetLabelSize(18)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleOffset(4.5)
+    h.GetYaxis().SetTitleOffset(4.3)
     h.GetYaxis().SetTitleSize(19)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelOffset(0.009)
@@ -182,21 +204,21 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     # maxy *= 3
     diff = sigHist_copy.GetMaximum() - sigHist_copy.GetMinimum()
     miny = sigHist_copy.GetMinimum() - 0.10 * diff
-    maxy = sigHist_copy.GetMaximum() + 0.15 * diff
+    maxy = sigHist_copy.GetMaximum() + 0.3 * diff
     h.SetMaximum(maxy)
     h.SetMinimum(miny)
 
     if plotleg:
-        leg = ROOT.TLegend(0.48, 0.70, 0.87, 0.90, "", "NB NDC")
+        leg = ROOT.TLegend(0.52, 0.70, 0.87, 0.90, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(43)
         leg.SetTextSize(20)
         leg.SetTextAlign(13)
-        leg.AddEntry(sigHist_copy, "Signal Window", "pe")
-        leg.AddEntry(sbHist_copy, "SB Window", "pe")
-        leg.AddEntry(subHist_copy, "Signal - SB", "pe")
+        leg.AddEntry(sigHist_copy, "Signal Region", "p")
+        leg.AddEntry(sbHist_copy, "Side Bands", "p")
+        leg.AddEntry(subHist_copy, "Signal - SB", "p")
         leg.Draw()
 
 def SideBandPlot():
@@ -214,27 +236,31 @@ def SideBandPlot():
     canvas = ROOT.TCanvas(cname, cname, 1200, 800)
     globalList.append(canvas)
     canvas.Divide(3, 2)
-    PlotSBInvMass(canvas.cd(1), 4, 5, sbList, dptbinList)
-    PlotSBInvMass(canvas.cd(2), 6, 7, sbList, dptbinList, True)
-    PlotSBInvMass(canvas.cd(3), 10, 12, sbList, dptbinList)
-    PlotSBSpectra(canvas.cd(4), 4, 5, sbList, True)
+    PlotSBInvMass(canvas.cd(1), 4, 5, sbList, dptbinList, True, False)
+    PlotSBInvMass(canvas.cd(2), 6, 7, sbList, dptbinList, False, True)
+    PlotSBInvMass(canvas.cd(3), 10, 12, sbList, dptbinList, False, False)
+    PlotSBSpectra(canvas.cd(4), 4, 5, sbList)
     PlotSBSpectra(canvas.cd(5), 6, 7, sbList)
-    PlotSBSpectra(canvas.cd(6), 10, 12, sbList)
+    PlotSBSpectra(canvas.cd(6), 10, 12, sbList, True)
 
-    canvas.cd(3)
-    htitle = ROOT.TPaveText(0.24, 0.71, 0.57, 0.86, "NB NDC")
+    canvas.cd(5)
+    htitle = ROOT.TPaveText(0.44, 0.53, 0.92, 0.90, "NB NDC")
     globalList.append(htitle)
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
     htitle.SetTextSize(20)
     htitle.SetTextAlign(11)
+    htitle.AddText("Charged Jets")
+    htitle.AddText("Anti-#it{k}_{T}, #it{R} = 0.4")
     htitle.AddText("|#eta_{jet}| < 0.5")
-    htitle.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
+    # htitle.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
+    htitle.AddText("with D^{0} #rightarrow K^{#pm}#pi^{#mp}")
+    htitle.AddText("and charge conj.")
     htitle.Draw()
 
-    canvas.cd(1)
-    paveALICE = ROOT.TPaveText(0.24, 0.72, 0.66, 0.89, "NB NDC")
+    canvas.cd(4)
+    paveALICE = ROOT.TPaveText(0.30, 0.80, 0.66, 0.92, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
