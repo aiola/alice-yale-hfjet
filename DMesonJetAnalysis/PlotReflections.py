@@ -10,6 +10,8 @@ import math
 
 globalList = []
 
+InvMassRange = [1.72, 2.014]
+
 def PlotReflections(config, var, reflFit):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -96,12 +98,21 @@ def PlotReflections(config, var, reflFit):
 
         refIntErr = ROOT.Double(0)
         sigIntErr = ROOT.Double(0)
-        refInt = hRef.IntegralAndError(1, hRef.GetNbinsX(), refIntErr)
-        sigInt = hSig.IntegralAndError(1, hSig.GetNbinsX(), sigIntErr)
 
+        refInt = hRef.IntegralAndError(hRef.GetXaxis().FindBin(InvMassRange[0]), hRef.GetXaxis().FindBin(InvMassRange[1]), refIntErr)
+        sigInt = hSig.IntegralAndError(hSig.GetXaxis().FindBin(InvMassRange[0]), hSig.GetXaxis().FindBin(InvMassRange[1]), sigIntErr)
         ros = refInt / sigInt
         rosErr = math.sqrt((refIntErr / refInt) ** 2 + (sigIntErr / sigInt) ** 2) * ros
-        # rosAfterFit = hRefFit.Integral() / hSig.Integral()
+
+        print("Bin {0}: ros = {1:.3f} #pm {2:.3f}".format(i, ros, rosErr))
+
+        refInt = hRef.IntegralAndError(1, hRef.GetNbinsX(), refIntErr)
+        sigInt = hSig.IntegralAndError(1, hSig.GetNbinsX(), sigIntErr)
+        ros = refInt / sigInt
+        rosErr = math.sqrt((refIntErr / refInt) ** 2 + (sigIntErr / sigInt) ** 2) * ros
+
+        print("Bin {0} (full range): ros = {1:.3f} #pm {2:.3f}".format(i, ros, rosErr))
+
         rosPave = ROOT.TPaveText(0.61, 0.68, 0.96, 0.78, "NB NDC")
         rosPave.SetBorderSize(0)
         rosPave.SetFillStyle(0)
@@ -109,7 +120,6 @@ def PlotReflections(config, var, reflFit):
         rosPave.SetTextSize(18)
         rosPave.SetTextAlign(31)
         rosPave.AddText("R/S = {0:.3f} #pm {1:.3f}".format(ros, rosErr))
-        # rosPave.AddText("R/S (after fit) = {0:.3f}".format(rosAfterFit))
         rosPave.Draw()
         globalList.append(rosPave)
 
