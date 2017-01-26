@@ -24,10 +24,11 @@ def GetBFeedDownSpectra():
     hFD = loader.GetFDCorrection()
     hFD_up = loader.GetFDCorrection(1)
     hFD_down = loader.GetFDCorrection(-1)
-    return h, hFDsub, hFD, hFD_up, hFD_down
+    hFDsyst = loader.GetFDCorrection("graph")
+    return h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst
 
 def PlotBFeedDown():
-    h, hFDsub, hFD, hFD_up, hFD_down = GetBFeedDownSpectra()
+    h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst = GetBFeedDownSpectra()
 
     cname = "BFeedDown_Internal"
     canvas1 = ROOT.TCanvas(cname, cname, 700, 700)
@@ -159,28 +160,53 @@ def PlotBFeedDown():
     ratio2.GetYaxis().SetTitleOffset(0.9)
     ratio2.GetYaxis().SetRangeUser(0, 0.69)
 
-    ratio2_up = hFD_up_copy.DrawCopy("same hist l")
-    globalList.append(ratio2_up)
-    ratio2_up.Divide(h_copy)
+#     ratio2_up = hFD_up_copy.DrawCopy("same hist l")
+#     globalList.append(ratio2_up)
+#     ratio2_up.Divide(h_copy)
+#
+#     ratio2_down = hFD_down_copy.DrawCopy("same hist l")
+#     globalList.append(ratio2_down)
+#     ratio2_down.Divide(h_copy)
 
-    ratio2_down = hFD_down_copy.DrawCopy("same hist l")
-    globalList.append(ratio2_down)
-    ratio2_down.Divide(h_copy)
+    ratio2Syst = hFDsyst.Clone("ratio2Syst")
+    globalList.append(ratio2Syst)
+    ratio2Syst.Draw("2")
+    ratio2Syst.SetLineColor(ROOT.kRed + 2)
+    ratio2Syst.SetLineWidth(1)
+    ratio2Syst.SetFillStyle(2)
 
-    paveALICE = ROOT.TPaveText(0.17, 0.61, 0.56, 0.93, "NB NDC")
+    for ibin in range(1, h_copy.GetNbinsX() + 1):
+        ratio2Syst.SetPoint(ibin - 1, ratio2Syst.GetX()[ibin - 1], ratio2Syst.GetY()[ibin - 1] / h_copy.GetBinContent(ibin))
+        ratio2Syst.SetPointEYlow(ibin - 1, ratio2Syst.GetErrorYlow(ibin - 1) / h_copy.GetBinContent(ibin))
+        ratio2Syst.SetPointEYhigh(ibin - 1, ratio2Syst.GetErrorYhigh(ibin - 1) / h_copy.GetBinContent(ibin))
+
+    paveALICE = ROOT.TPaveText(0.17, 0.70, 0.56, 0.94, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(20)
+    paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and c.c., #it{p}_{T,D} > 3 GeV/#it{c}")
-    paveALICE.AddText("Raw B Feed-Down Fraction from POWHEG+PYTHIA6")
+    paveALICE.AddText("ALICE Preliminary")
+    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
+    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj., #it{p}_{T,D} > 3 GeV/#it{c}")
+    # paveALICE.AddText("Raw B Feed-Down Fraction from POWHEG+PYTHIA6")
     # paveALICE.AddText("Not corrected for reconstruction efficiency and")
     # paveALICE.AddText("jet momentum resolution")
     paveALICE.Draw()
+
+    leg1 = ROOT.TLegend(0.17, 0.54, 0.56, 0.66, "", "NB NDC")
+    globalList.append(leg1)
+    leg1.SetBorderSize(0)
+    leg1.SetFillStyle(0)
+    leg1.SetTextFont(43)
+    leg1.SetTextSize(21)
+    leg1.SetTextAlign(12)
+    leg1.SetMargin(0.2)
+    leg1.AddEntry(ratio2, "Raw B Feed-Down Fraction", "p")
+    leg1.AddEntry(ratio2Syst, "MC Systematic Uncertainty", "f")
+    leg1.Draw()
 
     return canvas1, canvas2
 

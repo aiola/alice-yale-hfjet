@@ -58,7 +58,7 @@ sources:
 -
   name: reflection_over_signal
   active: yes
-  title: "Refl/Sign Ratio"
+  title: "Reflections/Signal Ratio"
   symmetrize: yes
   #input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_5
   #histogram_name_up: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth

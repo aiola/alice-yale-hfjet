@@ -26,7 +26,8 @@ class DMesonJetCompare:
         self.fBaselineRatio = None
         self.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
         self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kFullCross, ROOT.kMultiply, ROOT.kPlus]
-        self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8, 9]
+        self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8]
+        self.fLineWidths = [2] * 10
         self.fFills = [3001, 3002, 3003, 3004, 3005, 3006, 3007]
         self.fMainHistogram = None
         self.fMainRatioHistogram = None
@@ -95,7 +96,7 @@ class DMesonJetCompare:
 
         if "hist" in self.fOptSpectrumBaseline:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
-            self.fBaselineHistogram.SetLineWidth(2)
+            self.fBaselineHistogram.SetLineWidth(self.fLineWidths[0])
             self.fBaselineHistogram.SetLineStyle(self.fLines[0])
             if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "l")
         elif "e2" in self.fOptSpectrumBaseline:
@@ -201,7 +202,7 @@ class DMesonJetCompare:
                 else:
                     self.fMaxRatio = max(self.fMaxRatio, m)
 
-    def PlotHistogram(self, color, marker, line, h):
+    def PlotHistogram(self, color, marker, line, lwidth, h):
         m = DMesonJetUtils.FindMinimum(h, 0., not "hist" in self.fOptSpectrum)
         if not m is None:
             if self.fMinSpectrum is None:
@@ -221,7 +222,7 @@ class DMesonJetCompare:
 
         if "hist" in self.fOptSpectrum:
             h.SetLineColor(color)
-            h.SetLineWidth(2)
+            h.SetLineWidth(lwidth)
             h.SetLineStyle(line)
             if self.fDoSpectrumLegend: self.fLegendSpectra.AddEntry(h, h.GetTitle(), "l")
         else:
@@ -258,7 +259,7 @@ class DMesonJetCompare:
         fit_func.Draw("same")
         return h_fit
 
-    def PlotRatio(self, color, marker, line, h):
+    def PlotRatio(self, color, marker, line, lwidth, h):
         if self.CheckConsistency(h, self.fBaselineForRatio):
             hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
         else:
@@ -272,7 +273,7 @@ class DMesonJetCompare:
             self.fBaselineRatio = hRatio
         if "hist" in self.fOptRatio:
             hRatio.SetLineColor(color)
-            hRatio.SetLineWidth(3)
+            hRatio.SetLineWidth(lwidth)
             hRatio.SetLineStyle(line)
             if self.fDoRatioLegend: self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "l")
         else:
@@ -323,11 +324,11 @@ class DMesonJetCompare:
         if self.fDoRatioPlot:
             self.PrepareRatioCanvas()
 
-        for color, marker, line, h in zip(self.fColors[1:], self.fMarkers[1:], self.fLines[1:], self.fHistograms):
+        for color, marker, line, linew, h in zip(self.fColors[1:], self.fMarkers[1:], self.fLines[1:], self.fLineWidths[1:], self.fHistograms):
             if self.fDoSpectraPlot:
-                self.PlotHistogram(color, marker, line, h)
+                self.PlotHistogram(color, marker, line, linew, h)
             if self.fDoRatioPlot:
-                self.PlotRatio(color, marker, line, h)
+                self.PlotRatio(color, marker, line, linew, h)
         self.AdjustYLimits()
         self.GenerateResults()
         return self.fResults

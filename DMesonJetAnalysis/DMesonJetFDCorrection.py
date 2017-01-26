@@ -87,4 +87,13 @@ class DMesonJetFDCorrection:
             print("Hist {0} loaded".format(detLevLowSystName))
         self.fFDLowSystUncHistogram = h.Clone("FD_DetectorLevelLowSyst")
 
+        detLevSystName = "{0}_CentralAsymmSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(detLevSystName)
+        if not h:
+            print("Could not find hist {0}".format(detLevSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(detLevSystName))
+        self.fFDSystUncGraph = h.Clone("FD_DetectorLevelSyst")
+
         file.Close()

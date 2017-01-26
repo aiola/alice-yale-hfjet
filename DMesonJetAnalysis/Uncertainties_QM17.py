@@ -43,7 +43,7 @@ def PlotUncertainties(results):
     sourcesLow.append(tot_rel_syst_unc_low)
     colorsLow.append(ROOT.kGreen + 2)
 
-    colorsPart = [ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
+    colorsPart = [ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kYellow + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
     cont = 0
     for hUp, hLow in zip(results["Uncertainties"]["PartialSystematicUncertaintiesUp"], results["Uncertainties"]["PartialSystematicUncertaintiesLow"]):
         if hLow:
@@ -84,8 +84,11 @@ def PlotUncertainties(results):
     comp.fLegLineHeight = 0.05
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = False
+    comp.fLineWidths = [3, 3, 3] + [2] * (len(colorsUp) - 3)
     comp.fColors = colorsUp
+    comp.fLinUpperSpace = 1.0
     comp.fLines = [1] * len(colorsUp)
+    for h in sourcesUp: h.Scale(100)
     r = comp.CompareSpectra(sourcesUp[0], sourcesUp[1:])
     for obj in r:
         globalList.append(obj)
@@ -93,6 +96,7 @@ def PlotUncertainties(results):
     comp.fColors = colorsLow
     comp.fLines = [2] * len(colorsLow)
     comp.fDoSpectrumLegend = False
+    for h in sourcesLow: h.Scale(100)
     r = comp.CompareSpectra(sourcesLow[0], sourcesLow[1:])
     for obj in r:
         globalList.append(obj)
@@ -121,15 +125,15 @@ def PlotUncertainties(results):
     h.GetYaxis().SetTitleOffset(0.9)
     # h.GetYaxis().SetRangeUser(0, 0.59)
 
-    paveALICE = ROOT.TPaveText(0.14, 0.84, 0.53, 0.95, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.14, 0.82, 0.53, 0.94, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
-    paveALICE.SetTextAlign(13)
+    paveALICE.SetTextAlign(12)
     paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R}=0.4, |#eta_{jet}| < 0.5 with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5 with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.Draw()
 
     legUpLow = ROOT.TLegend(0.54, 0.81, 0.93, 0.71)
@@ -148,6 +152,16 @@ def PlotUncertainties(results):
     entry.SetLineWidth(2)
     entry.SetLineStyle(2)
     legUpLow.Draw()
+
+    pavePtIndep = ROOT.TPaveText(0.55, 0.60, 0.80, 0.68, "NB NDC")
+    globalList.append(pavePtIndep)
+    pavePtIndep.SetBorderSize(0)
+    pavePtIndep.SetFillStyle(0)
+    pavePtIndep.SetTextFont(43)
+    pavePtIndep.SetTextSize(18)
+    pavePtIndep.SetTextAlign(13)
+    pavePtIndep.AddText("#it{p}_{T}-independent uncertainty: 8.9%")
+    pavePtIndep.Draw()
 
     return canvas
 
