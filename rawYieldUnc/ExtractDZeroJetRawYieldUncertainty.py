@@ -256,7 +256,7 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
 
     return interface
 
-def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl, no_refl, bg, debug):
+def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl, no_refl, bg, do_not_move, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
 
@@ -303,8 +303,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
             rawYieldUncSideBand.append(interface)
     if not skip_combine: rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband)
 
-    # only move files if the full chain was done
-    if not (skip_binbybin or skip_combine or single_trial): MoveFiles(outputPath)
+    if not do_not_move: MoveFiles(outputPath)
 
 def MoveFiles(outputPath, filetype="root"):
     print("Results will be moved to {0}".format(outputPath))
@@ -341,12 +340,14 @@ if __name__ == '__main__':
                         default=False, const=True)
     parser.add_argument('-b', action='store_const',
                         default=False, const=True)
+    parser.add_argument('-do-not-move', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.reuse_binbybin, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.no_refl, args.b, args.debug)
+    main(config, args.reuse_binbybin, args.skip_binbybin, args.skip_combine, args.single_trial, args.refl, args.no_refl, args.b, args.do_not_move, args.debug)
 
     IPython.embed()
