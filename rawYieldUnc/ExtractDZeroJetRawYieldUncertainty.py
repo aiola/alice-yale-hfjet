@@ -305,7 +305,9 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
             rawYieldUncSideBand.append(interface)
     if not skip_combine: rawYieldUncSummarySideBand = ExtractDJetRawYieldUncertainty(config, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, ROOT.AliDJetRawYieldUncertainty.kSideband, single_trial)
 
-    if not do_not_move: MoveFiles(outputPath)
+    if not do_not_move:
+        MoveFiles(outputPath, "root")
+        MoveFiles(outputPath, "pdf")
 
 def MoveFiles(outputPath, filetype="root"):
     print("Results will be moved to {0}".format(outputPath))
