@@ -86,8 +86,8 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg
     h.SetMaximum(maxy)
     h.SetMinimum(miny)
 
-    h.GetYaxis().SetTitle("counts / (efficiency #times acceptance)")
-    h.GetXaxis().SetTitle("M(K#pi) (GeV/#it{c}^{2})")
+    h.GetYaxis().SetTitle("counts")
+    h.GetXaxis().SetTitle("#it{M}(K#pi) (GeV/#it{c}^{2})")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(2.2)
     h.GetXaxis().SetTitleSize(19)
@@ -209,15 +209,15 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     h.SetMinimum(miny)
 
     if plotleg:
-        leg = ROOT.TLegend(0.52, 0.70, 0.87, 0.90, "", "NB NDC")
+        leg = ROOT.TLegend(0.49, 0.70, 0.87, 0.90, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(43)
-        leg.SetTextSize(20)
+        leg.SetTextSize(19)
         leg.SetTextAlign(13)
         leg.AddEntry(sigHist_copy, "Signal Region", "p")
-        leg.AddEntry(sbHist_copy, "Side Bands", "p")
+        leg.AddEntry(sbHist_copy, "Side Bands (SB)", "p")
         leg.AddEntry(subHist_copy, "Signal - SB", "p")
         leg.Draw()
 
