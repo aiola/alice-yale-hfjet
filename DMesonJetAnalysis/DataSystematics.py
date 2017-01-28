@@ -182,11 +182,11 @@ def GenerateUncertainties(config, histograms):
     partialRelSystUncLow = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]]
     partialRelSystUncUp_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
     partialRelSystUncLow_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]]
-    totRelSystUncUp = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_up", "Total Systematic Uncertainty", "relative uncertainty")
-    totRelSystUncLow = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_low", "Total Systematic Uncertainty", "relative uncertainty")
-    statUnc = DMesonJetUtils.soft_clone(baseline, "stat_unc", "Statistical Uncertainty", "relative uncertainty")
-    totUncUp = DMesonJetUtils.soft_clone(baseline, "tot_unc_up", "Total Uncertainty", "relative uncertainty")
-    totUncLow = DMesonJetUtils.soft_clone(baseline, "tot_unc_low", "Total Uncertainty", "relative uncertainty")
+    totRelSystUncUp = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_up", "Total Systematic (incl. #it{p}_{T}-indep.)", "relative uncertainty")
+    totRelSystUncLow = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_low", "Total Systematic (incl. #it{p}_{T}-indep.)", "relative uncertainty")
+    statUnc = DMesonJetUtils.soft_clone(baseline, "stat_unc", "Statistical", "relative uncertainty")
+    totUncUp = DMesonJetUtils.soft_clone(baseline, "tot_unc_up", "Total", "relative uncertainty")
+    totUncLow = DMesonJetUtils.soft_clone(baseline, "tot_unc_low", "Total", "relative uncertainty")
     yerrup = []
     yerrlow = []
     y = []

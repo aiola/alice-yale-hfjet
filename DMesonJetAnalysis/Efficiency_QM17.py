@@ -79,7 +79,7 @@ def EfficiencyComparison(config_c, config_b):
 
     h = comp.fMainHistogram
 
-    h.GetYaxis().SetTitle("Reconstruction Efficiency #times Acceptance")
+    h.GetYaxis().SetTitle("D^{0} Efficiency #times Acceptance")
     h.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleSize(26)
@@ -97,12 +97,12 @@ def EfficiencyComparison(config_c, config_b):
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(20)
+    paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
     paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj., #it{p}_{T,D} > 3 GeV/#it{c}")
+    paveALICE.AddText("D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
     paveALICE.Draw()
 
     return canvas

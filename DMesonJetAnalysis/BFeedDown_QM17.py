@@ -145,6 +145,7 @@ def PlotBFeedDown():
 
     ratio2 = hFD_copy.DrawCopy("p")
     ratio2.Divide(h_copy)
+    ratio2.SetMarkerStyle(ROOT.kFullCircle)
     globalList.append(ratio2)
 
     ratio2.GetYaxis().SetTitle("B Feed-Down Fraction")
@@ -205,7 +206,7 @@ def PlotBFeedDown():
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
     leg1.AddEntry(ratio2, "Raw B Feed-Down Fraction", "p")
-    leg1.AddEntry(ratio2Syst, "MC Systematic Uncertainty", "f")
+    leg1.AddEntry(ratio2Syst, "POWHEG Systematic Uncertainty", "f")
     leg1.Draw()
 
     return canvas1, canvas2
