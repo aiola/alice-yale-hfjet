@@ -61,25 +61,22 @@ def LoadHistograms(config):
     h.Scale(crossSection / (events[config["default"]["input_name"]] * branchingRatio * antiPartNorm), "width")
     if not h: exit(1)
     histograms["default"] = h
+    v_types = ["variations", "up_variations", "low_variations"]
     for s in config["sources"]:
         if not s["active"]: continue
         histograms[s["name"]] = dict()
-        if "input_name" in s:
-            input_name_up = s["input_name"]
-            input_name_down = s["input_name"]
-        if "input_name_up" in s: input_name_up = s["input_name_up"]
-        if "input_name_down" in s: input_name_down = s["input_name_down"]
-        if "histogram_name_down" in s:
-            h = DMesonJetUtils.GetObject(files[input_name_down], s["histogram_name_down"])
-            h.Scale(crossSection / (events[input_name_down] * branchingRatio * antiPartNorm), "width")
-            if not h: exit(1)
-            histograms[s["name"]]["down"] = h
-        if "histogram_name_up" in s:
-            h = DMesonJetUtils.GetObject(files[input_name_up], s["histogram_name_up"])
-            h.Scale(crossSection / (events[input_name_up] * branchingRatio * antiPartNorm), "width")
-            if not h: exit(1)
-            histograms[s["name"]]["up"] = h
-
+        for v_type in v_types:
+            if v_type in s:
+                histograms[s["name"]][v_type] = []
+                for v in s[v_type]:
+                    h = DMesonJetUtils.GetObject(files[v["input_name"]], v["histogram_name"])
+                    if not h: exit(1)
+                    h_copy = h.Clone("{0}_copy".format(v["histogram_name"]))
+                    h_copy.Scale(crossSection / (events[v["input_name"]] * branchingRatio * antiPartNorm), "width")
+                    h_copy.SetTitle(v["histogram_title"])
+                    h_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+                    h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+                    histograms[s["name"]][v_type].append(h_copy)
     return histograms
 
 def LoadEvents(files, config):
@@ -117,9 +114,10 @@ def OpenFiles(config):
 
 def LoadInputNames(s):
     input_names = []
-    if "input_name" in s: input_names.append(s["input_name"])
-    if "input_name_up" in s: input_names.append(s["input_name_up"])
-    if "input_name_down" in s: input_names.append(s["input_name_down"])
+    v_types = ["variations", "up_variations", "low_variations"]
+    for v_type in v_types:
+        if v_type in s:
+            for v in s[v_type]: input_names.append(v["input_name"])
     return input_names
 
 def CompareVariations(config, histograms):
@@ -131,24 +129,14 @@ def CompareVariations(config, histograms):
     baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
     baseline.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     result[baseline.GetName()] = baseline
+    v_types = ["variations", "up_variations", "low_variations"]
     for s in config["sources"]:
         if not s["active"]: continue
-        if "down" in histograms[s["name"]]:
-            h = histograms[s["name"]]["down"]
-            h_copy = h.Clone("{0}_down".format(s["name"]))
-            h_copy.SetTitle(s["histogram_title_down"])
-            h_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-            result[h_copy.GetName()] = h_copy
-            variations.append(h_copy)
-        if "up" in histograms[s["name"]]:
-            h = histograms[s["name"]]["up"]
-            h_copy = h.Clone("{0}_up".format(s["name"]))
-            h_copy.SetTitle(s["histogram_title_up"])
-            h_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-            result[h_copy.GetName()] = h_copy
-            variations.append(h_copy)
+        for v_type in v_types:
+            if v_type in histograms[s["name"]]:
+                for h in histograms[s["name"]][v_type]:
+                    result[h.GetName()] = h
+                    variations.append(h)
 
     globalList.extend(variations)
     globalList.append(baseline)
@@ -168,6 +156,7 @@ def CalculateFixSystematicUncertainty(config):
     fixed_unc2 = 0
     print("Source & Uncertainty (\\%) \\\\ \\hline")
     for u in config["fixed_uncertainties"]:
+        if u["plot"]: continue
         fixed_unc2 += u["uncertainty"] ** 2
         print("{0} & {1:.1f} \\\\".format(u["title"], u["uncertainty"] * 100))
     fixed_unc = math.sqrt(fixed_unc2)
@@ -178,12 +167,12 @@ def CalculateFixSystematicUncertainty(config):
 def GenerateUncertainties(config, histograms):
     baseline = histograms["default"]
     fixed_syst_unc = CalculateFixSystematicUncertainty(config)
-    partialRelSystUncUp = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
-    partialRelSystUncLow = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]]
-    partialRelSystUncUp_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]]
-    partialRelSystUncLow_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]]
-    totRelSystUncUp = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_up", "Total Systematic (incl. #it{p}_{T}-indep.)", "relative uncertainty")
-    totRelSystUncLow = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_low", "Total Systematic (incl. #it{p}_{T}-indep.)", "relative uncertainty")
+    partialRelSystUncUp = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]] + [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["fixed_uncertainties"] if s["plot"]]
+    partialRelSystUncLow = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]] + [None for s in config["fixed_uncertainties"] if s["plot"]]
+    partialRelSystUncUp_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["sources"] if s["active"]] + [DMesonJetUtils.soft_clone(baseline, "{0}_up".format(s["name"]), s["title"], "relative uncertainty") for s in config["fixed_uncertainties"] if s["plot"]]
+    partialRelSystUncLow_smooth = [DMesonJetUtils.soft_clone(baseline, "{0}_low".format(s["name"]), s["title"], "relative uncertainty") if not s["symmetrize"] else None for s in config["sources"] if s["active"]] + [None for s in config["fixed_uncertainties"] if s["plot"]]
+    totRelSystUncUp = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_up", "Total Systematic", "relative uncertainty")
+    totRelSystUncLow = DMesonJetUtils.soft_clone(baseline, "tot_rel_syst_unc_low", "Total Systematic", "relative uncertainty")
     statUnc = DMesonJetUtils.soft_clone(baseline, "stat_unc", "Statistical", "relative uncertainty")
     totUncUp = DMesonJetUtils.soft_clone(baseline, "tot_unc_up", "Total", "relative uncertainty")
     totUncLow = DMesonJetUtils.soft_clone(baseline, "tot_unc_low", "Total", "relative uncertainty")
@@ -198,25 +187,41 @@ def GenerateUncertainties(config, histograms):
         ivar = 0
         for s in config["sources"]:
             if not s["active"]: continue
-            if "down" in histograms[s["name"]]:
-                h = histograms[s["name"]]["down"]
-                diff_down = abs(baseline.GetBinContent(ibin) - h.GetBinContent(ibin))
+            low_unc2 = 0
+            up_unc2 = 0
+            if "variations" in histograms[s["name"]]:
+                for h in histograms[s["name"]]["variations"]:
+                    diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
+                    if diff > 0:
+                        up_unc2 += diff ** 2
+                    else:
+                        low_unc2 += diff ** 2
             else:
-                diff_down = 0
-            if "up" in histograms[s["name"]]:
-                h = histograms[s["name"]]["up"]
-                diff_up = abs(baseline.GetBinContent(ibin) - h.GetBinContent(ibin))
-            else:
-                diff_up = 0
+                if "low_variations" in histograms[s["name"]]:
+                    for h in histograms[s["name"]]["low_variations"]:
+                        diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
+                        low_unc2 += diff ** 2
+                if "up_variations" in histograms[s["name"]]:
+                    for h in histograms[s["name"]]["up_variations"]:
+                        diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
+                        up_unc2 += diff ** 2
             if s["symmetrize"]:
-                part_unc_up = max(diff_up, diff_down)
-                part_unc_low = part_unc_up
+                part_unc_up2 = max(up_unc2, low_unc2)
+                part_unc_low2 = part_unc_up2
+                part_unc_up = math.sqrt(part_unc_up2)
+                part_unc_low = math.sqrt(part_unc_low2)
                 partialRelSystUncUp[ivar].SetBinContent(ibin, part_unc_up / baseline.GetBinContent(ibin))
             else:
-                part_unc_up = diff_up
-                part_unc_low = diff_down
+                part_unc_up2 = up_unc2
+                part_unc_low2 = low_unc2
+                part_unc_up = math.sqrt(part_unc_up2)
+                part_unc_low = math.sqrt(part_unc_low2)
                 partialRelSystUncUp[ivar].SetBinContent(ibin, part_unc_up / baseline.GetBinContent(ibin))
                 partialRelSystUncLow[ivar].SetBinContent(ibin, part_unc_low / baseline.GetBinContent(ibin))
+            ivar += 1
+        for s in config["fixed_uncertainties"]:
+            if not s["plot"]: continue
+            partialRelSystUncUp[ivar].SetBinContent(ibin, s["uncertainty"])
             ivar += 1
 
     # smothening procedure
@@ -251,6 +256,10 @@ def GenerateUncertainties(config, histograms):
             else:
                 part_unc_low = part_unc_up
             ivar += 1
+        for s in config["fixed_uncertainties"]:
+            if not s["plot"]: continue
+            partialRelSystUncUp_smooth[ivar].SetBinContent(ibin, partialRelSystUncUp[ivar].GetBinContent(ibin))
+            ivar += 1
 
     fixed_unc2 = fixed_syst_unc ** 2
     for ibin in range(1, baseline.GetNbinsX() + 1):
@@ -279,6 +288,13 @@ def GenerateUncertainties(config, histograms):
                 partialRelSystUncLow_smooth[ivar].SetBinContent(ibin, part_unc_low)
             else:
                 part_unc_low = part_unc_up
+            tot_syst_unc_up2 += part_unc_up ** 2
+            tot_syst_unc_low2 += part_unc_low ** 2
+            ivar += 1
+        for s in config["fixed_uncertainties"]:
+            if not s["plot"]: continue
+            part_unc_up = partialRelSystUncUp_smooth[ivar].GetBinContent(ibin)
+            part_unc_low = part_unc_up
             tot_syst_unc_up2 += part_unc_up ** 2
             tot_syst_unc_low2 += part_unc_low ** 2
             ivar += 1
@@ -372,7 +388,7 @@ def PlotSystematicUncertaintySummary(name, results):
         cont += 1
 
     print("\\hline")
-    print("\\pt-independent Uncertainty & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
+    print("\\Normalization & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
     print("\\hline")
     print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
     print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")
