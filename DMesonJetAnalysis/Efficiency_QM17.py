@@ -58,10 +58,10 @@ def EfficiencyComparison(config_c, config_b):
     # comp.fOptSpectrumBaseline = "hist"
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = None
-    comp.fX1LegSpectrum = 0.16
-    comp.fX2LegSpectrum = 0.50
-    comp.fY1LegSpectrum = 0.67
-    comp.fLinUpperSpace = 0.7
+    comp.fX1LegSpectrum = 0.57
+    comp.fX2LegSpectrum = 0.93
+    comp.fY1LegSpectrum = 0.38
+    comp.fLinUpperSpace = 0.45
     comp.fLegLineHeight = 0.05
     comp.fColors = [ROOT.kRed + 2, ROOT.kBlue + 2]
     comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare]
@@ -92,7 +92,7 @@ def EfficiencyComparison(config_c, config_b):
     h.GetYaxis().SetTitleOffset(0.9)
     # h.GetYaxis().SetRangeUser(0, 0.59)
 
-    paveALICE = ROOT.TPaveText(0.14, 0.73, 0.53, 0.95, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.14, 0.60, 0.53, 0.95, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -102,7 +102,9 @@ def EfficiencyComparison(config_c, config_b):
     paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
+    paveALICE.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
+    paveALICE.AddText("|#eta_{jet}| < 0.5")
     paveALICE.Draw()
 
     return canvas

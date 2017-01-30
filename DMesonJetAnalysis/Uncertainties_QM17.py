@@ -86,10 +86,12 @@ def PlotUncertainties(results):
     comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
-    comp.fX1LegSpectrum = 0.15
-    comp.fX2LegSpectrum = 0.52
-    comp.fY1LegSpectrum = 0.81
+    comp.fX1LegSpectrum = 0.16
+    comp.fX2LegSpectrum = 0.96
+    comp.fY1LegSpectrum = 0.79
     comp.fLegLineHeight = 0.05
+    comp.fLegTextSize = 19
+    comp.fNColsLegSpectrum = 2
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = False
     comp.fLineWidths = [3, 3, 3] + [2] * (len(colorsUp) - 3)
@@ -166,14 +168,14 @@ def PlotUncertainties(results):
         entry.SetLineStyle(2)
         legUpLow.Draw()
 
-    pavePtIndep = ROOT.TPaveText(0.55, 0.81, 0.81, 0.73, "NB NDC")
+    pavePtIndep = ROOT.TPaveText(0.15, 0.49, 0.42, 0.57, "NB NDC")
     globalList.append(pavePtIndep)
     pavePtIndep.SetBorderSize(0)
     pavePtIndep.SetFillStyle(0)
     pavePtIndep.SetTextFont(43)
     pavePtIndep.SetTextSize(18)
     pavePtIndep.SetTextAlign(13)
-    pavePtIndep.AddText("#it{p}_{T}-independent uncertainty: 8.9%")
+    pavePtIndep.AddText("Normalization: 3.5% lumi, 1% BR")
     pavePtIndep.Draw()
 
     return canvas

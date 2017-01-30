@@ -9,72 +9,76 @@ fixed_uncertainties:
   name: unfolding
   title: "Unfolding"
   uncertainty: 0.05
+  plot: yes
 -
   name: cuts
   title: "Selection Cuts"
   uncertainty: 0.05
+  plot: yes
 -
   name: tracking_efficiency_dmeson
-  title: "Tracking Efficiency (D-Meson)"
+  title: "Tracking Eff. (D-Meson)"
   uncertainty: 0.04
+  plot: yes
 -
   name: branching_ratio
   title: "Branching Ratio"
   uncertainty: 0.01
+  plot: no
 -
   name: luminosity
   title: "Luminosity"
   uncertainty: 0.035
+  plot: no
 sources:
 -
   name: tracking_efficiency
   active: yes
-  title: "Tracking Efficiency (Jet Energy Scale)"
+  title: "Tracking Eff. (Jet Energy Scale)"
   symmetrize: yes
-  input_name: LHC10_Train823_LHC15i2_Train998_efficiency_mt_refl_DoubleGaus
-  histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_down: "0.95 #epsilon_{tracking}" 
+  combine_strategy: sum_in_quadrature
+  variations:
+  -
+    input_name: LHC10_Train823_LHC15i2_Train998_efficiency_mt_refl_DoubleGaus
+    histogram_name: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "0.95 #epsilon_{tracking}" 
 -
   name: raw_yield_extraction
   active: yes
   title: "Raw Yield Extraction"
   symmetrize: yes
-  input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
-  histogram_name_up: SideBand_DPt_30_RYUpperBand/Bayes/SideBand_DPt_30_RYUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_up: "Multi-Trial"
-  input_name_down: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_15
-  histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_down: "Refl/Sign #times 1.5"
--
-  name: reflection_template_fit
-  active: no
-  title: "Reflection Template Fit"
-  symmetrize: yes
-  input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_refl_pol3
-  histogram_name_up: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_up: "Reflection Template Fit (pol3)"
-  input_name_down: LHC10_Train823_LHC15i2_Train961_efficiency_refl_pol6
-  histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_down: "Reflection Template Fit (pol6)"
--
-  name: reflection_over_signal
-  active: no
-  title: "Reflections/Signal Ratio"
-  symmetrize: yes
-  #input_name_up: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_5
-  #histogram_name_up: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  #histogram_title_up: "Refl/Sign #times 0.5"
-  input_name_down: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_15
-  histogram_name_down: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_down: "Refl/Sign #times 1.5"
+  combine_strategy: sum_in_quadrature
+  up_variations:
+  -
+    input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
+    histogram_name: SideBand_DPt_30_RYUpperBand/Bayes/SideBand_DPt_30_RYUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "Multi-Trial (up)"
+  -
+    input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_5
+    histogram_name: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "Refl/Sign #times 0.5"
+  low_variations:
+  -
+    input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
+    histogram_name: SideBand_DPt_30_RYLowerBand/Bayes/SideBand_DPt_30_RYLowerBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "Multi-Trial (low)"
+  - 
+    input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_15
+    histogram_name: SideBand_DPt_30/Bayes/SideBand_DPt_30_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "Refl/Sign #times 1.5"
 -
   name: b_feed_down
   active: yes
   title: "B Feed-Down"
   symmetrize: yes
-  input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
-  histogram_name_up: SideBand_DPt_30_FDUpperBand/Bayes/SideBand_DPt_30_FDUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_up: "B Feed-Down (high)"
-  histogram_name_down: SideBand_DPt_30_FDLowerBand/Bayes/SideBand_DPt_30_FDLowerBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
-  histogram_title_down: "B Feed-Down (low)"
-
+  combine_strategy: sum_in_quadrature
+  up_variations:
+  -
+    input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
+    histogram_name: SideBand_DPt_30_FDUpperBand/Bayes/SideBand_DPt_30_FDUpperBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "B Feed-Down (up)"
+  low_variations:
+  -
+    input_name: LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus
+    histogram_name: SideBand_DPt_30_FDLowerBand/Bayes/SideBand_DPt_30_FDLowerBand_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
+    histogram_title: "B Feed-Down (low)"
