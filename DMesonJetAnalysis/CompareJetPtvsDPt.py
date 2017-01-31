@@ -32,7 +32,7 @@ def LoadEvents(file, hname):
 
 def GetJetPtSpectrum():
     global events
-    unfolding = "LHC10_Train823_LHC15i2_Train961_efficiency_mt"
+    unfolding = "LHC10_Train823_LHC15i2_Train961_efficiency_mt_refl_DoubleGaus_15"
     fname = "{0}/{1}/{1}.root".format(input_path, unfolding)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
