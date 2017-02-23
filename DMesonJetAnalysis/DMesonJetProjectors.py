@@ -106,7 +106,7 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
 class DMesonJetDataProjector:
-    def __init__(self, inputPath, train, fileName, taskName, merging_type, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, merging_type, maxEvents, ptHardBins):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -121,14 +121,22 @@ class DMesonJetDataProjector:
         self.fTotalEvents = 0
         self.fNFiles = 0
         self.fMergingType = merging_type
+        self.fPtHardBins = ptHardBins
 
     def GenerateChain(self, treeName):
-        path = "{0}/{1}".format(self.fInputPath, self.fTrain)
-
-        print("Looking for file {0} in path {1}".format(self.fFileName, path))
-        files = DMesonJetUtils.find_file(path, self.fFileName)
-
         self.fChain = ROOT.TChain(treeName)
+
+        files = []
+
+        if self.fPtHardBins > 0:
+            for i in range(1, self.fPtHardBins):
+                path = self.fInputPath.format(ptHard=i)
+                print("Looking for file {0} in path {1}".format(self.fFileName, path))
+                files.extend(DMesonJetUtils.find_file(path, self.fFileName))
+        else:
+            path = "{0}/{1}".format(self.fInputPath, self.fTrain)
+            print("Looking for file {0} in path {1}".format(self.fFileName, path))
+            files.extend(DMesonJetUtils.find_file(path, self.fFileName))
 
         for file in files:
             print("Adding file {0}...".format(file))
