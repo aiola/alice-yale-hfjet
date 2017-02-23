@@ -11,7 +11,7 @@ import ROOT
 
 globalList = []
 
-def main(config, maxEvents, format, gen, proc, ts, stage):
+def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -35,11 +35,15 @@ def main(config, maxEvents, format, gen, proc, ts, stage):
 
         name = "{0}_{1}".format(config["name"], suffix)
 
+        input_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
+
+        if pt_hard_bins > 0: input_path += "{ptHard}/"
+
         if stage >= 0:
-            input_path = "{0}/FastSim_{1}/stage_{2}/output".format(config["input_path"], suffix, stage)
+            input_path += "stage_{0}/output".format(stage)
             file_name = "AnalysisResults_FastSim_{0}.root".format(suffix)
         else:
-            input_path = "{0}/FastSim_{1}/output".format(config["input_path"], suffix, stage)
+            input_path += "output"
             file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
         train = ""
     else:
@@ -50,14 +54,19 @@ def main(config, maxEvents, format, gen, proc, ts, stage):
         file_name = config["file_name"]
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
+    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents, pt_hard_bins)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(collision, anaConfig)
 
-    ana.SaveRootFile("{0}/{1}".format(input_path, train))
-    ana.SavePlots("{0}/{1}".format(input_path, train), format)
+    if pt_hard_bins > 0:
+        output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
+    else:
+        output_path = input_path
+
+    ana.SaveRootFile("{0}/{1}".format(output_path, train))
+    ana.SavePlots("{0}/{1}".format(output_path, train), format)
 
 if __name__ == '__main__':
 
@@ -76,12 +85,14 @@ if __name__ == '__main__':
                         default=None)
     parser.add_argument('--stage', metavar='N',
                         default=-1, type=int)
+    parser.add_argument('--pthard', metavar='N',
+                        default=0, type=int)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage)
+    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.pthard)
 
     IPython.embed()
