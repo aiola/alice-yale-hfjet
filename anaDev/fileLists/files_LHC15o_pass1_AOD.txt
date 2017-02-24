@@ -1,0 +1,9 @@
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/101/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/102/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/103/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/104/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/105/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/106/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/107/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/108/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246751/pass1/AOD/109/aod_archive.zip
