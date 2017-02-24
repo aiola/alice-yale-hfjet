@@ -1,0 +1,5 @@
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246087/pass1/AOD/1823/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246087/pass1/AOD/1826/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246087/pass1/AOD/1825/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246087/pass1/AOD/1822/aod_archive.zip
+/Volumes/DATA/ALICE/Data/2015/LHC15o/000246087/pass1/AOD/1824/aod_archive.zip
