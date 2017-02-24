@@ -1,0 +1,13 @@
+task_name: DmesonJets
+run_period: LHC15o
+mode: AOD
+full_jets: false
+charged_jets: true
+MC: false
+charm_enhanced: false
+file_list: fileLists/files_LHC15o_pass1_AOD.txt
+reco_pass: 1
+cent: [0, 20, 50, 90]
+rdhf_cuts_dzero: "RDHFCuts/D0toKpiCutsPbPbRun2_2050cent.root"
+rdhf_cuts_dstar: "RDHFCuts/DStartoKpipiCutsPbPbStandardCutsCentral.root"
+beam_type: PbPb
