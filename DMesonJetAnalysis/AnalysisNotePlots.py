@@ -159,9 +159,6 @@ def main(actions, output_path, output_type):
     if "all" in actions or "data_systematics" in actions:
         CopDataSystematics("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
 
-    # if "all" in actions or "ppb_comparison" in actions:
-        # CopypPbComparisonFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
-
     if "all" in actions or "misc" in actions:
         CopypMiscFiles("/Volumes/DATA/ALICE/JetResults", output_path, output_type)
         PlotStatUncEff(histograms["LHC15i2_c"])
@@ -255,13 +252,6 @@ def CopyMCShapeSystematics(input_path, output_path, output_type):
     file_list.append("PYTHIA_POWHEG_DPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026_Ratio")
     file_list.append("PYTHIA_POWHEG_JetPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026")
     file_list.append("PYTHIA_POWHEG_JetPtSpectrumComparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026_Ratio")
-    CopyFiles(input_path, full_output_path, file_list, output_type)
-
-def CopypPbComparisonFiles(input_path, output_path, output_type):
-    full_output_path = "{0}/pPbComparison".format(output_path)
-    file_list = []
-    file_list.append("pPbComparison_Charged_R040")
-    file_list.append("pPbComparison_Charged_R040_Ratio")
     CopyFiles(input_path, full_output_path, file_list, output_type)
 
 def CopyBFeedDown(input_path, output_path, output_type):
