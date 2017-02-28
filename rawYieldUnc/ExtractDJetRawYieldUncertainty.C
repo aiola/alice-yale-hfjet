@@ -128,11 +128,11 @@ void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
 void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl){
 
   //Dzero cfg
-  const Int_t nDbins = 8;
+  const Int_t nDbins = 9;
   Double_t ptDbins[nDbins+1] = {3, 4, 5, 6, 7, 8, 10, 12, 16, 30};
   const Int_t nJetbins = 6;
   Double_t ptJetbins[nJetbins+1] = {5, 6, 8, 10, 14, 20, 30}; //used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
-  Double_t DMesonEff[nDbins] = {/*0.0118323, 0.02011807,  0.03644752, */0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591}; //chopping 0-1, 1-2
+  Double_t DMesonEff[nDbins] = {/*0.0118323, 0.02011807,*/  0.03644752, 0.05664352 ,0.07682878 ,0.08783701, 0.09420746, 0.1047988, 0.1338670, 0.2143196, 0.2574591}; //chopping 0-1, 1-2
 
   Double_t sigmafixed_DPtBins[nDbins] = {0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027};  // chopping 0-1, 1-2, 2-3
   Double_t sigmafixed_JetPtBins[nJetbins] = {0.012, 0.015, 0.014, 0.016, 0.018, 0.020};
