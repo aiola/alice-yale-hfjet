@@ -308,7 +308,7 @@ def SideBandFinalRawYieldUnc(input_path, train, ana):
 
 def SideBandRawYieldUnc(input_path, train, ana):
     for ibin in range(0, 9):
-        fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_Dzero_SideBand_{3}.root".format(input_path, train, ana, ibin)
+        fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_Dzero_Bin{3}.root".format(input_path, train, ana, ibin)
         file = ROOT.TFile(fname)
         canvas = file.Get("cDistr_Dzero_SideBand_{0}".format(ibin))
         histos = []
