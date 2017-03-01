@@ -16,7 +16,10 @@ import ROOT
 globalList = []
 
 ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027]  # chopping 0-1, 1-2, 2-3
+
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
+sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
 
 def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=False, singleTrial=False, debug=2):
     # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
@@ -129,8 +132,6 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
 
     DMesonEff = LoadEfficiency(config)
     print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
-    sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027]  # chopping 0-1, 1-2, 2-3
-    sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
 
     chi2cut = 3
     meansigmaVar = [True, True, True, True, True, True]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
@@ -150,7 +151,7 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
 		1, 1, 1  # fixed mean, fixed sigma
         ]
 
-    interface = ROOT.AliDJetRawYieldUncertainty()
+    interface = ROOT.AliTTreeDJetRawYieldUncertainty()
     interface.AddInputFileName("{0}/{1}/LHC10b/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
     interface.AddInputFileName("{0}/{1}/LHC10c/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
     interface.AddInputFileName("{0}/{1}/LHC10d/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
@@ -164,7 +165,9 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
 
-    interface.SetSigmaForSignalRegion(2.)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
+    interface.SetSigmaForSignalRegion(2)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
+    interface.SetSigmaSideBandLeft(8, 4)
+    interface.SetSigmaSideBandRight(4, 8)
     interface.SetSigmaToFixDPtBins(numpy.array(sigmafixed_DPtBins, dtype=numpy.float64))
     interface.SetSigmaToFixJetPtBins(numpy.array(sigmafixed_JetPtBins, dtype=numpy.float64))
     interface.SetChi2Cut(chi2cut)
@@ -199,8 +202,6 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
 
     DMesonEff = LoadEfficiency(config)
     print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
-    sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.027]  # chopping 0-1, 1-2, 2-3
-    sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
 
     chi2cut = 3
     meansigmaVar = [False, False, False, True, False, False]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
@@ -230,6 +231,8 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
 
     interface.SetSigmaForSignalRegion(2.)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
+    interface.SetSigmaSideBandLeft(8, 4)
+    interface.SetSigmaSideBandRight(4, 8)
     interface.SetSigmaToFixDPtBins(numpy.array(sigmafixed_DPtBins, dtype=numpy.float64))
     interface.SetSigmaToFixJetPtBins(numpy.array(sigmafixed_JetPtBins, dtype=numpy.float64))
     interface.SetChi2Cut(chi2cut)
@@ -280,6 +283,8 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
     ROOT.gSystem.Load("libfastjetcontribfragile")
 
     ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
+    ROOT.gROOT.LoadMacro("AliTTreeDJetRawYieldUncertainty.cxx+g")
+    ROOT.gROOT.LoadMacro("AliTHnDJetRawYieldUncertainty.cxx+g")
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
