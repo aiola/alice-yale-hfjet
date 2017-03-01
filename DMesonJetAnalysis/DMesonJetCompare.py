@@ -309,6 +309,7 @@ class DMesonJetCompare:
         while len(histos) + 1 > len(self.fColors): self.fColors += random.sample(self.fColors[1:], len(self.fColors) - 1)
         while len(histos) + 1 > len(self.fMarkers): self.fMarkers += random.sample(self.fMarkers[1:], len(self.fMarkers) - 1)
         while len(histos) + 1 > len(self.fLines): self.fLines += random.sample(self.fLines[1:], len(self.fLines) - 1)
+        while len(histos) + 1 > len(self.fLineWidths): self.fLineWidths += random.sample(self.fLineWidths[1:], len(self.fLineWidths) - 1)
         while len(histos) + 1 > len(self.fFills): self.fFills += random.sample(self.fFills[1:], len(self.fFills) - 1)
         self.fResults = []
         print("CompareSpectra: {0}".format(self.fName))
