@@ -129,7 +129,7 @@ class DMesonJetDataProjector:
         files = []
 
         if self.fPtHardBins > 0:
-            for i in range(1, self.fPtHardBins):
+            for i in range(0, self.fPtHardBins):
                 path = self.fInputPath.format(ptHard=i)
                 print("Looking for file {0} in path {1}".format(self.fFileName, path))
                 files.extend(DMesonJetUtils.find_file(path, self.fFileName))
@@ -144,8 +144,8 @@ class DMesonJetDataProjector:
             self.fNFiles += 1
 
     def ExtractWeightFromHistogramList(self, hlist):
-        xsection = hlist.FindObject("fHistXsectionAfterSel")
-        trials = hlist.FindObject("fHistTrialsAfterSel")
+        xsection = hlist.FindObject("fHistXsectionVsPtHard")
+        trials = hlist.FindObject("fHistTrialsVsPtHard")
 
         if not trials or not xsection:
             print("Could not find trial and x-section information (not necessarily a bad thing)!")

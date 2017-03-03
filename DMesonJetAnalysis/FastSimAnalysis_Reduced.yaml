@@ -5,7 +5,6 @@ file_name: ""
 task_name: AliAnalysisTaskDmesonJets
 merging_type: weighted_sum
 collision_system: "pp #sqrt{#it{s}} = 5.02 TeV"
-pt_hard_bins: 6
 analysis:
 - 
   trigger: [""]
@@ -20,19 +19,19 @@ analysis:
     radius: R040
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   -
-    active: yes
+    active: no
     type: Charged
     radius: R060
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.6"
   -
-    active: yes
+    active: no
     type: Full
     radius: R040
     title: "Full Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: JetZBins_JetPt_5_30_DPt_30
-    title: "5 < #it{p}_{T,jet} < 30 GeV/#it{c}"
+    name: JetZBins_JetPt_5_80_DPt_30
+    title: "5 < #it{p}_{T,jet} < 80 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -48,14 +47,14 @@ analysis:
       object: jet
       variable: fPt
       min: 5
-      max: 30
+      max: 80
     -
       object: d
       variable: fPt
       min: 3
     spectra:
     -
-      name: JetZSpectrum_JetPt_5_30_DPt_30
+      name: JetZSpectrum_JetPt_5_80_DPt_30
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
@@ -66,7 +65,7 @@ analysis:
     need_inv_mass: []
     efficiency: no
     bins:
-      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
     cuts:
     -
       object: jet
@@ -86,7 +85,7 @@ analysis:
     need_inv_mass: []
     efficiency: no
     bins:
-      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
     cuts:
     -
       object: jet
@@ -110,7 +109,7 @@ analysis:
     need_inv_mass: []
     efficiency: no
     bins:
-      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
     cuts:
     -
       object: d
@@ -125,13 +124,13 @@ analysis:
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: DPtBins_JetPt_5_30
-    title: "5 < #it{p}_{T,jet} < 30 GeV/#it{c}"
+    name: DPtBins_JetPt_5_80
+    title: "5 < #it{p}_{T,jet} < 80 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
     bins:
-      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
     cuts:
     -
       object: jet
@@ -142,10 +141,10 @@ analysis:
       object: jet
       variable: fPt
       min: 5.0
-      max: 30.0
+      max: 80.0
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_30
+      name: DPtSpectrum_JetPt_5_80
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
@@ -156,8 +155,8 @@ analysis:
     need_inv_mass: []
     efficiency: no
     bins:
-      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
-      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
+      jet_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
     cuts:
     -
       object: jet
