@@ -30,6 +30,7 @@
 #include <Riostream.h>
 #include <TLine.h>
 
+class TNtuple;
 #include <AliHFMultiTrials.h>
 
 #include "AliDJetRawYieldUncertainty.h"
