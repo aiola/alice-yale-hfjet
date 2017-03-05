@@ -34,10 +34,10 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
         if config["MC"]:
             if doResponse:
                 if config["full_jets"]:
-                    pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJetsDetectorResponse.AddTaskDmesonJetsDetectorResponse("usedefault", "usedefault", "usedefault", 2, suffix)
+                    pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJetsDetectorResponse.AddTaskDmesonJetsDetectorResponse("usedefault", "usedefault", "usedefault", 1, suffix)
                     pDMesonJetsTask.SetNeedEmcalGeom(True)
                 else:
-                    pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJetsDetectorResponse.AddTaskDmesonJetsDetectorResponse("usedefault", "", "usedefault", 2, suffix)
+                    pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJetsDetectorResponse.AddTaskDmesonJetsDetectorResponse("usedefault", "", "usedefault", 1, suffix)
             else:
                 if config["full_jets"]:
                     pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJets.AddTaskDmesonJets("usedefault", "usedefault", "usedefault", nOutputTrees, suffix)
@@ -97,7 +97,7 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
 #                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.2, config["rdhf_cuts_dstar"])
 #                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kSignalOnly, ROOT.AliJetContainer.kFullJet, 0.4, config["rdhf_cuts_dstar"])
 
-        if config["MC"] and doWrongPID:
+        if config["MC"] and doWrongPID and not doResponse:
             # D0
             if config["charged_jets"]:
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.4, config["rdhf_cuts_dzero"])
@@ -146,7 +146,8 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
     # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
-    physSel = ROOT.AliVEvent.kINT7
+    # physSel = ROOT.AliVEvent.kINT7
+    physSel = 0
     ROOT.gSystem.Load("libCGAL")
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])
@@ -259,13 +260,14 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     tasks = mgr.GetTasks()
     for task in tasks:
-        if isinstance(task, ROOT.AliAnalysisTaskEmcal) or isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
+        if isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
+            task.SetIsPythia(config["is_pythia"])
+            task.SetMaxMinimumBiasPtHard(5)
             if config["beam_type"] == "pp":
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
             elif config["beam_type"] == "PbPb":
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kAA)
                 task.SetUseNewCentralityEstimation(True)
-                task.SetNCentBins(5)
 
     res = mgr.InitAnalysis()
 
