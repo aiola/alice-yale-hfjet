@@ -11,3 +11,4 @@ cent: [0, 20, 50, 90]
 rdhf_cuts_dzero: "RDHFCuts/D0toKpiCutsPbPbRun2_2050cent.root"
 rdhf_cuts_dstar: "RDHFCuts/DStartoKpipiCutsPbPbStandardCutsCentral.root"
 beam_type: PbPb
+is_pythia: no

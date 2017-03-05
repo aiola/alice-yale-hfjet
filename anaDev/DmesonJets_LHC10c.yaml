@@ -8,5 +8,7 @@ charm_enhanced: false
 file_list: fileLists/files_LHC10c_pass4_AOD.txt
 reco_pass: 4
 cent: no
-rdhf_cuts: ""
+rdhf_cuts_dzero: ""
+rdhf_cuts_dstar: ""
 beam_type: pp
+is_pythia: no
