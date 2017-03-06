@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python script to test EMCal trigger QA analysis
+# python script to test EMCal trigger QA analysis
 
 import argparse
 import ROOT
@@ -59,54 +59,53 @@ def AddTriggerQATasks(config, trigger, physSel):
                 pJetQATask.AddRejectedTriggerClass(rej)
         pJetQATask.SelectCollisionCandidates(physSel)
         pJetQATask.SetPtBin(1, 150)
-    
-    #Trigger QA
+
+    # Trigger QA
     if config["trigger_qa"]:
         if config["run_period"] == "LHC16q":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC16c":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC16b":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC15o":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 5, True, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kAA, True, trigger["label"])
             pTriggerQATask.SetUseNewCentralityEstimation(True)
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"] == "LHC15j":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(True)
         elif config["run_period"].startswith("LHC13"):
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(False)
         elif config["run_period"].startswith("LHC12"):
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(False)
         elif config["run_period"] == "LHC11h":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 4, True, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kAA, True, trigger["label"])
             pTriggerQATask.EnableDCal(False)
         elif config["run_period"].startswith("LHC11") and config["run_period"] != "LHC11h":
-            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", 0, False, trigger["label"])
+            pTriggerQATask = ROOT.AddTaskEmcalTriggerQA("EmcalTriggers", "", "", ROOT.AliAnalysisTaskEmcalLight.kpp, False, trigger["label"])
             pTriggerQATask.EnableDCal(False)
-            
+
         if trigger.has_key("accept"):
             for acc in trigger["accept"]:
                 pTriggerQATask.AddAcceptedTriggerClass(acc)
         if trigger.has_key("reject"):
             for rej in trigger["reject"]:
                 pTriggerQATask.AddRejectedTriggerClass(rej)
-            
+
         if config.has_key("bad_fastor"):
             pTriggerQATask.GetTriggerQA().ReadFastORBadChannelFromFile(config["bad_fastor"])
-        #pTriggerQATask.EnableHistogramsByTimeStamp(120)
+        # pTriggerQATask.EnableHistogramsByTimeStamp(120)
         pTriggerQATask.SetADCperBin(8)
         pTriggerQATask.SetMinAmplitude(0)
-        pTriggerQATask.SetCorrelationPlots(True)
         pTriggerQATask.SelectCollisionCandidates(physSel)
 
     if config["charged_jets"] or config["full_jets"] or config["neutral_jets"]:
@@ -155,10 +154,10 @@ def main(config):
     print("{0} analysis chosen.".format(config["mode"]))
     print("Setting local analysis for {0} files from list {1}, max events = {2}".format(config["n_files"], config["file_list"], config["n_events"]))
 
-    #AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
-    #AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
+    # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
+    # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
 
-    #Analysis manager
+    # Analysis manager
     mgr = ROOT.AliAnalysisManager(config["task_name"])
 
     helperFunctions.LoadMacros()
@@ -168,26 +167,26 @@ def main(config):
     elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
 
-    #CDB connect
+    # CDB connect
     pCDBConnect = ROOT.AliTaskCDBconnect("CDBconnect", "cvmfs://", 0)
     mgr.AddTask(pCDBConnect)
-    cinput1 = mgr.GetCommonInputContainer()    
-    mgr.ConnectInput(pCDBConnect,  0, cinput1)
+    cinput1 = mgr.GetCommonInputContainer()
+    mgr.ConnectInput(pCDBConnect, 0, cinput1)
     pCDBConnect.SetFallBackToRaw(True)
 
-    #Physics selection task
+    # Physics selection task
     if mode is helperFunctions.AnaMode.ESD and physSel:
         ROOT.AddTaskPhysicsSelection()
-    
+
     if config["run_period"] == "LHC15o":
         ROOT.AddTaskMultSelection(False)
 
     # EMCal prep
     if config["cluster_qa"] or config["trigger_qa"]:
         helperFunctions.PrepareEMCAL("userQAconfiguration.yaml")
-        #helperFunctions.PrepareEMCAL_old(physSel, True, True, config["cluster_qa"] or config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"])
+        # helperFunctions.PrepareEMCAL_old(physSel, True, True, config["cluster_qa"] or config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"], config["full_jets"] or config["neutral_jets"])
 
-    #Trigger QA
+    # Trigger QA
     if config["trigger_qa"]:
         pTriggerMakerTask = ROOT.AddTaskEmcalTriggerMakerNew("EmcalTriggers")
         pTriggerMakerTask.SelectCollisionCandidates(physSel)
@@ -197,7 +196,7 @@ def main(config):
             pTriggerMakerTask.GetTriggerMaker().ReadFastORBadChannelFromFile(config["bad_fastor"])
 
         if config["run_period"] == "LHC16q":
-            pTriggerMakerTask.GetTriggerMaker().ConfigureForPPb2016()
+            pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif config["run_period"] == "LHC16b" or config["run_period"] == "LHC16c" or config["run_period"] == "LHC16d" or config["run_period"] == "LHC16e" or config["run_period"] == "LHC16f":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2015()
         elif config["run_period"] == "LHC15o":
@@ -214,7 +213,7 @@ def main(config):
         elif config["run_period"].startswith("LHC11") and config["run_period"] != "LHC11h":
             pTriggerMakerTask.GetTriggerMaker().ConfigureForPP2011()
 
-    #Charged jet analysis
+    # Charged jet analysis
     if config["charged_jets"]:
         pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
@@ -222,7 +221,7 @@ def main(config):
         pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.antikt_algorithm, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
 
-    #Full jet analysis
+    # Full jet analysis
     if config["full_jets"]:
         pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", ROOT.AliJetContainer.antikt_algorithm, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
@@ -230,7 +229,7 @@ def main(config):
         pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
 
-    #Neutral jet analysis
+    # Neutral jet analysis
     if config["neutral_jets"]:
         pJetTask = ROOT.AddTaskEmcalJet("", "usedefault", ROOT.AliJetContainer.antikt_algorithm, 0.2, ROOT.AliJetContainer.kNeutralJet, 0.15, 0.30, 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pJetTask.SelectCollisionCandidates(physSel)
@@ -252,7 +251,7 @@ def main(config):
             if isPP:
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
             task.SetVzRange(-999, -999)
-	
+
     res = mgr.InitAnalysis()
 
     if not res:
@@ -261,7 +260,7 @@ def main(config):
 
     mgr.PrintStatus()
 
-    outFile = ROOT.TFile("train.root","RECREATE")
+    outFile = ROOT.TFile("train.root", "RECREATE")
     outFile.cd()
     mgr.Write()
     outFile.Close()
@@ -281,21 +280,21 @@ def main(config):
 
     mgr.SetDebugLevel(config["debug_level"])
 
-    #To have more debug info
-    #pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
+    # To have more debug info
+    # pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
 
-    #start analysis
+    # start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, config["n_events"])
 
 if __name__ == '__main__':
     # runDJetCorrAnalysis.py executed as script
-    
+
     parser = argparse.ArgumentParser(description='EMCal trigger QA analysis.')
     parser.add_argument('configYAML', metavar='configYAML',
                         help='YAML configuation file')
-    
-    #these are defined in the YAML file but can be overridden
+
+    # these are defined in the YAML file but can be overridden
     parser.add_argument('--mode',
                         help='Analysis mode (ESD or AOD)')
     parser.add_argument('--file-list',
@@ -306,9 +305,9 @@ if __name__ == '__main__':
                         help='Task name')
     parser.add_argument('--bad-fastor',
                         help='Name of the file containing a bad FastOR list')
-    
-    #these are not defined in the YAML file
-    parser.add_argument('-f', '--n-files', 
+
+    # these are not defined in the YAML file
+    parser.add_argument('-f', '--n-files',
                         default=100,
                         type=int,
                         help='Number of files to be analyzed')
@@ -334,7 +333,7 @@ if __name__ == '__main__':
     parser.add_argument('--trigger-qa', action='store_const',
                         default=False, const=True,
                         help='Track QA')
-    parser.add_argument('-d', '--debug-level', 
+    parser.add_argument('-d', '--debug-level',
                         default=0,
                         type=int,
                         help='Debug level')
