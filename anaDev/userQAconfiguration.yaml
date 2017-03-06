@@ -1,5 +1,5 @@
 period: "noPeriod"
-pass: ""
+pass: "pass1"
 CellEnergy:
     enabled: false
     createHistos: false

@@ -7,8 +7,6 @@ import helperFunctions
 import yaml
 
 def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, cmin, cmax):
-    ROOT.AddTaskCleanupVertexingHF()
-
     nOutputTrees = 0
 
     if doRecLevel:
@@ -146,8 +144,8 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
     # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
-    # physSel = ROOT.AliVEvent.kINT7
-    physSel = 0
+    physSel = ROOT.AliVEvent.kINT7
+    # physSel = 0
     ROOT.gSystem.Load("libCGAL")
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])
@@ -178,7 +176,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     # task.SetFallBackToRaw(True)
 
     # Physics selection task
-    if mode is helperFunctions.AnaMode.ESD and not config["MC"]:
+    if not config["MC"]:
         ROOT.AddTaskPhysicsSelection()
 
     if config["beam_type"] == "PbPb":
@@ -204,6 +202,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     pSpectraTask.SelectCollisionCandidates(physSel)
     pSpectraTask.SetPtBin(1, 150)
+    pSpectraTask.SetCentRange(0, 90)
 
     if not noInclusiveJets:
         # Charged jet analysis
@@ -240,6 +239,7 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
         ROOT.AliAnalysisManager.SetCommonFileName("AnalysisResults.root")
 
         pJetSpectraTask.SelectCollisionCandidates(physSel)
+        pJetSpectraTask.SetCentRange(0, 90)
 
         if config["charged_jets"]:
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid)
@@ -249,20 +249,23 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
             # pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
 
+    ROOT.AddTaskCleanupVertexingHF()
     if config["cent"]:
         for cmin, cnmax in zip(config["cent"][:-1], config["cent"][1:]):
             pDMesonJetsTask = AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, cmin, cnmax)
+            pDMesonJetsTask.SelectCollisionCandidates(physSel)
+            pDMesonJetsTask.SetTrackEfficiency(efficiency);
     else:
         pDMesonJetsTask = AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, None, None)
-
-    pDMesonJetsTask.SelectCollisionCandidates(physSel)
-    pDMesonJetsTask.SetTrackEfficiency(efficiency);
+        pDMesonJetsTask.SelectCollisionCandidates(physSel)
+        pDMesonJetsTask.SetTrackEfficiency(efficiency);
 
     tasks = mgr.GetTasks()
     for task in tasks:
         if isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
             task.SetIsPythia(config["is_pythia"])
-            task.SetMaxMinimumBiasPtHard(5)
+            if config["is_pythia"]: task.SetMaxMinimumBiasPtHard(5)
+            if config["run_period"] == "LHC15o": task.SetSwitchOffLHC15oFaultyBranches(True)
             if config["beam_type"] == "pp":
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
             elif config["beam_type"] == "PbPb":
@@ -296,8 +299,8 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
     mgr.SetDebugLevel(debugLevel)
 
     # To have more debug info
-    # mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug + 100)
-    # mgr.AddClassDebug("AliAnalysisTaskDmesonJets::AnalysisEngine", ROOT.AliLog.kDebug + 100)
+    mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug + 100)
+    mgr.AddClassDebug("AliAnalysisTaskDmesonJets::AnalysisEngine", ROOT.AliLog.kDebug + 100)
 
     # start analysis
     print "Starting Analysis..."
