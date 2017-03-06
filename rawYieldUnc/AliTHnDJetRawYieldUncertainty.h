@@ -44,7 +44,7 @@ public:
   Bool_t ExtractInputMassPlotEffScale();
   Bool_t ExtractInputMassPlotSideband();
 
-private:
+protected:
 
   TString     fFileNameInput ; ///< Name of input file
   TString     fDirName       ; ///< Name of input directory in the root file
@@ -52,6 +52,7 @@ private:
   TString     fObjectName    ; ///< Name of input container to extract the mass plot
   TFile      *fFileInput     ; //!<!File containing the task output
 
+private:
   ClassDef(AliTHnDJetRawYieldUncertainty,1);
 };
 

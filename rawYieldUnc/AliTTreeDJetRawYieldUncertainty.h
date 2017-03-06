@@ -48,7 +48,7 @@ public:
   Bool_t ExtractInputMassPlotEffScale();
   Bool_t ExtractInputMassPlotSideband();
 
-private:
+protected:
 
   std::vector<std::string> fInputFileNames ; ///< Name of input file
   TString                  fTreeName       ; ///< Name of input TTree
@@ -58,6 +58,7 @@ private:
   Double_t                 fmassmax        ; ///< Mass upper edge of inv.mass plots
   Double_t                 fmasswidth      ; ///< Mass plots bin width
 
+private:
   ClassDef(AliTTreeDJetRawYieldUncertainty,1);
 };
 
