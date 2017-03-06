@@ -99,7 +99,7 @@ public:
 
   virtual void ClearObjects();
 
-private:
+protected:
 
   static const Int_t fgkNSigmaVar             = 6; //!<!Number of mean/sigma variations
   static const Int_t fgkNBkgVar               = 8; //!<!Number of bkg variations
@@ -163,6 +163,7 @@ private:
   TH1F              *fJetSpectrSBDef             ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
   TH1F             **fJetPtBinYieldDistribution  ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
 
+private:
   ClassDef(AliDJetRawYieldUncertainty,1);
 };
 
