@@ -18,6 +18,9 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
     if config["MC"] and doMCTruth:
         nOutputTrees += 1
 
+    if config["MC"] and doWrongPID:
+        nOutputTrees += 1
+
     if doResponse == "c":
         rejectOrigin = ROOT.AliAnalysisTaskDmesonJets.kFromBottom
     elif doResponse == "b":
@@ -105,16 +108,6 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.2, config["rdhf_cuts_dzero"])
                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.4, config["rdhf_cuts_dzero"])
 
-            # D*
-#             if config["charged_jets"]:
-#                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.4, config["rdhf_cuts_dstar"])
-#                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.6, config["rdhf_cuts_dstar"])
-#
-#             if config["full_jets"]:
-#                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.2, config["rdhf_cuts_dstar"])
-#                 pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kDstartoKpipi, ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.4, config["rdhf_cuts_dstar"])
-
-
         if config["MC"] and doMCTruth:
             # D0
             if config["charged_jets"]:
@@ -136,7 +129,7 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
 
     return pDMesonJetsTask
 
-def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency, taskName="JetDmesonAna", debugLevel=0):
+def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency, taskName="JetDmesonAna", debugLevel=0):
 
     f = open(configFileName, 'r')
     config = yaml.load(f)
@@ -144,8 +137,8 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
     # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
-    physSel = ROOT.AliVEvent.kINT7
-    # physSel = 0
+    # physSel = ROOT.AliVEvent.kINT7
+    physSel = 0
     ROOT.gSystem.Load("libCGAL")
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])
@@ -250,6 +243,9 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
             # pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
 
     ROOT.AddTaskCleanupVertexingHF()
+
+    ROOT.AddTaskD0Mass(0, config["MC"], False, False, 0, 0, 0, 0, "Loose", config["rdhf_cuts_dzero"])
+
     if config["cent"]:
         for cmin, cnmax in zip(config["cent"][:-1], config["cent"][1:]):
             pDMesonJetsTask = AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, cmin, cnmax)
@@ -295,12 +291,12 @@ def main(configFileName, nFiles, nEvents, doRecLevel, doSignalOnly, doMCTruth, d
 
     if debugLevel == 0:
         mgr.SetUseProgressBar(1, 250)
+    else:
+        # To have more debug info
+        mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug + 100)
+        mgr.AddClassDebug("AliAnalysisTaskDmesonJets::AnalysisEngine", ROOT.AliLog.kDebug + 100)
 
     mgr.SetDebugLevel(debugLevel)
-
-    # To have more debug info
-    mgr.AddClassDebug("AliAnalysisTaskDmesonJets", ROOT.AliLog.kDebug + 100)
-    mgr.AddClassDebug("AliAnalysisTaskDmesonJets::AnalysisEngine", ROOT.AliLog.kDebug + 100)
 
     # start analysis
     print "Starting Analysis..."
@@ -335,6 +331,9 @@ if __name__ == '__main__':
     parser.add_argument('--no-incl-jets', action='store_const',
                         default=False, const=True,
                         help='No inclusive jets')
+    parser.add_argument('--d2h', action='store_const',
+                        default=False, const=True,
+                        help='D2H task')
     parser.add_argument('--response',
                         default=False,
                         help='Run response matrix (c or b)')
@@ -350,5 +349,5 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
 
-    main(args.config, args.n_files, args.n_events, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, not args.no_wrong_pid, args.response, args.no_incl_jets, args.efficiency,
+    main(args.config, args.n_files, args.n_events, args.d2h, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, not args.no_wrong_pid, args.response, args.no_incl_jets, args.efficiency,
          args.task_name, args.debug_level)
