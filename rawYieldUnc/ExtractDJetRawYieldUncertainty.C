@@ -1,13 +1,13 @@
 //
 //  Execute with:
-//  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ANALYSIS/macros -I$ROOTSYS/include");
-//  gROOT->LoadMacro("AliDJetRawYieldUncertainty.cxx++")
-//  gROOT->LoadMacro("AliTTreeDJetRawYieldUncertainty.cxx++")
-//  gROOT->LoadMacro("AliTHnDJetRawYieldUncertainty.cxx++")
 //  .L ExtractDJetRawYieldUncertainty.C
 //  EvaluateBinPerBinUncertainty(...) //to be done for each pT bin in which you have a mass spectrum
 //  ExtractDJetRawYieldUncertainty(...) //to build the uncertainty for the various bins of the jet pT spectrum
 //
+
+#include <AliDJetRawYieldUncertainty.h>
+#include <AliDJetTTreeReader.h>
+#include <AliDJetTHnReader.h>
 
 void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl);
 void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface);
@@ -23,17 +23,7 @@ void EvaluateBinPerBinUncertainty(
    )
 {
 
-  AliDJetRawYieldUncertainty *interface = 0;
-  if (specie == AliDJetRawYieldUncertainty::kD0toKpi) {
-    interface = new AliTTreeDJetRawYieldUncertainty();
-  }
-  else if  (specie == AliDJetRawYieldUncertainty::kDStarD0pi) {
-    interface = new AliTHnDJetRawYieldUncertainty();
-  }
-  else {
-    printf("Error in setting the D-meson specie! Exiting...\n");
-    return;
-  }
+  AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
   Bool_t flagSpecie = interface->SetDmesonSpecie((AliDJetRawYieldUncertainty::EDMesonSpecies_t)specie);
   if (!flagSpecie) return;
   interface->SetYieldMethod((AliDJetRawYieldUncertainty::EYieldMethod_t)method);
@@ -81,17 +71,7 @@ void ExtractDJetRawYieldUncertainty(
    )
 {
 
-  AliDJetRawYieldUncertainty *interface = 0;
-  if (specie == AliDJetRawYieldUncertainty::kD0toKpi) {
-    interface = new AliTTreeDJetRawYieldUncertainty();
-  }
-  else if  (specie == AliDJetRawYieldUncertainty::kDStarD0pi) {
-    interface = new AliTHnDJetRawYieldUncertainty();
-  }
-  else {
-    printf("Error in setting the D-meson specie! Exiting...\n");
-    return;
-  }
+  AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
   Bool_t flagSpecie = interface->SetDmesonSpecie((AliDJetRawYieldUncertainty::EDMesonSpecies_t)specie);
   if(!flagSpecie) return;
   interface->SetYieldMethod((AliDJetRawYieldUncertainty::EYieldMethod_t)(method));
@@ -129,17 +109,7 @@ void ExtractDJetRawYieldUncertainty_FromSB_CoherentTrialChoice(
    ) //number of variations is fixed (all the variations in the pT(D) bins, which should match among the various pT(D) bins!)
 {
 
-  AliDJetRawYieldUncertainty *interface = 0;
-  if (specie == AliDJetRawYieldUncertainty::kD0toKpi) {
-    interface = new AliTTreeDJetRawYieldUncertainty();
-  }
-  else if  (specie == AliDJetRawYieldUncertainty::kDStarD0pi) {
-    interface = new AliTHnDJetRawYieldUncertainty();
-  }
-  else {
-    printf("Error in setting the D-meson specie! Exiting...\n");
-    return;
-  }
+  AliDJetRawYieldUncertainty *interface = new AliDJetRawYieldUncertainty();
   Bool_t flagSpecie = interface->SetDmesonSpecie((AliDJetRawYieldUncertainty::EDMesonSpecies_t)specie);
   if(!flagSpecie) return;
   interface->SetYieldMethod(AliDJetRawYieldUncertainty::kSideband);
@@ -212,20 +182,17 @@ void SetInputParametersDzero(AliDJetRawYieldUncertainty *interface, Bool_t refl)
     interface->SetValueOfReflOverSignal(-1,1.72,2.00); //1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
   }
 
-  AliTTreeDJetRawYieldUncertainty* interface_tree = dynamic_cast<AliTTreeDJetRawYieldUncertainty*>(interface);
-  if (!interface_tree) {
-    Printf("Expected AliTTreeDJetRawYieldUncertainty, but conversion error occurred!");
-    return;
-  }
-  interface_tree->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10b/merge/AnalysisResults.root");
-  interface_tree->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10c/merge/AnalysisResults.root");
-  interface_tree->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10d/merge/AnalysisResults.root");
-  interface_tree->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10e/merge/AnalysisResults.root");
-  interface_tree->SetInputTreename("AliAnalysisTaskDmesonJets_AnyINT_D0");
-  interface_tree->SetInputDBranchname("DmesonJet");
-  interface_tree->SetInputJetBranchname("Jet_AKTChargedR040_pt_scheme");
+  AliDJetTTreeReader* reader = new AliDJetTTreeReader();
+  reader->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10b/merge/AnalysisResults.root");
+  reader->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10c/merge/AnalysisResults.root");
+  reader->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10d/merge/AnalysisResults.root");
+  reader->AddInputFileName("/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_823_824_825_826/LHC10e/merge/AnalysisResults.root");
+  reader->SetInputTreename("AliAnalysisTaskDmesonJets_AnyINT_D0");
+  reader->SetInputDBranchname("DmesonJet");
+  reader->SetInputJetBranchname("Jet_AKTChargedR040_pt_scheme");
+  reader->SetMassEdgesAndBinWidthForMassPlot(1.5664,2.1664,0.006);
 
-  interface_tree->SetMassEdgesAndBinWidthForMassPlot(1.5664,2.1664,0.006);
+  interface->SetDJetReader(reader);
   interface->SetDmesonPtBins(nDbins,ptDbins);
   interface->SetJetPtBins(nJetbins,ptJetbins);
   interface->SetDmesonEfficiency(DMesonEff);
@@ -282,16 +249,14 @@ void SetInputParametersDstar(AliDJetRawYieldUncertainty *interface){
 			1,1,   // free sigma, fixed mean
 			1,1};  // fixed mean, fixed sigma
 
-  AliTHnDJetRawYieldUncertainty* interface_thn = dynamic_cast<AliTTreeDJetRawYieldUncertainty*>(interface);
-  if (!interface_thn) {
-    Printf("Expected AliTHnDJetRawYieldUncertainty, but conversion error occurred!");
-    return;
-  }
-  interface_thn->SetInputFilename("./AnalysisResults_Djets_pPb.root");
-  interface_thn->SetInputDirname("DmesonsForJetCorrelations");
-  interface_thn->SetInputListname("histosDStarMBN");
-  interface_thn->SetInputObjectname("hsDphiz");
 
+  AliDJetTHnReader* reader = new AliDJetTHnReader();
+  reader->SetInputFilename("./AnalysisResults_Djets_pPb.root");
+  reader->SetInputDirname("DmesonsForJetCorrelations");
+  reader->SetInputListname("histosDStarMBN");
+  reader->SetInputObjectname("hsDphiz");
+
+  interface->SetDJetReader(reader);
   interface->SetDmesonPtBins(nDbins,ptDbins);
   interface->SetJetPtBins(nJetbins,ptJetbins);
   interface->SetDmesonEfficiency(DMesonEff);
