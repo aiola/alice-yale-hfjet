@@ -1,11 +1,4 @@
 #!/usr/bin/env python
-#  Execute with:
-#  ROOT.gSystem.SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ANALYSIS/macros -I$ROOTSYS/include");
-#  gROOT->LoadMacro("AliDJetRawYieldUncertainty.cxx++")
-#  .L ExtractDJetRawYieldUncertainty.C
-#  EvaluateBinPerBinUncertainty(...) //to be done for each pT bin in which you have a mass spectrum
-#  ExtractDJetRawYieldUncertainty(...) //to build the uncertainty for the various bins of the jet pT spectrum
-#
 
 import argparse
 import yaml

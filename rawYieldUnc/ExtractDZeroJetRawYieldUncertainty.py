@@ -151,16 +151,18 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
 		1, 1, 1  # fixed mean, fixed sigma
         ]
 
-    interface = ROOT.AliTTreeDJetRawYieldUncertainty()
-    interface.AddInputFileName("{0}/{1}/LHC10b/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.AddInputFileName("{0}/{1}/LHC10c/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.AddInputFileName("{0}/{1}/LHC10d/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.AddInputFileName("{0}/{1}/LHC10e/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
-    interface.SetInputDBranchname("DmesonJet")
-    interface.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
+    reader = ROOT.AliDJetTTreeReader()
+    reader.AddInputFileName("{0}/{1}/LHC10b/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.AddInputFileName("{0}/{1}/LHC10c/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.AddInputFileName("{0}/{1}/LHC10d/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.AddInputFileName("{0}/{1}/LHC10e/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
+    reader.SetInputDBranchname("DmesonJet")
+    reader.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
+    reader.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
 
-    interface.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
+    interface = ROOT.AliDJetRawYieldUncertainty()
+    interface.SetDJetReader(reader)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
@@ -216,16 +218,18 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
         1  # free sigma, free mean
         ]
 
-    interface = ROOT.AliDJetRawYieldUncertainty()
-    interface.AddInputFileName("{0}/{1}/LHC10b/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.AddInputFileName("{0}/{1}/LHC10c/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.AddInputFileName("{0}/{1}/LHC10d/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.AddInputFileName("{0}/{1}/LHC10e/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
-    interface.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
-    interface.SetInputDBranchname("DmesonJet")
-    interface.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
+    reader = ROOT.AliDJetTTreeReader()
+    reader.AddInputFileName("{0}/{1}/LHC10b/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.AddInputFileName("{0}/{1}/LHC10c/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.AddInputFileName("{0}/{1}/LHC10d/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.AddInputFileName("{0}/{1}/LHC10e/merge/{2}".format(config["input_path"], config["train"], config["file_name"]))
+    reader.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
+    reader.SetInputDBranchname("DmesonJet")
+    reader.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
+    reader.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
 
-    interface.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
+    interface = ROOT.AliDJetRawYieldUncertainty()
+    interface.SetDJetReader(reader)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
@@ -269,9 +273,9 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
 
     if no_refl: refl = None
 
-    ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
-    ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
-    ROOT.gInterpreter.AddIncludePath("$FASTJET/include");
+    # ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
+    # ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
+    # ROOT.gInterpreter.AddIncludePath("$FASTJET/include");
 
     # load fastjet libraries 3.x
     ROOT.gSystem.Load("libCGAL")
@@ -282,9 +286,9 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
     ROOT.gSystem.Load("libfastjetplugins")
     ROOT.gSystem.Load("libfastjetcontribfragile")
 
-    ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
-    ROOT.gROOT.LoadMacro("AliTTreeDJetRawYieldUncertainty.cxx+g")
-    ROOT.gROOT.LoadMacro("AliTHnDJetRawYieldUncertainty.cxx+g")
+    # ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
+    # ROOT.gROOT.LoadMacro("AliTTreeDJetRawYieldUncertainty.cxx+g")
+    # ROOT.gROOT.LoadMacro("AliTHnDJetRawYieldUncertainty.cxx+g")
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
