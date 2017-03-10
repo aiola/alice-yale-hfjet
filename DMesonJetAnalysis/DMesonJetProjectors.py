@@ -117,6 +117,7 @@ class DMesonJetDataProjector:
         self.fChain = None
         self.fCurrentFileName = None
         self.fPeriod = None
+        self.fPtHardBin = None
         self.fWeight = 1
         self.fTotalEvents = 0
         self.fNFiles = 0
@@ -144,6 +145,22 @@ class DMesonJetDataProjector:
             self.fNFiles += 1
 
     def ExtractWeightFromHistogramList(self, hlist):
+        xsection = hlist.FindObject("fHistXsection")
+        trials = hlist.FindObject("fHistTrials")
+
+        if not trials or not xsection:
+            print("Could not find trial and x-section information!")
+            hlist.Print()
+            self.fWeight = 1
+            return
+
+        valNTRIALS = trials.GetBinContent(self.fPtHardBin + 1);
+        valXSEC = xsection.GetBinContent(self.fPtHardBin + 1);
+        scalingFactor = 0;
+        if valNTRIALS > 0:
+            self.fWeight = valXSEC / valNTRIALS;
+
+    def ExtractWeightFromHistogramListFastSim(self, hlist):
         xsection = hlist.FindObject("fHistXsectionVsPtHard")
         trials = hlist.FindObject("fHistTrialsVsPtHard")
 
@@ -173,7 +190,10 @@ class DMesonJetDataProjector:
                 print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
                 self.fWeight = 1
 
-            self.ExtractWeightFromHistogramList(hlist)
+            if "fastsim" in self.fMergingType:
+                self.ExtractWeightFromHistogramListFastSim(hlist)
+            else:
+                self.ExtractWeightFromHistogramList(hlist)
 
             if self.fMergingType == "average":
                 averageFactor = 1. / self.fNFiles
@@ -184,11 +204,13 @@ class DMesonJetDataProjector:
         print("File: {0}\nWeight: {1} (merging type = {2})".format(self.fCurrentFileName, self.fWeight, self.fMergingType))
 
     def ExtractCurrentFileInfo(self):
-        fname = self.fChain.GetCurrentFile().GetName()
-        lastSlash = fname.rfind('/')
-        secondLastSlash = fname.rfind('/', 0, lastSlash - 1)
-        thirdLastSlash = fname.rfind('/', 0, secondLastSlash - 1)
-        self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
+        if self.fCurrentFileName == self.fChain.GetCurrentFile().GetName(): return
+        self.fCurrentFileName = self.fChain.GetCurrentFile().GetName()
+        lastSlash = self.fCurrentFileName.rfind('/')
+        secondLastSlash = self.fCurrentFileName.rfind('/', 0, lastSlash - 1)
+        thirdLastSlash = self.fCurrentFileName.rfind('/', 0, secondLastSlash - 1)
+        self.fPtHardBin = int(self.fCurrentFileName[secondLastSlash + 1:lastSlash])
+        self.fPeriod = self.fCurrentFileName[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractEventsFromHistogramList(self, hlist):
         eventsHist = hlist.FindObject("fHistNEvents")
@@ -204,8 +226,6 @@ class DMesonJetDataProjector:
     def OnFileChange(self, DMesonDef, trigger):
         if self.fChain.GetCurrentFile().GetName() == self.fCurrentFileName:
             return
-
-        self.fCurrentFileName = self.fChain.GetCurrentFile().GetName()
 
         self.ExtractCurrentFileInfo()
         self.RecalculateEvents(DMesonDef, trigger)
