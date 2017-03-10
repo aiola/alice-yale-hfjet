@@ -46,12 +46,14 @@ def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
             input_path += "output"
             file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
         train = ""
+        output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
     else:
         collision = config["collision_system"]
         name = config["name"]
         train = config["train"]
         input_path = config["input_path"]
         file_name = config["file_name"]
+        output_path = input_path
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
     projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents, pt_hard_bins)
@@ -59,8 +61,6 @@ def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
 
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(collision, anaConfig)
-
-    output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
 
     ana.SaveRootFile("{0}/{1}".format(output_path, train))
     ana.SavePlots("{0}/{1}".format(output_path, train), format)
