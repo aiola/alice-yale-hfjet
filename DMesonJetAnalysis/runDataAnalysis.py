@@ -60,10 +60,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(collision, anaConfig)
 
-    if pt_hard_bins > 0:
-        output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
-    else:
-        output_path = input_path
+    output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
 
     ana.SaveRootFile("{0}/{1}".format(output_path, train))
     ana.SavePlots("{0}/{1}".format(output_path, train), format)
