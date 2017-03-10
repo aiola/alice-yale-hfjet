@@ -3,7 +3,7 @@ input_path: /Volumes/DATA/ALICE/JetResults
 train: FastSim
 file_name: ""
 task_name: AliAnalysisTaskDmesonJets
-merging_type: weighted_sum
+merging_type: weighted_sum_fastsim
 collision_system: "pp #sqrt{#it{s}} = 5.02 TeV"
 analysis:
 - 
