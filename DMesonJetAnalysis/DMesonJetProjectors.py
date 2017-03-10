@@ -326,17 +326,25 @@ class DMesonJetResponseProjector:
         self.fChain = ROOT.TChain(treeName)
 
         for file in files:
+            self.GetInfoFromFileName(file)
+            if self.fPtHardBin != 0: continue
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
+
+        self.fPtHardBin = -1
+        self.fPeriod = ""
+
+    def GetInfoFromFileName(self, fname):
+        lastSlash = fname.rfind('/')
+        secondLastSlash = fname.rfind('/', 0, lastSlash - 1)
+        thirdLastSlash = fname.rfind('/', 0, secondLastSlash - 1)
+        self.fPtHardBin = int(fname[secondLastSlash + 1:lastSlash])
+        self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractCurrentFileInfo(self):
         if self.fCurrentFileName == self.fChain.GetCurrentFile().GetName(): return
         self.fCurrentFileName = self.fChain.GetCurrentFile().GetName()
-        lastSlash = self.fCurrentFileName.rfind('/')
-        secondLastSlash = self.fCurrentFileName.rfind('/', 0, lastSlash - 1)
-        thirdLastSlash = self.fCurrentFileName.rfind('/', 0, secondLastSlash - 1)
-        self.fPtHardBin = int(self.fCurrentFileName[secondLastSlash + 1:lastSlash])
-        self.fPeriod = self.fCurrentFileName[thirdLastSlash + 1:secondLastSlash]
+        self.GetInfoFromFileName(self.fCurrentFileName)
 
     def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsection")
