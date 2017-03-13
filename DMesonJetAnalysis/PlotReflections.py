@@ -27,17 +27,22 @@ def PlotReflections(config, var, reflFit):
     reflHist = dict()
     reflFitHist = dict()
 
+    file.ls()
+
     for k in file.GetListOfKeys():
         h = file.Get(k.GetName())
         if "histSgn" in h.GetName():
             i = int(h.GetName()[-1])
             signHist[i] = h
+            print(h.GetName())
         if "histRflFitted" in h.GetName():
             i = int(h.GetName()[-1])
             reflFitHist[i] = h
+            print(h.GetName())
         if "histoRfl" in h.GetName():
             i = int(h.GetName()[-1])
             reflHist[i] = h
+            print(h.GetName())
 
     globalList.extend(signHist)
     globalList.extend(reflHist)
@@ -159,6 +164,7 @@ if __name__ == '__main__':
     f.close()
 
     PlotReflections(config, "DPt", "DoubleGaus")
+    PlotReflections(config, "DPt_NoJet", "DoubleGaus")
     PlotReflections(config, "JetPt", "DoubleGaus")
 
     for obj in globalList:
