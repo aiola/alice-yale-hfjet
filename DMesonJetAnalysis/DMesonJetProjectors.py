@@ -326,13 +326,13 @@ class DMesonJetResponseProjector:
         self.fChain = ROOT.TChain(treeName)
 
         for file in files:
-            self.GetInfoFromFileName(file)
-            if self.fPtHardBin != 0: continue
+            # self.GetInfoFromFileName(file)
+            # if self.fPtHardBin == 0: continue
             print("Adding file {0}...".format(file))
             self.fChain.Add(file)
 
-        self.fPtHardBin = -1
-        self.fPeriod = ""
+        # self.fPtHardBin = -1
+        # self.fPeriod = ""
 
     def GetInfoFromFileName(self, fname):
         lastSlash = fname.rfind('/')
