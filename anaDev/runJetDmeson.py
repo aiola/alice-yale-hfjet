@@ -242,9 +242,9 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
             pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid)
             # pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
 
-    ROOT.AddTaskCleanupVertexingHF()
+    # ROOT.AddTaskCleanupVertexingHF()
 
-    ROOT.AddTaskD0Mass(0, config["MC"], False, False, 0, 0, 0, 0, "Loose", config["rdhf_cuts_dzero"])
+    if d2h: ROOT.AddTaskD0Mass(0, config["MC"], False, False, 0, 0, 0, 0, "Loose", config["rdhf_cuts_dzero"])
 
     if config["cent"]:
         for cmin, cnmax in zip(config["cent"][:-1], config["cent"][1:]):
