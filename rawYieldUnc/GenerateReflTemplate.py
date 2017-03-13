@@ -14,6 +14,21 @@ ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
 def main(config):
+    ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
+    ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
+    ROOT.gInterpreter.AddIncludePath("$FASTJET/include");
+
+    # load fastjet libraries 3.x
+    ROOT.gSystem.Load("libCGAL")
+
+    ROOT.gSystem.Load("libfastjet")
+    ROOT.gSystem.Load("libsiscone")
+    ROOT.gSystem.Load("libsiscone_spherical")
+    ROOT.gSystem.Load("libfastjetplugins")
+    ROOT.gSystem.Load("libfastjetcontribfragile")
+
+    ROOT.gSystem.Load("../DMesonJetAnalysis/MassFitter.so")
+
     ROOT.TH1.AddDirectory(False)
     fname = "{0}/{1}/{2}.root".format(config["input_path"], config["train"], config["name"])
     file = ROOT.TFile(fname)
@@ -59,31 +74,38 @@ def main(config):
         hRefl.Write()
     fileOutDPt.Close()
 
-    ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
-    ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
-    ROOT.gInterpreter.AddIncludePath("$FASTJET/include");
+    fnameDPtNoJet = "{0}/{1}/{2}/reflTemp/{2}_DPt_NoJet.root".format(config["input_path"], config["train"], config["name"])
+    fileOutDPtNoJet = ROOT.TFile(fnameDPtNoJet, "recreate")
+    for ibin, (ptmin, ptmax) in enumerate(zip(ptDbins[:-1], ptDbins[1:])):
+        hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/D0_kSignalOnly_DPtBins/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+        if not hSig: exit(1)
+        hSig.SetName("histSgn_{0}".format(ibin))
 
-    # load fastjet libraries 3.x
-    ROOT.gSystem.Load("libCGAL")
+        hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/D0_WrongPID_DPtBins/InvMass_D0_WrongPID_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+        if not hRefl: exit(1)
+        hRefl.SetName("histRfl_{0}".format(ibin))
 
-    ROOT.gSystem.Load("libfastjet")
-    ROOT.gSystem.Load("libsiscone")
-    ROOT.gSystem.Load("libsiscone_spherical")
-    ROOT.gSystem.Load("libfastjetplugins")
-    ROOT.gSystem.Load("libfastjetcontribfragile")
-
-    ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
+        hSig.Scale(1. / hRefl.Integral())
+        hRefl.Scale(1. / hRefl.Integral())
+        fileOutDPtNoJet.cd()
+        hSig.Write()
+        hRefl.Write()
+    fileOutDPtNoJet.Close()
 
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "DoubleGaus");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "DoubleGaus");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "DoubleGaus");
 
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "gaus");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "gaus");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "gaus");
 
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol3");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "pol3");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol3");
 
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol6");
+    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "pol6");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol6");
 
 if __name__ == '__main__':
