@@ -21,6 +21,16 @@ def MakeRDHFCuts(fname, dmesons, period, recopass):
             cuts.GetPidHF().SetOldPid(False);
             cuts.SetUsePhysicsSelection(False);
             cuts.SetTriggerClass("", "")
+        elif period == "LHC10" and recopass == "pass4":
+            if dmeson != "D0":
+                print("Period {0}, pass {1} only available for D0 (skipping {2})".format(period, recopass, dmeson))
+                continue
+            ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
+            ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
+            ROOT.gROOT.LoadMacro("Make2010pp_pass4_cuts.C+g")
+            cuts = ROOT.Make2010pp_pass4_cuts(False)
+            cuts.SetUsePhysicsSelection(False);
+            cuts.SetTriggerClass("", "")
         else:
             print("Period {0}, pass {1} not valid".format(period, recopass))
             return
