@@ -8,38 +8,47 @@ def MakeRDHFCuts(fname, dmesons, period, recopass):
     cutlist = []
 
     for dmeson in dmesons:
-        if dmeson == "D0":
-            cuts = ROOT.AliRDHFCutsD0toKpi()
-        elif dmeson == "Dstar":
-            cuts = ROOT.AliRDHFCutsDStartoKpipi()
-        else:
-            print("D meson '{0}' not valid.".format(dmeson))
-            continue
-
+        print("Processing {}".format(dmeson))
         if period == "LHC10" and recopass == "pass2":
+            if dmeson == "D0":
+                cuts = ROOT.AliRDHFCutsD0toKpi()
+            elif dmeson == "Dstar":
+                cuts = ROOT.AliRDHFCutsDStartoKpipi()
+            else:
+                print("D meson '{0}' not valid.".format(dmeson))
+                return
             cuts.SetStandardCutsPP2010()
-            cuts.GetPidHF().SetOldPid(False);
-            cuts.SetUsePhysicsSelection(False);
-            cuts.SetTriggerClass("", "")
+            cuts.GetPidHF().SetOldPid(False)
         elif period == "LHC10" and recopass == "pass4":
-            if dmeson != "D0":
-                print("Period {0}, pass {1} only available for D0 (skipping {2})".format(period, recopass, dmeson))
-                continue
-            ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
-            ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
-            ROOT.gROOT.LoadMacro("Make2010pp_pass4_cuts.C+g")
-            cuts = ROOT.Make2010pp_pass4_cuts(False)
-            cuts.SetUsePhysicsSelection(False);
-            cuts.SetTriggerClass("", "")
+            if dmeson == "D0":
+                ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
+                ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
+                ROOT.gROOT.LoadMacro("Make2010pp_pass4_cuts.C+g")
+                cuts = ROOT.Make2010pp_pass4_cuts(False)
+            elif dmeson == "Dstar":
+                fnameInput = "DStartoKpipiCuts_pp2010pass4_AGrelli_20170314.root"
+                fileInput = ROOT.TFile(fnameInput)
+                if not fileInput or fileInput.IsZombie():
+                    print("Could not find file {}".format(fnameInput))
+                    exit(1)
+                cuts = fileInput.Get("DStartoKpipiCuts")
+                fileInput.Close()
+            else:
+                print("D meson '{0}' not valid.".format(dmeson))
+                return
         else:
             print("Period {0}, pass {1} not valid".format(period, recopass))
             return
+
+        cuts.SetUsePhysicsSelection(False)
+        cuts.SetTriggerClass("", "")
         if dmeson == "D0":
             cuts.SetName("D0toKpiCuts")
         elif dmeson == "Dstar":
             cuts.SetName("DStartoKpipiCuts")
         cutlist.append(cuts)
 
+    print("Opening file {} for writing".format(fname))
     file = ROOT.TFile(fname, "recreate")
     if not file or file.IsZombie():
         print("Could not create file '{0}'".format(fname))
