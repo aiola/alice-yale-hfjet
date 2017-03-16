@@ -195,7 +195,8 @@ class DMesonJetResponseEngine:
             c.SetLeftMargin(0.12)
             c.SetLogz()
             h = resp.fResponseMatrix.DrawCopy("colz")
-            h.SetMinimum(DMesonJetUtils.FindMinimum(h) / 2)
+            find_minimum = DMesonJetUtils.FindMinimum(h)
+            if find_minimum is not None: h.SetMinimum(DMesonJetUtils.FindMinimum(h) / 2)
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.3)
             h.GetXaxis().SetTitleSize(21)
@@ -434,7 +435,11 @@ class DMesonJetResponse:
             eng.Start()
 
     def SaveRootFile(self, path):
-        file = ROOT.TFile.Open("{0}/{1}.root".format(path, self.fName), "recreate")
+        fname = "{0}/{1}.root".format(path, self.fName)
+        file = ROOT.TFile.Open(fname, "recreate")
+        if not file or file.IsZombie():
+            print("Could not create file '{}'!".format(fname))
+            return
         file.cd()
         for eng in self.fResponseEngine:
             eng.SaveRootFile(file)
