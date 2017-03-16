@@ -227,7 +227,6 @@ class DMesonJetResponseEngine:
             c.SetTopMargin(0.08)
             c.SetBottomMargin(0.14)
             c.SetLeftMargin(0.12)
-            c.SetLogz()
             h = resp.fResponseMatrixUncertainty.DrawCopy("colz")
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.3)
