@@ -1,9 +1,9 @@
 # MB Monte Carlo: reflection templates
-name: LHC14j4_Train1006
+name: LHC15i2_Train1010_reflections
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1006_1007_1008_1009
+train: Jets_EMC_pp_MC_1010_1011_1012_1013
 file_name: AnalysisResults.root
-merging_type: simple_sum
+merging_type: weighted_sum
 task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
