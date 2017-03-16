@@ -1,7 +1,7 @@
-# Response b->D0
-name: LHC15i2_Train973
+# Response c->D0
+name: LHC15i2_Train961_cresponse_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_973_974_975_976
+train: Jets_EMC_pp_MC_961_962_963_964
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJetsDetectorResponse
 analysis:
@@ -15,7 +15,10 @@ analysis:
   -
     name: JetPtSpectrum_DPt_20
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -33,7 +36,10 @@ analysis:
   -
     name: JetPtSpectrum_DPt_30
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -51,7 +57,10 @@ analysis:
   -
     name: JetPtSpectrum_DPt_40
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -69,7 +78,10 @@ analysis:
   -
     name: JetPtEtaSpectrum_DPt_20
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -86,7 +98,10 @@ analysis:
   -
     name: JetPtZSpectrum
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -104,7 +119,10 @@ analysis:
   -
     name: JetPtDPtSpectrum_CoarseBins
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
@@ -121,7 +139,10 @@ analysis:
   -
     name: JetPtDPtSpectrum
     active: yes
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000
     bins:
       jet_pt:
         bins: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]

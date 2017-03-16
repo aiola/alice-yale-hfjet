@@ -1,7 +1,7 @@
 # MB Monte Carlo: reflection templates
-name: LHC15i2_Train1026
+name: LHC15i2_Train1010_reflections_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1026_1027_1028_1029
+train: Jets_EMC_pp_MC_1010_1011_1012_1013
 file_name: AnalysisResults.root
 merging_type: weighted_sum
 task_name: AliAnalysisTaskDmesonJets
@@ -24,7 +24,10 @@ analysis:
     title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -42,7 +45,10 @@ analysis:
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -60,7 +66,10 @@ analysis:
     title: "#it{p}_{T,D} > 4 GeV/#it{c}"
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -78,7 +87,10 @@ analysis:
     title: ""
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
@@ -97,7 +109,10 @@ analysis:
     title: ""
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_961_962_963_964/LHC15i2_Train961.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_NoJet
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:

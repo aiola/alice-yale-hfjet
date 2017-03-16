@@ -1,7 +1,7 @@
-# Response c->D0 with MC shape systematic study (using POWHEG shape)
-name: LHC15i2_Train961_mcshape
+# Response b->D0
+name: LHC15i2_Train973_bresponse
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_961_962_963_964
+train: Jets_EMC_pp_MC_973_974_975_976
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJetsDetectorResponse
 analysis:
@@ -15,11 +15,7 @@ analysis:
   -
     name: JetPtSpectrum_DPt_20
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -37,11 +33,7 @@ analysis:
   -
     name: JetPtSpectrum_DPt_30
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -59,11 +51,7 @@ analysis:
   -
     name: JetPtSpectrum_DPt_40
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -81,11 +69,7 @@ analysis:
   -
     name: JetPtEtaSpectrum_DPt_20
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -102,11 +86,7 @@ analysis:
   -
     name: JetPtZSpectrum
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
@@ -124,11 +104,7 @@ analysis:
   -
     name: JetPtDPtSpectrum_CoarseBins
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
@@ -145,11 +121,7 @@ analysis:
   -
     name: JetPtDPtSpectrum
     active: yes
-    efficiency:
-      file_name: PYTHIA_POWHEG_Comparison_Charged_R040_LHC15i2analysis_Train961_charm_1483386026.root
-      list_name: ""
-      object_name: JetPtDPtSpectrum_DPt_PYTHIA6_Ratio_fit
-      apply_to_truth: yes
+    efficiency: no
     bins:
       jet_pt:
         bins: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
