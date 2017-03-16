@@ -9,6 +9,7 @@ sys.path.append("../DMesonJetAnalysis")
 import DMesonJetUtils
 sys.path.remove("../DMesonJetAnalysis")
 import ROOT
+import os
 
 ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
@@ -36,7 +37,10 @@ def main(config):
         print("Could not open file {0}".format(fname))
         exit(1)
 
-    fnameJetPt = "{0}/{1}/{2}/reflTemp/{2}_JetPt.root".format(config["input_path"], config["train"], config["name"])
+    path = "{0}/{1}/{2}/reflTemp".format(config["input_path"], config["train"], config["name"])
+    if not os.path.isdir(path): os.makedirs(path)
+
+    fnameJetPt = "{0}/{1}_JetPt.root".format(path, config["name"])
     fileOutJetPt = ROOT.TFile(fnameJetPt, "recreate")
     for ibin, (ptmin, ptmax) in enumerate(zip(ptJetbins[:-1], ptJetbins[1:])):
         hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_JetPtBins_DPt_30/InvMass_D0_kSignalOnly_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
