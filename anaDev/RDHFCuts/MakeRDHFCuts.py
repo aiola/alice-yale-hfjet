@@ -75,6 +75,8 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
 
         cuts.SetUsePhysicsSelection(False)
         cuts.SetTriggerClass("", "")
+        cuts.SetMinCentrality(0)
+        cuts.SetMaxCentrality(100)
         if dmeson == "D0":
             cuts.SetName("D0toKpiCuts")
         elif dmeson == "Dstar":
