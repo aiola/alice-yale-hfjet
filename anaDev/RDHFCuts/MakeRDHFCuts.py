@@ -4,29 +4,62 @@
 import argparse
 import ROOT
 
-def MakeRDHFCuts(fname, dmesons, period, recopass):
+def MakeRDHFCuts(dmesons, period, recopass, cent):
     cutlist = []
 
     for dmeson in dmesons:
         print("Processing {}".format(dmeson))
-        if period == "LHC10" and recopass == "pass2":
+        if period == "LHC10" and recopass == "pass2" and cent == -1:
             if dmeson == "D0":
                 cuts = ROOT.AliRDHFCutsD0toKpi()
-            elif dmeson == "Dstar":
+            elif dmeson == "DStar":
                 cuts = ROOT.AliRDHFCutsDStartoKpipi()
             else:
                 print("D meson '{0}' not valid.".format(dmeson))
                 return
             cuts.SetStandardCutsPP2010()
-            cuts.GetPidHF().SetOldPid(False)
-        elif period == "LHC10" and recopass == "pass4":
+        elif period == "LHC10" and recopass == "pass4" and cent == -1:
             if dmeson == "D0":
                 ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
                 ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
-                ROOT.gROOT.LoadMacro("Make2010pp_pass4_cuts.C+g")
+                ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli.C+g")
                 cuts = ROOT.Make2010pp_pass4_cuts(False)
-            elif dmeson == "Dstar":
-                fnameInput = "DStartoKpipiCuts_pp2010pass4_AGrelli_20170314.root"
+            elif dmeson == "DStar":
+                fnameInput = "DStartoKpipiCuts_pp2010pass4_arXiv_1702_00766_AGrelli.root"
+                fileInput = ROOT.TFile(fnameInput)
+                if not fileInput or fileInput.IsZombie():
+                    print("Could not find file {}".format(fnameInput))
+                    exit(1)
+                cuts = fileInput.Get("DStartoKpipiCuts")
+                fileInput.Close()
+            else:
+                print("D meson '{0}' not valid.".format(dmeson))
+                return
+        elif period == "LHC15o" and recopass == "pass1" and (cent == 0 or cent == 1):
+            if dmeson == "D0":
+                ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
+                ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
+                ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng.C+g")
+                cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng(False)
+            elif dmeson == "DStar":
+                fnameInput = "DStartoKpiCuts_PbPb2015_Cent0_10_Raa_WIP_SJaelani.root"
+                fileInput = ROOT.TFile(fnameInput)
+                if not fileInput or fileInput.IsZombie():
+                    print("Could not find file {}".format(fnameInput))
+                    exit(1)
+                cuts = fileInput.Get("DStartoKpipiCuts")
+                fileInput.Close()
+            else:
+                print("D meson '{0}' not valid.".format(dmeson))
+                return
+        elif period == "LHC15o" and recopass == "pass1" and cent == 2:
+            if dmeson == "D0":
+                ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
+                ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
+                ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng.C+g")
+                cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng(False)
+            elif dmeson == "DStar":
+                fnameInput = "DStartoKpiCuts_PbPb2015_Cent0_10_Raa_WIP_SJaelani.root"
                 fileInput = ROOT.TFile(fnameInput)
                 if not fileInput or fileInput.IsZombie():
                     print("Could not find file {}".format(fnameInput))
@@ -37,7 +70,7 @@ def MakeRDHFCuts(fname, dmesons, period, recopass):
                 print("D meson '{0}' not valid.".format(dmeson))
                 return
         else:
-            print("Period {0}, pass {1} not valid".format(period, recopass))
+            print("Period {0}, pass {1}, cent {2} not valid".format(period, recopass, cent))
             return
 
         cuts.SetUsePhysicsSelection(False)
@@ -48,6 +81,9 @@ def MakeRDHFCuts(fname, dmesons, period, recopass):
             cuts.SetName("DStartoKpipiCuts")
         cutlist.append(cuts)
 
+    fname = "RDHFCuts_{}_{}".format(period, recopass)
+    if cent >= 0: fname += "_Cent{}".format(cent)
+    fname += ".root"
     print("Opening file {} for writing".format(fname))
     file = ROOT.TFile(fname, "recreate")
     if not file or file.IsZombie():
@@ -63,15 +99,14 @@ if __name__ == '__main__':
     parser.add_argument('dmesons',
                         default="D0", nargs='*',
                         help='D meson (D0, Dstar, Dplus, Ds')
-    parser.add_argument('-o',
-                        default="cuts.root",
-                        help='Output file name')
+    parser.add_argument('--cent',
+                        default=-1, type=int,
+                        help='Centrality class')
     parser.add_argument('--period',
-                        default="LHC10",
-                        help='Period (LHC10)')
+                        help='Period (e.g. LHC10)')
     parser.add_argument('--recopass',
-                        default="pass2",
-                        help='Reco pass (pass2)')
+                        default="pass1",
+                        help='Reco pass (pass1)')
     args = parser.parse_args()
 
-    MakeRDHFCuts(args.o, args.dmesons, args.period, args.recopass)
+    MakeRDHFCuts(args.dmesons, args.period, args.recopass, args.cent)
