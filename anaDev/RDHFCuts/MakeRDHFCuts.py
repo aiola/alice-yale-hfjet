@@ -59,7 +59,7 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
                 ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng.C+g")
                 cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng(False)
             elif dmeson == "DStar":
-                fnameInput = "DStartoKpiCuts_PbPb2015_Cent0_10_Raa_WIP_SJaelani.root"
+                fnameInput = "DStartoKpiCuts_PbPb2015_Cent30_50_Raa_QM17_SJaelani.root"
                 fileInput = ROOT.TFile(fnameInput)
                 if not fileInput or fileInput.IsZombie():
                     print("Could not find file {}".format(fnameInput))
