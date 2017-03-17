@@ -4,10 +4,15 @@
 #include <TClonesArray.h>
 #include <TParameter.h>
 
-// File obtained from Cristina Terrevoli on March 14th, 2017.
-// Slightly modified.
+/*
+ * Generates the RDHF cuts for D0 mesons (RAA analysis).
+ * Obtained from Cristina Terrevoli on March 14th, 2017.
+ * Period: LHC10b,c,d,e
+ * Pass: pass4
+ * Published in arXiv:1702.00766
+ */
 
-AliRDHFCutsD0toKpi* Make2010pp_pass4_cuts(Bool_t saveFile = kTRUE)
+AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(Bool_t saveFile = kTRUE)
 {
   AliRDHFCutsD0toKpi* RDHFD0toKpi = new AliRDHFCutsD0toKpi();
   RDHFD0toKpi->SetName("D0toKpiCuts");
@@ -145,7 +150,7 @@ AliRDHFCutsD0toKpi* Make2010pp_pass4_cuts(Bool_t saveFile = kTRUE)
   RDHFD0toKpi->PrintAll();
 
   if (saveFile) {
-    TFile* fout = new TFile("CutsLHC10_pass2.root", "recreate");
+    TFile* fout = new TFile("RDHFCuts_D0_LHC10_pass4.root", "recreate");
     fout->cd();
     RDHFD0toKpi->Write();
     fout->Close();
