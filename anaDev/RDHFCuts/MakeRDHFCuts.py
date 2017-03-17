@@ -23,7 +23,7 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
                 ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
                 ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
                 ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli.C+g")
-                cuts = ROOT.Make2010pp_pass4_cuts(False)
+                cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(False)
             elif dmeson == "DStar":
                 fnameInput = "DStartoKpipiCuts_pp2010pass4_arXiv_1702_00766_AGrelli.root"
                 fileInput = ROOT.TFile(fnameInput)
