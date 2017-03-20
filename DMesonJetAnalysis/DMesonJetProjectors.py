@@ -161,8 +161,8 @@ class DMesonJetDataProjector:
             self.fWeight = valXSEC / valNTRIALS;
 
     def ExtractWeightFromHistogramListFastSim(self, hlist):
-        xsection = hlist.FindObject("fHistXsectionVsPtHard")
-        trials = hlist.FindObject("fHistTrialsVsPtHard")
+        xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
+        trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
         if not trials or not xsection:
             print("Could not find trial and x-section information (not necessarily a bad thing)!")

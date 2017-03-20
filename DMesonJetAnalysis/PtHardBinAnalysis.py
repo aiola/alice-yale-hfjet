@@ -7,12 +7,12 @@ import argparse
 
 globalList = []
 
-def main(ts, nPtHard):
+def main(ts, nPtHard, stage):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    fileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_pythia_charm_{ts}/{ptHard}/stage_0/output/001/AnalysisResults_FastSim_pythia_charm_{ts}.root"
+    fileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_pythia_charm_{ts}/{ptHard}/stage_{stage}/output/001/AnalysisResults_FastSim_pythia_charm_{ts}.root"
     outfileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_pythia_charm_{ts}/{fname}.pdf"
 
     ptHardBins = range(0, nPtHard)
@@ -51,12 +51,12 @@ def main(ts, nPtHard):
     globalList.append(canvasDPt)
 
     for ptHard in ptHardBins:
-        fileName = fileNameTemp.format(ptHard=ptHard, ts=ts)
+        fileName = fileNameTemp.format(ptHard=ptHard, ts=ts, stage=stage)
         print("Opening file {0}".format(fileName))
         file = ROOT.TFile(fileName)
         tlist = file.Get("AliAnalysisTaskDmesonJets_histos")
-        hTrials = tlist.FindObject("fHistTrialsVsPtHard")
-        hXsec = tlist.FindObject("fHistXsectionVsPtHard")
+        hTrials = tlist.FindObject("fHistTrialsVsPtHardNoSel")
+        hXsec = tlist.FindObject("fHistXsectionVsPtHardNoSel")
         trials = hTrials.Integral()
         xsec = hXsec.GetMean(2)
         w = xsec / trials
@@ -123,8 +123,10 @@ if __name__ == '__main__':
                         default=None)
     parser.add_argument('--pthard', metavar='N',
                         default=3, type=int)
+    parser.add_argument('--stage', metavar='N',
+                        default=0, type=int)
     args = parser.parse_args()
 
-    main(args.ts, args.pthard)
+    main(args.ts, args.pthard, args.stage)
 
     IPython.embed()
