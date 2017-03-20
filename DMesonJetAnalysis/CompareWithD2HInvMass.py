@@ -4,58 +4,59 @@ import ROOT
 import math
 import IPython
 import argparse
-# import DMesonJetCompare
 import DMesonJetUtils
 
 globalList = []
 
+DPTBins = [0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24, 36, 9999];
 
-def GetD2HInvMass(file):
+def GetD2HInvMass(file, dpt_bins):
     listname = "PWG3_D2H_D0InvMass/coutputmassD0Mass0100"
     hlist = DMesonJetUtils.GetObject(file, listname)
     if not hlist:
         print("Could not get list {}".format(listname))
         exit(1)
-    hSgn = None
-    hRfl = None
-    for i in range(0, 14):
+    hSgn = []
+    hRfl = []
+    for i in range(0, len(dpt_bins) - 1):
         h = hlist.FindObject("histSgn_{}".format(i))
-        if hSgn: hSgn.Add(h)
-        else: hSgn = h.Clone("hSgn")
+        h.Rebin(6)
+        hSgn.append(h)
         h = hlist.FindObject("histRfl_{}".format(i))
-        if hRfl: hRfl.Add(h)
-        else: hRfl = h.Clone("hRfl")
-    hSgn.Rebin(6)
-    hRfl.Rebin(6)
+        h.Rebin(6)
+        hRfl.append(h)
     return hSgn, hRfl
 
-def ProjectMyTree(tree):
-    h = ROOT.TH1F("h", "h", 100, 1.6248, 2.2248)
+def ProjectMyTree(tree, dpt_bins, hname):
+    histos = [ROOT.TH1F("{}_{}".format(hname, i), "{}_{};M (GeV/#it{{c}}^{{2}});arb. units".format(hname, i), 100, 1.6248, 2.2248) for i in range(0, len(dpt_bins) - 1)]
     for i, obj in enumerate(tree):
         if i % 1000 == 0:
             print("Event {}".format(i))
         invMass = obj.DmesonJet.fInvMass
+        pt = obj.DmesonJet.fPt
+        for iPtBin, ptLim in enumerate(dpt_bins[1:]):
+            if ptLim > pt: break
+        # print("pt = {}, bin = {}".format(pt, iPtBin))
+        h = histos[iPtBin]
         h.Fill(invMass)
-    h.Sumw2()
-    return h
+    for h in histos: h.Sumw2()
+    return histos
 
-def GetMyInvMass(file):
+def GetMyInvMass(file, dpt_bins):
     treename = "AliAnalysisTaskDmesonJets_D0_kSignalOnly"
     tree = DMesonJetUtils.GetObject(file, treename)
-    hSgn = ProjectMyTree(tree)
-    hSgn.SetName("hSgn")
+    hSgn = ProjectMyTree(tree, dpt_bins, "hSgn")
 
     treename = "AliAnalysisTaskDmesonJets_D0_WrongPID"
     tree = DMesonJetUtils.GetObject(file, treename)
-    hRfl = ProjectMyTree(tree)
-    hRfl.SetName("hRfl")
+    hRfl = ProjectMyTree(tree, dpt_bins, "hRfl")
 
     return hSgn, hRfl
 
 def GetWeight(file):
     tlist = file.Get("AliAnalysisTaskDmesonJets_histos")
-    hTrials = tlist.FindObject("fHistTrialsVsPtHard")
-    hXsec = tlist.FindObject("fHistXsectionVsPtHard")
+    hTrials = tlist.FindObject("fHistTrialsVsPtHardNoSel")
+    hXsec = tlist.FindObject("fHistXsectionVsPtHardNoSel")
     trials = hTrials.Integral()
     xsec = hXsec.GetMean(2)
     w = xsec / trials
@@ -101,11 +102,11 @@ def single_file_analysis(filename):
     hRfl.SetMarkerStyle(ROOT.kOpenSquare)
     hRfl.SetLineColor(ROOT.kBlue)
 
-def pthard_analysis(path, periods, pt_hard_bins):
-    hSgn_D2H = ROOT.TH1F("h", "h;M (GeV/#it{c}^{2});arb. units", 100, 1.6248, 2.2248)
-    hRfl_D2H = ROOT.TH1F("h", "h;M (GeV/#it{c}^{2});arb. units", 100, 1.6248, 2.2248)
-    hSgn = ROOT.TH1F("h", "h;M (GeV/#it{c}^{2});arb. units", 100, 1.6248, 2.2248)
-    hRfl = ROOT.TH1F("h", "h;M (GeV/#it{c}^{2});arb. units", 100, 1.6248, 2.2248)
+def pthard_analysis(path, periods, pt_hard_bins, dpt_bins):
+    hSgn_D2H_histos = [ROOT.TH1F("hSgn_D2H_{}".format(i), "hSgn_D2H_{};M (GeV/#it{{c}}^{{2}});arb. units".format(i), 100, 1.6248, 2.2248) for i in range(0, len(dpt_bins) - 1)]
+    hRfl_D2H_histos = [ROOT.TH1F("hRfl_D2H_{}".format(i), "hRfl_D2H_{};M (GeV/#it{{c}}^{{2}});arb. units".format(i), 100, 1.6248, 2.2248) for i in range(0, len(dpt_bins) - 1)]
+    hSgn_histos = [ROOT.TH1F("hSgn_{}".format(i), "hSgn_{};M (GeV/#it{{c}}^{{2}});arb. units".format(i), 100, 1.6248, 2.2248) for i in range(0, len(dpt_bins) - 1)]
+    hRfl_histos = [ROOT.TH1F("hRfl_{}".format(i), "hRfl_{};M (GeV/#it{{c}}^{{2}});arb. units".format(i), 100, 1.6248, 2.2248) for i in range(0, len(dpt_bins) - 1)]
 
     for pt_hard in pt_hard_bins:
         for period in periods:
@@ -113,48 +114,64 @@ def pthard_analysis(path, periods, pt_hard_bins):
             print("Opening file {0}".format(fileName))
             file = ROOT.TFile(fileName)
 
-            hSgn_D2H_pthard, hRfl_D2H_pthard = GetD2HInvMass(file)
-            hSgn_pthard, hRfl_pthard = GetMyInvMass(file)
+            hSgn_D2H_pthard_histos, hRfl_D2H_pthard_histos = GetD2HInvMass(file, dpt_bins)
+            hSgn_pthard_histos, hRfl_pthard_histos = GetMyInvMass(file, dpt_bins)
 
             w = GetWeight(file)
 
-            hSgn_D2H.Add(hSgn_D2H_pthard, w)
-            hRfl_D2H.Add(hRfl_D2H_pthard, w)
-            hSgn.Add(hSgn_pthard, w)
-            hRfl.Add(hRfl_pthard, w)
+            def addH(totHistos, partHistos):
+                for tot, part in zip(totHistos, partHistos): tot.Add(part)
 
-    globalList.append(hSgn_D2H)
-    globalList.append(hRfl_D2H)
-    globalList.append(hSgn)
-    globalList.append(hRfl)
+            addH(hSgn_D2H_histos, hSgn_D2H_pthard_histos)
+            addH(hRfl_D2H_histos, hRfl_D2H_pthard_histos)
+            addH(hSgn_histos, hSgn_pthard_histos)
+            addH(hRfl_histos, hRfl_pthard_histos)
 
-    cSgn = ROOT.TCanvas("cSgn", "cSgn")
-    globalList.append(cSgn)
-    cSgn.cd()
-    hSgn_D2H.Draw("hist")
-    hSgn_D2H.SetMarkerSize(0.9)
-    hSgn_D2H.SetMarkerColor(ROOT.kRed)
-    hSgn_D2H.SetMarkerStyle(ROOT.kOpenCircle)
-    hSgn_D2H.SetLineColor(ROOT.kRed)
-    hSgn.Draw("same hist")
-    hSgn.SetMarkerSize(0.9)
-    hSgn.SetMarkerColor(ROOT.kBlue)
-    hSgn.SetMarkerStyle(ROOT.kOpenSquare)
-    hSgn.SetLineColor(ROOT.kBlue)
+    globalList.extend(hSgn_D2H_histos)
+    globalList.extend(hRfl_D2H_histos)
+    globalList.extend(hSgn_histos)
+    globalList.extend(hRfl_histos)
 
-    cRfl = ROOT.TCanvas("cRfl", "cRfl")
-    globalList.append(cRfl)
-    cRfl.cd()
-    hRfl_D2H.Draw("hist")
-    hRfl_D2H.SetMarkerSize(0.9)
-    hRfl_D2H.SetMarkerColor(ROOT.kRed)
-    hRfl_D2H.SetMarkerStyle(ROOT.kOpenCircle)
-    hRfl_D2H.SetLineColor(ROOT.kRed)
-    hRfl.Draw("same hist")
-    hRfl.SetMarkerSize(0.9)
-    hRfl.SetMarkerColor(ROOT.kBlue)
-    hRfl.SetMarkerStyle(ROOT.kOpenSquare)
-    hRfl.SetLineColor(ROOT.kBlue)
+    for i, (minPt, maxPt, hSgn_D2H, hSgn, hRfl_D2H, hRfl) in enumerate(zip(dpt_bins[:-1], dpt_bins[1:], hSgn_D2H_histos, hSgn_histos, hRfl_D2H_histos, hRfl_histos)):
+        cname = "cSgn_{}_{}".format(int(minPt * 10), int(maxPt * 10))
+        cSgn = ROOT.TCanvas(cname, cname)
+        globalList.append(cSgn)
+        cSgn.cd()
+        hSgn_D2H.Draw("hist")
+        hSgn_D2H.SetMarkerSize(0.9)
+        hSgn_D2H.SetMarkerColor(ROOT.kRed)
+        hSgn_D2H.SetMarkerStyle(ROOT.kOpenCircle)
+        hSgn_D2H.SetLineColor(ROOT.kRed)
+        hSgn.Draw("same hist")
+        hSgn.SetMarkerSize(0.9)
+        hSgn.SetMarkerColor(ROOT.kBlue)
+        hSgn.SetMarkerStyle(ROOT.kOpenSquare)
+        hSgn.SetLineColor(ROOT.kBlue)
+
+        cname = "cRfl_{}_{}".format(int(minPt * 10), int(maxPt * 10))
+        cRfl = ROOT.TCanvas(cname, cname)
+        globalList.append(cRfl)
+        cRfl.cd()
+        hRfl_D2H.Draw("hist")
+        hRfl_D2H.SetMarkerSize(0.9)
+        hRfl_D2H.SetMarkerColor(ROOT.kRed)
+        hRfl_D2H.SetMarkerStyle(ROOT.kOpenCircle)
+        hRfl_D2H.SetLineColor(ROOT.kRed)
+        hRfl.Draw("same hist")
+        hRfl.SetMarkerSize(0.9)
+        hRfl.SetMarkerColor(ROOT.kBlue)
+        hRfl.SetMarkerStyle(ROOT.kOpenSquare)
+        hRfl.SetLineColor(ROOT.kBlue)
+
+        sgn_D2H = hSgn_D2H.Integral()
+        sgn = hSgn.Integral()
+        rfl_D2H = hRfl_D2H.Integral()
+        rfl = hRfl.Integral()
+
+        ros_D2H = rfl_D2H / sgn_D2H
+        ros = rfl / sgn
+
+        print("Pt = [{},{}] R/S = {} - D2H R/S = {}".format(minPt, maxPt, ros, ros_D2H))
 
 def main(train):
     ROOT.TH1.AddDirectory(False)
@@ -169,7 +186,7 @@ def main(train):
         path = "/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_MC_{}_{}_{}_{}".format(trainno, trainno + 1, trainno + 2, trainno + 3)
         periods = ["LHC15i2b", "LHC15i2c", "LHC15i2d", "LHC15i2e"]
         pt_hard_bins = range(1, 9)
-        pthard_analysis(path, periods, pt_hard_bins)
+        pthard_analysis(path, periods, pt_hard_bins, DPTBins)
 
 if __name__ == '__main__':
 
