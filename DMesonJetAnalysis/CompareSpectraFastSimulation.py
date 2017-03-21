@@ -15,9 +15,9 @@ def main(tslist):
     ROOT.gStyle.SetOptStat(0)
 
     fileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_pythia_charm_{ts}/FastSimAnalysis_Reduced_pythia_charm_{ts}.root"
-    spectraNames = ["D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3_Unc",
-                    "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80_Unc",
-                    "D0_MCTruth/D0_MCTruth_DPtSpectrum/D0_MCTruth_DPtSpectrum_Unc"]
+    spectraNames = ["D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3_Normalized",
+                    "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80_Normalized",
+                    "D0_MCTruth/D0_MCTruth_DPtSpectrum/D0_MCTruth_DPtSpectrum_Normalized"]
 
     spectra = dict()
 
@@ -42,15 +42,16 @@ def main(tslist):
     for hname, hlist in spectra.iteritems():
         print("Histogram: {}".format(hname))
         comp = DMesonJetCompare.DMesonJetCompare(hname)
-        comp.fDoRatioPlot = False
+        comp.fDoRatioPlot = True
         comp.fDoSpectraPlot = "logy"
         comp.fGridyRatio = True
-        comp.fOptSpectrumBaseline = "hist"
-        comp.fOptSpectrum = "hist"
+        # comp.fOptSpectrumBaseline = "hist"
+        # comp.fOptSpectrum = "hist"
         globalList.extend(hlist)
         r = comp.CompareSpectra(hlist[0], hlist[1:])
         globalList.extend(r)
-        comp.fCanvasSpectra.SaveAs("/Volumes/DATA/ALICE/JetResults/RelStatUnc_{}_{}.pdf".format(hname, tslistStr))
+        comp.fCanvasSpectra.SaveAs("/Volumes/DATA/ALICE/JetResults/{}_{}.pdf".format(hname, tslistStr))
+        comp.fCanvasRatio.SaveAs("/Volumes/DATA/ALICE/JetResults/{}_{}_Ratio.pdf".format(hname, tslistStr))
 
 if __name__ == '__main__':
 
