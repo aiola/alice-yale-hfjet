@@ -62,45 +62,58 @@ def GetWeight(file):
     w = xsec / trials
     return w
 
-def single_file_analysis(filename):
-    print("Opening file {0}".format(fileName))
-    file = ROOT.TFile(fileName)
+def single_file_analysis(filename, dpt_bins):
+    print("Opening file {0}".format(filename))
+    file = ROOT.TFile(filename)
 
-    hSgn_D2H, hRfl_D2H = GetD2HInvMass(file)
-    hSgn, hRfl = GetMyInvMass(file)
+    hSgn_D2H_histos, hRfl_D2H_histos = GetD2HInvMass(file, dpt_bins)
+    hSgn_histos, hRfl_histos = GetMyInvMass(file, dpt_bins)
 
-    globalList.append(hSgn_D2H)
-    globalList.append(hRfl_D2H)
-    globalList.append(hSgn)
-    globalList.append(hRfl)
+    globalList.extend(hSgn_D2H_histos)
+    globalList.extend(hRfl_D2H_histos)
+    globalList.extend(hSgn_histos)
+    globalList.extend(hRfl_histos)
 
-    cSgn = ROOT.TCanvas("cSgn", "cSgn")
-    globalList.append(cSgn)
-    cSgn.cd()
-    hSgn_D2H.Draw("hist")
-    hSgn_D2H.SetMarkerSize(0.9)
-    hSgn_D2H.SetMarkerColor(ROOT.kRed)
-    hSgn_D2H.SetMarkerStyle(ROOT.kOpenCircle)
-    hSgn_D2H.SetLineColor(ROOT.kRed)
-    hSgn.Draw("same hist")
-    hSgn.SetMarkerSize(0.9)
-    hSgn.SetMarkerColor(ROOT.kBlue)
-    hSgn.SetMarkerStyle(ROOT.kOpenSquare)
-    hSgn.SetLineColor(ROOT.kBlue)
+    for i, (minPt, maxPt, hSgn_D2H, hSgn, hRfl_D2H, hRfl) in enumerate(zip(dpt_bins[:-1], dpt_bins[1:], hSgn_D2H_histos, hSgn_histos, hRfl_D2H_histos, hRfl_histos)):
+        cname = "cSgn_{}_{}".format(int(minPt * 10), int(maxPt * 10))
+        cSgn = ROOT.TCanvas(cname, cname)
+        globalList.append(cSgn)
+        cSgn.cd()
+        hSgn_D2H.Draw("hist")
+        hSgn_D2H.SetMarkerSize(0.9)
+        hSgn_D2H.SetMarkerColor(ROOT.kRed)
+        hSgn_D2H.SetMarkerStyle(ROOT.kOpenCircle)
+        hSgn_D2H.SetLineColor(ROOT.kRed)
+        hSgn.Draw("same hist")
+        hSgn.SetMarkerSize(0.9)
+        hSgn.SetMarkerColor(ROOT.kBlue)
+        hSgn.SetMarkerStyle(ROOT.kOpenSquare)
+        hSgn.SetLineColor(ROOT.kBlue)
 
-    cRfl = ROOT.TCanvas("cRfl", "cRfl")
-    globalList.append(cRfl)
-    cRfl.cd()
-    hRfl_D2H.Draw("hist")
-    hRfl_D2H.SetMarkerSize(0.9)
-    hRfl_D2H.SetMarkerColor(ROOT.kRed)
-    hRfl_D2H.SetMarkerStyle(ROOT.kOpenCircle)
-    hRfl_D2H.SetLineColor(ROOT.kRed)
-    hRfl.Draw("same hist")
-    hRfl.SetMarkerSize(0.9)
-    hRfl.SetMarkerColor(ROOT.kBlue)
-    hRfl.SetMarkerStyle(ROOT.kOpenSquare)
-    hRfl.SetLineColor(ROOT.kBlue)
+        cname = "cRfl_{}_{}".format(int(minPt * 10), int(maxPt * 10))
+        cRfl = ROOT.TCanvas(cname, cname)
+        globalList.append(cRfl)
+        cRfl.cd()
+        hRfl_D2H.Draw("hist")
+        hRfl_D2H.SetMarkerSize(0.9)
+        hRfl_D2H.SetMarkerColor(ROOT.kRed)
+        hRfl_D2H.SetMarkerStyle(ROOT.kOpenCircle)
+        hRfl_D2H.SetLineColor(ROOT.kRed)
+        hRfl.Draw("same hist")
+        hRfl.SetMarkerSize(0.9)
+        hRfl.SetMarkerColor(ROOT.kBlue)
+        hRfl.SetMarkerStyle(ROOT.kOpenSquare)
+        hRfl.SetLineColor(ROOT.kBlue)
+
+        sgn_D2H = hSgn_D2H.Integral()
+        sgn = hSgn.Integral()
+        rfl_D2H = hRfl_D2H.Integral()
+        rfl = hRfl.Integral()
+
+        ros_D2H = rfl_D2H / sgn_D2H
+        ros = rfl / sgn
+
+        print("Pt = [{},{}] R/S = {} - D2H R/S = {}".format(minPt, maxPt, ros, ros_D2H))
 
 def pthard_analysis(path, periods, pt_hard_bins, dpt_bins):
     hSgn_D2H_histos = [ROOT.TH1F("hSgn_D2H_{}".format(i), "hSgn_D2H_{};M (GeV/#it{{c}}^{{2}});arb. units".format(i), 100, 1.6248, 2.2248) for i in range(0, len(dpt_bins) - 1)]
@@ -173,28 +186,45 @@ def pthard_analysis(path, periods, pt_hard_bins, dpt_bins):
 
         print("Pt = [{},{}] R/S = {} - D2H R/S = {}".format(minPt, maxPt, ros, ros_D2H))
 
-def main(train):
+def main(train, test, pthard):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    if train == "test":
+    if test:
         fileName = "../anaDev/AnalysisResults.root"
-        single_file_analysis(fileName)
+        single_file_analysis(fileName, DPTBins)
     else:
-        trainno = int(train)
-        path = "/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_MC_{}_{}_{}_{}".format(trainno, trainno + 1, trainno + 2, trainno + 3)
-        periods = ["LHC15i2b", "LHC15i2c", "LHC15i2d", "LHC15i2e"]
-        pt_hard_bins = range(1, 9)
-        pthard_analysis(path, periods, pt_hard_bins, DPTBins)
+        TrainNumberList = train.split(",")
+        TrainNumbers = []
+        for TrainNumberRange in TrainNumberList:
+            Range = TrainNumberRange.split(":")
+            TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range) - 1]) + 1))
+        TrainNumbersLabel = "_".join([str(i) for i in TrainNumbers])
+
+        if pthard:
+            trainno = int(train)
+            path = "/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_MC_{}".format(TrainNumbersLabel)
+            periods = ["LHC15i2b", "LHC15i2c", "LHC15i2d", "LHC15i2e"]
+            pt_hard_bins = range(1, 9)
+            pthard_analysis(path, periods, pt_hard_bins, DPTBins)
+        else:
+            fileName = "/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_MC_{}/AnalysisResults.root".format(TrainNumbersLabel)
+            single_file_analysis(fileName, DPTBins)
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Compare invariant mass with D2H.')
     parser.add_argument('train', metavar='train',
-                        help='Train number (just the first number, e.g. 1033 -> Jets_EMC_pp_MC_1033_1034_1035_1036. Type test to use ../anaDev/AnalysisResults.root')
+                        help='Train number(s) (use : for a range and , for a list)')
+    parser.add_argument('--test', action='store_const',
+                        default=False, const=True,
+                        help='Ignore train number to use ../anaDev/AnalysisResults.root')
+    parser.add_argument('--pthard', action='store_const',
+                        default=False, const=True,
+                        help='Pt hard bin production')
     args = parser.parse_args()
 
-    main(args.train)
+    main(args.train, args.test, args.pthard)
 
     IPython.embed()
