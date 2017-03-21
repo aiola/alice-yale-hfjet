@@ -20,17 +20,24 @@ def main(ts, nPtHard, stage):
 
     hname = "ChargedR040JetPt"
     htitle = hname;
-    htitle += ";#it{p}_{T, ch jet} (GeV/#it{c});#frac{d#sigma}{d#it{p}_{T}} (GeV/#it{c})^{-1}"
+    htitle += ";#it{p}_{T,ch jet} (GeV/#it{c});#frac{d#sigma}{d#it{p}_{T}} (GeV/#it{c})^{-1}"
     hJetPtTot = ROOT.TH1D(hname, htitle, 100, 0, 100)
     hJetPtTot.Sumw2()
     globalList.append(hJetPtTot)
 
     hname = "DPt"
     htitle = hname;
-    htitle += ";#it{p}_{T, D} (GeV/#it{c});#frac{d#sigma}{d#it{p}_{T}} (GeV/#it{c})^{-1}"
+    htitle += ";#it{p}_{T,D} (GeV/#it{c});#frac{d#sigma}{d#it{p}_{T}} (GeV/#it{c})^{-1}"
     hDPtTot = ROOT.TH1D(hname, htitle, 100, 0, 100)
     hDPtTot.Sumw2()
     globalList.append(hDPtTot)
+
+    hname = "HardPt"
+    htitle = hname;
+    htitle += ";#it{p}_{T,hard} (GeV/#it{c});#frac{d#sigma}{d#it{p}_{T}} (GeV/#it{c})^{-1}"
+    hHardPtTot = ROOT.TH1D(hname, htitle, 1000, 0, 1000)
+    hHardPtTot.Sumw2()
+    globalList.append(hHardPtTot)
 
     colors = [ROOT.kRed + 2, ROOT.kBlue + 2, ROOT.kMagenta + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
 
@@ -49,6 +56,14 @@ def main(ts, nPtHard, stage):
     haxis.GetYaxis().SetRangeUser(1e-8, 10)
     globalList.append(haxis)
     globalList.append(canvasDPt)
+
+    canvasHardPt = ROOT.TCanvas("HardPtSpectra", "HardPtSpectra")
+    canvasHardPt.cd()
+    canvasHardPt.SetLogy()
+    haxis = hHardPtTot.DrawCopy("axis")
+    haxis.GetYaxis().SetRangeUser(1e-8, 10)
+    globalList.append(haxis)
+    globalList.append(canvasHardPt)
 
     for ptHard in ptHardBins:
         fileName = fileNameTemp.format(ptHard=ptHard, ts=ts, stage=stage)
@@ -76,6 +91,7 @@ def main(ts, nPtHard, stage):
             hJetPt.Fill(jetpt)
             dpt = entry.DmesonJet.fPt
             hDPt.Fill(dpt)
+
         hJetPt.Sumw2()
         hJetPt.Scale(w)
         canvasJetPt.cd()
@@ -98,6 +114,18 @@ def main(ts, nPtHard, stage):
         hDPtTot.Add(hDPt)
         histos.append(hDPt)
 
+        hHardPt = tlist.FindObject("fHistEventsVsPtHard")
+        hHardPt.Sumw2()
+        hHardPt.Scale(w)
+        canvasHardPt.cd()
+        hHardPt.SetMarkerStyle(ROOT.kOpenCircle)
+        hHardPt.SetMarkerSize(0.6)
+        hHardPt.SetMarkerColor(colors[ptHard])
+        hHardPt.SetLineColor(colors[ptHard])
+        hHardPt.Draw("same")
+        hHardPtTot.Add(hHardPt)
+        histos.append(hHardPt)
+
     canvasJetPt.cd()
     hJetPtTot.SetMarkerStyle(ROOT.kOpenSquare)
     hJetPtTot.SetMarkerSize(1)
@@ -113,6 +141,14 @@ def main(ts, nPtHard, stage):
     hDPtTot.SetLineColor(ROOT.kBlack)
     hDPtTot.Draw("same")
     canvasDPt.SaveAs(outfileNameTemp.format(ts=ts, fname=canvasDPt.GetName()))
+
+    canvasHardPt.cd()
+    hHardPt.SetMarkerStyle(ROOT.kOpenSquare)
+    hHardPt.SetMarkerSize(1)
+    hHardPt.SetMarkerColor(ROOT.kBlack)
+    hHardPt.SetLineColor(ROOT.kBlack)
+    hHardPt.Draw("same")
+    canvasHardPt.SaveAs(outfileNameTemp.format(ts=ts, fname=canvasHardPt.GetName()))
 
     globalList.extend(histos)
 
