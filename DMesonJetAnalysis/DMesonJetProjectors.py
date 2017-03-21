@@ -209,7 +209,11 @@ class DMesonJetDataProjector:
         lastSlash = self.fCurrentFileName.rfind('/')
         secondLastSlash = self.fCurrentFileName.rfind('/', 0, lastSlash - 1)
         thirdLastSlash = self.fCurrentFileName.rfind('/', 0, secondLastSlash - 1)
-        self.fPtHardBin = int(self.fCurrentFileName[secondLastSlash + 1:lastSlash])
+        ptHardBinStr = self.fCurrentFileName[secondLastSlash + 1:lastSlash]
+        if ptHardBinStr.isdigit():
+            self.fPtHardBin = int(ptHardBinStr)
+        else:
+            self.fPtHardBin = -1
         self.fPeriod = self.fCurrentFileName[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractEventsFromHistogramList(self, hlist):
