@@ -60,6 +60,7 @@ def main(ts, nPtHard, stage):
     canvasHardPt = ROOT.TCanvas("HardPtSpectra", "HardPtSpectra")
     canvasHardPt.cd()
     canvasHardPt.SetLogy()
+    hHardPtTot.GetXaxis().SetRangeUser(0, 200)
     haxis = hHardPtTot.DrawCopy("axis")
     haxis.GetYaxis().SetRangeUser(1e-8, 10)
     globalList.append(haxis)
