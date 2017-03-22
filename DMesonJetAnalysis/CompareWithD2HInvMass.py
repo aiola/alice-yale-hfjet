@@ -11,6 +11,7 @@ globalList = []
 DPTBins = [0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24, 36, 9999];
 
 def GetD2HInvMass(file, dpt_bins):
+    # listname = "PWG3_D2H_D0InvMass_MC_wtopo_p4/coutputmassD0Mass_MC_wtopo_p40100"
     listname = "PWG3_D2H_D0InvMass/coutputmassD0Mass0100"
     hlist = DMesonJetUtils.GetObject(file, listname)
     if not hlist:
@@ -62,11 +63,17 @@ def GetWeight(file):
     w = xsec / trials
     return w
 
-def single_file_analysis(filename, dpt_bins):
+def single_file_analysis(filename, dpt_bins, filename_d2h=None):
     print("Opening file {0}".format(filename))
     file = ROOT.TFile(filename)
 
-    hSgn_D2H_histos, hRfl_D2H_histos = GetD2HInvMass(file, dpt_bins)
+    if filename_d2h:
+        print("Opening file {0}".format(filename_d2h))
+        file_d2h = ROOT.TFile(filename_d2h)
+    else:
+        file_d2h = file
+
+    hSgn_D2H_histos, hRfl_D2H_histos = GetD2HInvMass(file_d2h, dpt_bins)
     hSgn_histos, hRfl_histos = GetMyInvMass(file, dpt_bins)
 
     globalList.extend(hSgn_D2H_histos)
@@ -110,8 +117,14 @@ def single_file_analysis(filename, dpt_bins):
         rfl_D2H = hRfl_D2H.Integral()
         rfl = hRfl.Integral()
 
-        ros_D2H = rfl_D2H / sgn_D2H
-        ros = rfl / sgn
+        if sgn_D2H > 0:
+            ros_D2H = rfl_D2H / sgn_D2H
+        else:
+            ros_D2H = -1
+        if sgn > 0:
+            ros = rfl / sgn
+        else:
+            ros = -1
 
         print("Pt = [{},{}] R/S = {} - D2H R/S = {}".format(minPt, maxPt, ros, ros_D2H))
 
@@ -186,7 +199,16 @@ def pthard_analysis(path, periods, pt_hard_bins, dpt_bins):
 
         print("Pt = [{},{}] R/S = {} - D2H R/S = {}".format(minPt, maxPt, ros, ros_D2H))
 
-def main(train, test, pthard):
+def ParseTrainNumbers(train):
+    TrainNumberList = train.split(",")
+    TrainNumbers = []
+    for TrainNumberRange in TrainNumberList:
+        Range = TrainNumberRange.split(":")
+        TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range) - 1]) + 1))
+    TrainNumbersLabel = "_".join([str(i) for i in TrainNumbers])
+    return TrainNumbersLabel
+
+def main(train, test, pthard, train_name, train_d2h, train_name_d2h):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -195,27 +217,33 @@ def main(train, test, pthard):
         fileName = "../anaDev/AnalysisResults.root"
         single_file_analysis(fileName, DPTBins)
     else:
-        TrainNumberList = train.split(",")
-        TrainNumbers = []
-        for TrainNumberRange in TrainNumberList:
-            Range = TrainNumberRange.split(":")
-            TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range) - 1]) + 1))
-        TrainNumbersLabel = "_".join([str(i) for i in TrainNumbers])
+        TrainNumbersLabel = ParseTrainNumbers(train)
 
         if pthard:
             trainno = int(train)
-            path = "/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_MC_{}".format(TrainNumbersLabel)
+            path = "/Volumes/DATA/ALICE/JetResults/{}_{}".format(train_name, TrainNumbersLabel)
             periods = ["LHC15i2b", "LHC15i2c", "LHC15i2d", "LHC15i2e"]
             pt_hard_bins = range(1, 9)
             pthard_analysis(path, periods, pt_hard_bins, DPTBins)
         else:
-            fileName = "/Volumes/DATA/ALICE/JetResults/Jets_EMC_pp_MC_{}/AnalysisResults.root".format(TrainNumbersLabel)
-            single_file_analysis(fileName, DPTBins)
+            fileName = "/Volumes/DATA/ALICE/JetResults/{}_{}/AnalysisResults.root".format(train_name, TrainNumbersLabel)
+            fileName_d2h = None
+            if train_d2h or train_name_d2h:
+                if train_d2h:
+                    TrainNumbersLabel_d2h = ParseTrainNumbers(train_d2h)
+                else:
+                    TrainNumbersLabel_d2h = TrainNumbersLabel
+                if not train_name_d2h:
+                    train_name_d2h = train_name
+                fileName_d2h = "/Volumes/DATA/ALICE/JetResults/{}_{}/AnalysisResults.root".format(train_name_d2h, TrainNumbersLabel_d2h)
+            if fileName_d2h == fileName: fileName_d2h = None
+
+            single_file_analysis(fileName, DPTBins, fileName_d2h)
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Compare invariant mass with D2H.')
-    parser.add_argument('train', metavar='train',
+    parser.add_argument('--train',
                         help='Train number(s) (use : for a range and , for a list)')
     parser.add_argument('--test', action='store_const',
                         default=False, const=True,
@@ -223,8 +251,17 @@ if __name__ == '__main__':
     parser.add_argument('--pthard', action='store_const',
                         default=False, const=True,
                         help='Pt hard bin production')
+    parser.add_argument('--train-name',
+                        default="Jets_EMC_pp_MC",
+                        help='Train name')
+    parser.add_argument('--train-d2h',
+                        default=None,
+                        help='Train number(s) (use : for a range and , for a list)')
+    parser.add_argument('--train-name-d2h',
+                        default=None,
+                        help='Train name')
     args = parser.parse_args()
 
-    main(args.train, args.test, args.pthard)
+    main(args.train, args.test, args.pthard, args.train_name, args.train_d2h, args.train_name_d2h)
 
     IPython.embed()
