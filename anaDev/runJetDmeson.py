@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # python script to test Jet D meson analysis
 
-import argparse
 import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+import argparse
 import helperFunctions
 import yaml
 

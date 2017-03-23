@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # python script to run the D meson jet analysis on 2010 pp data
 
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 import argparse
 import yaml
 import IPython
 import DMesonJetAnalysis
 import DMesonJetProjectors
 import subprocess
-import ROOT
 
 globalList = []
 
