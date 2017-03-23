@@ -8,7 +8,7 @@ charm_enhanced: true
 file_list: fileLists/files_LHC15i2c_AOD.txt
 reco_pass: 4
 cent: no
-rdhf_cuts_dzero: "RDHFCuts/CutsLHC10_pass2.root"
-rdhf_cuts_dstar: "RDHFCuts/CutsLHC10_pass2.root"
+rdhf_cuts_dzero: "RDHFCuts/RDHFCutsLHC10_pass4.root"
+rdhf_cuts_dstar: "RDHFCuts/RDHFCutsLHC10_pass4.root"
 beam_type: pp
 is_pythia: yes
