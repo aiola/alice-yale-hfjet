@@ -123,6 +123,12 @@ class DMesonJetDataProjector:
         self.fNFiles = 0
         self.fMergingType = merging_type
         self.fPtHardBins = ptHardBins
+        if ROOT.gROOT.GetVersionInt() >= 60000:
+            ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
+            self.StartProjection = self.StartProjectionRoot6
+        else:
+            self.StartProjection = self.StartProjectionRoot5
+
 
     def GenerateChain(self, treeName):
         self.fChain = ROOT.TChain(treeName)
@@ -269,7 +275,64 @@ class DMesonJetDataProjector:
 
         print("Period: {0}\nEvents: {1}".format(self.fPeriod, events))
 
-    def StartProjection(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
+    def StartProjectionRoot6(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
+        self.fTotalEvents = 0
+        if trigger:
+            treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
+        else:
+            treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
+
+        self.GenerateChain(treeName)
+
+        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
+        if self.fMaxEvents > 0:
+            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
+
+        if "MCTruth" in DMesonDef:
+            treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJets.AliDmesonMCInfoSummary)(self.fChain)
+        elif "D0" in DMesonDef:
+            treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJets.AliD0InfoSummary)(self.fChain)
+        elif "DStar" in DMesonDef:
+            treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJets.AliDStarInfoSummary)(self.fChain)
+        else:
+            treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJets.AliDmesonInfoSummary)(self.fChain)
+
+        for (jtype, jradius) in binMultiSets.iterkeys():
+            if jtype or jradius:
+                jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+                treeReader.AddJetDef(jetName)
+                print("Jet definition {} added to the jet reader".format(jetName))
+
+        i = 0
+        dmeson = treeReader.fDMeson
+        djets = treeReader.fJets
+        while (treeReader.Next()):
+            if i % 10000 == 0:
+                print("D meson candidate n. {0}".format(i))
+                if self.fMaxEvents > 0 and i >= self.fMaxEvents:
+                    print("Stopping the analysis.")
+                    break
+            self.OnFileChange(DMesonDef, trigger)
+            for (jtype, jradius), binMultiSet in binMultiSets.iteritems():
+                if jtype or jradius:
+                    jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+                    jet = djets[jetName]
+                    if jet.fPt == 0:
+                        continue
+                else:
+                    jet = None
+
+                bins = binMultiSet.FindBin(dmeson, jet, DMesonDef)
+                for bin, weight in bins:
+                    if bin.fCounts == 0: bin.CreateHistograms(trigger, DMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, nMassBins, minMass, maxMass)
+                    bin.Fill(dmeson, jet, weight * self.fWeight)
+
+                spectra = binMultiSet.FindSpectra(dmeson, jet)
+                for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
+            i += 1
+        print("Total number of events: {0}".format(self.fTotalEvents))
+
+    def StartProjectionRoot5(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
         self.fTotalEvents = 0
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
