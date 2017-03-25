@@ -2,41 +2,43 @@
 
 #include "DJetTreeReaderRoot6.h"
 
-template<class D>
-DJetTreeReaderRoot6<D>::DJetTreeReaderRoot6(TTree* tree) : fDMeson(), fJets(), fTree(tree), fReader(tree), fDMesonReader(fReader, "DmesonJet"), fJetReaders() {
+template<class S, class D>
+DJetTreeReaderRoot6<S, D>::DJetTreeReaderRoot6(TTree* tree) : fDMeson(), fJets(), fTree(tree), fReader(tree), fDMesonReader(fReader, "DmesonJet"), fJetReaders() {
 }
 
-template<class D>
-void DJetTreeReaderRoot6<D>::AddJetDef(const char* jetName) {
-  auto it = fJets.insert(std::pair<std::string, DJetInfo>(jetName, DJetInfo()));
-  fJetReaders.insert(std::pair<std::string, std::pair<TTreeReaderValue<J>*, DJetInfo* > >(jetName, std::pair<TTreeReaderValue<J>*, DJetInfo* >(new TTreeReaderValue<J>(fReader, jetName), &(it.first->second))));
+template<class S, class D>
+void DJetTreeReaderRoot6<S, D>::AddJetDef(const char* jetName) {
+  auto it = fJets.insert(std::pair<std::string, DJetObjectInfo>(jetName, DJetObjectInfo()));
+  fJetReaders.insert(std::pair<std::string, std::pair<TTreeReaderValue<J>*, DJetObjectInfo* > >(jetName,
+      std::pair<TTreeReaderValue<J>*, DJetObjectInfo* >(new TTreeReaderValue<J>(fReader, jetName),
+          &(it.first->second))));
 }
 
-template<class D>
-bool DJetTreeReaderRoot6<D>::Next() {
+template<class S, class D>
+bool DJetTreeReaderRoot6<S, D>::Next() {
   bool success = fReader.Next();
   if (!success) return false;
-  FillDMesonInfo<D>(fDMesonReader.Get(), &fDMeson);
+  FillDJetObjectInfo(fDMesonReader.Get(), &fDMeson);
   for (auto jetReaderIt : fJetReaders) {
-    FillDJetInfo(jetReaderIt.second.first->Get(), jetReaderIt.second.second);
+    FillDJetObjectInfo(jetReaderIt.second.first->Get(), jetReaderIt.second.second);
   }
   return true;
 }
 
-template<class D>
-void DJetTreeReaderRoot6<D>::Restart() {
+template<class S, class D>
+void DJetTreeReaderRoot6<S, D>::Restart() {
   fReader.Restart();
 }
 
-template<class D>
-void FillDMesonInfo(const D* source, DMesonInfo* dest) {
+template<class S, class D>
+void FillDJetObjectInfo(const S* source, D* dest) {
   dest->fPt = source->fPt;
   dest->fEta = source->fEta;
   dest->fPhi = source->fPhi;
 }
 
 template<>
-void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary* source, DMesonInfo* dest) {
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary* source, DJetObjectInfo* dest) {
   dest->fPt = source->fPt;
   dest->fEta = source->fEta;
   dest->fPhi = source->fPhi;
@@ -47,7 +49,7 @@ void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary* sou
 }
 
 template<>
-void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliD0InfoSummary* source, DMesonInfo* dest) {
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJets::AliD0InfoSummary* source, DJetObjectInfo* dest) {
   dest->fPt = source->fPt;
   dest->fEta = source->fEta;
   dest->fPhi = source->fPhi;
@@ -56,7 +58,7 @@ void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliD0InfoSummary* source, D
 }
 
 template<>
-void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliDStarInfoSummary* source, DMesonInfo* dest) {
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJets::AliDStarInfoSummary* source, DJetObjectInfo* dest) {
   dest->fPt = source->fPt;
   dest->fEta = source->fEta;
   dest->fPhi = source->fPhi;
@@ -64,11 +66,25 @@ void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliDStarInfoSummary* source
   dest->f2ProngInvMass = source->f2ProngInvMass;
 }
 
-void FillDJetInfo(const J* source, DJetInfo* dest) {
+void FillDJetObjectInfo(const J* source, DJetObjectInfo* dest) {
   dest->fPt = source->fPt;
   dest->fEta = source->fEta;
   dest->fPhi = source->fPhi;
   dest->fR = source->fR;
   dest->fZ = source->fZ;
   dest->fN = source->fN;
+}
+
+template<>
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJetsDetectorResponse::AliD0MatchInfoSummary* source,
+    DJetObjectInfoResponse* dest) {
+  FillDJetObjectInfo(&(source->fReconstructed), &(dest->fReconstructed));
+  FillDJetObjectInfo(&(source->fGenerated), &(dest->fGenerated));
+}
+
+template<>
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJetsDetectorResponse::AliDStarMatchInfoSummary* source,
+    DJetObjectInfoResponse* dest) {
+  FillDJetObjectInfo(&(source->fReconstructed), &(dest->fReconstructed));
+  FillDJetObjectInfo(&(source->fGenerated), &(dest->fGenerated));
 }

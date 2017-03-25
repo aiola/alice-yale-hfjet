@@ -5,21 +5,13 @@
 #include <TTreeReaderValue.h>
 
 #include <AliAnalysisTaskDmesonJets.h>
+#include <AliAnalysisTaskDmesonJetsDetectorResponse.h>
 
 class TTree;
 
 typedef AliAnalysisTaskDmesonJets::AliJetInfoSummary J;
 
-struct DJetInfo {
-  double  fPt ;
-  double  fEta;
-  double  fPhi;
-  double  fR  ;
-  double  fZ  ;
-  int     fN  ;
-};
-
-struct DMesonInfo {
+struct DJetObjectInfo {
   double  fPt             ;
   double  fEta            ;
   double  fPhi            ;
@@ -31,9 +23,17 @@ struct DMesonInfo {
   int     fSelectionType  ;
   double  fDeltaInvMass   ;
   double  f2ProngInvMass  ;
+  double  fR  ;
+  double  fZ  ;
+  int     fN  ;
 };
 
-template<class D>
+struct DJetObjectInfoResponse {
+  DJetObjectInfo fReconstructed;
+  DJetObjectInfo fGenerated;
+};
+
+template<class S, class D=DJetObjectInfo>
 class DJetTreeReaderRoot6 {
 public:
   DJetTreeReaderRoot6(TTree* tree);
@@ -44,27 +44,38 @@ public:
 
   void Restart();
 
-  DMesonInfo                                         fDMeson        ;
-  std::map<std::string, DJetInfo>                    fJets          ;
+  D                                           fDMeson        ;
+  std::map<std::string, DJetObjectInfo>       fJets          ;
 
 protected:
-  TTree                                             *fTree          ;
-  TTreeReader                                        fReader        ;
-  TTreeReaderValue<D>                                fDMesonReader  ;
-  std::map<std::string, std::pair<TTreeReaderValue<J>*,  DJetInfo* > > fJetReaders;
+  TTree                                      *fTree          ;
+  TTreeReader                                 fReader        ;
+  TTreeReaderValue<S>                         fDMesonReader  ;
+  std::map<std::string,
+  std::pair<TTreeReaderValue<J>*,
+  DJetObjectInfo* > >                         fJetReaders    ;
 };
 
 
-template<class D>
-void FillDMesonInfo(const D* source, DMesonInfo* dest);
+template<class S, class D>
+void FillDJetObjectInfo(const S* source, D* dest);
 
 template<>
-void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary* source, DMesonInfo* dest);
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary* source, DJetObjectInfo* dest);
 
 template<>
-void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliD0InfoSummary* source, DMesonInfo* dest);
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJets::AliD0InfoSummary* source, DJetObjectInfo* dest);
 
 template<>
-void FillDMesonInfo(const AliAnalysisTaskDmesonJets::AliDStarInfoSummary* source, DMesonInfo* dest);
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJets::AliDStarInfoSummary* source, DJetObjectInfo* dest);
 
-void FillDJetInfo(const J* source, DJetInfo* dest);
+template<>
+void FillDJetObjectInfo(const J* source, DJetObjectInfo* dest);
+
+template<>
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJetsDetectorResponse::AliD0MatchInfoSummary* source,
+    DJetObjectInfoResponse* dest);
+
+template<>
+void FillDJetObjectInfo(const AliAnalysisTaskDmesonJetsDetectorResponse::AliDStarMatchInfoSummary* source,
+    DJetObjectInfoResponse* dest);
