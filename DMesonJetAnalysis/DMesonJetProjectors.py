@@ -384,6 +384,11 @@ class DMesonJetResponseProjector:
         self.fPeriod = ""
         self.fWeight = 1
         self.fCurrentFileName = ""
+        if ROOT.gROOT.GetVersionInt() >= 60000:
+            ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
+            self.GetDetectorResponse = self.GetDetectorResponseRoot6
+        else:
+            self.GetDetectorResponse = self.GetDetectorResponseRoot5
 
     def GenerateChain(self, treeName):
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
@@ -405,7 +410,11 @@ class DMesonJetResponseProjector:
         lastSlash = fname.rfind('/')
         secondLastSlash = fname.rfind('/', 0, lastSlash - 1)
         thirdLastSlash = fname.rfind('/', 0, secondLastSlash - 1)
-        self.fPtHardBin = int(fname[secondLastSlash + 1:lastSlash])
+        ptHardBinStr = fname[secondLastSlash + 1:lastSlash]
+        if ptHardBinStr.isdigit():
+            self.fPtHardBin = int(ptHardBinStr)
+        else:
+            self.fPtHardBin = -1
         self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractCurrentFileInfo(self):
@@ -449,7 +458,7 @@ class DMesonJetResponseProjector:
 
         print("Period: {0}\nPt hard bin: {1}\nWeight: {2}".format(self.fPeriod, self.fPtHardBin, self.fWeight))
 
-    def GetDetectorResponse(self, respDefinitions, DMesonDef, jetDefinitions):
+    def GetDetectorResponseRoot5(self, respDefinitions, DMesonDef, jetDefinitions):
         response = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
@@ -477,4 +486,56 @@ class DMesonJetResponseProjector:
             for r in response.itervalues():
                 r.Fill(dmeson, self.fWeight)
 
+        return response
+
+    def GetDetectorResponseRoot6(self, respDefinitions, DMesonDef, jetDefinitions):
+        response = dict()
+        for jetDef in jetDefinitions:
+            jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
+            for axisName, (axisDef, weightEff, applyEffTruth, cuts) in respDefinitions.iteritems():
+                respName = "{0}_{1}_{2}".format(DMesonDef, jetName, axisName)
+                resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, weightEff, applyEffTruth)
+                resp.GenerateHistograms()
+                response[respName] = resp
+                treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
+
+        self.GenerateChain(treeName)
+
+        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
+        if self.fMaxEvents > 0:
+            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
+        class DMesonJetResponseEvent:
+            def __init__(self):
+                self.DmesonJet = None
+        dmeson = DMesonJetResponseEvent()
+
+        if "D0" in DMesonDef:
+            treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJetsDetectorResponse.AliD0MatchInfoSummary, ROOT.DJetObjectInfoResponse)(self.fChain)
+        elif "DStar" in DMesonDef:
+            treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJetsDetectorResponse.AliDStarMatchInfoSummary, ROOT.DJetObjectInfoResponse)(self.fChain)
+        else:
+            print("Error unexpected value of D meson name '{}'".format(DMesonDef))
+
+        dmeson.DmesonJet = treeReader.fDMeson
+        for jetDef in jetDefinitions:
+            jetName = "Jet_AKT{0}{1}_pt_scheme_truth".format(jetDef["type"], jetDef["radius"])
+            treeReader.AddJetDef(jetName)
+            setattr(dmeson, jetName, treeReader.fJets[jetName])
+            print("Jet definition {} added to the jet reader".format(jetName))
+            jetName = "Jet_AKT{0}{1}_pt_scheme_reco".format(jetDef["type"], jetDef["radius"])
+            treeReader.AddJetDef(jetName)
+            print("Jet definition {} added to the jet reader".format(jetName))
+            setattr(dmeson, jetName, treeReader.fJets[jetName])
+        i = 0
+        while (treeReader.Next()):
+            if i % 10000 == 0:
+                print("D meson candidate n. {0}".format(i))
+                if self.fMaxEvents > 0 and i > self.fMaxEvents:
+                    print("Stopping the analysis.")
+                    break
+
+            self.RecalculateWeight()
+            for r in response.itervalues():
+                r.Fill(dmeson, self.fWeight)
+            i += 1
         return response
