@@ -1,7 +1,7 @@
-# MB Monte Carlo: reflection templates -> pass4 cuts
-name: LHC15i2_Train1057_reflections
+# MB Monte Carlo: reflection templates
+name: LHC15i2_Train1073_reflections
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1057_1058_1059_1060
+train: Jets_EMC_pp_MC_1073_1074_1075_1076
 file_name: AnalysisResults.root
 merging_type: weighted_sum
 task_name: AliAnalysisTaskDmesonJets
