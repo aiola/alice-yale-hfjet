@@ -210,7 +210,6 @@ class DMesonJetDataProjector:
         print("File: {0}\nWeight: {1} (merging type = {2})".format(self.fCurrentFileName, self.fWeight, self.fMergingType))
 
     def ExtractCurrentFileInfo(self):
-        if self.fCurrentFileName == self.fChain.GetCurrentFile().GetName(): return
         self.fCurrentFileName = self.fChain.GetCurrentFile().GetName()
         lastSlash = self.fCurrentFileName.rfind('/')
         secondLastSlash = self.fCurrentFileName.rfind('/', 0, lastSlash - 1)
@@ -234,8 +233,7 @@ class DMesonJetDataProjector:
         return events
 
     def OnFileChange(self, DMesonDef, trigger):
-        if self.fChain.GetCurrentFile().GetName() == self.fCurrentFileName:
-            return
+        if self.fChain.GetCurrentFile().GetName() == self.fCurrentFileName: return
 
         self.ExtractCurrentFileInfo()
         self.RecalculateEvents(DMesonDef, trigger)
