@@ -53,3 +53,13 @@ Then execute:
 `./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train883_efficiency.yaml --refl DoubleGaus`
 
 `./ExtractDZeroJetRawYieldReflectionUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train883_efficiency.yaml`
+
+## Unfolding
+
+`./runDataUnfolding.py LHC10_Train883_LHC15i2_Train1073_efficiency.yaml`
+
+`./runDataUnfolding.py LHC10_Train883_LHC15i2_Train1073.yaml`
+
+To run full systematics:
+
+`./runDataUnfolding.py LHC10_Train883_LHC15i2_Train1073_efficiency.yaml --fd-syst --ry-syst`
