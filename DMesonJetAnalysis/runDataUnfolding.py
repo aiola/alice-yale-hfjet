@@ -17,6 +17,7 @@ def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
+    ROOT.gSystem.Load("libRooUnfold")
 
     ana = DMesonJetUnfolding.DMesonJetUnfolding(config["name"], config["input_path"], config["data_train"], config["data"], config["response_train"], config["response"], not no_mt, not no_refl, refl_fit, refl_ros)
 
