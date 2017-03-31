@@ -11,9 +11,11 @@ import ExtractDZeroJetRawYieldUncertainty
 
 globalList = []
 
-def main(config, method, minPt, maxPt, refl, singleTrial, debug):
+def main(config, method, minPt, maxPt, refl, no_refl, singleTrial, debug):
     # subprocess.call("make")
     # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
+
+    if no_refl: refl = None
 
     ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
     ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
@@ -27,8 +29,6 @@ def main(config, method, minPt, maxPt, refl, singleTrial, debug):
     ROOT.gSystem.Load("libsiscone_spherical")
     ROOT.gSystem.Load("libfastjetplugins")
     ROOT.gSystem.Load("libfastjetcontribfragile")
-
-    ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -55,7 +55,9 @@ if __name__ == '__main__':
                         default=0, type=float)
     parser.add_argument('--method', metavar='method',
                         default="invmassfit")
-    parser.add_argument('--refl', action='store_const',
+    parser.add_argument('--refl',
+                        default="DoubleGaus")
+    parser.add_argument('--no-refl', action='store_const',
                         default=False, const=True)
     parser.add_argument('--single-trial', action='store_const',
                         default=False, const=True)
@@ -65,6 +67,6 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    main(config, args.method, args.ptmin, args.ptmax, args.refl, args.single_trial, args.debug)
+    main(config, args.method, args.ptmin, args.ptmax, args.refl, args.no_refl, args.single_trial, args.debug)
 
     IPython.embed()
