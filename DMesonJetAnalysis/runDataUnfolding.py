@@ -11,8 +11,8 @@ import ROOT
 globalList = []
 
 def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format):
-    # subprocess.call("make")
-    # ROOT.gSystem.Load("MassFitter.so")
+    subprocess.call("make")
+    ROOT.gSystem.Load("MassFitter.so")
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
