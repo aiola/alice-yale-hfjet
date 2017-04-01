@@ -72,15 +72,17 @@ class DMesonJetUnfoldingEngine:
         elif self.fRYErrorBand < 0:
             self.fName += "_RYLowerBand"
 
+        self.fNumberOfEvents = None
+
         # self unfolding option (for debugging)
         if self.fName == "__self_unfolding__":
             self.fNumberOfEvents = config["self_unfolding_events"]
             self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
             self.fEvents.SetBinContent(1, self.fNumberOfEvents)
             self.fBins = config["self_unfolding_bins"]
+            self.fSelfUnfoldingScaling = config["self_unfolding_scaling"]
 
         # variables computed during execution
-        self.fNumberOfEvents = None
         self.fResponseMatrices = collections.OrderedDict()
         self.fUnfoldedSpectra = collections.OrderedDict()
         self.fUnfoldedSpectraErrors = collections.OrderedDict()
@@ -170,6 +172,12 @@ class DMesonJetUnfoldingEngine:
         return True
 
     def LoadTruthSpectrum(self):
+        if self.fName == "__self_unfolding__":
+            self.fTruthSpectrum = self.fDetectorTrainTruth.Rebin(len(self.fBins) - 1, "{0}_TruthSpectrum".format(self.fName), array.array('d', self.fBins))
+            self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
+            self.fTruthSpectrum.Scale(self.fSelfUnfoldingScaling * self.fNumberOfEvents)
+            return True
+
         if not self.fDMesonTruth:
             self.fTruthSpectrum = None
             return True
@@ -202,8 +210,7 @@ class DMesonJetUnfoldingEngine:
         if self.fName == "__self_unfolding__":
             self.fInputSpectrum = self.fDetectorResponse.ProjectionX("temp", 1, self.fDetectorResponse.GetNbinsY()).Rebin(len(self.fBins) - 1, "{0}_InputSpectrum".format(self.fName), array.array('d', self.fBins))
             self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
-            self.fTruthSpectrum = self.fDetectorTrainTruth.Rebin(len(self.fBins) - 1, "{0}_TruthSpectrum".format(self.fName), array.array('d', self.fBins))
-            self.fTruthSpectrum.SetTitle("{0} Truth Spectrum".format(self.fName))
+            self.fInputSpectrum.Scale(self.fSelfUnfoldingScaling * self.fNumberOfEvents)
             return True
 
         wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName)
@@ -378,7 +385,7 @@ class DMesonJetUnfoldingEngine:
             pad.SetLeftMargin(0.16)
             pad.SetRightMargin(0.24)
             pad.SetBottomMargin(0.15)
-            rm = resp.fNormResponse.DrawCopy("col2z")
+            rm = resp.fNormResponse.DrawCopy("colz")
             rm.GetXaxis().SetTitleFont(43)
             rm.GetXaxis().SetTitleSize(19)
             rm.GetXaxis().SetTitleOffset(2.6)
@@ -575,9 +582,9 @@ class DMesonJetUnfoldingEngine:
             cov.GetYaxis().SetLabelFont(43)
             cov.GetYaxis().SetLabelSize(15)
             if i % cols == cols - 1:
-                cov.Draw("col2z")
+                cov.Draw("colz")
             else:
-                cov.Draw("col2")
+                cov.Draw("col")
             cov.GetZaxis().SetRangeUser(-1, 1)
             pave = ROOT.TPaveText(0, 1, 1, 0.9, "NB NDC")
             pave.SetBorderSize(0)
