@@ -10,6 +10,10 @@ When this is done, it should be repeated using results from the previous to appl
 
 `./runResponseAnalysis.py LHC15i2response_Train1073_efficiency.yaml`
 
+## B Feed-Down
+
+` ./MCSimulationSystematics.py FDCorrection.yaml `
+
 ## Reflection templates
 
 Generate reflection templates without reconstruction efficiency:
@@ -63,3 +67,7 @@ Then execute:
 To run full systematics:
 
 `./runDataUnfolding.py LHC10_Train883_LHC15i2_Train1073_efficiency.yaml --fd-syst --ry-syst`
+
+`./runDataUnfolding.py LHC10_Train883_LHC15i2_Train1073_efficiency.yaml --refl-ros 5`
+
+`./runDataUnfolding.py LHC10_Train883_LHC15i2_Train1073_efficiency.yaml --refl-ros 15`
