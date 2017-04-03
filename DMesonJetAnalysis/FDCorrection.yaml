@@ -2,11 +2,11 @@ name: BFeedDown
 input_path: /Volumes/DATA/ALICE/JetResults
 generator: powheg_beauty
 c_response:
-  train: Jets_EMC_pp_MC_961_962_963_964
-  name: LHC15i2_Train961
+  train: Jets_EMC_pp_MC_1073_1074_1075_1076
+  name: LHC15i2_Train1073_cresponse
 b_response:
-  train: Jets_EMC_pp_MC_973_974_975_976
-  name: LHC15i2_Train973
+  train: Jets_EMC_pp_MC_1081_1082_1083_1084
+  name: LHC15i2_Train1081_bresponse
 variations:
 -
   name: default
