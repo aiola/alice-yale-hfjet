@@ -20,6 +20,7 @@ def main(config, unfolding_debug):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
+    ROOT.gSystem.Load("libRooUnfold")
 
     if "b_response" in config:
         print("Opening the b->D0 response matrix file")
@@ -320,7 +321,7 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
 
     if bResponseFile:
         print("Loading the response matrix b->D0")
-        temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+        temp, bEfficiency_dpt = LoadResponse(bResponseFile, "JetPtDPtSpectrum", "_JetPt_500_3000", "b", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
         bEfficiency_dpt.SetName("EfficiencyVsDPt_b")
         responseList[bEfficiency_dpt.GetName()] = bEfficiency_dpt
     else:
@@ -328,7 +329,7 @@ def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResp
 
     if cResponseFile:
         print("Loading the response matrix c->D0")
-        temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum_FineBins", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
+        temp, cEfficiency_dpt = LoadResponse(cResponseFile, "JetPtDPtSpectrum", "_JetPt_500_3000", "c", FDhistogram_orig.GetNbinsY(), FDhistogram_orig.GetYaxis().GetXbins().GetArray())
         cEfficiency_dpt.SetName("EfficiencyVsDPt_c")
         responseList[cEfficiency_dpt.GetName()] = cEfficiency_dpt
     else:
@@ -477,6 +478,8 @@ def GenerateUnfoldingEngine(name, responseFile, prior, spectrumName):
     analysis["jet_type"] = "Charged"
     analysis["jet_radius"] = "R040"
     analysis["active"] = True
+    analysis["kinematic_cuts"] = None
+    analysis["raw_yield_method"] = None
     analysis["d_meson_response"] = "D0"
     analysis["spectrum_response"] = spectrumName
     analysis["priors"] = ["GeneratedSpectrum"]  # , "ResponseTruth", "PowerLaw_3", "PowerLaw_7"]
@@ -495,11 +498,12 @@ def GenerateUnfoldingEngine(name, responseFile, prior, spectrumName):
     binBybin = dict()
     binBybin["default_reg"] = None
     analysis["methods"] = {"Svd" : svd, "Bayes" : bayes, "BinByBin" : binBybin}
-    unf = DMesonJetUnfolding.DMesonJetUnfoldingEngine(analysis)
+    unf = DMesonJetUnfolding.DMesonJetUnfoldingEngine(None, None, "unfolding", analysis)
     unf.fDoErrorCrossChecks = False
     unf.SetCustomPrior("GeneratedSpectrum", prior)
     unf.fUseOverflow = True
-    unf.LoadResponse(responseFile, False)
+    unf.fResponseFile = responseFile
+    unf.LoadResponse(False)
     return unf
 
 def GetUnfoldedSpectrum(name, histogram, responseFile, prior, spectrumName, unfolding_debug):

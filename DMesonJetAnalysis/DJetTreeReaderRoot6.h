@@ -44,6 +44,8 @@ public:
 
   void Restart();
 
+  Long64_t GetEntries() const  { return  fReader.GetEntries(kTRUE); }
+
   D                                           fDMeson        ;
   std::map<std::string, DJetObjectInfo>       fJets          ;
 
