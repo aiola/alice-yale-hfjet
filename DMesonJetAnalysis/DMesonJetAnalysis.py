@@ -610,7 +610,7 @@ class DMesonJetAnalysisEngine:
                 print("The background normalization is {0} +/- {1}".format(bkgNorm, bkgNorm_err))
 
                 if LStotal:
-                    for xbin in range(0, LStotal.GetNbinsX() + 2):
+                    for xbin in xrange(0, LStotal.GetNbinsX() + 2):
                         if LStotal.GetBinContent(xbin) == 0:
                             continue
                         error = math.sqrt(LStotal.GetBinError(xbin) ** 2 / LStotal.GetBinContent(xbin) ** 2 + bkgNorm_err ** 2 / bkgNorm ** 2) * LStotal.GetBinContent(xbin) * bkgNorm
@@ -630,7 +630,7 @@ class DMesonJetAnalysisEngine:
                 LStotalIntegral = bin.fInvMassHisto.IntegralAndError(binSig_1, binSig_2, LStotalIntegralError)
                 if LStotalIntegral > 0:
                     if LStotal:
-                        for xbin in range(0, LStotal.GetNbinsX() + 2):
+                        for xbin in xrange(0, LStotal.GetNbinsX() + 2):
                             if LStotal.GetBinContent(xbin) == 0:
                                 continue
                             # Error propagation
@@ -690,7 +690,7 @@ class DMesonJetAnalysisEngine:
             if s.fBackground:
                 s.fBackground.Add(s.fLikeSignTotalHistogram)
 
-            for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
+            for xbin in xrange(0, s.fHistogram.GetNbinsX() + 2):
                 if s.fHistogram.GetBinContent(xbin) > 0:
                     s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
                 else:
@@ -704,7 +704,7 @@ class DMesonJetAnalysisEngine:
         print("Generating invariant mass windows for {0}".format(invMassHisto.GetName()))
         sideBandWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
         signalWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSigWindow"))
-        for xbin in range(0, invMassHisto.GetNbinsX() + 2):
+        for xbin in xrange(0, invMassHisto.GetNbinsX() + 2):
             if not ((xbin >= binSBL_1 and xbin < binSBL_2) or (xbin >= binSBR_1 and xbin < binSBR_2)):
                 sideBandWindowInvMassHisto.SetBinContent(xbin, 0)
                 sideBandWindowInvMassHisto.SetBinError(xbin, 0)
@@ -791,7 +791,7 @@ class DMesonJetAnalysisEngine:
                 sbTotalIntegral = sbTotal.IntegralAndError(0, -1, 0, -1, sbTotalIntegralError)
             if sbTotalIntegral > 0:
                 if sbTotal.GetDimension() == 1:
-                    for xbin in range(0, sbTotal.GetNbinsX() + 2):
+                    for xbin in xrange(0, sbTotal.GetNbinsX() + 2):
                         if sbTotal.GetBinContent(xbin) == 0:
                             continue
                         # Error propagation
@@ -804,8 +804,8 @@ class DMesonJetAnalysisEngine:
                         sbTotal.SetBinError(xbin, error)
                         sbTotal.SetBinContent(xbin, cont)
                 elif sbTotal.GetDimension() == 2:
-                    for xbin in range(0, sbTotal.GetNbinsX() + 2):
-                        for ybin in range(0, sbTotal.GetNbinsY() + 2):
+                    for xbin in xrange(0, sbTotal.GetNbinsX() + 2):
+                        for ybin in xrange(0, sbTotal.GetNbinsY() + 2):
                             if sbTotal.GetBinContent(xbin, ybin) == 0: continue
                             # Error propagation
                             error2_1 = peakAreaBkgError ** 2 * sbTotal.GetBinContent(xbin, ybin) ** 2
@@ -851,14 +851,14 @@ class DMesonJetAnalysisEngine:
         if s.fBackground: s.fBackground.Add(s.fSideBandWindowTotalHistogram)
 
         if s.fHistogram.GetDimension() == 1:
-            for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
+            for xbin in xrange(0, s.fHistogram.GetNbinsX() + 2):
                 if s.fHistogram.GetBinContent(xbin) > 0:
                     s.fUncertainty.SetBinContent(xbin, s.fHistogram.GetBinError(xbin) / s.fHistogram.GetBinContent(xbin))
                 else:
                     s.fUncertainty.SetBinContent(xbin, 0)
         if s.fHistogram.GetDimension() == 2:
-            for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
-                for ybin in range(0, s.fHistogram.GetNbinsY() + 2):
+            for xbin in xrange(0, s.fHistogram.GetNbinsX() + 2):
+                for ybin in xrange(0, s.fHistogram.GetNbinsY() + 2):
                     if s.fHistogram.GetBinContent(xbin, ybin) > 0:
                         s.fUncertainty.SetBinContent(xbin, ybin, s.fHistogram.GetBinError(xbin, ybin) / s.fHistogram.GetBinContent(xbin, ybin))
                     else:
@@ -866,7 +866,7 @@ class DMesonJetAnalysisEngine:
 
     def GenerateSpectrum1DTruth(self, s):
         # The truth spectrum is already done, only need to apply the efficiency
-        for ibin in range(0, s.fHistogram.GetNbinsX() + 2):
+        for ibin in xrange(0, s.fHistogram.GetNbinsX() + 2):
             if not s.fHistogram.GetBinContent(ibin) > 0:
                 continue
             w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetXaxis().GetBinCenter(ibin))
@@ -931,10 +931,10 @@ class DMesonJetAnalysisEngine:
 
     def GenerateSpectrum2DTruth(self, s):
         w = 1
-        for xbin in range(0, s.fHistogram.GetNbinsX() + 2):
+        for xbin in xrange(0, s.fHistogram.GetNbinsX() + 2):
             if s.fAxis[0].fName == "d_pt":
                 w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetXaxis().GetBinCenter(xbin))
-            for ybin in range(0, s.fHistogram.GetNbinsY() + 2):
+            for ybin in xrange(0, s.fHistogram.GetNbinsY() + 2):
                 if s.fAxis[1].fName == "d_pt":
                     w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(s.fHistogram.GetYaxis().GetBinCenter(ybin))
                 if not s.fHistogram.GetBinContent(xbin, ybin) > 0:

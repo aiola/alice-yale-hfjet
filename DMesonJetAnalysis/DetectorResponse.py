@@ -26,6 +26,8 @@ class DetectorResponse:
             if c["object"] == "jet": self.fJetInfo = True
         self.fName = name
         self.fJetName = jetName
+        self.fJetTruthName = "{0}_truth".format(self.fJetName)
+        self.fJetRecoName = "{0}_reco".format(self.fJetName)
         self.fResponseMatrix = None
         self.fTruth = None
         self.fMeasured = None
@@ -61,10 +63,10 @@ class DetectorResponse:
         if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
             self.SetupStatistics(self.fAxis[0].fCoarseResponseAxis)
         if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
-            self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
-            self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
-            self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins) + 1)]
-            self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "ReconstructedTruth") for bin in range(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
+            self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
+            self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
+            self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins) + 1)]
+            self.fReconstructedTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "ReconstructedTruth") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
             self.fEfficiency1D = []
             self.fEfficiency1DRatios = []
 
@@ -84,8 +86,8 @@ class DetectorResponse:
     def GenerateResponseUncertainty(self):
         if not self.fResponseMatrixUncertainty:
             return
-        for x in range(0, self.fResponseMatrix.GetXaxis().GetNbins() + 2):
-            for y in range(0, self.fResponseMatrix.GetYaxis().GetNbins() + 2):
+        for x in xrange(0, self.fResponseMatrix.GetXaxis().GetNbins() + 2):
+            for y in xrange(0, self.fResponseMatrix.GetYaxis().GetNbins() + 2):
                 if self.fResponseMatrix.GetBinContent(x, y) == 0:
                     continue
                 self.fResponseMatrixUncertainty.SetBinContent(x, y, self.fResponseMatrix.GetBinError(x, y) / self.fResponseMatrix.GetBinContent(x, y))
@@ -181,7 +183,7 @@ class DetectorResponse:
             coord = array.array('i', [-1] * (len(self.fAxis) * 2))
         if axis == -1:
             axis = minAxis
-        for ibin in range(0, self.fResponseMatrix.GetAxis(axis).GetNbins() + 2):
+        for ibin in xrange(0, self.fResponseMatrix.GetAxis(axis).GetNbins() + 2):
             coord[axis] = ibin
             if axis == maxAxis:
                 yield coord
@@ -200,10 +202,10 @@ class DetectorResponse:
         meas = self.GenerateMeasured(self.fAxis)
 
         if len(self.fAxis) == 1:
-            for xbin in range(0, self.fResponseMatrix.GetNbinsX() + 2):
+            for xbin in xrange(0, self.fResponseMatrix.GetNbinsX() + 2):
                 binContent = 0
                 binError = 0
-                for ybin in range(0, self.fResponseMatrix.GetNbinsY() + 2):
+                for ybin in xrange(0, self.fResponseMatrix.GetNbinsY() + 2):
                     if self.fReconstructedTruth.GetBinContent(ybin) == 0:
                         continue
                     binContent += self.fResponseMatrix.GetBinContent(xbin, ybin) * truth.GetBinContent(ybin) / self.fReconstructedTruth.GetBinContent(ybin)
@@ -408,11 +410,12 @@ class DetectorResponse:
         self.FillHistogram(hist, values, w)
 
     def FillHistogram(self, hist, values, w):
-        if len(values) == 1:
+        dimension = len(values)
+        if dimension == 1:
             hist.Fill(values[0], w)
-        elif len(values) == 2:
+        elif dimension == 2:
             hist.Fill(values[0], values[1], w)
-        elif len(values) == 3:
+        elif dimension == 3:
             hist.Fill(values[0], values[1], values[2], w)
         else:
             hist.Fill(values, w)
@@ -484,8 +487,8 @@ class DetectorResponse:
 
     def Fill(self, dmeson, w):
         if self.fJetInfo:
-            jetTruth = getattr(dmeson, "{0}_truth".format(self.fJetName))
-            jetMeasured = getattr(dmeson, "{0}_reco".format(self.fJetName))
+            jetTruth = getattr(dmeson, self.fJetTruthName)
+            jetMeasured = getattr(dmeson, self.fJetRecoName)
         else:
             jetTruth = None
             jetMeasured = None

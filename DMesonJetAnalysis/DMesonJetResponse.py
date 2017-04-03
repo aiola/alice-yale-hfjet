@@ -372,13 +372,13 @@ class DMesonJetResponseEngine:
             leg.AddEntry(h, h.GetTitle(), "pe")
             if isinstance(h, ROOT.TGraph):
                 h.Draw("P same")
-                for i in range(0, h.GetN()):
+                for i in xrange(0, h.GetN()):
                     y = h.GetY()[i]
                     if y > max:
                         max = y
             else:
                 h.Draw("same")
-                for i in range(1, h.GetNbinsX() + 1):
+                for i in xrange(1, h.GetNbinsX() + 1):
                     y = h.GetBinContent(i)
                     if y > max:
                         max = y
