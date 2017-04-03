@@ -44,7 +44,7 @@ class EfficiencyWeightCalculator:
     def LoadEfficiency(self, filename, listname, objectname):
         file = ROOT.TFile.Open(filename)
         if not file or file.IsZombie():
-            print("Could not open file '{0}'! Effieciency could not be loaded!".format(filename))
+            print("Could not open file '{0}'! Efficiency could not be loaded!".format(filename))
             return
         obj = self.GetObjectFromRootFile(file, listname, objectname)
         if not obj:
@@ -136,7 +136,7 @@ class DMesonJetDataProjector:
         files = []
 
         if self.fPtHardBins > 0:
-            for i in range(0, self.fPtHardBins):
+            for i in xrange(0, self.fPtHardBins):
                 path = self.fInputPath.format(ptHard=i)
                 print("Looking for file {0} in path {1}".format(self.fFileName, path))
                 files.extend(DMesonJetUtils.find_file(path, self.fFileName))
@@ -382,6 +382,8 @@ class DMesonJetResponseProjector:
         self.fPeriod = ""
         self.fWeight = 1
         self.fCurrentFileName = ""
+        self.fCurrentRootFile = None
+        self.fCurrentTreeNumber = -1
         if ROOT.gROOT.GetVersionInt() >= 60000:
             ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
             self.GetDetectorResponse = self.GetDetectorResponseRoot6
@@ -416,8 +418,8 @@ class DMesonJetResponseProjector:
         self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractCurrentFileInfo(self):
-        if self.fCurrentFileName == self.fChain.GetCurrentFile().GetName(): return
-        self.fCurrentFileName = self.fChain.GetCurrentFile().GetName()
+        self.fCurrentRootFile = self.fChain.GetCurrentFile()
+        self.fCurrentFileName = self.fCurrentRootFile.GetName()
         self.GetInfoFromFileName(self.fCurrentFileName)
 
     def ExtractWeightFromHistogramList(self, hlist):
@@ -436,7 +438,10 @@ class DMesonJetResponseProjector:
         if valNTRIALS > 0:
             self.fWeight = valXSEC / valNTRIALS;
 
-    def RecalculateWeight(self):
+    def OnFileChange(self):
+        if self.fCurrentTreeNumber == self.fChain.GetTreeNumber(): return
+
+        self.fCurrentTreeNumber = self.fChain.GetTreeNumber()
         oldPtHardBin = self.fPtHardBin
         oldPeriod = self.fPeriod
 
@@ -532,7 +537,7 @@ class DMesonJetResponseProjector:
                     print("Stopping the analysis.")
                     break
 
-            self.RecalculateWeight()
+            self.OnFileChange()
             for r in response.itervalues():
                 r.Fill(dmeson, self.fWeight)
             i += 1

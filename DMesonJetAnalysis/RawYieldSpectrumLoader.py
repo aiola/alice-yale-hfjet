@@ -270,7 +270,7 @@ class RawYieldSpectrumLoader:
         fdSyst[1].Scale(norm)
         fdSyst[-1].Scale(norm)
         if error_band == "graph":
-            for ibin in range(0, fdSystGraph.GetN()):
+            for ibin in xrange(0, fdSystGraph.GetN()):
                 fdSystGraph.SetPoint(ibin, fdSystGraph.GetX()[ibin], fdSystGraph.GetY()[ibin] * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
                 fdSystGraph.SetPointEYlow(ibin, fdSystGraph.GetErrorYlow(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
                 fdSystGraph.SetPointEYhigh(ibin, fdSystGraph.GetErrorYhigh(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))

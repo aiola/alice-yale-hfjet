@@ -27,9 +27,11 @@ class Axis:
         return cls(name, bins, label, charged_jet)
 
     def FindBin(self, x):
-        for i, (min, max) in enumerate(zip(self.fBins[:-1], self.fBins[1:])):
-            if x >= min and x < max:
-                return i
+        min = self.fBins[0]
+        for i in xrange(1, len(self.fBins)):
+            max = self.fBins[i]
+            if x >= min and x < max: return i - 1
+            min = max
         return -1
 
     def GetNbins(self):
