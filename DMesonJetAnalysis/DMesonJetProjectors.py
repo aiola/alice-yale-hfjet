@@ -282,10 +282,6 @@ class DMesonJetDataProjector:
 
         self.GenerateChain(treeName)
 
-        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
-        if self.fMaxEvents > 0:
-            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
-
         if "MCTruth" in DMesonDef:
             treeReader = ROOT.DJetTreeReaderRoot6(ROOT.AliAnalysisTaskDmesonJets.AliDmesonMCInfoSummary)(self.fChain)
         elif "D0" in DMesonDef:
@@ -300,6 +296,10 @@ class DMesonJetDataProjector:
                 jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
                 treeReader.AddJetDef(jetName)
                 print("Jet definition {} added to the jet reader".format(jetName))
+
+        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, treeReader.GetEntries()))
+        if self.fMaxEvents > 0:
+            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
 
         i = 0
         dmeson = treeReader.fDMeson
@@ -504,9 +504,6 @@ class DMesonJetResponseProjector:
 
         self.GenerateChain(treeName)
 
-        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
-        if self.fMaxEvents > 0:
-            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
         class DMesonJetResponseEvent:
             def __init__(self):
                 self.DmesonJet = None
@@ -529,7 +526,13 @@ class DMesonJetResponseProjector:
             treeReader.AddJetDef(jetName)
             print("Jet definition {} added to the jet reader".format(jetName))
             setattr(dmeson, jetName, treeReader.fJets[jetName])
+
+        treeReader.Restart()
+        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, treeReader.GetEntries()))
+        if self.fMaxEvents > 0:
+            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
         i = 0
+        treeReader.Restart()
         while (treeReader.Next()):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
