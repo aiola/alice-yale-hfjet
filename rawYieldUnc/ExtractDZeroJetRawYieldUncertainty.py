@@ -288,6 +288,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
     ROOT.gSystem.Load("libsiscone_spherical")
     ROOT.gSystem.Load("libfastjetplugins")
     ROOT.gSystem.Load("libfastjetcontribfragile")
+    ROOT.gROOT.SetMustClean(False)
 
     # ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
     # ROOT.gROOT.LoadMacro("AliTTreeDJetRawYieldUncertainty.cxx+g")
