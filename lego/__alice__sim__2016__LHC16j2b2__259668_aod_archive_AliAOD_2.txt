@@ -1,0 +1,2 @@
+/Volumes/DATA/ALICE/Data/sim/2016/LHC16j2b2/259668/AOD/001/aod_archive.zip#AliAOD.root
+/Volumes/DATA/ALICE/Data/sim/2016/LHC16j2b2/259668/AOD/002/aod_archive.zip#AliAOD.root
