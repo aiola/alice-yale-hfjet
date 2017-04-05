@@ -45,11 +45,12 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
         exit(1)
 
     multitrial = interface.RunMultiTrial()
-    if not multitrial:
+    if not multitrial or not interface.Success():
         print("Error in running the MultiTrial code! Exiting...")
         exit(1)
 
     interface.ClearObjects()
+    globalList.append(multitrial)
     globalList.append(interface)
     return interface
 

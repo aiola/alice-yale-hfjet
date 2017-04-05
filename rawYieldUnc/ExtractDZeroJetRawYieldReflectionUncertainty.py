@@ -52,9 +52,10 @@ def EvaluateBinPerBinReflUncertainty(config, specie, method, ptmin, ptmax, debug
         interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
         multitrial = interface.RunMultiTrial()
-        if not multitrial:
+        if not multitrial or not interface.Success():
             print("Error in running the MultiTrial code! Exiting...")
             exit(1)
+        globalList.append(multitrial)
 
         outputPath = "{0}/{1}/{2}/RawYieldUnc_refl_{3}".format(config["input_path"], config["train"], config["name"], reflFitFunc)
         ExtractDZeroJetRawYieldUncertainty.MoveFiles(outputPath, "root")
@@ -69,9 +70,10 @@ def EvaluateBinPerBinReflUncertainty(config, specie, method, ptmin, ptmax, debug
         interface.SetValueOfReflOverSignal(-rovers_factor, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
         multitrial = interface.RunMultiTrial()
-        if not multitrial:
+        if not multitrial or not interface.Success():
             print("Error in running the MultiTrial code! Exiting...")
             exit(1)
+        globalList.append(multitrial)
 
         outputPath = "{0}/{1}/{2}/RawYieldUnc_refl_{3}_{4:.0f}".format(config["input_path"], config["train"], config["name"], reflFitFunc, rovers_factor * 10)
         ExtractDZeroJetRawYieldUncertainty.MoveFiles(outputPath, "root")
