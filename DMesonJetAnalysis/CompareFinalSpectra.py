@@ -66,7 +66,10 @@ def GetRawSpectrum(config, meson_name, jet_type, jet_radius, no_refl, no_fd, raw
     wrap.fRawYieldMethod = raw_yield_method
     wrap.fUseReflections = not no_refl
     FDcorr = not no_fd
-    return wrap.GetDefaultSpectrumFromMultiTrial(FDcorr)
+    h = wrap.GetDefaultSpectrumFromMultiTrial(FDcorr)
+    if not wrap.fEvents: wrap.LoadNumberOfEvents()
+    h.Scale(1. / wrap.fEvents)
+    return h
 
 def CompareSpectra(config1, config2, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetSpectrum):
     h1 = GetSpectrum(config1, meson_name, jet_type, jet_radius, no_refl, no_fd, raw_yield_method)
