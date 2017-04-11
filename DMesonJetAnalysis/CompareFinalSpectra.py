@@ -13,15 +13,15 @@ import RawYieldSpectrumLoader
 globalList = []
 
 
-def main(config1, config2, meson_name, jet_type, jet_radius, raw, name, no_refl, no_fd, raw_yield_method):
+def main(configs, meson_name, jet_type, jet_radius, raw, name, no_refl, no_fd, raw_yield_method):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
     if raw:
-        CompareSpectra(config1, config2, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetRawSpectrum)
+        CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetRawSpectrum)
     else:
-        CompareSpectra(config1, config2, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetUnfoldedSpectrum)
+        CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetUnfoldedSpectrum)
 
 def GetUnfoldedSpectrum(config, meson_name, jet_type, jet_radiu, no_refl, no_fd, raw_yield_method):
     if no_refl or no_fd: print("'No refl' and 'No FD' options are ignored!")
@@ -71,11 +71,12 @@ def GetRawSpectrum(config, meson_name, jet_type, jet_radius, no_refl, no_fd, raw
     h.Scale(1. / wrap.fEvents)
     return h
 
-def CompareSpectra(config1, config2, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetSpectrum):
-    h1 = GetSpectrum(config1, meson_name, jet_type, jet_radius, no_refl, no_fd, raw_yield_method)
-    h2 = GetSpectrum(config2, meson_name, jet_type, jet_radius, no_refl, no_fd, raw_yield_method)
-    globalList.append(h1)
-    globalList.append(h2)
+def CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetSpectrum):
+    histos = []
+    for c in configs:
+        h = GetSpectrum(c, meson_name, jet_type, jet_radius, no_refl, no_fd, raw_yield_method)
+        globalList.append(h)
+        histos.append(h)
 
     if name:
         cname = name
@@ -96,7 +97,7 @@ def CompareSpectra(config1, config2, meson_name, jet_type, jet_radius, name, no_
     # comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
     # comp.fFills = [3245] * 2
     # comp.fOptSpectrumBaseline = "e2"
-    r = comp.CompareSpectra(h1, [h2])
+    r = comp.CompareSpectra(histos[0], histos[1:])
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
@@ -107,10 +108,8 @@ def CompareSpectra(config1, config2, meson_name, jet_type, jet_radius, name, no_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
-    parser.add_argument('yaml1',
-                        help='First YAML configuration file')
-    parser.add_argument('yaml2',
-                        help='Second YAML configuration file')
+    parser.add_argument('yaml', nargs='*',
+                        help='List of YAML configuration files')
     parser.add_argument('--meson', metavar='MESON',
                         default="D0")
     parser.add_argument('--jet-type', metavar='TYPE',
@@ -133,14 +132,14 @@ if __name__ == '__main__':
                         help='Raw yield method')
     args = parser.parse_args()
 
-    f = open(args.yaml1, 'r')
-    config1 = yaml.load(f)
-    f.close()
+    configs = []
 
-    f = open(args.yaml2, 'r')
-    config2 = yaml.load(f)
-    f.close()
+    for fname in args.yaml:
+        f = open(fname, 'r')
+        c = yaml.load(f)
+        f.close()
+        configs.append(c)
 
-    main(config1, config2, args.meson, args.jet_type, args.jet_radius, args.raw, args.name, args.no_refl, args.no_fd, args.raw_yield_method)
+    main(configs, args.meson, args.jet_type, args.jet_radius, args.raw, args.name, args.no_refl, args.no_fd, args.raw_yield_method)
 
     IPython.embed()
