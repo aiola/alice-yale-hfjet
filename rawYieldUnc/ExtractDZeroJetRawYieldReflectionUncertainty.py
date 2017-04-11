@@ -134,8 +134,6 @@ def main(config, b, debug):
     ROOT.gSystem.Load("libfastjetplugins")
     ROOT.gSystem.Load("libfastjetcontribfragile")
 
-    ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
-
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
