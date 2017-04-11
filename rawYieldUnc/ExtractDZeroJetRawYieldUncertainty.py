@@ -34,8 +34,6 @@ def EvaluateBinPerBinUncertainty(config, specie, method, ptmin, ptmax, refl=Fals
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
     interface.SetPtBinEdgesForMassPlot(float(ptmin), float(ptmax))
-    if refl: interface.SetFitReflections(True)
-    else: interface.SetFitReflections(False)
 
     interface.SetDebugLevel(debug)  # 0 = just do the job; 1 = additional printout; 2 = print individual fits
 
@@ -187,7 +185,7 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
 
     interface.SetDmesonSpecie(specie)
 
-    if refl:  # ATTENTION: the histograms to be set are pT-dependent!!
+    if refl and config["reflection_templates"]:  # ATTENTION: the histograms to be set are pT-dependent!!
         if method == ROOT.AliDJetRawYieldUncertainty.kEffScale:
             varname = "JetPt"
             iBin = ptJetbins.index(ptmin)
@@ -199,7 +197,9 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
         interface.SetReflHistoname("histRflFitted{fit}_ptBin{bin}".format(fit=reflFitFunc, bin=iBin))  # name of template histo
         interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
         interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
-
+        interface.SetFitReflections(True)
+    else:
+        interface.SetFitReflections(False)
     return interface
 
 def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptmax=-1, refl=False):
@@ -254,7 +254,7 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
 
     interface.SetDmesonSpecie(specie)
 
-    if refl:  # ATTENTION: the histograms to be set are pT-dependent!!
+    if refl and config["reflection_templates"]:  # ATTENTION: the histograms to be set are pT-dependent!!
         if method == ROOT.AliDJetRawYieldUncertainty.kEffScale:
             varname = "JetPt"
             iBin = ptJetbins.index(ptmin)
@@ -266,7 +266,9 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
         interface.SetReflHistoname("histRflFitted{fit}_ptBin{bin}".format(fit=refl, bin=iBin))  # name of template histo
         interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
         interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
-
+        interface.SetFitReflections(True)
+    else:
+        interface.SetFitReflections(False)
     return interface
 
 def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl, no_refl, bg, do_not_move, debug):
