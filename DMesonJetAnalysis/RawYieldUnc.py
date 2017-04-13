@@ -8,6 +8,7 @@ import ROOT
 import os
 import DMesonJetCompare
 import RawYieldSpectrumLoader
+import subprocess
 
 globalList = []
 
@@ -20,6 +21,9 @@ def main(config, meson_name, jet_type, jet_radius):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
+
+    subprocess.call("make")
+    ROOT.gSystem.Load("MassFitter.so")
 
     wrap.fInputPath = config["input_path"]
     wrap.fTrain = config["train"]
@@ -83,7 +87,7 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fOptSpectrumBaseline = "same hist"
     default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
-    comp = DMesonJetCompare.DMesonJetCompare("ReflectionVariationComparison")
+    comp = DMesonJetCompare.DMesonJetCompare("SideBandReflectionVariationComparison")
     comp.fX1LegRatio = 0.15
     comp.fX1LegSpectrum = 0.20
     comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
@@ -92,20 +96,25 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
     comp.fGridyRatio = True
     comp.fNoErrorInBaseline = True
-    # comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
-    # comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    # reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
-    # comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
-    # comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
-    # comp.fOptSpectrumBaseline = "same"
     reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+
+    comp = DMesonJetCompare.DMesonJetCompare("InvMassFitReflectionVariationComparison")
+    comp.fX1LegRatio = 0.15
+    comp.fX1LegSpectrum = 0.20
+    comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLinUpperSpace = 0.8  # this factor will be used to adjust the y axis in linear scale
+    comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
+    comp.fGridyRatio = True
+    comp.fNoErrorInBaseline = True
+    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
 
     SideBandRawYieldUnc(config["input_path"], config["train"], config["name"])
     SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"])
     SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"])
 
     outputPath = "{0}/{1}/{2}/RawYieldUnc_pdf".format(config["input_path"], config["train"], config["name"])
-    # if not os.listdir(outputPath): os.makedirs(outputPath)
+    if not os.path.isdir(outputPath): os.makedirs(outputPath)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
@@ -122,7 +131,7 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
     default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
-    default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial(method)
+    default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_from_mt.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     default_spectrum_from_mt.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_from_mt.GetYaxis().SetTitle(yaxisTitle)
