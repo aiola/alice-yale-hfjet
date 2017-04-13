@@ -12,6 +12,9 @@ import subprocess
 
 globalList = []
 
+# To mimic ROOT5 behavior
+if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
+
 def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
 
     ROOT.TH1.AddDirectory(False)
