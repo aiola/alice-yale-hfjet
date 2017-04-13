@@ -272,16 +272,9 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
     return interface
 
 def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl, no_refl, bg, do_not_move, debug):
-    # subprocess.call("make")
-    # ROOT.gSystem.Load("AliDJetRawYieldUncertainty.so")
-
     if bg: ROOT.gROOT.SetBatch(True)
 
     if no_refl: refl = None
-
-    # ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
-    # ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
-    # ROOT.gInterpreter.AddIncludePath("$FASTJET/include");
 
     # load fastjet libraries 3.x
     ROOT.gSystem.Load("libCGAL")
@@ -292,10 +285,6 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
     ROOT.gSystem.Load("libfastjetplugins")
     ROOT.gSystem.Load("libfastjetcontribfragile")
     ROOT.gROOT.SetMustClean(False)
-
-    # ROOT.gROOT.LoadMacro("AliDJetRawYieldUncertainty.cxx+g")
-    # ROOT.gROOT.LoadMacro("AliTTreeDJetRawYieldUncertainty.cxx+g")
-    # ROOT.gROOT.LoadMacro("AliTHnDJetRawYieldUncertainty.cxx+g")
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
