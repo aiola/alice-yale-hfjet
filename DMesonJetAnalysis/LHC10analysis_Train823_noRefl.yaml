@@ -7,7 +7,7 @@ task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 reflection_templates: no
 analysis:
-- 
+-
   trigger: ["AnyINT"]
   d_meson: [D0] #, 2ProngLikeSign]
   n_mass_bins: 50
