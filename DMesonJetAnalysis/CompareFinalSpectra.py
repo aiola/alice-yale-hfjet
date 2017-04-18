@@ -75,6 +75,7 @@ def CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_
     histos = []
     for c in configs:
         h = GetSpectrum(c, meson_name, jet_type, jet_radius, no_refl, no_fd, raw_yield_method)
+        h.SetTitle(c["name"])
         globalList.append(h)
         histos.append(h)
 

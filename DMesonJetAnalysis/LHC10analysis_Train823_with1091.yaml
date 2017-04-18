@@ -87,7 +87,6 @@ analysis:
         central_points: default
         spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       side_band:
-        skip_bins: [0]
         min_sigmas: 4
         max_sigmas: 8
         max_signal_sigmas: 2
