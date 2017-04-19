@@ -166,6 +166,8 @@ class RawYieldSpectrumLoader:
             ery = hry.GetBinError(1)
             h.SetBinContent(ibin + 1, ry)
             h.SetBinError(ibin + 1, ery)
+        h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        h.GetYaxis().SetTitle("#frac{d#it{N}}{d#it{p}_{T}} (GeV/#it{c})^{-1}")
         return h
 
     def GetDefaultSpectrumSideBandFromMultiTrial(self):
@@ -192,7 +194,9 @@ class RawYieldSpectrumLoader:
             exit(1)
         h_copy = h.Clone("TrialExpoFreeSigmaSideBand")
         h_copy.SetTitle("Trial Expo Free Sigma Inv. Mass Fit")
-        return h
+        h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        h_copy.GetYaxis().SetTitle("#frac{d#it{N}}{d#it{p}_{T}} (GeV/#it{c})^{-1}")
+        return h_copy
 
     def GetDefaultSpectrumFromMultiTrial(self, fd=False, fd_error_band=0, ry_error_band=0):
         if self.fRawYieldMethod == "SideBand": h = self.GetDefaultSpectrumSideBandFromMultiTrial()

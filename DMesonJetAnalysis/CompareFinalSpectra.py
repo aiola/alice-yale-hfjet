@@ -74,6 +74,7 @@ def GetRawSpectrum(config, meson_name, jet_type, jet_radius, no_refl, no_fd, raw
 def CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetSpectrum):
     histos = []
     for c in configs:
+        input_path = c["input_path"]
         h = GetSpectrum(c, meson_name, jet_type, jet_radius, no_refl, no_fd, raw_yield_method)
         h.SetTitle(c["name"])
         globalList.append(h)
@@ -85,27 +86,22 @@ def CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_
         cname = "MyComparison"
 
     comp = DMesonJetCompare.DMesonJetCompare(cname)
-    # comp.fOptSpectrum = "p x0"
     comp.fOptRatio = "hist"
-    # comp.fSeparateBaselineUncertainty = True
-    # comp.fX1LegRatio = 0.15
-    # comp.fX1LegSpectrum = 0.25
-    # comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
-    # comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
-    # comp.fLinUpperSpace = 0.25  # this factor will be used to adjust the y axis in linear scale
-    # comp.fLinLowerSpace = 0.05  # this factor will be used to adjust the y axis in linear scale
-    # comp.fColors = [ROOT.kBlue + 2] * 2
-    # comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    # comp.fFills = [3245] * 2
-    # comp.fOptSpectrumBaseline = "e2"
+    comp.fX1LegRatio = 0.15
+    comp.fX1LegSpectrum = 0.25
+    comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLogLowerSpace = 1.5  # this factor will be used to adjust the y axis in log scale
+    comp.fLinUpperSpace = 0.45  # this factor will be used to adjust the y axis in linear scale
+    comp.fLinLowerSpace = 0.15  # this factor will be used to adjust the y axis in linear scale
+    comp.fGridyRatio = True
     r = comp.CompareSpectra(histos[0], histos[1:])
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
 
     if name:
-        comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(config["input_path"], comp.fCanvasSpectra.GetName()))
-        comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(config["input_path"], comp.fCanvasRatio.GetName()))
+        comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+        comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
