@@ -66,9 +66,30 @@ def GetRawSpectrum(config, meson_name, jet_type, jet_radius, no_refl, no_fd, raw
     wrap.fRawYieldMethod = raw_yield_method
     wrap.fUseReflections = not no_refl
     FDcorr = not no_fd
+
+    if FDcorr:
+        print("Looking for spectrum config in '{}'".format(config["name"]))
+        for binList in config["analysis"][0]["binLists"]:
+            if not binList["name"] == "JetPtBins_DPt_30":
+                print("Skipping bin list '{}'".format(binList["name"]))
+                continue
+            print("Found bin list '{}'".format(binList["name"]))
+            for spectraConfig in binList["spectra"]:
+                if spectraConfig["name"] == "JetPtSpectrum_DPt_30":
+                    print("Found spectrum '{}'".format(spectraConfig["name"]))
+                    break
+                else:
+                    print("Skipping spectrum '{}'".format(spectraConfig["name"]))
+            if spectraConfig and spectraConfig["name"] == "JetPtSpectrum_DPt_30": break
+        if not spectraConfig or not spectraConfig["name"] == "JetPtSpectrum_DPt_30":
+            print("Error: could not find spectrum 'JetPtSpectrum_DPt_30'")
+            exit(1)
+        wrap.fFDConfig = spectraConfig["FD"]
+
     h = wrap.GetDefaultSpectrumFromMultiTrial(FDcorr)
     if not wrap.fEvents: wrap.LoadNumberOfEvents()
     h.Scale(1. / wrap.fEvents)
+    h.GetYaxis().SetTitle("per-event raw yield")
     return h
 
 def CompareSpectra(configs, meson_name, jet_type, jet_radius, name, no_refl, no_fd, raw_yield_method, GetSpectrum):

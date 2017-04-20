@@ -28,6 +28,7 @@ class RawYieldSpectrumLoader:
         self.fMultiTrialSubDir = None
         self.fDataJetList = None
         self.fDataMesonList = None
+        self.fFDConfig = None
         self.LoadNumberOfEvents = self.LoadNumberOfEventsNew
 
     def LoadNumberOfEventsOld(self):
@@ -167,7 +168,7 @@ class RawYieldSpectrumLoader:
             h.SetBinContent(ibin + 1, ry)
             h.SetBinError(ibin + 1, ery)
         h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-        h.GetYaxis().SetTitle("#frac{d#it{N}}{d#it{p}_{T}} (GeV/#it{c})^{-1}")
+        h.GetYaxis().SetTitle("raw yield")
         return h
 
     def GetDefaultSpectrumSideBandFromMultiTrial(self):
@@ -195,7 +196,7 @@ class RawYieldSpectrumLoader:
         h_copy = h.Clone("TrialExpoFreeSigmaSideBand")
         h_copy.SetTitle("Trial Expo Free Sigma Inv. Mass Fit")
         h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-        h_copy.GetYaxis().SetTitle("#frac{d#it{N}}{d#it{p}_{T}} (GeV/#it{c})^{-1}")
+        h_copy.GetYaxis().SetTitle("raw yield")
         return h_copy
 
     def GetDefaultSpectrumFromMultiTrial(self, fd=False, fd_error_band=0, ry_error_band=0):
@@ -237,31 +238,37 @@ class RawYieldSpectrumLoader:
         fdHist = self.GetFDCorrection(-error_band)
         h.Add(fdHist, -1)
 
-    def GetFDCorrection(self, error_band=0):
-        fdConfig = dict()
-        fdConfig["file_name"] = "BFeedDown.root"
-        fdConfig["central_points"] = "default"
+    def GenerateFDConfig(self):
+        self.fFDConfig = dict()
+        self.fFDConfig["file_name"] = "BFeedDown.root"
+        self.fFDConfig["central_points"] = "default"
         if "JetPt" in self.fSpectrumName:
             if "efficiency" in self.fAnalysisName:
-                fdConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
+                self.fFDConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
                 print("Using FD correction with efficiency")
             else:
-                fdConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply"
+                self.fFDConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply"
                 print("Using FD correction without efficiency")
         elif "DPt" in self.fSpectrumName:
             if "efficiency" in self.fAnalysisName:
-                fdConfig["spectrum"] = "GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
+                self.fFDConfig["spectrum"] = "GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
                 print("Using FD correction with efficiency")
             else:
-                fdConfig["spectrum"] = "DetectorLevel_DPtSpectrum_bEfficiencyMultiply"
+                self.fFDConfig["spectrum"] = "DetectorLevel_DPtSpectrum_bEfficiencyMultiply"
                 print("Using FD correction without efficiency")
         else:
             print("ApplyFDCorrection: Not jet pt nor d pt?")
             exit(1)
 
+    def GetFDCorrection(self, error_band=0):
+        if not self.fFDConfig:
+            print("WARNING!!!!!!!!!")
+            print("The FD correction configuration was not provided. It will be generated automatically. This can lead to wrong or misleading results. It is safer to provide a FD correction configuration!")
+            self.GenerateFDConfig()
+
         spectrumName = self.fSpectrumName
         if self.fKinematicCuts: spectrumName += "_{0}".format(self.fKinematicCuts)
-        fdCorrection = DMesonJetFDCorrection.DMesonJetFDCorrection(fdConfig, spectrumName, self.fInputPath, "D0", "Charged", "R040")
+        fdCorrection = DMesonJetFDCorrection.DMesonJetFDCorrection(self.fFDConfig, spectrumName, self.fInputPath, "D0", "Charged", "R040")
         fdHist = fdCorrection.fFDHistogram.Clone("FD")
         fdSyst = dict()
         fdSyst[1] = fdCorrection.fFDUpSystUncHistogram.Clone("FDUpSystUnc")

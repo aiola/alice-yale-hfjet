@@ -45,7 +45,7 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        file_name: BFeedDown.root
+        file_name: BFeedDown_old.root
         central_points: default
         spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
   -
@@ -83,7 +83,7 @@ analysis:
       type: side_band
       active_mesons: [D0]
       FD:
-        file_name: BFeedDown.root
+        file_name: BFeedDown_old.root
         central_points: default
         spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       side_band:
@@ -114,6 +114,6 @@ analysis:
       type: inv_mass_fit
       active_mesons: [D0]
       FD:
-        file_name: BFeedDown.root
+        file_name: BFeedDown_old.root
         central_points: default
         spectrum: GeneratorLevel_DPtSpectrum_bEfficiencyMultiply
