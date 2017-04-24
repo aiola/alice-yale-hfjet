@@ -208,7 +208,7 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
         pKtChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.kt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pKtChJetTask.SelectCollisionCandidates(physSel)
 
-        pRhoTask = ROOT.AddTaskRho(pKtChJetTask.GetName(), "tracks", "", "Rho", 0.4)
+        pRhoTask = ROOT.AddTaskRhoNew("usedefault", "", "Rho", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
         pRhoTask.SelectCollisionCandidates(physSel)
 
 
