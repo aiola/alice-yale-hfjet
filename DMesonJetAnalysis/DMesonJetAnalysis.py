@@ -49,7 +49,7 @@ class DMesonJetAnalysisEngine:
             self.CompareSpectraForAxis("d_z", binMultiSet)
 
     def CompareSpectraForAxis(self, axisName, binMultiSet):
-        cname = "{0}_{1}_{2}_{3}_SpectraComparison".format(self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, axisName)
+        cname = '_'.join(obj for obj in [self.fTrigger, self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, axisName, "SpectraComparison"] if obj)
         spectraToCompare = []
         spectra = binMultiSet.FindAllSpectra()
         for s in spectra:
@@ -203,7 +203,11 @@ class DMesonJetAnalysisEngine:
 
     def PlotSpectrum1D(self, s):
         # Spectrum
-        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
+        if self.fTrigger:
+            cname = "{0}_{1}_canvas".format(self.fTrigger, s.fNormHistogram.GetName())
+        else:
+            cname = "{0}_canvas".format(s.fNormHistogram.GetName())
+        c = ROOT.TCanvas(cname, cname)
         c.SetLogy()
         self.fCanvases.append(c)
         c.cd()
@@ -230,7 +234,11 @@ class DMesonJetAnalysisEngine:
         globalList.append(pave)
 
         # Uncertainty
-        c = ROOT.TCanvas("{0}_canvas".format(s.fUncertainty.GetName()), s.fUncertainty.GetName())
+        if self.fTrigger:
+            cname = "{0}_{1}_canvas".format(self.fTrigger, s.fUncertainty.GetName())
+        else:
+            cname = "{0}_canvas".format(s.fUncertainty.GetName())
+        c = ROOT.TCanvas(cname, cname)
         self.fCanvases.append(c)
         c.cd()
         h = s.fUncertainty.DrawCopy("hist")
@@ -257,7 +265,11 @@ class DMesonJetAnalysisEngine:
 
         # Mass
         if s.fMass:
-            c = ROOT.TCanvas("{0}_canvas".format(s.fMass.GetName()), s.fMass.GetName())
+            if self.fTrigger:
+                cname = "{0}_{1}_canvas".format(self.fTrigger, s.fMass.GetName())
+            else:
+                cname = "{0}_canvas".format(s.fMass.GetName())
+            c = ROOT.TCanvas(cname, cname)
             self.fCanvases.append(c)
             c.cd()
             h = s.fMass.DrawCopy()
@@ -292,7 +304,11 @@ class DMesonJetAnalysisEngine:
 
         # Mass width
         if s.fMassWidth:
-            c = ROOT.TCanvas("{0}_canvas".format(s.fMassWidth.GetName()), s.fMassWidth.GetName())
+            if self.fTrigger:
+                cname = "{0}_{1}_canvas".format(self.fTrigger, s.fMassWidth.GetName())
+            else:
+                cname = "{0}_canvas".format(s.fMassWidth.GetName())
+            c = ROOT.TCanvas(cname, cname)
             self.fCanvases.append(c)
             c.cd()
             h = s.fMassWidth.DrawCopy()
@@ -319,14 +335,30 @@ class DMesonJetAnalysisEngine:
             globalList.append(line)
 
         if s.fLikeSignTotalHistogram:
-            self.PlotBackgroundVsSignalSpectra("{0}_TotalBkgVsSig".format(s.fName), s.fUnlikeSignTotalHistogram, "Unlike Sign", s.fLikeSignTotalHistogram, "Like Sign")
+            if self.fTrigger:
+                cname = "{0}_{1}_TotalBkgVsSig".format(self.fTrigger, s.fName)
+            else:
+                cname = "{0}_TotalBkgVsSig".format(s.fName)
+            self.PlotBackgroundVsSignalSpectra(cname, s.fUnlikeSignTotalHistogram, "Unlike Sign", s.fLikeSignTotalHistogram, "Like Sign")
         if s.fUnlikeSignHistograms and s.fLikeSignHistograms:
-            self.PlotMultiCanvasBkgVsSigSpectra("{0}_BkgVsSig".format(s.fName), s.fUnlikeSignHistograms, "Unlike Sign", s.fLikeSignHistograms, "Like Sign")
+            if self.fTrigger:
+                cname = "{0}_{1}_BkgVsSig".format(self.fTrigger, s.fName)
+            else:
+                cname = "{0}_BkgVsSig".format(s.fName)
+            self.PlotMultiCanvasBkgVsSigSpectra(cname, s.fUnlikeSignHistograms, "Unlike Sign", s.fLikeSignHistograms, "Like Sign")
 
         if s.fSideBandWindowTotalHistogram:
-            self.PlotBackgroundVsSignalSpectra("{0}_TotalBkgVsSig".format(s.fName), s.fSignalWindowTotalHistogram, "Sig. Window", s.fSideBandWindowTotalHistogram, "SB Window")
+            if self.fTrigger:
+                cname = "{0}_{1}_TotalBkgVsSig".format(self.fTrigger, s.fName)
+            else:
+                cname = "{0}_TotalBkgVsSig".format(s.fName)
+            self.PlotBackgroundVsSignalSpectra(cname, s.fSignalWindowTotalHistogram, "Sig. Window", s.fSideBandWindowTotalHistogram, "SB Window")
         if s.fSignalHistograms and s.fSideBandHistograms:
-            self.PlotMultiCanvasBkgVsSigSpectra("{0}_BkgVsSig".format(s.fName), s.fSignalHistograms, "Sig. Window", s.fSideBandHistograms, "SB Window")
+            if self.fTrigger:
+                cname = "{0}_{1}_BkgVsSig".format(self.fTrigger, s.fName)
+            else:
+                cname = "{0}_BkgVsSig".format(s.fName)
+            self.PlotMultiCanvasBkgVsSigSpectra(cname, s.fSignalHistograms, "Sig. Window", s.fSideBandHistograms, "SB Window")
 
     def PlotMultiCanvasBkgVsSigSpectra(self, cname, sigHistograms, sigTitle, bkgHistograms, bkgTitle):
         ncanvases = len(sigHistograms)
@@ -431,7 +463,12 @@ class DMesonJetAnalysisEngine:
         return hSig, hBkg, hSub
 
     def PlotSpectrum2D(self, s):
-        c = ROOT.TCanvas("{0}_canvas".format(s.fNormHistogram.GetName()), s.fNormHistogram.GetName())
+        if self.fTrigger:
+            cname = "{0}_{1}_canvas".format(self.fTrigger, s.fNormHistogram.GetName())
+        else:
+            cname = "{0}_canvas".format(s.fNormHistogram.GetName())
+
+        c = ROOT.TCanvas(cname, cname)
         c.SetRightMargin(0.18)
         c.SetLogz()
         self.fCanvases.append(c)
@@ -442,7 +479,12 @@ class DMesonJetAnalysisEngine:
         globalList.append(c)
         globalList.append(h)
 
-        c = ROOT.TCanvas("{0}_canvas".format(s.fUncertainty.GetName()), s.fUncertainty.GetName())
+        if self.fTrigger:
+            cname = "{0}_{1}_canvas".format(self.fTrigger, s.fUncertainty.GetName())
+        else:
+            cname = "{0}_canvas".format(s.fUncertainty.GetName())
+
+        c = ROOT.TCanvas(cname, cname)
         c.SetRightMargin(0.18)
         self.fCanvases.append(c)
         c.cd()
@@ -1043,7 +1085,10 @@ class DMesonJetAnalysisEngine:
         return hsb
 
     def PlotInvMassPlotsBinSet(self, name, bins, LS_bins=None, spectrum=None):
-        cname = name
+        if self.fTrigger:
+            cname = "{0}_{1}".format(self.fTrigger, name)
+        else:
+            cname = name
         nbins = len(bins)
         if spectrum and spectrum.fSkipBins:
             nbins -= len(spectrum.fSkipBins)
