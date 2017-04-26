@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python Class to apply cuts
+# python Class to apply cuts
 
 import sys
 
@@ -21,6 +21,14 @@ class DMesonJetCuts:
 
     def CutJetPt(self, dmeson, jet, dummy, min, max):
         v = jet.fPt
+        if v < min:
+            return False
+        if v >= max:
+            return False
+        return True
+
+    def CutJetCorrPt(self, dmeson, jet, dummy, min, max):
+        v = jet.fCorrPt
         if v < min:
             return False
         if v >= max:
@@ -51,7 +59,7 @@ class DMesonJetCuts:
             return False
         return True
 
-    def CutD(self, dmeson, jet, varname, min, max): 
+    def CutD(self, dmeson, jet, varname, min, max):
         v = getattr(dmeson, varname)
         if v < min:
             return False
@@ -102,6 +110,8 @@ class DMesonJetCuts:
             elif cut["object"] == "jet":
                 if cut["variable"] == "fPt":
                     self.fFastCuts.append((self.CutJetPt, None, min, max))
+                elif cut["variable"] == "fCorrPt":
+                    self.fFastCuts.append((self.CutJetCorrPt, None, min, max))
                 elif cut["variable"] == "fEta":
                     self.fFastCuts.append((self.CutJetEta, None, min, max))
                 elif cut["variable"] == "fPhi":
@@ -112,6 +122,6 @@ class DMesonJetCuts:
                     self.fFastCuts.append((self.CutJet, cut["variable"], min, max))
 
     def ApplyCuts(self, dmeson, jet):
-        for funct,var,min,max in self.fFastCuts:
+        for funct, var, min, max in self.fFastCuts:
             if not funct(dmeson, jet, var, min, max): return False
         return True

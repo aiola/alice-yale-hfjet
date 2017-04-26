@@ -124,8 +124,9 @@ class DMesonJetDataProjector:
         self.fMergingType = merging_type
         self.fPtHardBins = ptHardBins
         if ROOT.gROOT.GetVersionInt() >= 60000:
-            ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
-            self.StartProjection = self.StartProjectionRoot6
+            # ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
+            # self.StartProjection = self.StartProjectionRoot6
+            self.StartProjection = self.StartProjectionRoot5
         else:
             self.StartProjection = self.StartProjectionRoot5
 
