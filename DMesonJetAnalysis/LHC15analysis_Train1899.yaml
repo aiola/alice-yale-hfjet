@@ -66,14 +66,14 @@ analysis:
       object: jet
       variable: fPt
       min: 0
-      max: 180
+      max: 150
     bin_count_analysis:
       jet_pt: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150]
     spectra:
     -
-      name: DPtSpectrum_JetPt_0_180
+      name: DPtSpectrum_JetPt_0_150
       suffix: InvMassFit
-      title: "Inv.Mass Fit, 0 < #it{p}_{T,ch jet} < 180 GeV/#it{c}"
+      title: "Inv.Mass Fit, 0 < #it{p}_{T,ch jet} < 150 GeV/#it{c}"
       type: inv_mass_fit
       active_mesons: [D0]
     -
