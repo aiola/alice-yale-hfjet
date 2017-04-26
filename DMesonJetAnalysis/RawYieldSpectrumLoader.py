@@ -29,6 +29,7 @@ class RawYieldSpectrumLoader:
         self.fDataJetList = None
         self.fDataMesonList = None
         self.fFDConfig = None
+        self.fTrigger = "AnyINT"
         self.LoadNumberOfEvents = self.LoadNumberOfEventsNew
 
     def LoadNumberOfEventsOld(self):
@@ -52,20 +53,27 @@ class RawYieldSpectrumLoader:
         return self.fEvents
 
     def LoadNumberOfEventsNew(self):
-        periods = ["LHC10b", "LHC10c", "LHC10d", "LHC10e"]
+        # periods = ["LHC10b", "LHC10c", "LHC10d", "LHC10e"]
         nRecoVertVz_LT10 = 0
         nRecoVertVz_GT10 = 0
         nNoVert = 0
         nVzSPD = 0
-        for p in periods:
-            fname = "{input_path}/{train}/{period}/merge/AnalysisResults.root".format(input_path=self.fInputPath, train=self.fTrain, period=p)
+        # for p in periods:
+            # fname = "{input_path}/{train}/{period}/merge/AnalysisResults.root".format(input_path=self.fInputPath, train=self.fTrain, period=p)
+        path = "{input_path}/{train}".format(input_path=self.fInputPath, train=self.fTrain)
+        fileName = "AnalysisResults.root"
+        print("Looking for file {0} in path {1}".format(fileName, path))
+        files = DMesonJetUtils.find_file(path, fileName)
+
+        for fname in files:
+            print("File: {}".format(fname))
             file = ROOT.TFile(fname)
             if not file or file.IsZombie():
                 print("Could not open file {0}".format(fname))
                 exit(1)
-            EMCALrejEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_AnyINT_histos/fHistEventRejection")
-            RDHFrejEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_AnyINT_histos/histosAliAnalysisTaskDmesonJets_AnyINT/{dmeson}/fHistEventRejectionReasons".format(dmeson=self.fDMeson))
-            accEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_AnyINT_histos/histosAliAnalysisTaskDmesonJets_AnyINT/{dmeson}/fHistNEvents".format(dmeson=self.fDMeson))
+            EMCALrejEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_{}_histos/fHistEventRejection".format(self.fTrigger))
+            RDHFrejEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_{trigger}_histos/histosAliAnalysisTaskDmesonJets_{trigger}/{dmeson}/fHistEventRejectionReasons".format(trigger=self.fTrigger, dmeson=self.fDMeson))
+            accEvents = DMesonJetUtils.GetObject(file, "AliAnalysisTaskDmesonJets_{trigger}_histos/histosAliAnalysisTaskDmesonJets_{trigger}/{dmeson}/fHistNEvents".format(trigger=self.fTrigger, dmeson=self.fDMeson))
             nRecoVertVz_LT10 += accEvents.GetBinContent(accEvents.GetXaxis().FindBin("Accepted"))
             nRecoVertVz_GT10 += EMCALrejEvents.GetBinContent(EMCALrejEvents.GetXaxis().FindBin("Vz"))
             nRecoVertVz_GT10 += RDHFrejEvents.GetBinContent(RDHFrejEvents.GetXaxis().FindBin("ZVtxOutFid"))
@@ -93,9 +101,13 @@ class RawYieldSpectrumLoader:
     def LoadDataListFromDMesonJetAnalysis(self,):
         if not self.fDataFile: self.LoadDataFileFromDMesonJetAnalysis()
         if self.fDMeson:
-            self.fDataMesonList = self.fDataFile.Get(self.fDMeson)
+            if self.fTrigger:
+                dataMesonListName = "{}_{}".format(self.fTrigger, self.fDMeson)
+            else:
+                dataMesonListName = self.fDMeson
+            self.fDataMesonList = self.fDataFile.Get(dataMesonListName)
             if not self.fDataMesonList:
-                print("Could not find list {0} in file {1}". format(self.fDMeson, self.fDataFile.GetName()))
+                print("Could not find list {0} in file {1}". format(dataMesonListName, self.fDataFile.GetName()))
                 exit(1)
             if self.fJetType and self.fJetRadius:
                 dataJetListName = "_".join([self.fJetType, self.fJetRadius])
