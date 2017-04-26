@@ -26,7 +26,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      jet_corrpt: [-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 60, 80]
+      jet_corrpt: [-20, -10, 0, 10, 20, 30, 40, 60, 80]
     cuts:
     -
       object: jet
@@ -68,7 +68,7 @@ analysis:
       min: -80
       max: 70
     bin_count_analysis:
-      jet_corrpt: [-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 60, 80]
+      jet_corrpt: [-20, -10, 0, 10, 20, 30, 40, 60, 80]
     spectra:
     -
       name: DPtSpectrum_JetCorrPt_N80_70
