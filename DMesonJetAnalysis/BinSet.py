@@ -183,6 +183,8 @@ class BinLimits:
                     obsValX = jet.fZ
                 elif self.fBinCountAnalysisAxis.fName == "jet_n":
                     obsValX = jet.fN
+                elif self.fBinCountAnalysisAxis.fName == "jet_corrpt":
+                    obsValX = jet.fCorrPt
             if self.fBinCountAnalysisSecondAxis:
                 if self.fBinCountAnalysisSecondAxis.fName == "jet_pt":
                     obsValY = jet.fPt
@@ -190,6 +192,8 @@ class BinLimits:
                     obsValY = jet.fZ
                 elif self.fBinCountAnalysisSecondAxis.fName == "jet_n":
                     obsValY = jet.fN
+                elif self.fBinCountAnalysisSecondAxis.fName == "jet_corrpt":
+                    obsValX = jet.fCorrPt
 
             if self.fBinCountAnalysisHisto.GetDimension() == 2:
                 self.fBinCountAnalysisHisto.Fill(dmeson.fInvMass, obsValX, w)
@@ -217,6 +221,9 @@ class BinLimits:
                 return False
         return True
 
+    def SetJetCorrPtLimits(self, min, max):
+        self.fLimits["jet_corrpt"] = min, max
+
     def SetJetPtLimits(self, min, max):
         self.fLimits["jet_pt"] = min, max
 
@@ -239,6 +246,8 @@ class BinLimits:
             if name == "d_pt" and (dmeson.fPt < min or dmeson.fPt >= max):
                 return False
             elif name == "jet_pt" and (jet.fPt < min or jet.fPt >= max):
+                return False
+            elif name == "jet_corrpt" and (jet.fCorrPt < min or jet.fCorrPt >= max):
                 return False
             elif name == "d_eta" and (dmeson.fEta < min or dmeson.fEta >= max):
                 return False
@@ -263,16 +272,18 @@ class BinLimits:
                 name += "DPt_{0}_{1}_".format(int(min * 100), int(max * 100))
             elif varName == "jet_pt":
                 name += "JetPt_{0}_{1}_".format(int(min * 100), int(max * 100))
+            elif varName == "jet_corrpt":
+                name += "JetCorrPt_{0}_{1}_".format(int(min * 100), int(max * 100)).replace("-", "N")
             elif varName == "d_eta":
-                name += "DEta_{0}_{1}_".format(int(min * 10), int(max * 10))
+                name += "DEta_{0}_{1}_".format(int(min * 10), int(max * 10)).replace("-", "N")
             elif varName == "jet_eta":
-                name += "JetEta_{0}_{1}_".format(int(min * 10), int(max * 10))
+                name += "JetEta_{0}_{1}_".format(int(min * 10), int(max * 10)).replace("-", "N")
             elif varName == "d_z":
                 name += "DZ_{0}_{1}_".format(int(min * 100), int(max * 100))
 
         # remove last "_"
-        if name:
-            name = name[:-1]
+        if name: name = name[:-1]
+
         return name
 
     def GetTitle(self):
@@ -283,6 +294,8 @@ class BinLimits:
                 title += "{0:.1f} < #it{{p}}_{{T,D}} < {1:.1f} GeV/#it{{c}}, ".format(min, max)
             elif varName == "jet_pt":
                 title += "{0:.0f} < #it{{p}}_{{T,jet}} < {1:.0f} GeV/#it{{c}}, ".format(min, max)
+            elif varName == "jet_corrpt":
+                title += "{0:.0f} < #it{{p}}_{{T,jet}}^{{sub}} < {1:.0f} GeV/#it{{c}}, ".format(min, max)
             elif varName == "d_eta":
                 title += "{0:.1f} < #it{{#eta}}_{{D}} < {1:.1f}, ".format(min, max)
             elif varName == "jet_eta":
@@ -291,8 +304,7 @@ class BinLimits:
                 title += "{0:.1f} < #it{{z}}_{{||, D}} < {1:.1f}, ".format(min, max)
 
         # remove last ", "
-        if title:
-            title = title[:-2]
+        if title: title = title[:-2]
         return title
 
     def Print(self):

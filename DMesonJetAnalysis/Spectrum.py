@@ -241,6 +241,8 @@ class Spectrum:
         for axis in self.fAxis:
             if axis.fName == "jet_pt":
                 values.append(jet.fPt)
+            elif axis.fName == "jet_corrpt":
+                values.append(jet.fCorrPt)
             elif axis.fName == "jet_eta":
                 values.append(jet.fEta)
             elif axis.fName == "jet_phi":
