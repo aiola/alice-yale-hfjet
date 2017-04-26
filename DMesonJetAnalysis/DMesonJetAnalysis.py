@@ -91,7 +91,10 @@ class DMesonJetAnalysisEngine:
 
     def SaveRootFile(self, file):
         rlist = ROOT.TList()
-        rlist.SetName(self.fDMeson)
+        if self.fTrigger:
+            rlist.SetName("{}_{}".format(self.fTrigger, self.fDMeson))
+        else:
+            rlist.SetName(self.fDMeson)
 
         for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
             if jtype or jradius:
