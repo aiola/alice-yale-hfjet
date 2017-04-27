@@ -17,9 +17,9 @@ ClassImp(DecaySimulator);
 //____________________________________________________________________________________
 DecaySimulator::DecaySimulator() :
   TNamed("DecaySimulator", "DecaySimulator"),
-  fMass(1.865),  // D0
-  fDaughterMass1(0.139),  // Pi+
-  fDaughterMass2(0.494),  // K-
+  fMass(1.8684),  // D0
+  fDaughterMass1(0.13957),  // Pi+
+  fDaughterMass2(0.49677),  // K-
   fNPtBins(0),
   fPtBins(0),
   fMinEta(-0.5),
@@ -83,13 +83,11 @@ void DecaySimulator::Init()
 {
   if (gRandom) delete gRandom;
   gRandom = new TRandom3(0);
-  
-  Double_t p2 = (fMass*fMass - fDaughterMass1*fDaughterMass1 - fDaughterMass2*fDaughterMass2) / 2;
 
-  fCMMomentum = TMath::Sqrt(p2);
+  fCMEnergy1 = (fMass*fMass + fDaughterMass1*fDaughterMass1 - fDaughterMass2*fDaughterMass2) / (2 * fMass);
+  fCMEnergy2 = (fMass*fMass + fDaughterMass2*fDaughterMass2 - fDaughterMass1*fDaughterMass1) / (2 * fMass);
 
-  fCMEnergy1 = TMath::Sqrt(p2 + fDaughterMass1*fDaughterMass1);
-  fCMEnergy2 = TMath::Sqrt(p2 + fDaughterMass2*fDaughterMass2);
+  fCMMomentum = TMath::Sqrt(fCMEnergy1*fCMEnergy1 - fDaughterMass1*fDaughterMass1);
 
   if (fDecaySimulation) delete fDecaySimulation;
 
