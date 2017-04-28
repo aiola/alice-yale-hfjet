@@ -4,6 +4,7 @@
 import argparse
 import ROOT
 import IPython
+import math
 
 globalList = []
 
@@ -28,6 +29,12 @@ def main(fname, ptMin, ptMax):
     ReflDiffVsDPtHighPt = ROOT.TH2D("ReflDiffVsDPtHighPt", "ReflDiffVsDPtHighPt;#it{p}_{T,D} (GeV/#it{c});#Delta_{approx}^{2} (GeV/#it{c}^{2})", ptMax - ptMin, ptMin, ptMax, 1500, -1.3, 3.2)
     globalList.append(ReflDiffVsDPtHighPt)
 
+    ApproxInvMass = ROOT.TH2D("ApproxInvMass", "ApproxInvMass;#it{p}_{T,D} (GeV/#it{c});#sqrt{#it{m}_{K}^{2} + #it{m}_{#pi}^{2} + 2#it{p}_{K}#it{p}_{#pi}(1 - cos(#theta))} (GeV/#it{c}^{2})", ptMax - ptMin, ptMin, ptMax, 300, 1.015, 1.915)
+    globalList.append(ApproxInvMass)
+
+    DaughtersPt = ROOT.TH2D("DaughtersPt", "DaughtersPt;#it{p}_{K} (GeV/#it{c});#it{p}_{#pi} (GeV/#it{c})", int(ptMax * 1.5), 0, ptMax * 1.5, int(ptMax * 1.5), 0, ptMax * 1.5)
+    globalList.append(DaughtersPt)
+
     for dmeson in tree:
         mass1 = dmeson.Daughter1.M()
         mass2 = dmeson.Daughter2.M()
@@ -41,6 +48,9 @@ def main(fname, ptMin, ptMax):
         pt = dmeson.Mother.Pt()
         ReflDiffVsDPt.Fill(pt, massRefl - mass)
         ReflDiffVsDPtHighPt.Fill(pt, (mass1 * mass1 - mass2 * mass2) * (dmeson.Daughter2.P() / dmeson.Daughter1.P() - dmeson.Daughter1.P() / dmeson.Daughter2.P()))
+        theta = dmeson.Daughter1.Vect().Angle(dmeson.Daughter2.Vect())
+        ApproxInvMass.Fill(pt, math.sqrt(mass1 ** 2 + mass2 ** 2 + 2 * dmeson.Daughter1.P() * dmeson.Daughter2.P() * (1 - math.cos(theta))))
+        DaughtersPt.Fill(dmeson.Daughter2.P(), dmeson.Daughter1.P())
 
     D0mass = 1.86484
 
@@ -58,6 +68,7 @@ def main(fname, ptMin, ptMax):
     line2.SetLineColor(ROOT.kRed)
     line2.SetLineWidth(2)
     line2.Draw()
+    c.SaveAs("{}.pdf".format(c.GetName()))
 
     c = ROOT.TCanvas("ReflDiffVsDPtHighPt", "ReflDiffVsDPtHighPt")
     globalList.append(c)
@@ -73,6 +84,25 @@ def main(fname, ptMin, ptMax):
     line2.SetLineColor(ROOT.kRed)
     line2.SetLineWidth(2)
     line2.Draw()
+    c.SaveAs("{}.pdf".format(c.GetName()))
+
+    c = ROOT.TCanvas("ApproxInvMass", "ApproxInvMass")
+    globalList.append(c)
+    c.cd()
+    ApproxInvMass.Draw("colz")
+    line1 = ROOT.TLine(ptMin, D0mass, ptMax, D0mass)
+    globalList.append(line1)
+    line1.SetLineColor(ROOT.kRed)
+    line1.SetLineWidth(2)
+    line1.Draw()
+    c.SaveAs("{}.pdf".format(c.GetName()))
+
+    c = ROOT.TCanvas("DaughtersPt", "DaughtersPt")
+    globalList.append(c)
+    c.cd()
+    DaughtersPt.Draw("colz")
+    c.SetLogz()
+    c.SaveAs("{}.pdf".format(c.GetName()))
 
 if __name__ == '__main__':
 
