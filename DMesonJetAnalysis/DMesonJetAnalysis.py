@@ -882,6 +882,8 @@ class DMesonJetAnalysisEngine:
 
             sbTotal.SetTitle(bin.GetTitle())
             s.fSideBandHistograms.append(sbTotal)
+            s.fSideBandLeftHistograms.append(sbL)
+            s.fSideBandRightHistograms.append(sbR)
             s.fSideBandWindowTotalHistogram.Add(sbTotal)
 
             sig.SetTitle(bin.GetTitle())
