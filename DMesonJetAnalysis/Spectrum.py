@@ -31,6 +31,8 @@ class Spectrum:
 
         # S-B analysis
         self.fSideBandHistograms = None
+        self.fSideBandLeftHistograms = None
+        self.fSideBandRightHistograms = None
         self.fSignalHistograms = None
         self.fSideBandWindowTotalHistogram = None
         self.fSignalWindowTotalHistogram = None
@@ -121,6 +123,10 @@ class Spectrum:
                 SBlist.Add(h)
             for h in self.fSideBandHistograms:
                 SBlist.Add(h)
+            for h in self.fSideBandLeftHistograms:
+                SBlist.Add(h)
+            for h in self.fSideBandRightHistograms:
+                SBlist.Add(h)
             for h in self.fSignalHistograms:
                 SBlist.Add(h)
             SBlist.Add(self.fSideBandWindowTotalHistogram)
@@ -197,6 +203,8 @@ class Spectrum:
             self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "relative statistical uncertainty")
             if self.fAnalysisType == AnalysisType.SideBand:
                 self.fSideBandHistograms = []
+                self.fSideBandLeftHistograms = []
+                self.fSideBandRightHistograms = []
                 self.fSignalHistograms = []
                 self.fMass = None
                 self.fMassWidth = None
