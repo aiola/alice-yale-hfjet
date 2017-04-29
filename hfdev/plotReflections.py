@@ -29,11 +29,26 @@ def main(fname, ptMin, ptMax):
     ReflDiffVsDPtHighPt = ROOT.TH2D("ReflDiffVsDPtHighPt", "ReflDiffVsDPtHighPt;#it{p}_{T,D} (GeV/#it{c});#Delta_{approx}^{2} (GeV/#it{c}^{2})", ptMax - ptMin, ptMin, ptMax, 1500, -1.3, 3.2)
     globalList.append(ReflDiffVsDPtHighPt)
 
-    ApproxInvMass = ROOT.TH2D("ApproxInvMass", "ApproxInvMass;#it{p}_{T,D} (GeV/#it{c});#sqrt{#it{m}_{K}^{2} + #it{m}_{#pi}^{2} + 2#it{p}_{K}#it{p}_{#pi}(1 - cos(#theta))} (GeV/#it{c}^{2})", ptMax - ptMin, ptMin, ptMax, 300, 1.015, 1.915)
+    ApproxInvMass = ROOT.TH2D("ApproxInvMass", "ApproxInvMass;#it{p}_{T,D} (GeV/#it{c});#it{m}_{K}^{2} + #it{m}_{#pi}^{2} + 2#it{p}_{K}#it{p}_{#pi}(1 - cos(#theta)) (GeV/#it{c}^{2})^{2}", ptMax - ptMin, ptMin, ptMax, 400, 1.0, 4.0)
     globalList.append(ApproxInvMass)
 
     DaughtersPt = ROOT.TH2D("DaughtersPt", "DaughtersPt;#it{p}_{K} (GeV/#it{c});#it{p}_{#pi} (GeV/#it{c})", int(ptMax * 1.5), 0, ptMax * 1.5, int(ptMax * 1.5), 0, ptMax * 1.5)
     globalList.append(DaughtersPt)
+
+    ApproxErrorInvMass = ROOT.TH1D("ApproxErrorInvMass", "ApproxErrorInvMass;2(#sqrt{(#it{p}_{K}^{2} + #it{m}_{K}^{2})(#it{p}_{#pi}^{2} + #it{m}_{#pi}^{2})} - #it{p}_{K}#it{p}_{#pi}) (GeV/#it{c}^{2})^{2}", 1600, 0, 4.0)
+    globalList.append(ApproxErrorInvMass)
+
+    ApproxErrorInvMassVsPtRatio = ROOT.TH2D("ApproxErrorInvMassVsPtRatio", "ApproxErrorInvMassVsPtRatio;#it{p}_{K}#it{m_{#pi}} / #it{p}_{#pi}#it{m_{K}};2(#sqrt{(#it{p}_{K}^{2} + #it{m}_{K}^{2})(#it{p}_{#pi}^{2} + #it{m}_{#pi}^{2})} - #it{p}_{K}#it{p}_{#pi}) (GeV/#it{c}^{2})^{2}", 2000, 0, 100, 2000, 0, 4.0)
+    globalList.append(ApproxErrorInvMassVsPtRatio)
+
+    ApproxErrorInvMassVsDP = ROOT.TH2D("ApproxErrorInvMassVsDP", "ApproxErrorInvMassVsDP;#it{p}_{D} (GeV/#it{c});2(#sqrt{(#it{p}_{K}^{2} + #it{m}_{K}^{2})(#it{p}_{#pi}^{2} + #it{m}_{#pi}^{2})} - #it{p}_{K}#it{p}_{#pi}) (GeV/#it{c}^{2})^{2}", ptMax - ptMin, ptMin, ptMax, 2000, 0, 4.0)
+    globalList.append(ApproxErrorInvMassVsDP)
+
+    D0mass = 1.86484
+    piMass = 0.139570
+    Kmass = 0.493677
+
+    minE = 100
 
     for dmeson in tree:
         mass1 = dmeson.Daughter1.M()
@@ -49,10 +64,26 @@ def main(fname, ptMin, ptMax):
         ReflDiffVsDPt.Fill(pt, massRefl - mass)
         ReflDiffVsDPtHighPt.Fill(pt, (mass1 * mass1 - mass2 * mass2) * (dmeson.Daughter2.P() / dmeson.Daughter1.P() - dmeson.Daughter1.P() / dmeson.Daughter2.P()))
         theta = dmeson.Daughter1.Vect().Angle(dmeson.Daughter2.Vect())
-        ApproxInvMass.Fill(pt, math.sqrt(mass1 ** 2 + mass2 ** 2 + 2 * dmeson.Daughter1.P() * dmeson.Daughter2.P() * (1 - math.cos(theta))))
+        approxMass = mass1 ** 2 + mass2 ** 2 + 2 * dmeson.Daughter1.P() * dmeson.Daughter2.P() * (1 - math.cos(theta))
+        ApproxInvMass.Fill(pt, approxMass)
+#        if approxMass > 3.347:
+#            print("pion {}".format(dmeson.Daughter1.P()))
+#            dmeson.Daughter1.Print()
+#            print("kaon {}".format(dmeson.Daughter2.P()))
+#            dmeson.Daughter2.Print()
+#            print("D0 {}".format(dmeson.Mother.P()))
+#            dmeson.Mother.Print()
+#            print("cos(theta) = {}".format(math.cos(theta)))
+#            print(approxMass - D0mass ** 2)
+        approxE = D0mass ** 2 - approxMass
+        if approxE < minE:
+            minE = approxE
+        ApproxErrorInvMass.Fill(approxE)
         DaughtersPt.Fill(dmeson.Daughter2.P(), dmeson.Daughter1.P())
+        ApproxErrorInvMassVsPtRatio.Fill(dmeson.Daughter2.P() * dmeson.Daughter1.M() / dmeson.Daughter2.M() / dmeson.Daughter1.P(), approxE)
+        ApproxErrorInvMassVsDP.Fill(dmeson.Mother.P(), approxE)
 
-    D0mass = 1.86484
+    print("Minimum approx error {}".format(minE))
 
     c = ROOT.TCanvas("ReflDiffVsDPt", "ReflDiffVsDPt")
     globalList.append(c)
@@ -90,7 +121,7 @@ def main(fname, ptMin, ptMax):
     globalList.append(c)
     c.cd()
     ApproxInvMass.Draw("colz")
-    line1 = ROOT.TLine(ptMin, D0mass, ptMax, D0mass)
+    line1 = ROOT.TLine(ptMin, D0mass ** 2, ptMax, D0mass ** 2)
     globalList.append(line1)
     line1.SetLineColor(ROOT.kRed)
     line1.SetLineWidth(2)
@@ -102,6 +133,36 @@ def main(fname, ptMin, ptMax):
     c.cd()
     DaughtersPt.Draw("colz")
     c.SetLogz()
+    line1 = ROOT.TLine(0, 0, ptMax * 1.5, ptMax * 1.5 / piMass * Kmass)
+    globalList.append(line1)
+    line1.SetLineColor(ROOT.kRed)
+    line1.SetLineWidth(2)
+    line1.Draw()
+    c.SaveAs("{}.pdf".format(c.GetName()))
+
+    c = ROOT.TCanvas("ApproxErrorInvMass", "ApproxErrorInvMass")
+    globalList.append(c)
+    c.cd()
+    ApproxErrorInvMass.Draw()
+    c.SaveAs("{}.pdf".format(c.GetName()))
+
+    c = ROOT.TCanvas("ApproxErrorInvMassVsPtRatio", "ApproxErrorInvMassVsPtRatio")
+    globalList.append(c)
+    c.cd()
+    ApproxErrorInvMassVsPtRatio.Draw("colz")
+    ApproxErrorInvMassVsPtRatio.GetXaxis().SetRangeUser(0, 10)
+    ApproxErrorInvMassVsPtRatio.GetYaxis().SetRangeUser(0, 1)
+    line1 = ROOT.TLine(0, 2 * piMass * Kmass, 10, 2 * piMass * Kmass)
+    globalList.append(line1)
+    line1.SetLineColor(ROOT.kRed)
+    line1.SetLineWidth(2)
+    line1.Draw()
+    c.SaveAs("{}.pdf".format(c.GetName()))
+
+    c = ROOT.TCanvas("ApproxErrorInvMassVsDP", "ApproxErrorInvMassVsDP")
+    globalList.append(c)
+    c.cd()
+    ApproxErrorInvMassVsDP.Draw("colz")
     c.SaveAs("{}.pdf".format(c.GetName()))
 
 if __name__ == '__main__':
