@@ -17,9 +17,9 @@ ClassImp(DecaySimulator);
 //____________________________________________________________________________________
 DecaySimulator::DecaySimulator() :
   TNamed("DecaySimulator", "DecaySimulator"),
-  fMass(1.8684),  // D0
-  fDaughterMass1(0.13957),  // Pi+
-  fDaughterMass2(0.49677),  // K-
+  fMass(1.86484),  // D0
+  fDaughterMass1(0.139570),  // Pi+
+  fDaughterMass2(0.493677),  // K-
   fNPtBins(0),
   fPtBins(0),
   fMinEta(-0.5),
