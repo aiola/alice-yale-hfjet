@@ -23,26 +23,35 @@ def main(fname, ptMin, ptMax):
         print("Could not get tree!")
         exit(1)
 
+    histograms = []
+
     ReflDiffVsDPt = ROOT.TH2D("ReflDiffVsDPt", "ReflDiffVsDPt;#it{p}_{T,D} (GeV/#it{c});m_{refl} - m (GeV/#it{c}^{2})", ptMax - ptMin, ptMin, ptMax, 1500, -1.3, 3.2)
     globalList.append(ReflDiffVsDPt)
+    histograms.append(ReflDiffVsDPt)
 
     ReflDiffVsDPtHighPt = ROOT.TH2D("ReflDiffVsDPtHighPt", "ReflDiffVsDPtHighPt;#it{p}_{T,D} (GeV/#it{c});#Delta_{approx}^{2} (GeV/#it{c}^{2})", ptMax - ptMin, ptMin, ptMax, 1500, -1.3, 3.2)
     globalList.append(ReflDiffVsDPtHighPt)
+    histograms.append(ReflDiffVsDPtHighPt)
 
     ApproxInvMass = ROOT.TH2D("ApproxInvMass", "ApproxInvMass;#it{p}_{T,D} (GeV/#it{c});#it{m}_{K}^{2} + #it{m}_{#pi}^{2} + 2#it{p}_{K}#it{p}_{#pi}(1 - cos(#theta)) (GeV/#it{c}^{2})^{2}", ptMax - ptMin, ptMin, ptMax, 400, 1.0, 4.0)
     globalList.append(ApproxInvMass)
+    histograms.append(ApproxInvMass)
 
     DaughtersPt = ROOT.TH2D("DaughtersPt", "DaughtersPt;#it{p}_{K} (GeV/#it{c});#it{p}_{#pi} (GeV/#it{c})", int(ptMax * 1.5), 0, ptMax * 1.5, int(ptMax * 1.5), 0, ptMax * 1.5)
     globalList.append(DaughtersPt)
+    histograms.append(DaughtersPt)
 
     ApproxErrorInvMass = ROOT.TH1D("ApproxErrorInvMass", "ApproxErrorInvMass;2(#sqrt{(#it{p}_{K}^{2} + #it{m}_{K}^{2})(#it{p}_{#pi}^{2} + #it{m}_{#pi}^{2})} - #it{p}_{K}#it{p}_{#pi}) (GeV/#it{c}^{2})^{2}", 1600, 0, 4.0)
     globalList.append(ApproxErrorInvMass)
+    histograms.append(ApproxErrorInvMass)
 
     ApproxErrorInvMassVsPtRatio = ROOT.TH2D("ApproxErrorInvMassVsPtRatio", "ApproxErrorInvMassVsPtRatio;#it{p}_{K}#it{m_{#pi}} / #it{p}_{#pi}#it{m_{K}};2(#sqrt{(#it{p}_{K}^{2} + #it{m}_{K}^{2})(#it{p}_{#pi}^{2} + #it{m}_{#pi}^{2})} - #it{p}_{K}#it{p}_{#pi}) (GeV/#it{c}^{2})^{2}", 2000, 0, 100, 2000, 0, 4.0)
     globalList.append(ApproxErrorInvMassVsPtRatio)
+    histograms.append(ApproxErrorInvMassVsPtRatio)
 
     ApproxErrorInvMassVsDP = ROOT.TH2D("ApproxErrorInvMassVsDP", "ApproxErrorInvMassVsDP;#it{p}_{D} (GeV/#it{c});2(#sqrt{(#it{p}_{K}^{2} + #it{m}_{K}^{2})(#it{p}_{#pi}^{2} + #it{m}_{#pi}^{2})} - #it{p}_{K}#it{p}_{#pi}) (GeV/#it{c}^{2})^{2}", ptMax - ptMin, ptMin, ptMax, 2000, 0, 4.0)
     globalList.append(ApproxErrorInvMassVsDP)
+    histograms.append(ApproxErrorInvMassVsDP)
 
     D0mass = 1.86484
     piMass = 0.139570
@@ -66,15 +75,6 @@ def main(fname, ptMin, ptMax):
         theta = dmeson.Daughter1.Vect().Angle(dmeson.Daughter2.Vect())
         approxMass = mass1 ** 2 + mass2 ** 2 + 2 * dmeson.Daughter1.P() * dmeson.Daughter2.P() * (1 - math.cos(theta))
         ApproxInvMass.Fill(pt, approxMass)
-#        if approxMass > 3.347:
-#            print("pion {}".format(dmeson.Daughter1.P()))
-#            dmeson.Daughter1.Print()
-#            print("kaon {}".format(dmeson.Daughter2.P()))
-#            dmeson.Daughter2.Print()
-#            print("D0 {}".format(dmeson.Mother.P()))
-#            dmeson.Mother.Print()
-#            print("cos(theta) = {}".format(math.cos(theta)))
-#            print(approxMass - D0mass ** 2)
         approxE = D0mass ** 2 - approxMass
         if approxE < minE:
             minE = approxE
@@ -164,6 +164,13 @@ def main(fname, ptMin, ptMax):
     c.cd()
     ApproxErrorInvMassVsDP.Draw("colz")
     c.SaveAs("{}.pdf".format(c.GetName()))
+
+    fname_out = fname.replace(".root", "_hists.root")
+    file_out = ROOT.TFile(fname_out, "recreate")
+    file_out.cd()
+    for h in histograms:
+        h.Write()
+    file_out.Close()
 
 if __name__ == '__main__':
 
