@@ -1,0 +1,5 @@
+/Users/sa639/data/2016/LHC16s/000267110/pass1_CENT_wSDD/AOD/001/aod_archive.zip#AliAOD.root
+/Users/sa639/data/2016/LHC16s/000267110/pass1_CENT_wSDD/AOD/002/aod_archive.zip#AliAOD.root
+/Users/sa639/data/2016/LHC16s/000267110/pass1_CENT_wSDD/AOD/003/aod_archive.zip#AliAOD.root
+/Users/sa639/data/2016/LHC16s/000267110/pass1_CENT_wSDD/AOD/004/aod_archive.zip#AliAOD.root
+/Users/sa639/data/2016/LHC16s/000267110/pass1_CENT_wSDD/AOD/005/aod_archive.zip#AliAOD.root
