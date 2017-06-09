@@ -4,7 +4,7 @@ void LoadMacros();
 AliAnalysisManager* runEMCalTriggerQA(
     const char   *cDataType      = "AOD",                                   // set the analysis type, AOD or ESD
     const char   *cRunPeriod     = "LHC16s",                                // set the run period
-    const char   *cLocalFiles    = "files_LHC16s_AOD.txt",   // set the local list file
+    const char   *cLocalFiles    = "fileLists/files_LHC16s_pass1_AOD.txt",   // set the local list file
     const UInt_t  iNumEvents     = 5000,                                    // number of events to be analyzed
     UInt_t        iDebugLevel    = 0,                                       // debug level
     const char   *cTaskName      = "EMCalAna",                              // sets name of analysis manager
@@ -105,6 +105,8 @@ AliAnalysisManager* runEMCalTriggerQA(
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
     pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
   }
+
+  if (!pChain) return nullptr;
 
   // start analysis
   Printf("Starting Analysis...");
