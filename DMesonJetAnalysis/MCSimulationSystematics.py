@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 # python script to prepare B feed-down correction file
 
 import argparse

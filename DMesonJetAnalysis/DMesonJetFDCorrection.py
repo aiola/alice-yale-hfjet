@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 # python program to do extract B feed down correction factors
 
 import yaml

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 # python utilities for D Meson jet analysis
 
 import ROOT

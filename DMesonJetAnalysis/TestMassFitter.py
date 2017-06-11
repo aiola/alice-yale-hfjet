@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 # python script to test the class MassFitter
 
 import ROOT

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 # python script to test Jet D meson analysis
 
 import argparse
