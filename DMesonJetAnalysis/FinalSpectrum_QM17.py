@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 # python script to do extract B feed down correction factors
 
 import yaml
@@ -215,6 +215,7 @@ def main():
     theoryStat, theorySystUp, theorySystDown, theorySyst = GetTheoryCrossSection()
     canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
     canvas.SaveAs("{0}/D0JetCrossSection_pp7TeV.pdf".format(input_path))
+    canvas.SaveAs("{0}/D0JetCrossSection_pp7TeV.C".format(input_path))
 
 if __name__ == '__main__':
     main()

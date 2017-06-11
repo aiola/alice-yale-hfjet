@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 #  Execute with:
 #  ./ExtractDZeroJetRawYieldUncertainty.py config.yaml
 # For an example of a YAML configuration file, see ../DMesonJetAnalysis/LHC10analysis_Train823.yaml
