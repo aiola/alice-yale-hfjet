@@ -789,7 +789,14 @@ class DMesonJetAnalysisEngine:
             effSigma1 = (mean - bin.fBinCountAnalysisHisto.GetXaxis().GetBinLowEdge(binSig_1)) / sigma
             effSigma2 = (bin.fBinCountAnalysisHisto.GetXaxis().GetBinUpEdge(binSig_2) - mean) / sigma
             print("The left effective sigma is {0:.3f}; the right effective sigma is {1:.3f}".format(effSigma1, effSigma2))
-            (signalWindowInvMassHisto, sideBandWindowInvMassHisto) = self.GenerateInvMassWidonws(bin.fInvMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2)
+
+            binSBL_1_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
+            binSBL_2_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas * sigma)
+            binSBR_1_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas * sigma)
+            binSBR_2_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas * sigma)
+            binSig_1_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas * sigma)
+            binSig_2_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas * sigma)
+            (signalWindowInvMassHisto, sideBandWindowInvMassHisto) = self.GenerateInvMassWidonws(bin.fInvMassHisto, binSBL_1_invMass, binSBL_2_invMass, binSBR_1_invMass, binSBR_2_invMass, binSig_1_invMass, binSig_2_invMass)
 
             s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
             s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
