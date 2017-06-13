@@ -22,6 +22,8 @@ MassFitter::MassFitter() :
   fWidthError(0.),
   fSignal(0.),
   fSignalError(0.),
+  fBackground(0.),
+  fBackgroundError(0.),
   fDisableBkg(kFALSE),
   fDisableSig(kFALSE),
   fNParSig(0),
@@ -55,6 +57,8 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fWidthError(0.),
   fSignal(0.),
   fSignalError(0.),
+  fBackground(0.),
+  fBackgroundError(0.),
   fDisableBkg(kFALSE),
   fDisableSig(kFALSE),
   fNParSig(0),
@@ -148,6 +152,9 @@ void MassFitter::Reset(TH1* histo)
   fSignal = 0;
   fSignalError = 0;
 
+  fBackground = 0;
+  fBackgroundError = 0;
+
   fMean = 0;
   fMeanError = 0;
   fWidth = 0;
@@ -214,6 +221,8 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     fWidthError = fFunction->GetParError(fNParBkg+2);
     fSignal = fFunction->GetParameter(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(0);
     fSignalError = fFunction->GetParError(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(0);
+    fBackground = fFunction->GetParameter(0) / fHistogram->GetXaxis()->GetBinWidth(0);
+    fBackgroundError = fFunction->GetParError(0) / fHistogram->GetXaxis()->GetBinWidth(0);
 
     for (Int_t i = 0; i < fNParBkg; i++) {
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -266,6 +275,18 @@ Double_t MassFitter::GetBackgroundBinCountAndError(Double_t& error, Double_t min
 }
 
 //____________________________________________________________________________________
+Double_t MassFitter::GetBackgroundAndErrorFullRange(Double_t& bkgErr) const
+{
+  if (fDisableBkg) {
+    bkgErr = 0;
+    return 0.;
+  }
+
+  bkgErr = fBackgroundError;
+  return fBackground;
+}
+
+//____________________________________________________________________________________
 Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) const
 {
   if (fDisableBkg) {
@@ -273,19 +294,14 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
     return 0.;
   }
 
-  Double_t sig = GetSignal(sigmas);
-  Double_t sigErr = GetSignalError(sigmas);
+  // Assume that the relative error is the same as the full mass range
+  Double_t bkgErrFullRange = 0;
+  Double_t bkgFullRange = GetBackgroundAndErrorFullRange(bkgErrFullRange);
+  Double_t relBkgErr = bkgErrFullRange / bkgFullRange;
 
-  Double_t bkg = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMean - fWidth*sigmas), fHistogram->GetXaxis()->FindBin(fMean + fWidth*sigmas), bkgErr);
-  bkg -= sig;
-  bkgErr = TMath::Sqrt(bkgErr*bkgErr + sigErr*sigErr);
-  /*
-  Bool_t temp = fDisableSig;
-  (const_cast<MassFitter*>(this))->fDisableSig = kTRUE;
-  Double_t bkg = fFunction->Integral(fMean - fWidth*sigmas, fMean + fWidth*sigmas) / fHistogram->GetBinWidth(1);
-  bkgErr = fFunction->IntegralError(fMean - fWidth*sigmas, fMean + fWidth*sigmas, 0, fFitResult->GetCovarianceMatrix().GetMatrixArray()) / fHistogram->GetBinWidth(1);
-  (const_cast<MassFitter*>(this))->fDisableSig = temp;
-  */
+  Double_t bkg = fFunctionBkg->Integral(fMean - fWidth*sigmas, fMean + fWidth*sigmas) / fHistogram->GetXaxis()->GetBinWidth(0);
+  bkgErr = relBkgErr * bkg;
+
   return bkg;
 }
 
@@ -604,16 +620,20 @@ double MassFitter::FunctionBkg(double *x, double *p)
     {
       // Expo = a * exp(bx) -> integral = a/b*(TMath::Exp(b*x2) - TMath::Exp(b*x1))
       r = p[0] * TMath::Exp(p[1]*x[0]);
+      // normalization
+      r /= (TMath::Exp(p[1]*fMaxMass) - TMath::Exp(p[1]*fMinMass)) / p[1];
       break;
     }
   case kExpoPower:
     {
-      // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3*) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
+      // ExpoPower = a * sqrt(x - mpi) * exp(-b*(x-mpi)) -> integral = a / sqrt(b^3) * TMath::Gamma(3/2) * (TMath::Gamma(3/2, b*(x2-mpi)) - TMath::Gamma(3/2, b*(x1-mpi)))
       if (x[0] < fPionMass) {
         r = 0;
         break;
       }
       r = p[0] * TMath::Sqrt(x[0] - fPionMass) * TMath::Exp(-p[1] * (x[0] - fPionMass));
+      // normalization
+      r /= TMath::Sqrt(p[1]*p[1]*p[1]) * TMath::Gamma(1.5) * (TMath::Gamma(3/2, p[1]*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, p[1]*(fMinMass-fPionMass)));
       break;
     }
   default:

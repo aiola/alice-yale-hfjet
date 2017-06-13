@@ -145,9 +145,9 @@ class DMesonJetAnalysisEngine:
             else:
                 expoParBkg1 = -1.0
             if expoParBkg1 == 0: expoParBkg1 = -1.0
-            expoParBkg0 = totIntegral / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
+            expoParBkg0 = totIntegral  # / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
 
-            sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
+            sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0 / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
             GaussConst = sig
 
             fitter = ROOT.MassFitter(name, ROOT.MassFitter.kDzeroKpi, minMass, maxMass)
@@ -632,15 +632,15 @@ class DMesonJetAnalysisEngine:
             sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
             sbTotal.Add(sbR)
 
-            # peakAreaBkgError = ROOT.Double(0.)
-            # peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
+            peakAreaBkgError = ROOT.Double(0.)
+            peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, s.fBinCountSignalSigmas)
             intSigErr = ROOT.Double(0.)
             if sig.GetDimension() == 1:
                 intSig = sig.IntegralAndError(0, -1, intSigErr)
             elif sig.GetDimension() == 2:
                 intSig = sig.IntegralAndError(0, -1, 0, -1, intSigErr)
-            peakAreaBkgError = math.sqrt(intSigErr ** 2 + (bin.fMassFitter.GetSignalError(effSigma1) / 2) ** 2 + (bin.fMassFitter.GetSignalError(effSigma2) / 2) ** 2)
-            peakAreaBkg = intSig - bin.fMassFitter.GetSignal(effSigma1) / 2 - bin.fMassFitter.GetSignal(effSigma2) / 2
+            # peakAreaBkgError = math.sqrt(intSigErr ** 2 + (bin.fMassFitter.GetSignalError(effSigma1) / 2) ** 2 + (bin.fMassFitter.GetSignalError(effSigma2) / 2) ** 2)
+            # peakAreaBkg = intSig - bin.fMassFitter.GetSignal(effSigma1) / 2 - bin.fMassFitter.GetSignal(effSigma2) / 2
             if sbL.GetDimension() == 1:
                 print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
             elif sbL.GetDimension() == 2:
