@@ -55,6 +55,7 @@ class MassFitter : public TNamed {
   Double_t GetBackgroundError(Double_t sigmas=3.0)   const;
   Double_t GetBackgroundAndError(Double_t& bkgErr,
       Double_t sigmas=3.0)                           const;
+  Double_t GetBackgroundAndErrorFullRange(Double_t& bkgErr) const;
   Double_t GetBackgroundBinCountAndError(Double_t& error,
       Double_t minNSigmas, Double_t maxNSigmas)      const;
   Double_t GetBackgroundBinCount(Double_t minNSigmas,
@@ -100,6 +101,8 @@ class MassFitter : public TNamed {
   Double_t          fWidthError        ;//  Signal width error extracted from the fit
   Double_t          fSignal            ;//  Signal extracted from the fit
   Double_t          fSignalError       ;//  Signal error extracted from the fit
+  Double_t          fBackground        ;//  Background extracted from the fit in the full mass range
+  Double_t          fBackgroundError   ;//  Background error extracted from the fit in the full mass range
   Bool_t            fDisableBkg        ;//  Disable background component of the fit function
   Bool_t            fDisableSig        ;//  Disable signal component of the fit function
   Int_t             fNParSig           ;//  Number of parameters of the signal function
