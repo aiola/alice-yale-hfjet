@@ -71,7 +71,8 @@ def main(config, meson_name, jet_type, jet_radius):
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefaultUncertainties")
     comp.fDoSpectraPlot = "lineary"
-    comp.fDoRatioPlot = False
+    comp.fDoRatioPlot = True
+    comp.fOptRatio = "hist"
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
     comp.fX1LegRatio = 0.15
