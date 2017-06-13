@@ -30,6 +30,7 @@ class DMesonJetAnalysisEngine:
         self.fMinMass = minMass
         self.fMaxMass = maxMass
         self.fCanvases = []
+        self.fEvents = 0
 
         for jetDef in self.fJetDefinitions:
             if "active" in jetDef and not jetDef["active"]:
@@ -95,6 +96,7 @@ class DMesonJetAnalysisEngine:
             rlist.SetName("{}_{}".format(self.fTrigger, self.fDMeson))
         else:
             rlist.SetName(self.fDMeson)
+        rlist.Add(self.fHistEvents)
 
         for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
             if jtype or jradius:
@@ -145,7 +147,7 @@ class DMesonJetAnalysisEngine:
             else:
                 expoParBkg1 = -1.0
             if expoParBkg1 == 0: expoParBkg1 = -1.0
-            expoParBkg0 = totIntegral  # / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
+            expoParBkg0 = totIntegral
 
             sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0 / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
             GaussConst = sig
@@ -176,7 +178,9 @@ class DMesonJetAnalysisEngine:
         self.fProjector.StartProjection(self.fTrigger, self.fDMeson,
                                         self.fBinMultiSets, self.fNMassBins, self.fMinMass, self.fMaxMass)
 
-        self.fEvents = self.fProjector.fTotalEvents
+        self.fHistEvents = self.fProjector.fHistEvents
+        if self.fHistEvents: self.fEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("Normalized"))
+
         self.fIsWeighted = not (self.fProjector.fWeight == 1)
 
     def Start(self, ana):
@@ -639,8 +643,6 @@ class DMesonJetAnalysisEngine:
                 intSig = sig.IntegralAndError(0, -1, intSigErr)
             elif sig.GetDimension() == 2:
                 intSig = sig.IntegralAndError(0, -1, 0, -1, intSigErr)
-            # peakAreaBkgError = math.sqrt(intSigErr ** 2 + (bin.fMassFitter.GetSignalError(effSigma1) / 2) ** 2 + (bin.fMassFitter.GetSignalError(effSigma2) / 2) ** 2)
-            # peakAreaBkg = intSig - bin.fMassFitter.GetSignal(effSigma1) / 2 - bin.fMassFitter.GetSignal(effSigma2) / 2
             if sbL.GetDimension() == 1:
                 print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1), sbR.Integral(0, -1), sbTotal.Integral(0, -1)))
             elif sbL.GetDimension() == 2:

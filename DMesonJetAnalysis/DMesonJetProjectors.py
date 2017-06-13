@@ -119,10 +119,11 @@ class DMesonJetDataProjector:
         self.fPeriod = None
         self.fPtHardBin = None
         self.fWeight = 1
-        self.fTotalEvents = 0
         self.fNFiles = 0
         self.fMergingType = merging_type
         self.fPtHardBins = ptHardBins
+        self.fHistEvents = None
+
         if ROOT.gROOT.GetVersionInt() >= 60000:
             # ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
             # self.StartProjection = self.StartProjectionRoot6
@@ -223,15 +224,43 @@ class DMesonJetDataProjector:
         self.fPeriod = self.fCurrentFileName[thirdLastSlash + 1:secondLastSlash]
 
     def ExtractEventsFromHistogramList(self, hlist):
-        eventsHist = hlist.FindObject("fHistNEvents")
+        accEventsHist = hlist.FindObject("fHistNEvents")
+        rejEventsHist = hlist.FindObject("fHistEventRejectionReasons")
 
-        if not eventsHist:
+        if not (accEventsHist and rejEventsHist):
             print("Could not find event book-keeping histogram!")
             hlist.Print()
             return 0
 
-        events = eventsHist.GetBinContent(eventsHist.GetXaxis().FindBin("Accepted"));
+        accepted = accEventsHist.GetBinContent(accEventsHist.GetXaxis().FindBin("Accepted"));
+        nRecoVertVz_GT10 = rejEventsHist.GetBinContent(rejEventsHist.GetXaxis().FindBin("ZVtxOutFid"))
+        nNoVert = rejEventsHist.GetBinContent(rejEventsHist.GetXaxis().FindBin("NoVertex")) + \
+        rejEventsHist.GetBinContent(rejEventsHist.GetXaxis().FindBin("TooFewVtxContrib"))
+
+        events = ROOT.TH1F("histEvents", "histEvents", 4, 0, 4)
+        events.Fill("Accepted", accepted)
+        events.Fill("ZVtxOutFid", nRecoVertVz_GT10)
+        events.Fill("NoVert", nNoVert)
+
+        print("Total number of accepted events with reconstructed vertex Vz < 10 cm: {0:e}".format(accepted))
+        print("Total number of rejected events with reconstructed vertex Vz > 10 cm: {0:e}".format(nRecoVertVz_GT10))
+        print("Total number of rejected events without reconstructed vertex: {0:e}".format(nNoVert))
+
         return events
+
+    def CalculateNormalizedEvents(self):
+        self.fAcceptedEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("Accepted"))
+        self.fZVtxOutFidEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("ZVtxOutFid"))
+        self.fNoVertEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("NoVert"))
+
+        nRecoVert = self.fAcceptedEvents + self.fZVtxOutFidEvents
+        self.fNormalizedEvents = self.fAcceptedEvents + self.fNoVertEvents * (1 - self.fZVtxOutFidEvents / nRecoVert)
+        self.fHistEvents.Fill("Normalized", self.fNormalizedEvents)
+        print("Total number of accepted events with reconstructed vertex Vz < 10 cm: {0:e}".format(self.fAcceptedEvents))
+        print("Total number of rejected events with reconstructed vertex Vz > 10 cm: {0:e}".format(self.fZVtxOutFidEvents))
+        print("Total number of rejected events without reconstructed vertex: {0:e}".format(self.fNoVertEvents))
+        print("Correction factor: {}".format(self.fNormalizedEvents / self.fAcceptedEvents))
+        print("Total number of normalized events: {0:e}".format(self.fNormalizedEvents))
 
     def OnFileChange(self, DMesonDef, trigger):
         if self.fChain.GetCurrentFile().GetName() == self.fCurrentFileName: return
@@ -269,13 +298,13 @@ class DMesonJetDataProjector:
             hSubList.Print()
             return
 
+        print("Calculating events for period: {}".format(self.fPeriod))
         events = self.ExtractEventsFromHistogramList(hSubSubList)
-        self.fTotalEvents += events
 
-        print("Period: {0}\nEvents: {1}".format(self.fPeriod, events))
+        if self.fHistEvents: self.fHistEvents.Add(events)
+        else: self.fHistEvents = events
 
     def StartProjectionRoot6(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
-        self.fTotalEvents = 0
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
         else:
@@ -329,10 +358,9 @@ class DMesonJetDataProjector:
                 spectra = binMultiSet.FindSpectra(dmeson, jet)
                 for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
             i += 1
-        print("Total number of events: {0}".format(self.fTotalEvents))
+        self.CalculateNormalizedEvents()
 
     def StartProjectionRoot5(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
-        self.fTotalEvents = 0
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
         else:
@@ -368,8 +396,7 @@ class DMesonJetDataProjector:
 
                 spectra = binMultiSet.FindSpectra(dmeson, jet)
                 for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * self.fWeight)
-
-        print("Total number of events: {0}".format(self.fTotalEvents))
+        self.CalculateNormalizedEvents()
 
 class DMesonJetResponseProjector:
     def __init__(self, inputPath, train, fileName, taskName, maxEvents):
