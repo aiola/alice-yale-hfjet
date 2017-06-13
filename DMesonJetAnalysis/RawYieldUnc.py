@@ -127,14 +127,20 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fSpectrumName = spectrum
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
-
-    default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
-    default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
+
+    wrap.fDataSpectrumList = None
+    wrap.fDataFile = None
+    default_spectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis()
+    xaxisTitle = default_spectrum.GetXaxis().GetTitle()
+    yaxisTitle = default_spectrum.GetYaxis().GetTitle()
+    default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
+
     default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_from_mt.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     default_spectrum_from_mt.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_from_mt.GetYaxis().SetTitle(yaxisTitle)
+
     globalList.append(default_spectrum)
     globalList.append(default_spectrum_from_mt)
     r = comp.CompareSpectra(default_spectrum_from_mt, [default_spectrum])
@@ -149,10 +155,15 @@ def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_ra
     wrap.fSpectrumName = spectrum
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
-
-    default_spectrum = GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts)
-    default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
     wrap.fUseReflections = False
+
+    wrap.fDataSpectrumList = None
+    wrap.fDataFile = None
+    default_spectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis()
+    xaxisTitle = default_spectrum.GetXaxis().GetTitle()
+    yaxisTitle = default_spectrum.GetYaxis().GetTitle()
+    default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
+
     default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial()
     default_spectrum_from_mt.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     default_spectrum_from_mt.GetXaxis().SetTitle(xaxisTitle)
@@ -260,22 +271,6 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
-
-def GetDefaultSpectrum(config, method, meson_name, jet_type, jet_radius, spectrum, kincuts):
-    wrap.fUseReflections = False
-    wrap.fDMeson = meson_name
-    wrap.fJetType = jet_type
-    wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = spectrum
-    wrap.fKinematicCuts = kincuts
-    wrap.fRawYieldMethod = method
-    wrap.fDataSpectrumList = None
-    wrap.fDataFile = None
-    h = wrap.GetDefaultSpectrumFromDMesonJetAnalysis()
-    h_copy = h.Clone("{0}_copy".format(spectrum))
-    xaxisTitle = h_copy.GetXaxis().GetTitle()
-    yaxisTitle = h_copy.GetYaxis().GetTitle()
-    return h_copy
 
 def SideBandFinalRawYieldUnc(input_path, train, ana):
     fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_Dzero_AfterDbinSum.root".format(input_path, train, ana)

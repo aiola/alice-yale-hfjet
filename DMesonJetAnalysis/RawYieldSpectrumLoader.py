@@ -142,13 +142,18 @@ class RawYieldSpectrumLoader:
             exit(1)
         if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
         inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
-        h = self.fDataSpectrumList.FindObject(inputSpectrumName)
-        if not h:
+        h_orig = self.fDataSpectrumList.FindObject(inputSpectrumName)
+        if not h_orig:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
             self.fDataSpectrumList.Print()
             exit(1)
+        h = h_orig.Clone(h_orig.GetName())
+        h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        h.GetYaxis().SetTitle("raw yield")
+
         if fd: self.ApplyFDCorrection(h, fd_error_band)
         if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, ry_error_band)
+
         return h
 
     def GetDefaultSpectrumInvMassFitFromMultiTrial(self):
