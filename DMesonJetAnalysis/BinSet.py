@@ -348,8 +348,8 @@ class BinLimits:
         if self.fBinCountAnalysisAxis:
             if self.fBinCountAnalysisSecondAxis:
                 massAxis = numpy.linspace(minMass, maxMass, nMassBins + 1, True)
-                self.fBinCountAnalysisHisto = ROOT.TH3D(hnameSB, htitleSB, nMassBins, array.array('d', massAxis), len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins), len(self.fBinCountAnalysisSecondAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisSecondAxis.fBins))
+                self.fBinCountAnalysisHisto = ROOT.TH3D(hnameSB, htitleSB, nMassBins * 100, array.array('d', massAxis), len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins), len(self.fBinCountAnalysisSecondAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisSecondAxis.fBins))
                 self.fBinCountAnalysisHisto.Sumw2()
             else:
-                self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins))
+                self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins * 100, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins))
                 self.fBinCountAnalysisHisto.Sumw2()

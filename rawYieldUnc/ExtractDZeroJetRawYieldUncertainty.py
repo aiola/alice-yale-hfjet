@@ -161,13 +161,15 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
     reader.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
     reader.SetInputDBranchname("DmesonJet")
     reader.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
-    reader.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
+    reader.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.00006)
+    reader.SetMassRebin(100)
 
     interface = ROOT.AliDJetRawYieldUncertainty()
     interface.SetDJetReader(reader)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
+    interface.SetUseBkgInBinEdges(False)
 
     interface.SetSigmaForSignalRegion(2)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
     interface.SetSigmaSideBandLeft(8, 4)
@@ -230,13 +232,15 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
     reader.SetInputTreename("{0}_{1}_{2}".format(config["task_name"], ana["trigger"][0], ana["d_meson"][0]))
     reader.SetInputDBranchname("DmesonJet")
     reader.SetInputJetBranchname("Jet_AKT{0}{1}_pt_scheme".format(ana["jets"][0]["type"], ana["jets"][0]["radius"]))
-    reader.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.006)
+    reader.SetMassEdgesAndBinWidthForMassPlot(1.565, 2.165, 0.00006)
+    reader.SetMassRebin(100)
 
     interface = ROOT.AliDJetRawYieldUncertainty()
     interface.SetDJetReader(reader)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
+    interface.SetUseBkgInBinEdges(False)
 
     interface.SetSigmaForSignalRegion(2.)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
     interface.SetSigmaSideBandLeft(8, 4)
