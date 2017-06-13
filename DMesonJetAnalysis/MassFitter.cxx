@@ -212,11 +212,8 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     fMeanError = fFunction->GetParError(fNParBkg+1);
     fWidth = fFunction->GetParameter(fNParBkg+2);
     fWidthError = fFunction->GetParError(fNParBkg+2);
-    fSignal = fFunction->GetParameter(fNParBkg) * (TMath::Sqrt(TMath::TwoPi()) * fFunction->GetParameter(fNParBkg+2)) / fHistogram->GetXaxis()->GetBinWidth(0);
-    fSignalError = TMath::Sqrt(fFunction->GetParError(fNParBkg)*fFunction->GetParError(fNParBkg)/
-        fFunction->GetParameter(fNParBkg)/fFunction->GetParameter(fNParBkg) +
-        fFunction->GetParError(fNParBkg+2)*fFunction->GetParError(fNParBkg+2)/
-        fFunction->GetParameter(fNParBkg+2)/fFunction->GetParameter(fNParBkg+2)) * fSignal;
+    fSignal = fFunction->GetParameter(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(0);
+    fSignalError = fFunction->GetParError(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(0);
 
     for (Int_t i = 0; i < fNParBkg; i++) {
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
@@ -581,7 +578,7 @@ double MassFitter::FunctionSig(double *x, double *p)
     {
       // Gaus = [0] * exp(-1/2*((x-[1])^2/[2]^2))  -> integral is sqrt(2pi)*[2]*[0]
       if (p[2] != 0.) {
-        r = p[0] * TMath::Exp(-0.5 * (x[0] - p[1])*(x[0] - p[1]) / (p[2]*p[2]));
+        r = p[0] * TMath::Exp(-0.5 * (x[0] - p[1])*(x[0] - p[1]) / (p[2]*p[2])) / TMath::Sqrt(TMath::TwoPi()) / p[2];
       }
       break;
     }
