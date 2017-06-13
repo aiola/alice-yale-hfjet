@@ -148,7 +148,7 @@ class DMesonJetAnalysisEngine:
             expoParBkg0 = totIntegral / (math.exp(expoParBkg1 * minMass) - math.exp(expoParBkg1 * maxMass)) * (-expoParBkg1)
 
             sig = integral3sigma - (math.exp(expoParBkg1 * (pdgMass - 3 * massWidth)) - math.exp(expoParBkg1 * (pdgMass + 3 * massWidth))) / (-expoParBkg1) * expoParBkg0
-            GaussConst = sig / math.sqrt(2 * math.pi) / massWidth
+            GaussConst = sig
 
             fitter = ROOT.MassFitter(name, ROOT.MassFitter.kDzeroKpi, minMass, maxMass)
             fitter.SetFitRange(minMass, maxMass)
