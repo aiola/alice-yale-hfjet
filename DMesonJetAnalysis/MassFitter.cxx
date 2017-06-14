@@ -289,6 +289,12 @@ Double_t MassFitter::GetBackgroundAndErrorFullRange(Double_t& bkgErr) const
 //____________________________________________________________________________________
 Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) const
 {
+  return GetBackgroundAndError(bkgErr, fMean - fWidth*sigmas, fMean + fWidth*sigmas);
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t minMass, Double_t maxMass) const
+{
   if (fDisableBkg) {
     bkgErr = 0;
     return 0.;
@@ -299,7 +305,7 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t sigmas) co
   Double_t bkgFullRange = GetBackgroundAndErrorFullRange(bkgErrFullRange);
   Double_t relBkgErr = bkgErrFullRange / bkgFullRange;
 
-  Double_t bkg = fFunctionBkg->Integral(fMean - fWidth*sigmas, fMean + fWidth*sigmas) / fHistogram->GetXaxis()->GetBinWidth(0);
+  Double_t bkg = fFunctionBkg->Integral(minMass, maxMass) / fHistogram->GetXaxis()->GetBinWidth(0);
   bkgErr = relBkgErr * bkg;
 
   return bkg;
