@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 #python base classes and utilities for D Meson jet analysis
 
 import enum

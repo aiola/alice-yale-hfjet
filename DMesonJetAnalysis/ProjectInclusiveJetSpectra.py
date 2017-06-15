@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # python script to project TTree containing inclusive jet spectra
 
 import argparse
