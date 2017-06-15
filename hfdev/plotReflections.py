@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # python script to plot reflection studies on the decay simulator results
 
 import argparse

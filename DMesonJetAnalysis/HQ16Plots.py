@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 #python script to generate plots requested for approval to be presented at HQ16 conference
 
 import argparse

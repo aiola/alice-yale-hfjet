@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # python program to perform a D meson jet analysis
 
 import math

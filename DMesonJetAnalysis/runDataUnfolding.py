@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # python script to run the D meson jet unfolding on 2010 pp data
 
 import argparse

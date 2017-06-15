@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 #python script to plot FONLL calculations
 
 import argparse

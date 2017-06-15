@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # python program to project D meson jet trees into invariant mass histograms
 
 import math
