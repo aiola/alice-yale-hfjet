@@ -21,6 +21,8 @@ sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
 
+zJetbins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]  # used for sideband approach to define the bins of the output jet spectrum
+
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
@@ -168,6 +170,7 @@ def GeneratDzeroJetRawYieldUnc(config, specie, method, ptmin=-1, ptmax=-1, refl=
     interface.SetDJetReader(reader)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
+    interface.SetJetzBins(len(zJetbins) - 1, numpy.array(zJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
     interface.SetUseBkgInBinEdges(False)
 
@@ -239,6 +242,7 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, specie, method, ptmin=-1, ptma
     interface.SetDJetReader(reader)
     interface.SetDmesonPtBins(len(ptDbins) - 1, numpy.array(ptDbins, dtype=numpy.float64))
     interface.SetJetPtBins(len(ptJetbins) - 1, numpy.array(ptJetbins, dtype=numpy.float64))
+    interface.SetJetzBins(len(zJetbins) - 1, numpy.array(zJetbins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
     interface.SetUseBkgInBinEdges(False)
 
