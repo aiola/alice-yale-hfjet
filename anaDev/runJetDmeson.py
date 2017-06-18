@@ -32,10 +32,7 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
     else:
         suffix = ""
 
-    if config["beam_type"] == "PbPb":
-        rhoName = "Rho"
-    else:
-        rhoName = ""
+    rhoName = "Rho"
 
     if nOutputTrees > 0:
         if config["MC"]:
@@ -144,7 +141,8 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
 
     # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
     # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
-    physSel = ROOT.AliVEvent.kINT7
+    # physSel = ROOT.AliVEvent.kINT7
+    physSel = ROOT.AliVEvent.kMB  # Use for LHC10
     # physSel = 0
     ROOT.gSystem.Load("libCGAL")
 
@@ -172,15 +170,18 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
     elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
 
-    # task = ROOT.AddTaskCDBconnect()
+    # task = helperFunctions.AddTaskCDBConnect()
     # task.SetFallBackToRaw(True)
 
     # Physics selection task
     if not config["MC"]:
         ROOT.AddTaskPhysicsSelection()
 
-    if config["beam_type"] == "PbPb":
+    if config["cent_type"] == "new":
         ROOT.AddTaskMultSelection(False)
+    elif config["cent_type"] == "old":
+        print("Not configured for old centrality framework!")
+        return
 
     if config["full_jets"]:
         helperFunctions.PrepareEMCAL("userQAconfiguration.yaml")
@@ -202,15 +203,23 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
 
     pSpectraTask.SelectCollisionCandidates(physSel)
     pSpectraTask.SetPtBin(1, 150)
-    if config["beam_type"] == "PbPb": pSpectraTask.SetCentRange(0, 90)
+    if config["beam_type"] != "PbPb": pSpectraTask.SetCentRange(0, 90)
 
-    if config["beam_type"] == "PbPb":
+    if config["ue_sub"]:
         pKtChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.kt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.1, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pKtChJetTask.SelectCollisionCandidates(physSel)
 
-        pRhoTask = ROOT.AddTaskRhoNew("usedefault", "", "Rho", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
+        pRhoTask = ROOT.AliAnalysisTaskRhoDev.AddTaskRhoDev("usedefault", "", "Rho", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
         pRhoTask.SelectCollisionCandidates(physSel)
-
+        if config["beam_type"] == "pp":
+            pRhoTask.SetHistoBins(1000, 0, 100)
+            pRhoTask.SetRhoSparse(True)
+        elif config["beam_type"] == "PbPb":
+            pRhoTask.SetHistoBins(1000, 0, 500)
+            pRhoTask.SetRhoSparse(False)
+        elif config["beam_type"] == "pPb":
+            pRhoTask.SetHistoBins(1000, 0, 200)
+            pRhoTask.SetRhoSparse(True)
 
     if not noInclusiveJets:
         # Charged jet analysis
@@ -261,8 +270,8 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
 
     if d2h: ROOT.AddTaskD0Mass(0, config["MC"], False, False, 0, 0, 0, 0, "Loose", config["rdhf_cuts_dzero"])
 
-    if config["cent"]:
-        for cmin, cnmax in zip(config["cent"][:-1], config["cent"][1:]):
+    if config["cent_bins"]:
+        for cmin, cnmax in zip(config["cent_bins"][:-1], config["cent_bins"][1:]):
             pDMesonJetsTask = AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, cmin, cnmax)
             pDMesonJetsTask.SelectCollisionCandidates(physSel)
             pDMesonJetsTask.SetTrackEfficiency(efficiency);
@@ -281,7 +290,15 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcalLight.kpp)
             elif config["beam_type"] == "PbPb":
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcalLight.kAA)
-                task.SetUseNewCentralityEstimation(True)
+            elif config["beam_type"] == "pPb":
+                task.SetForceBeamType(ROOT.AliAnalysisTaskEmcalLight.kpA)
+            if config["cent_type"] == "new":
+                task.SetCentralityEstimation(ROOT.AliAnalysisTaskEmcalLight.kNewCentrality)
+            elif config["cent_type"] == "old":
+                task.SetCentralityEstimation(ROOT.AliAnalysisTaskEmcalLight.kOldCentrality)
+            else:
+                task.SetCentralityEstimation(ROOT.AliAnalysisTaskEmcalLight.kNoCentrality)
+
         if isinstance(task, ROOT.AliAnalysisTaskEmcal):
             if config["beam_type"] == "pp":
                 task.SetForceBeamType(ROOT.AliAnalysisTaskEmcal.kpp)
