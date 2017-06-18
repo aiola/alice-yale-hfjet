@@ -6,10 +6,8 @@ class AnaMode(Enum):
     AOD = 2
 
 def LoadMacros():
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoNew.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetQA.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSpectraQA.C")
@@ -22,6 +20,17 @@ def LoadMacros():
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskCleanupVertexingHF.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskD0Mass.C")
+
+def AddTaskCDBConnect():
+  mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
+  if not mgr:
+    print("Error - AddTaskCDBconnect: No analysis manager to connect to.");
+    return None;
+  task = ROOT.AliTaskCDBconnect("CDBconnect", "cvmfs://", 0)
+  mgr.AddTask(task)
+  cinput1 = mgr.GetCommonInputContainer()
+  mgr.ConnectInput(task, 0, cinput1)
+  return task
 
 def AddESDHandler():
     mgr = ROOT.AliAnalysisManager.GetAnalysisManager()

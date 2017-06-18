@@ -7,8 +7,10 @@ MC: false
 charm_enhanced: false
 file_list: fileLists/files_LHC10c_pass4_AOD.txt
 reco_pass: 4
-cent: no
-rdhf_cuts_dzero: "RDHFCuts/RDHFCutsLHC10_pass4.root"
-rdhf_cuts_dstar: "RDHFCuts/RDHFCutsLHC10_pass4.root"
+cent_bins: no
+cent_type: new
+rdhf_cuts_dzero: "RDHFCuts/RDHFCuts_LHC10_pass4.root"
+rdhf_cuts_dstar: "RDHFCuts/RDHFCuts_LHC10_pass4.root"
 beam_type: pp
 is_pythia: no
+ue_sub: yes

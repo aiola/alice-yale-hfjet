@@ -7,8 +7,10 @@ MC: false
 charm_enhanced: false
 file_list: fileLists/files_LHC15o_pass1_AOD.txt
 reco_pass: 1
-cent: [0, 20, 50, 90]
+cent_bins: [0, 20, 50, 90]
+cent_type: new
 rdhf_cuts_dzero: "RDHFCuts/RDHFCuts_LHC15o_pass1_Cent2.root"
 rdhf_cuts_dstar: "RDHFCuts/RDHFCuts_LHC15o_pass1_Cent2.root"
 beam_type: PbPb
 is_pythia: no
+ue_sub: yes
