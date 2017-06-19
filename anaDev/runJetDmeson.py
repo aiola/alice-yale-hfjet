@@ -211,8 +211,10 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
 
         pRhoTask = ROOT.AliAnalysisTaskRhoDev.AddTaskRhoDev("usedefault", "", "Rho", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
         pRhoTask.SelectCollisionCandidates(physSel)
+        pRhoTask.SetVzRange(-10, 10)
+        pRhoTask.SetEventSelectionAfterRun(True)
         if config["beam_type"] == "pp":
-            pRhoTask.SetHistoBins(1000, 0, 100)
+            pRhoTask.SetHistoBins(1000, 0, 50)
             pRhoTask.SetRhoSparse(True)
         elif config["beam_type"] == "PbPb":
             pRhoTask.SetHistoBins(1000, 0, 500)
