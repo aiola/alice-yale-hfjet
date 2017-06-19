@@ -64,6 +64,16 @@ def GetObject(obj, name):
     else:
         return res
 
+def GetObjectAndMerge(fileList, name):
+    res = None
+    for f in fileList:
+        obj = GetObject(f, name)
+        if res:
+            res.Add(obj)
+        else:
+            res = obj.Clone()
+    return res
+
 def GenerateMultiCanvas(cname, n):
     rows = int(math.floor(math.sqrt(n)))
     cols = int(math.ceil(float(n) / rows))
