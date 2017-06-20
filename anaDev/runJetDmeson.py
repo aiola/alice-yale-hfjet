@@ -20,7 +20,7 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
         nOutputTrees += 2
 
     if config["MC"] and doWrongPID:
-        nOutputTrees += 2
+        nOutputTrees += 1
 
     if doResponse == "c":
         rejectOrigin = ROOT.AliAnalysisTaskDmesonJets.kFromBottom
@@ -32,7 +32,8 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
     else:
         suffix = ""
 
-    rhoName = "Rho"
+    if config["ue_sub"]: rhoName = "Rho"
+    else: rhoName = ""
 
     if nOutputTrees > 0:
         if config["MC"]:
@@ -242,17 +243,21 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
 
         ROOT.AliAnalysisManager.SetCommonFileName("AnalysisResults_jets.root")
         if config["full_jets"]:
-            if config["beam_type"] == "pp":
-                anaType = ROOT.AliAnalysisTaskEmcalJetTreeBase.kJetPP
-            elif config["beam_type"] == "PbPb":
+            if config["ue_sub"]:
                 anaType = ROOT.AliAnalysisTaskEmcalJetTreeBase.kJetPbPb
+                rhoName = "Rho"
+            else:
+                anaType = ROOT.AliAnalysisTaskEmcalJetTreeBase.kJetPP
+                rhoName = ""
             pJetSpectraTask = ROOT.AliAnalysisTaskEmcalJetTreeBase.AddTaskEmcalJetTree("usedefault", "usedefault", 0.15, 0.30, anaType)
             pJetSpectraTask.SetNeedEmcalGeom(True)
         else:
-            if config["beam_type"] == "pp":
-                anaType = ROOT.AliAnalysisTaskEmcalJetTreeBase.kJetPPCharged
-            elif config["beam_type"] == "PbPb":
+            if config["ue_sub"]:
                 anaType = ROOT.AliAnalysisTaskEmcalJetTreeBase.kJetPbPbCharged
+                rhoName = "Rho"
+            else:
+                anaType = ROOT.AliAnalysisTaskEmcalJetTreeBase.kJetPPCharged
+                rhoName = ""
             pJetSpectraTask = ROOT.AliAnalysisTaskEmcalJetTreeBase.AddTaskEmcalJetTree("usedefault", "", 0.15, 0.30, anaType)
             pJetSpectraTask.SetNeedEmcalGeom(False)
         ROOT.AliAnalysisManager.SetCommonFileName("AnalysisResults.root")
@@ -261,12 +266,15 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
         if config["beam_type"] == "PbPb": pJetSpectraTask.SetCentRange(0, 90)
 
         if config["charged_jets"]:
-            pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid, "tracks", "")
+            jetCont = pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid, "tracks", "")
+            jetCont.SetRhoName(rhoName)
             # pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.6, ROOT.AliJetContainer.kTPCfid)
 
         if config["full_jets"]:
-            pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid, "tracks", "caloClusters")
+            jetCont = pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.2, ROOT.AliJetContainer.kEMCALfid, "tracks", "caloClusters")
+            jetCont.SetRhoName(rhoName)
             # pJetSpectraTask.AddJetContainer(ROOT.AliJetContainer.kFullJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kEMCALfid)
+
 
     # ROOT.AddTaskCleanupVertexingHF()
 
