@@ -14,3 +14,5 @@ rdhf_cuts_dstar: "RDHFCuts/RDHFCuts_LHC15o_pass1_Cent2.root"
 beam_type: PbPb
 is_pythia: no
 ue_sub: yes
+dstar: no
+dzero: yes
