@@ -218,7 +218,7 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
 
     pSpectraTask.SelectCollisionCandidates(physSel)
     pSpectraTask.SetPtBin(1, 150)
-    if config["beam_type"] != "PbPb": pSpectraTask.SetCentRange(0, 90)
+    if config["beam_type"] == "PbPb": pSpectraTask.SetCentRange(0, 90)
 
     if config["ue_sub"]:
         pKtChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.kt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
