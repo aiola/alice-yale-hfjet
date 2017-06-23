@@ -9,11 +9,16 @@ import os
 import DMesonJetCompare
 import DMesonJetUtils
 import subprocess
+import numpy
 
 globalList = []
 
+ptBins = numpy.array([0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30, 40, 50, 60, 80, 100, 120, 150], dtype=numpy.float32)
+rhoBins = numpy.array(list(DMesonJetUtils.frange(0, 15, 0.5, True)), dtype=numpy.float32)
+centBins = numpy.array(list(DMesonJetUtils.frange(0, 100, 10, True)), dtype=numpy.float32)
+
 def PlotRhoVsCent(Files):
-    hname = "AliAnalysisTaskRho_histos/fHistRhovsCent"
+    hname = "AliAnalysisTaskRhoDev_Rho_histos/fHistRhoVsCent"
     h = DMesonJetUtils.GetObjectAndMerge(Files, hname)
     globalList.append(h)
     c = ROOT.TCanvas("RhoVsCent", "RhoVsCent")
@@ -24,16 +29,35 @@ def PlotRhoVsCent(Files):
     h_copy.GetYaxis().SetRangeUser(0, 50)
     globalList.append(h_copy)
 
-    h.RebinX(2)
-    prof = h.ProfileX("RhoVsCentProfile", 1, -1, "s")
+    h_rebin = DMesonJetUtils.Rebin2D_fromBins(h, "RhoVsCent", len(centBins) - 1, centBins, len(rhoBins) - 1, rhoBins)
+    prof = h_rebin.ProfileX("RhoVsCentProfile", 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
     cp = ROOT.TCanvas("RhoVsCentProfile", "RhoVsCentProfile")
     globalList.append(cp)
     cp.cd()
-    prof.Draw("e4")
-    prof.SetFillStyle(1001)
-    prof.SetFillColor(ROOT.kRed)
+    prof.Draw("")
+
+def PlotLeadJetPtVsCent(Files):
+    hname = "AliAnalysisTaskRhoDev_Rho_histos/fHistLeadJetPtVsCent"
+    h = DMesonJetUtils.GetObjectAndMerge(Files, hname)
+    globalList.append(h)
+    c = ROOT.TCanvas("LeadJetPtVsCent", "LeadJetPtVsCent")
+    globalList.append(c)
+    c.cd()
+    c.SetLogz()
+    h_copy = h.DrawCopy("colz")
+    h_copy.GetYaxis().SetRangeUser(0, 50)
+    globalList.append(h_copy)
+
+    h_rebin = DMesonJetUtils.Rebin2D_fromBins(h, "LeadJetPtVsCent", len(centBins) - 1, centBins, len(ptBins) - 1, ptBins)
+    prof = h_rebin.ProfileX("LeadJetPtVsCentProfile", 1, -1, "i")
+    prof.GetYaxis().SetTitle("#it{p}_{T,jet}^{lead} (GeV/#it{c})")
+    globalList.append(prof)
+    cp = ROOT.TCanvas("LeadJetPtVsCentProfile", "LeadJetPtVsCentProfile")
+    globalList.append(cp)
+    cp.cd()
+    prof.Draw()
 
 def PlotRhoVsDPt(Files):
     hname = "AliAnalysisTaskDmesonJets_AnyINT_histos/histosAliAnalysisTaskDmesonJets_AnyINT/D0/Jet_AKTChargedR040_pt_scheme/fHistRhoVsLeadDPt"
@@ -47,8 +71,8 @@ def PlotRhoVsDPt(Files):
     h_copy.GetYaxis().SetRangeUser(0, 50)
     globalList.append(h_copy)
 
-    h.RebinX(2)
-    prof = h.ProfileX("RhoVsDPtProfile", 1, -1, "i")
+    h_rebin = DMesonJetUtils.Rebin2D_fromBins(h, "RhoVsDPt", len(ptBins) - 1, ptBins, len(rhoBins) - 1, rhoBins)
+    prof = h_rebin.ProfileX("RhoVsDPtProfile", 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
     cp = ROOT.TCanvas("RhoVsDPtProfile", "RhoVsDPtProfile")
@@ -68,8 +92,8 @@ def PlotRhoVsJetPt(Files):
     h_copy.GetYaxis().SetRangeUser(0, 50)
     globalList.append(h_copy)
 
-    h.RebinX(2)
-    prof = h.ProfileX("RhoVsJetPtProfile", 1, -1, "i")
+    h_rebin = DMesonJetUtils.Rebin2D_fromBins(h, "RhoVsJetPt", len(ptBins) - 1, ptBins, len(rhoBins) - 1, rhoBins)
+    prof = h_rebin.ProfileX("RhoVsJetPtProfile", 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
     cp = ROOT.TCanvas("RhoVsJetPtProfile", "RhoVsJetPtProfile")
@@ -96,6 +120,7 @@ def main(config, meson_name, jet_type, jet_radius):
     PlotRhoVsCent(Files)
     PlotRhoVsDPt(Files)
     PlotRhoVsJetPt(Files)
+    PlotLeadJetPtVsCent(Files)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Underlying event studies.')

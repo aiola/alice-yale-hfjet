@@ -225,3 +225,9 @@ def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
                     print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin, ybin, relErr))
     return r
 
+def frange(start, stop, step, closed=False):
+    i = start
+    if closed: stop += step
+    while i < stop:
+        yield i
+        i += step
