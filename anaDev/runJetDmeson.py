@@ -148,17 +148,26 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
 
     return pDMesonJetsTask
 
+def ExtractTriggerSelection(triggerList):
+    r = 0
+    for t in triggerList:
+        if hasattr(ROOT.AliVEvent, t):
+            r = r | getattr(ROOT.AliVEvent, t)
+            print("Trigger '{}' added".format(t))
+        else:
+            print("Error: could not parse trigger name '{}'".format(t))
+            exit(1)
+    return r
+
 def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency, taskName="JetDmesonAna", debugLevel=0):
 
     f = open(configFileName, 'r')
     config = yaml.load(f)
     f.close()
 
-    # AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral
-    # AliVEvent::kEMCEGA, AliVEvent::kEMCEJ
-    # physSel = ROOT.AliVEvent.kINT7
-    physSel = ROOT.AliVEvent.kMB  # Use for LHC10
-    # physSel = 0
+    physSel = ExtractTriggerSelection(config["trigger"])
+    print("Trigger selection is {}".format(physSel))
+
     ROOT.gSystem.Load("libCGAL")
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])

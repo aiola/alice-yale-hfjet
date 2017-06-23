@@ -16,3 +16,4 @@ is_pythia: no
 ue_sub: yes
 dstar: no
 dzero: yes
+trigger: [kINT7]

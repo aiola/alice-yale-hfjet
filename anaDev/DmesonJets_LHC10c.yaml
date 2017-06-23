@@ -16,3 +16,4 @@ is_pythia: no
 ue_sub: yes
 dstar: yes
 dzero: yes
+trigger: [kMB]
