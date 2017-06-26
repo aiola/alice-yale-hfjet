@@ -237,7 +237,6 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
         pRhoTask.SelectCollisionCandidates(physSel)
         pRhoTask.SetVzRange(-10, 10)
         pRhoTask.SetEventSelectionAfterRun(True)
-
         if config["beam_type"] == "pp":
             pRhoTask.SetHistoBins(1000, 0, 50)
             pRhoTask.SetRhoSparse(True)
@@ -247,6 +246,20 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
         elif config["beam_type"] == "pPb":
             pRhoTask.SetHistoBins(1000, 0, 200)
             pRhoTask.SetRhoSparse(True)
+
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+        pChJetTask.SelectCollisionCandidates(physSel)
+
+        pRhoTransTask = ROOT.AliAnalysisTaskRhoTransDev.AddTaskRhoTransDev("usedefault", 0.15, "", 0.30, "RhoTrans", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
+        pRhoTransTask.SelectCollisionCandidates(physSel)
+        pRhoTransTask.SetVzRange(-10, 10)
+        pRhoTransTask.SetEventSelectionAfterRun(True)
+        if config["beam_type"] == "pp":
+            pRhoTransTask.SetHistoBins(1000, 0, 50)
+        elif config["beam_type"] == "PbPb":
+            pRhoTransTask.SetHistoBins(1000, 0, 500)
+        elif config["beam_type"] == "pPb":
+            pRhoTransTask.SetHistoBins(1000, 0, 200)
 
         if config["MC"]:
             pGenKtChJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", ROOT.AliJetContainer.kt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
