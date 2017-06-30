@@ -1011,7 +1011,7 @@ class DMesonJetAnalysis:
                     fitOptions = "0 WL S"
             if not "spectra" in binLists:
                 binLists["spectra"] = []
-            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, bin_count_analysis, effWeight, fitOptions))
+            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, bin_count_analysis, effWeight, fitOptions))
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:

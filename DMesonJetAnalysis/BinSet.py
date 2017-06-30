@@ -30,6 +30,9 @@ class BinMultiSet:
         self.fJetType = jtype
         self.fJetRadius = jradius
         for k, binSet in self.fBinSets.items():
+            if not dmeson in binSet.fActiveMesons:
+                del self.fBinSets[k]
+                continue
             r = binSet.Initialize(dmeson, jtype, jradius, jtitle, inputPath)
             if not r:
                 del self.fBinSets[k]
@@ -61,7 +64,7 @@ class BinMultiSet:
                 yield s
 
 class BinSet:
-    def __init__(self, name, title, need_inv_mass, limitSetList, spectra, axis, cutList=[], bin_count_axis=None, weight=None, fitOptions=""):
+    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList=[], bin_count_axis=None, weight=None, fitOptions=""):
         self.fBinSetName = name
         self.fTitle = title
         self.fBins = []
@@ -72,6 +75,7 @@ class BinSet:
         self.fFitOptions = fitOptions
         self.fWeightEfficiency = weight
         self.fNeedInvMass = need_inv_mass
+        self.fActiveMesons = active_mesons
         self.fBinCountAnalysisAxis = None
         self.fBinCountAnalysisSecondAxis = None
         if bin_count_axis:
