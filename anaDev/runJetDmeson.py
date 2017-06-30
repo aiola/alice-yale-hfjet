@@ -238,28 +238,19 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
         pRhoTask.SetVzRange(-10, 10)
         pRhoTask.SetEventSelectionAfterRun(True)
         if config["beam_type"] == "pp":
-            pRhoTask.SetHistoBins(1000, 0, 50)
             pRhoTask.SetRhoSparse(True)
         elif config["beam_type"] == "PbPb":
-            pRhoTask.SetHistoBins(1000, 0, 500)
             pRhoTask.SetRhoSparse(False)
         elif config["beam_type"] == "pPb":
-            pRhoTask.SetHistoBins(1000, 0, 200)
             pRhoTask.SetRhoSparse(True)
 
-        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+        pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
         pChJetTask.SelectCollisionCandidates(physSel)
 
         pRhoTransTask = ROOT.AliAnalysisTaskRhoTransDev.AddTaskRhoTransDev("usedefault", 0.15, "", 0.30, "RhoTrans", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
         pRhoTransTask.SelectCollisionCandidates(physSel)
         pRhoTransTask.SetVzRange(-10, 10)
         pRhoTransTask.SetEventSelectionAfterRun(True)
-        if config["beam_type"] == "pp":
-            pRhoTransTask.SetHistoBins(1000, 0, 50)
-        elif config["beam_type"] == "PbPb":
-            pRhoTransTask.SetHistoBins(1000, 0, 500)
-        elif config["beam_type"] == "pPb":
-            pRhoTransTask.SetHistoBins(1000, 0, 200)
 
         pUEstudies = ROOT.AliAnalysisTaskJetUEStudies.AddTaskJetUEStudies("usedefault", "", 0.15, 0.30)
         jetCont = pUEstudies.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid, "tracks", "")
@@ -276,57 +267,50 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
             pGenRhoTask.SetEventSelectionAfterRun(True)
 
             if config["beam_type"] == "pp":
-                pGenRhoTask.SetHistoBins(1000, 0, 50)
                 pGenRhoTask.SetRhoSparse(True)
             elif config["beam_type"] == "PbPb":
-                pGenRhoTask.SetHistoBins(1000, 0, 500)
                 pGenRhoTask.SetRhoSparse(False)
             elif config["beam_type"] == "pPb":
-                pGenRhoTask.SetHistoBins(1000, 0, 200)
                 pGenRhoTask.SetRhoSparse(True)
 
-            pGenChJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pGenChJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pGenChJetTask.SelectCollisionCandidates(physSel)
 
             pRhoGenTransTask = ROOT.AliAnalysisTaskRhoTransDev.AddTaskRhoTransDev("mcparticles", 0, "", 0, "RhoGenTrans", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
             pRhoGenTransTask.SelectCollisionCandidates(physSel)
             pRhoGenTransTask.SetVzRange(-10, 10)
             pRhoGenTransTask.SetEventSelectionAfterRun(True)
-            if config["beam_type"] == "pp":
-                pRhoGenTransTask.SetHistoBins(1000, 0, 50)
-            elif config["beam_type"] == "PbPb":
-                pRhoGenTransTask.SetHistoBins(1000, 0, 500)
-            elif config["beam_type"] == "pPb":
-                pRhoGenTransTask.SetHistoBins(1000, 0, 200)
 
-            pUEstudies = ROOT.AliAnalysisTaskJetUEStudies.AddTaskJetUEStudies("mcparticles", "", 0.15, 0.30, "gen")
-            jetCont = pUEstudies.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid, "tracks", "")
+            pUEstudies = ROOT.AliAnalysisTaskJetUEStudies.AddTaskJetUEStudies("mcparticles", "", 0., 0., "gen")
+            jetCont = pUEstudies.AddJetContainer(ROOT.AliJetContainer.kChargedJet, ROOT.AliJetContainer.antikt_algorithm, ROOT.AliJetContainer.pt_scheme, 0.4, ROOT.AliJetContainer.kTPCfid, "mcparticles", "")
             jetCont.SetRhoName("RhoGen")
             pUEstudies.AddAltRho("RhoGenTrans")
+            pUEstudies.SetMaxMomentumThridJet(15)
+            pUEstudies.SetBackToBackJetPtFraction(0.8)
 
     if not noInclusiveJets:
         # Charged jet analysis
         if config["charged_jets"]:
-            pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pChJetTask.SelectCollisionCandidates(physSel)
 
             # pChJetTask = ROOT.AddTaskEmcalJet("usedefault", "", 1, 0.6, ROOT.AliJetContainer.kChargedJet, 0.15, 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             # pChJetTask.SelectCollisionCandidates(physSel)
 
             if config["MC"]:
-                pGenChJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", 1, 0.4, ROOT.AliJetContainer.kChargedJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+                pGenChJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kChargedJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
                 pGenChJetTask.SelectCollisionCandidates(physSel)
 
         # Full jet analysis
         if config["full_jets"]:
-            pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+            pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", ROOT.AliJetContainer.antikt_algorithm, 0.2, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             pJetTask.SelectCollisionCandidates(physSel)
 
             # pJetTask = ROOT.AddTaskEmcalJet("usedefault", "usedefault", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0.15, 0.30, 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
             # pJetTask.SelectCollisionCandidates(physSel)
 
             if config["MC"]:
-                pGenJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", 1, 0.4, ROOT.AliJetContainer.kFullJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
+                pGenJetTask = ROOT.AddTaskEmcalJet("mcparticles", "", ROOT.AliJetContainer.antikt_algorithm, 0.4, ROOT.AliJetContainer.kFullJet, 0., 0., 0.005, ROOT.AliJetContainer.pt_scheme, "Jet", 0., False, False)
                 pGenJetTask.SelectCollisionCandidates(physSel)
 
         ROOT.AliAnalysisManager.SetCommonFileName("AnalysisResults_jets.root")
