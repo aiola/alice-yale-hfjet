@@ -124,6 +124,31 @@ analysis:
       type: truth
       active_mesons: [D0_MCTruth]
   -
+    name: DPtBins_FromProton
+    title: "|#eta_{D}| < 0.5 (no jet requirement)"
+    active_mesons: [D0_MCTruth]
+    need_inv_mass: []
+    efficiency: no
+    bins:
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fAncestorPDG
+      include: 2212
+    spectra:
+    -
+      name: DPtSpectrum_FromProton
+      title: ""
+      compare: no
+      type: truth
+      active_mesons: [D0_MCTruth]
+  -
     name: DPtBins_JetPt_5_80
     title: "5 < #it{p}_{T,jet} < 80 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
