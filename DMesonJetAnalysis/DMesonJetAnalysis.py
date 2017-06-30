@@ -637,7 +637,7 @@ class DMesonJetAnalysisEngine:
             sbTotal.Add(sbR)
 
             peakAreaBkgError = ROOT.Double(0.)
-            peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, mean - effSigma1, mean + effSigma2)
+            peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, mean - effSigma1 * sigma, mean + effSigma2 * sigma)
             intSigErr = ROOT.Double(0.)
             if sig.GetDimension() == 1:
                 intSig = sig.IntegralAndError(0, -1, intSigErr)
