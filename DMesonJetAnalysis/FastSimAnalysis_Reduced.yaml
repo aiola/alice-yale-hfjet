@@ -104,7 +104,7 @@ analysis:
       active_mesons: [D0_MCTruth]
   -
     name: DPtBins
-    title: "|#eta_{D}| < 0.5 (no jet requirement)"
+    title: "|#eta_{D}| < 0.5"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -120,12 +120,12 @@ analysis:
     -
       name: DPtSpectrum
       title: ""
-      compare: no
+      compare: yes
       type: truth
       active_mesons: [D0_MCTruth]
   -
     name: DPtBins_FromProton
-    title: "|#eta_{D}| < 0.5 (no jet requirement)"
+    title: "|#eta_{D}| < 0.5 (from proton)"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
     efficiency: no
@@ -145,7 +145,7 @@ analysis:
     -
       name: DPtSpectrum_FromProton
       title: ""
-      compare: no
+      compare: yes
       type: truth
       active_mesons: [D0_MCTruth]
   -
