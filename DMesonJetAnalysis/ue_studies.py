@@ -35,10 +35,14 @@ def PlotRhoVsCent(Files, taskName, label=""):
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw("")
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#rho) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def PlotRhoVsLeadJetPt(Files, taskName, jetname, label=""):
     hname = "{}/{}_fHist{}RhoVsLeadJetPt".format(taskName, jetname, label)
@@ -58,10 +62,14 @@ def PlotRhoVsLeadJetPt(Files, taskName, jetname, label=""):
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw("")
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#rho) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def PlotRhoVsTrackPt(Files, taskName, label=""):
     hname = "{}/fHist{}RhoVsLeadTrackPt".format(taskName, label)
@@ -81,10 +89,14 @@ def PlotRhoVsTrackPt(Files, taskName, label=""):
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw("")
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#rho) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def PlotLeadJetPtVsCent(Files, taskName, jetname):
     hname = "{}/{}_fHistLeadJetPtVsCent".format(taskName, jetname)
@@ -102,12 +114,16 @@ def PlotLeadJetPtVsCent(Files, taskName, jetname):
 
     h_rebin = DMesonJetUtils.Rebin2D_fromBins(h, cname, len(centBins) - 1, centBins, len(ptBins) - 1, ptBins)
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
-    prof.GetYaxis().SetTitle("#it{p}_{T,jet}^{lead} (GeV/#it{c})")
+    prof.GetYaxis().SetTitle("<#it{p}_{T,jet}^{lead}> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw()
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#it{p}_{T,jet}^{lead}) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def PlotLeadTrackPtVsCent(Files, taskName):
     hname = "{}/fHistLeadTrackPtVsCent".format(taskName)
@@ -125,12 +141,16 @@ def PlotLeadTrackPtVsCent(Files, taskName):
 
     h_rebin = DMesonJetUtils.Rebin2D_fromBins(h, cname, len(centBins) - 1, centBins, len(ptBins) - 1, ptBins)
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
-    prof.GetYaxis().SetTitle("#it{p}_{T,track}^{lead} (GeV/#it{c})")
+    prof.GetYaxis().SetTitle("<#it{p}_{T,track}^{lead}> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw()
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#it{p}_{T,track}^{lead}) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def PlotRhoVsDPt(Files, taskName, meson_name, jet_type, jet_radius):
     hname = "{taskName}_histos/histos{taskName}/D0/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHistRhoVsLeadDPt".format(taskName=taskName, meson_name=meson_name, jet_type=jet_type, jet_radius=jet_radius)
@@ -150,10 +170,14 @@ def PlotRhoVsDPt(Files, taskName, meson_name, jet_type, jet_radius):
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw("")
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#rho) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def PlotRhoVsJetPt(Files, taskName, meson_name, jet_type, jet_radius):
     hname = "{taskName}_histos/histos{taskName}/D0/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHistRhoVsLeadJetPt".format(taskName=taskName, meson_name=meson_name, jet_type=jet_type, jet_radius=jet_radius)
@@ -173,10 +197,14 @@ def PlotRhoVsJetPt(Files, taskName, meson_name, jet_type, jet_radius):
     prof = h_rebin.ProfileX(pname, 1, -1, "i")
     prof.GetYaxis().SetTitle("<#rho> (GeV/#it{c})")
     globalList.append(prof)
-    cp = ROOT.TCanvas(pname, pname)
-    globalList.append(cp)
-    cp.cd()
-    prof.Draw("")
+
+    prof_stddev = h_rebin.ProfileX("{}_profSigma".format(pname), 1, -1, "s")
+    std_dev = ROOT.TH1F("{}_Sigma".format(pname), "{}_Sigma".format(pname), h_rebin.GetNbinsX(), h_rebin.GetXaxis().GetXbins().GetArray())
+    std_dev.GetYaxis().SetTitle("#sigma(#rho) (GeV/#it{c})")
+    for i in range(0, prof_stddev.GetNbinsX() + 2):
+        std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
+    globalList.append(std_dev)
+    return prof, std_dev
 
 def main(config, meson_name, jet_type, jet_radius, gen, cent):
     ROOT.TH1.AddDirectory(False)
@@ -200,39 +228,86 @@ def main(config, meson_name, jet_type, jet_radius, gen, cent):
         f = ROOT.TFile(fname, "read")
         Files.append(f)
 
+    drawSingle = []
+    rhoVScent = []
+    rhoVStrackPt = []
+    rhoVSjetPt = []
+    rhoVScentGen = []
+    rhoVStrackPtGen = []
+    rhoVSjetPtGen = []
+
+    allCompare = {"rhoVScent" : rhoVScent,
+                  "rhoVStrackPt" : rhoVStrackPt,
+                  "rhoVSjetPt" : rhoVSjetPt,
+                  "rhoVScentGen" : rhoVScentGen,
+                  "rhoVStrackPtGen" : rhoVStrackPtGen,
+                  "rhoVSjetPtGen" : rhoVSjetPtGen }
+
     if cent:
-        PlotLeadTrackPtVsCent(Files, "AliAnalysisTaskRhoDev_Rho_histos")
-        PlotLeadJetPtVsCent(Files, "AliAnalysisTaskRhoDev_Rho_histos", "Background")
-        PlotRhoVsCent(Files, "AliAnalysisTaskRhoDev_Rho_histos")
-        PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos")
-        PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B")
+        drawSingle.extend(PlotLeadTrackPtVsCent(Files, "AliAnalysisTaskRhoDev_Rho_histos"))
+        drawSingle.extend(PlotLeadJetPtVsCent(Files, "AliAnalysisTaskRhoDev_Rho_histos", "Background"))
+        rhoVScent.append(PlotRhoVsCent(Files, "AliAnalysisTaskRhoDev_Rho_histos"))
+        rhoVScent.append(PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos"))
+        rhoVScent.append(PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B"))
         if gen:
-            PlotLeadTrackPtVsCent(Files, "AliAnalysisTaskRhoDev_RhoGen_histos")
-            PlotLeadJetPtVsCent(Files, "AliAnalysisTaskRhoDev_RhoGen_histos", "Background")
-            PlotRhoVsCent(Files, "AliAnalysisTaskRhoDev_RhoGen_histos")
-            PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos")
-            PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B")
+            drawSingle.extend(PlotLeadTrackPtVsCent(Files, "AliAnalysisTaskRhoDev_RhoGen_histos"))
+            drawSingle.extend(PlotLeadJetPtVsCent(Files, "AliAnalysisTaskRhoDev_RhoGen_histos", "Background"))
+            rhoVScentGen.append(PlotRhoVsCent(Files, "AliAnalysisTaskRhoDev_RhoGen_histos"))
+            rhoVScentGen.append(PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos"))
+            rhoVScentGen.append(PlotRhoVsCent(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B"))
 
-    PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoDev_Rho_histos")
-    PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoDev_Rho_histos", "Background")
-    PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos")
-    PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "Signal")
-    PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B")
-    PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "Signal", "B2B")
+    rhoVStrackPt.append(PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoDev_Rho_histos"))
+    rhoVStrackPt.append(PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos"))
+    rhoVStrackPt.append(PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B"))
 
-    PlotRhoVsDPt(Files, taskName, meson_name, jet_type, jet_radius)
-    PlotRhoVsJetPt(Files, taskName, meson_name, jet_type, jet_radius)
+    rhoVSjetPt.append(PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoDev_Rho_histos", "Background"))
+    rhoVSjetPt.append(PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "Signal"))
+    rhoVSjetPt.append(PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTrans_histos", "Signal", "B2B"))
+
+    drawSingle.extend(PlotRhoVsDPt(Files, taskName, meson_name, jet_type, jet_radius))
+    drawSingle.extend(PlotRhoVsJetPt(Files, taskName, meson_name, jet_type, jet_radius))
 
     if gen:
-        PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoDev_RhoGen_histos")
-        PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoDev_RhoGen_histos", "Background")
-        PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos")
-        PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "Signal")
-        PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B")
-        PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "Signal", "B2B")
+        rhoVStrackPtGen.append(PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoDev_RhoGen_histos"))
+        rhoVStrackPtGen.append(PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos"))
+        rhoVStrackPtGen.append(PlotRhoVsTrackPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B"))
+        rhoVSjetPtGen.append(PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoDev_RhoGen_histos", "Background"))
+        rhoVSjetPtGen.append(PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "Signal"))
+        rhoVSjetPtGen.append(PlotRhoVsLeadJetPt(Files, "AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "Signal", "B2B"))
 
-        PlotRhoVsDPt(Files, taskName, "{}_MCTruth".format(meson_name), jet_type, jet_radius)
-        PlotRhoVsJetPt(Files, taskName, "{}_MCTruth".format(meson_name), jet_type, jet_radius)
+        drawSingle.extend(PlotRhoVsDPt(Files, taskName, "{}_MCTruth".format(meson_name), jet_type, jet_radius))
+        drawSingle.extend(PlotRhoVsJetPt(Files, taskName, "{}_MCTruth".format(meson_name), jet_type, jet_radius))
+
+    for h in drawSingle:
+        cname = h.GetName()
+        c = ROOT.TCanvas(cname, cname)
+        globalList.append(c)
+        c.cd()
+        if isinstance(h, ROOT.TH2):
+            h.Draw("colz")
+        else:
+            h.Draw("")
+
+    for name, pair_list in allCompare.iteritems():
+        def PlotCompare(name, pair_list, i):
+            hlist = [pair[i] for pair in pair_list]
+            comp = DMesonJetCompare.DMesonJetCompare(name)
+            comp.fDoSpectraPlot = "lineary"
+            comp.fDoRatioPlot = False
+            if i == 1:
+                comp.fOptSpectrumBaseline = "hist"
+                comp.fOptSpectrum = "hist"
+            if len(hlist) >= 2:
+                r = comp.CompareSpectra(hlist[0], hlist[1:])
+                globalList.extend(r)
+            else:
+                print("Skipping {}".format(name))
+
+        name_avg = name
+        PlotCompare(name_avg, pair_list, 0)
+
+        name_sigma = "{}_Sigma".format(name)
+        PlotCompare(name_sigma, pair_list, 1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Underlying event studies.')
