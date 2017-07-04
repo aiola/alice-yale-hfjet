@@ -14,10 +14,12 @@ def main(tslist):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    fileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_pythia_charm_{ts}/FastSimAnalysis_Reduced_pythia_charm_{ts}.root"
-    spectraNames = ["D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3_Normalized",
-                    "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80_Normalized",
-                    "D0_MCTruth/D0_MCTruth_DPtSpectrum/D0_MCTruth_DPtSpectrum_Normalized"]
+    fileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_{ts}/FastSimAnalysis_Reduced_{ts}.root"
+    # spectraNames = ["D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3_Normalized",
+    #                "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80_Normalized",
+    #                "D0_MCTruth/D0_MCTruth_DPtSpectrum/D0_MCTruth_DPtSpectrum_Normalized"]
+    spectraNames = ["D0_MCTruth/D0_MCTruth_DPtSpectrum/D0_MCTruth_DPtSpectrum_Normalized",
+                    "D0_MCTruth/D0_MCTruth_DPtSpectrum_FromProton/D0_MCTruth_DPtSpectrum_FromProton_Normalized"]
 
     spectra = dict()
 
