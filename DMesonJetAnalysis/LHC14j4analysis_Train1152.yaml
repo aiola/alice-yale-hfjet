@@ -5,7 +5,7 @@ train: Jets_EMC_pp_MC_1152_1153_1154_1155
 file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
-collision_system: "pp #sqrt{#it{s}} = 7 TeV"
+collision_system: "PYTHIA6 pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   trigger: [""]
