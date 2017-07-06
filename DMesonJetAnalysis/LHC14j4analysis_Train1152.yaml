@@ -6,6 +6,7 @@ file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
 collision_system: "PYTHIA6 pp #sqrt{#it{s}} = 7 TeV"
+monte_carlo: yes
 analysis:
 - 
   trigger: [""]

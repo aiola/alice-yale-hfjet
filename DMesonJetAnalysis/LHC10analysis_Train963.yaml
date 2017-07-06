@@ -6,6 +6,7 @@ merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 reflection_templates: LHC15i2_Train1073_reflections_{var}_fitted_{fit}
+monte_carlo: no
 analysis:
 - 
   trigger: ["AnyINT"]
