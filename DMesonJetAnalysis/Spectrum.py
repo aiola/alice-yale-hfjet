@@ -3,6 +3,7 @@
 
 import ROOT
 import DMesonJetUtils
+import Axis
 from DMesonJetBase import AnalysisType
 
 class Spectrum:
@@ -15,6 +16,7 @@ class Spectrum:
             suffix = config["suffix"]
         else:
             suffix = None
+        self.fSimpleName = config["name"]
         self.fName = '_'.join(obj for obj in [self.fDMeson, self.fJetType, self.fJetRadius, config["name"], suffix] if obj)
         self.fBinSet = binSet
         self.fHistogram = None
@@ -88,10 +90,12 @@ class Spectrum:
         else:
             print("Analysis type {0} not recognized!".format(config["type"]))
 
-        if (self.fAnalysisType == AnalysisType.SideBand or self.fAnalysisType == AnalysisType.LikeSign or self.fAnalysisType == AnalysisType.LikeSignFit):
-            self.fAxis.append(binSet.fBinCountAnalysisAxis)
-            if binSet.fBinCountAnalysisSecondAxis:
-                self.fAxis.append(binSet.fBinCountAnalysisSecondAxis)
+        if "axis" in config:
+            if len(config["axis"]) > 2:
+                print("Error: cannot do bin counting spectra (e.g. side band) with more than 2 axis. Spectrum {}".format(s["name"]))
+                exit(1)
+            for axis_name, axis_bins in config["axis"].iteritems():
+                self.fAxis.append(Axis.Axis(axis_name, axis_bins, "", (jtype != "Full")))
         else:
             for axis in binSet.fAxis:
                 self.fAxis.append(axis)
@@ -251,6 +255,8 @@ class Spectrum:
                 values.append(jet.fPt)
             elif axis.fName == "jet_corrpt":
                 values.append(jet.fCorrPt)
+            elif axis.fName == "jet_bkgpt":
+                values.append(jet.fPt - jet.fCorrPt)
             elif axis.fName == "jet_eta":
                 values.append(jet.fEta)
             elif axis.fName == "jet_phi":

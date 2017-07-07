@@ -64,7 +64,7 @@ class BinMultiSet:
                 yield s
 
 class BinSet:
-    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList=[], bin_count_axis=None, weight=None, fitOptions=""):
+    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, weight, fitOptions):
         self.fBinSetName = name
         self.fTitle = title
         self.fBins = []
@@ -76,55 +76,58 @@ class BinSet:
         self.fWeightEfficiency = weight
         self.fNeedInvMass = need_inv_mass
         self.fActiveMesons = active_mesons
-        self.fBinCountAnalysisAxis = None
-        self.fBinCountAnalysisSecondAxis = None
-        if bin_count_axis:
-            self.fBinCountAnalysisAxis = Axis.Axis(bin_count_axis.keys()[0], bin_count_axis.values()[0], "", True)
-            if len(bin_count_axis) > 1:
-                self.fBinCountAnalysisSecondAxis = Axis.Axis(bin_count_axis.keys()[1], bin_count_axis.values()[1], "", True)
-        limits = dict()
-        self.AddBinsRecursive(limitSetList, limits)
+        self.fBinCountSpectraAxis = dict()
+        self.fLimitSetList = limitSetList
 
     def AmIJetDependent(self):
         for axis in self.fAxis:
-            if "jet" in axis.fName or axis.fName == "d_z":
-                return True
-        if self.fBinCountAnalysisAxis and ("jet" in self.fBinCountAnalysisAxis.fName or self.fBinCountAnalysisAxis.fName == "d_z"):
-            return True
-        if self.fBinCountAnalysisSecondAxis and ("jet" in self.fBinCountAnalysisSecondAxis.fName or self.fBinCountAnalysisSecondAxis.fName == "d_z"):
-            return True
+            if "jet" in axis.fName or axis.fName == "d_z": return True
+        for axis in self.fBinCountSpectraAxis:
+            for a in axis:
+                if "jet" in a.fName or a.fName == "d_z": return True
         for cut in self.fCuts.fCuts:
-            if cut["object"] == "jet":
-                return True
+            if cut["object"] == "jet": return True
         return False
 
     def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
         self.fName = "_".join(obj for obj in [dmeson, jtype, jradius, self.fBinSetName] if not obj == None)
         jetDep = self.AmIJetDependent()
         if jtype or jradius:
-            if not jetDep:
-                return False
+            if not jetDep: return False
         else:
-            if jetDep:
-                return False
+            if jetDep: return False
+
         if jtype == "Full":
-            if self.fBinCountAnalysisAxis:
-                self.fBinCountAnalysisAxis.fChargedJet = False
-            if self.fBinCountAnalysisSecondAxis:
-                self.fBinCountAnalysisSecondAxis.fChargedJet = False
             for a in self.fAxis:
                 a.fChargedJet = False
+
         for s in self.fSpectraConfigs:
-            if not dmeson in s["active_mesons"]:
-                continue
+            # skip spectra that do not have this D meson active
+            if not dmeson in s["active_mesons"]: continue
+
+            # configure efficiency
             if "efficiency" in s and s["efficiency"] and not "MCTruth" in dmeson:
                 effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(inputPath, s["efficiency"]["file_name"]), s["efficiency"]["list_name"], s["efficiency"]["object_name"])
             else:
                 effWeight = DMesonJetProjectors.SimpleWeight()
             spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
             self.fSpectra[spectrum.fName] = spectrum
+
+            # add bin counting axis
+            if "axis" in s:
+                if len(s["axis"]) > 2:
+                    print("Error: cannot do bin counting spectra (e.g. side band) with more than 2 axis. Spectrum {}".format(s["name"]))
+                    exit(1)
+                bin_count_spectra = []
+                for axis_name, axis_bins in s["axis"].iteritems():
+                    bin_count_spectra.append(Axis.Axis(axis_name, axis_bins, "", (jtype != "Full")))
+                self.fBinCountSpectraAxis[s["name"]] = bin_count_spectra
+
         if "MCTruth" in dmeson and not isinstance(self.fWeightEfficiency , DMesonJetProjectors.SimpleWeight):
             self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
+
+        limits = dict()
+        self.AddBinsRecursive(self.fLimitSetList, limits)
         return True
 
     def GenerateInvMassRootList(self):
@@ -135,8 +138,8 @@ class BinSet:
                 rlist.Add(bin.fInvMassHisto)
             if bin.fMassFitter:
                 rlist.Add(bin.fMassFitter)
-            if bin.fBinCountAnalysisHisto:
-                rlist.Add(bin.fBinCountAnalysisHisto)
+            for h in bin.fBinCountSpectra.itervalues():
+                rlist.Add(h)
         return rlist
 
     def AddBinsRecursive(self, limitSetList, limits):
@@ -147,8 +150,7 @@ class BinSet:
                 self.AddBinsRecursive(limitSetList[1:], limits)
         else:
             bin = BinLimits(limits)
-            bin.fBinCountAnalysisAxis = self.fBinCountAnalysisAxis
-            bin.fBinCountAnalysisSecondAxis = self.fBinCountAnalysisSecondAxis
+            bin.fBinCountSpectraAxis = self.fBinCountSpectraAxis
             self.fBins.append(bin)
 
     def FindBin(self, dmeson, jet):
@@ -165,9 +167,8 @@ class BinLimits:
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
-        self.fBinCountAnalysisAxis = None
-        self.fBinCountAnalysisSecondAxis = None
-        self.fBinCountAnalysisHisto = None
+        self.fBinCountSpectra = dict()
+        self.fBinCountSpectraAxis = None
         self.fCounts = 0
         self.fSumw2 = 0
 
@@ -177,32 +178,24 @@ class BinLimits:
         if self.fInvMassHisto:
             self.fInvMassHisto.Fill(dmeson.fInvMass, w)
 
-        if self.fBinCountAnalysisHisto:
-            obsValX = 0
-            obsValY = 0
-            if self.fBinCountAnalysisAxis:
-                if self.fBinCountAnalysisAxis.fName == "jet_pt":
-                    obsValX = jet.fPt
-                elif self.fBinCountAnalysisAxis.fName == "d_z":
-                    obsValX = jet.fZ
-                elif self.fBinCountAnalysisAxis.fName == "jet_n":
-                    obsValX = jet.fN
-                elif self.fBinCountAnalysisAxis.fName == "jet_corrpt":
-                    obsValX = jet.fCorrPt
-            if self.fBinCountAnalysisSecondAxis:
-                if self.fBinCountAnalysisSecondAxis.fName == "jet_pt":
-                    obsValY = jet.fPt
-                elif self.fBinCountAnalysisSecondAxis.fName == "d_z":
-                    obsValY = jet.fZ
-                elif self.fBinCountAnalysisSecondAxis.fName == "jet_n":
-                    obsValY = jet.fN
-                elif self.fBinCountAnalysisSecondAxis.fName == "jet_corrpt":
-                    obsValX = jet.fCorrPt
+        for axis, hist in zip(self.fBinCountSpectraAxis.itervalues(), self.fBinCountSpectra.itervalues()):
+            obsVal = []
+            for a in axis:
+                if a.fName == "jet_pt":
+                    obsVal.append(jet.fPt)
+                elif a.fName == "d_z":
+                    obsVal.append(jet.fZ)
+                elif a.fName == "jet_n":
+                    obsVal.append(jet.fN)
+                elif a.fName == "jet_corrpt":
+                    obsVal.append(jet.fCorrPt)
+                elif a.fName == "jet_bkgpt":
+                    obsVal.append(jet.fPt - jet.fCorrPt)
 
-            if self.fBinCountAnalysisHisto.GetDimension() == 2:
-                self.fBinCountAnalysisHisto.Fill(dmeson.fInvMass, obsValX, w)
-            elif self.fBinCountAnalysisHisto.GetDimension() == 3:
-                self.fBinCountAnalysisHisto.Fill(dmeson.fInvMass, obsValX, obsValY, w)
+            if hist.GetDimension() == 2:
+                hist.Fill(dmeson.fInvMass, obsVal[0], w)
+            elif hist.GetDimension() == 3:
+                hist.Fill(dmeson.fInvMass, obsVal[0], obsVal[1], w)
 
     def AddFromAxis(self, axis, binIndex):
         if binIndex == 0:
@@ -325,21 +318,9 @@ class BinLimits:
         if trigger:
             hname = "InvMass_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
             htitle = "{0} - {1} Invariant Mass: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
-            if self.fBinCountAnalysisAxis:
-                hnameSB = "InvMassBinCounting_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
-                if self.fBinCountAnalysisSecondAxis:
-                    htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), self.fBinCountAnalysisSecondAxis.GetTitle())
-                else:
-                    htitleSB = "{0} - {1} Invariant Mass: {2};{3};{4};{5}".format(trigger, DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
         else:
             hname = "InvMass_{0}_{1}".format(DMesonDef, self.GetName())
             htitle = "{0} Invariant Mass: {1};{2};{3}".format(DMesonDef, self.GetTitle(), xAxis, yAxis)
-            if self.fBinCountAnalysisAxis:
-                hnameSB = "InvMassBinCounting_{0}_{1}".format(DMesonDef, self.GetName())
-                if self.fBinCountAnalysisSecondAxis:
-                    htitleSB = "{0} Invariant Mass: {1};{2};{3};{4}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), self.fBinCountAnalysisSecondAxis.GetTitle())
-                else:
-                    htitleSB = "{0} Invariant Mass: {1};{2};{3}".format(DMesonDef, self.GetTitle(), xAxis, self.fBinCountAnalysisAxis.GetTitle(), yAxis)
 
         if not "MCTruth" in DMesonDef:
             self.fInvMassHisto = ROOT.TH1D(hname, htitle, nMassBins, minMass, maxMass)
@@ -349,11 +330,21 @@ class BinLimits:
             self.fInvMassHisto.SetMarkerColor(ROOT.kBlue + 2)
             self.fInvMassHisto.SetLineColor(ROOT.kBlue + 2)
 
-        if self.fBinCountAnalysisAxis:
-            if self.fBinCountAnalysisSecondAxis:
-                massAxis = numpy.linspace(minMass, maxMass, nMassBins + 1, True)
-                self.fBinCountAnalysisHisto = ROOT.TH3D(hnameSB, htitleSB, nMassBins * 100, array.array('d', massAxis), len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins), len(self.fBinCountAnalysisSecondAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisSecondAxis.fBins))
-                self.fBinCountAnalysisHisto.Sumw2()
+        massAxis = array.array('d', numpy.linspace(minMass, maxMass, nMassBins * 100 + 1, True))
+        for sname, axis in self.fBinCountSpectraAxis.iteritems():
+            if trigger: hnameSB = "InvMassBinCounting_{}_{}_{}_{}".format(trigger, DMesonDef, self.GetName(), sname)
+            else: hnameSB = "InvMassBinCounting_{}_{}_{}".format(DMesonDef, self.GetName(), sname)
+            if len(axis) == 2:
+                if trigger: htitleSB = "{} - {} Invariant Mass: {};{};{};{}".format(trigger, DMesonDef, self.GetTitle(), xAxis, axis[0].GetTitle(), axis[1].GetTitle())
+                else: htitleSB = "{} Invariant Mass: {};{};{};{}".format(DMesonDef, self.GetTitle(), xAxis, axis[0].GetTitle(), axis[1].GetTitle())
+                h = ROOT.TH3D(hnameSB, htitleSB, nMassBins * 100, massAxis, len(axis[0].fBins) - 1, array.array('d', axis[0].fBins), len(axis[1].fBins) - 1, array.array('d', axis[1].fBins))
+                h.Sumw2()
+            elif len(axis) == 1:
+                if trigger: htitleSB = "{} - {} Invariant Mass: {};{};{}".format(trigger, DMesonDef, self.GetTitle(), xAxis, axis[0].GetTitle())
+                else: htitleSB = "{} Invariant Mass: {};{};{}".format(DMesonDef, self.GetTitle(), xAxis, axis[0].GetTitle())
+                h = ROOT.TH2D(hnameSB, htitleSB, nMassBins * 100, massAxis, len(axis[0].fBins) - 1, array.array('d', axis[0].fBins))
+                h.Sumw2()
             else:
-                self.fBinCountAnalysisHisto = ROOT.TH2D(hnameSB, htitleSB, nMassBins * 100, minMass, maxMass, len(self.fBinCountAnalysisAxis.fBins) - 1, array.array('d', self.fBinCountAnalysisAxis.fBins))
-                self.fBinCountAnalysisHisto.Sumw2()
+                print("Error!! Bin counting histograms only allowed for a maximum of 2 axis. Spectrum {}".format(sname))
+                exit(1)
+            self.fBinCountSpectra[sname] = h

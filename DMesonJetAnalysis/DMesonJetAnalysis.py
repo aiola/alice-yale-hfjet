@@ -587,23 +587,26 @@ class DMesonJetAnalysisEngine:
             if not bin.fMassFitter or not bin.fMassFitter.FitSuccessfull():
                 print("Skipping bin {0} because fit was unsuccessful".format(bin.GetTitle()))
                 continue
+
+            binCountAnalysisHisto = bin.fBinCountSpectra[s.fSimpleName]
+
             print("Bin: {0}".format(bin.GetTitle()))
             sigma = bin.fMassFitter.GetSignalWidth()
             mean = bin.fMassFitter.GetSignalMean()
             print("Sigma={0:.3f}, Mean={1:.3f}".format(sigma, mean))
 
-            binSBL_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
-            binSBL_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas * sigma)
-            binSBR_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas * sigma)
-            binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas * sigma)
-            binSig_1 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas * sigma)
-            binSig_2 = bin.fBinCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas * sigma)
+            binSBL_1 = binCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
+            binSBL_2 = binCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMinSigmas * sigma)
+            binSBR_1 = binCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMinSigmas * sigma)
+            binSBR_2 = binCountAnalysisHisto.GetXaxis().FindBin(mean + s.fSideBandMaxSigmas * sigma)
+            binSig_1 = binCountAnalysisHisto.GetXaxis().FindBin(mean - s.fBinCountSignalSigmas * sigma)
+            binSig_2 = binCountAnalysisHisto.GetXaxis().FindBin(mean + s.fBinCountSignalSigmas * sigma)
             if binSBL_1 < 1:
                 binSBL_1 = 1
-            if binSBR_2 > bin.fBinCountAnalysisHisto.GetXaxis().GetNbins():
-                binSBR_2 = bin.fBinCountAnalysisHisto.GetXaxis().GetNbins()
-            effSigma1 = (mean - bin.fBinCountAnalysisHisto.GetXaxis().GetBinLowEdge(binSig_1)) / sigma
-            effSigma2 = (bin.fBinCountAnalysisHisto.GetXaxis().GetBinUpEdge(binSig_2) - mean) / sigma
+            if binSBR_2 > binCountAnalysisHisto.GetXaxis().GetNbins():
+                binSBR_2 = binCountAnalysisHisto.GetXaxis().GetNbins()
+            effSigma1 = (mean - binCountAnalysisHisto.GetXaxis().GetBinLowEdge(binSig_1)) / sigma
+            effSigma2 = (binCountAnalysisHisto.GetXaxis().GetBinUpEdge(binSig_2) - mean) / sigma
             print("The left effective sigma is {0:.3f}; the right effective sigma is {1:.3f}".format(effSigma1, effSigma2))
 
             binSBL_1_invMass = bin.fInvMassHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
@@ -617,21 +620,21 @@ class DMesonJetAnalysisEngine:
             s.fSideBandWindowInvMassHistos[sideBandWindowInvMassHisto.GetName()] = sideBandWindowInvMassHisto
             s.fSignalWindowInvMassHistos[signalWindowInvMassHisto.GetName()] = signalWindowInvMassHisto
 
-            if bin.fBinCountAnalysisHisto.GetDimension() == 2:
-                sbL = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
-                sbR = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
-                sig = bin.fBinCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
-            elif bin.fBinCountAnalysisHisto.GetDimension() == 3:
-                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(binSBL_1, binSBL_2)
-                sbL = bin.fBinCountAnalysisHisto.Project3D("zye")
+            if binCountAnalysisHisto.GetDimension() == 2:
+                sbL = binCountAnalysisHisto.ProjectionY("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()), binSBL_1, binSBL_2, "e")
+                sbR = binCountAnalysisHisto.ProjectionY("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()), binSBR_1, binSBR_2, "e")
+                sig = binCountAnalysisHisto.ProjectionY("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()), binSig_1, binSig_2, "e")
+            elif binCountAnalysisHisto.GetDimension() == 3:
+                binCountAnalysisHisto.GetXaxis().SetRange(binSBL_1, binSBL_2)
+                sbL = binCountAnalysisHisto.Project3D("zye")
                 sbL.SetName("{0}_SideBandWindowL_{1}".format(s.fName, bin.GetName()))
-                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(binSBR_1, binSBR_2)
-                sbR = bin.fBinCountAnalysisHisto.Project3D("zye")
+                binCountAnalysisHisto.GetXaxis().SetRange(binSBR_1, binSBR_2)
+                sbR = binCountAnalysisHisto.Project3D("zye")
                 sbR.SetName("{0}_SideBandWindowR_{1}".format(s.fName, bin.GetName()))
-                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(binSig_1, binSig_2)
-                sig = bin.fBinCountAnalysisHisto.Project3D("zye")
+                binCountAnalysisHisto.GetXaxis().SetRange(binSig_1, binSig_2)
+                sig = binCountAnalysisHisto.Project3D("zye")
                 sig.SetName("{0}_SignalWindow_{1}".format(s.fName, bin.GetName()))
-                bin.fBinCountAnalysisHisto.GetXaxis().SetRange(1, bin.fBinCountAnalysisHisto.GetNbinsX())
+                binCountAnalysisHisto.GetXaxis().SetRange(1, binCountAnalysisHisto.GetNbinsX())
 
             sbTotal = sbL.Clone("{0}_SideBandWindow_{1}".format(s.fName, bin.GetName()))
             sbTotal.Add(sbR)
@@ -1011,7 +1014,7 @@ class DMesonJetAnalysis:
                     fitOptions = "0 WL S"
             if not "spectra" in binLists:
                 binLists["spectra"] = []
-            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, bin_count_analysis, effWeight, fitOptions))
+            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, effWeight, fitOptions))
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
