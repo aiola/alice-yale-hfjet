@@ -76,6 +76,11 @@ class Axis:
                 title = "#it{{p}}_{{T,{jetLabel}}}^{{sub,{label}}}".format(jetLabel=jetLabel, label=label)
             else:
                 title = "#it{{p}}_{{T,{jetLabel}}}^{{sub}}".format(jetLabel=jetLabel)
+        elif self.fName == "jet_bkgpt":
+            if label:
+                title = "#it{{p}}_{{T,{jetLabel}}}^{{{label}}} - #it{{p}}_{{T,{jetLabel}}}^{{sub,{label}}}".format(jetLabel=jetLabel, label=label)
+            else:
+                title = "#it{{p}}_{{T,{jetLabel}}} - #it{{p}}_{{T,{jetLabel}}}^{{sub}}".format(jetLabel=jetLabel)
         elif self.fName == "jet_n":
             title = "N jet constituents"
         elif self.fName == "d_pt":
