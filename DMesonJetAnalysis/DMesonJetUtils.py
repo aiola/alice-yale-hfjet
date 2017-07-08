@@ -204,25 +204,43 @@ def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
     r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
     r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
     r.GetZaxis().SetTitle(hist.GetZaxis().GetTitle())
-    for xbin in xrange(0, hist.GetXaxis().GetNbins() + 2):
-        for ybin in xrange(0, hist.GetYaxis().GetNbins() + 2):
-            xbinCenter = hist.GetXaxis().GetBinCenter(xbin)
-            ybinCenter = hist.GetYaxis().GetBinCenter(ybin)
-            rxbin = r.GetXaxis().FindBin(xbinCenter)
-            rybin = r.GetYaxis().FindBin(ybinCenter)
-            binValue = hist.GetBinContent(xbin, ybin) + r.GetBinContent(rxbin, rybin)
-            binError = math.sqrt(hist.GetBinError(xbin, ybin) ** 2 + r.GetBinError(rxbin, rybin) ** 2)
-            r.SetBinContent(rxbin, rybin, binValue)
-            r.SetBinError(rxbin, rybin, binError)
+    r.Sumw2()
+    hist_GetXaxis_GetBinCenter = hist.GetXaxis().GetBinCenter
+    hist_GetYaxis_GetBinCenter = hist.GetYaxis().GetBinCenter
+    r_GetXaxis_GetBinUpEdge = r.GetXaxis().GetBinUpEdge
+    r_GetYaxis_GetBinUpEdge = r.GetYaxis().GetBinUpEdge
+    if hist.GetSumw2().GetSize() > 0:
+        hist_GetSumw2 = hist.GetSumw2()
+    else:
+        hist_GetSumw2 = [v ** 2 for v in hist]
+    r_GetSumw2 = r.GetSumw2()
+    hist_GetXaxis_GetNbins_2 = hist.GetXaxis().GetNbins() + 2
+    hist_GetYaxis_GetNbins_2 = hist.GetYaxis().GetNbins() + 2
+    hist_bin = 0
+    rybin = 0
+    for ybin in xrange(0, hist_GetYaxis_GetNbins_2):
+        ybinCenter = hist_GetYaxis_GetBinCenter(ybin)
+        while (ybinCenter > r_GetYaxis_GetBinUpEdge(rybin) and rybin < nbinsY + 1): rybin += 1
+        rxbin = 0
+        for xbin in xrange(0, hist_GetXaxis_GetNbins_2):
+            xbinCenter = hist_GetXaxis_GetBinCenter(xbin)
+            while (xbinCenter > r_GetXaxis_GetBinUpEdge(rxbin) and rxbin < nbinsX + 1): rxbin += 1
+            r_bin = rxbin + (nbinsX + 2) * rybin
+            r[r_bin] += hist[hist_bin]
+            r_GetSumw2[r_bin] += hist_GetSumw2[hist_bin]
+            hist_bin += 1
 
-    for xbin in xrange(0, r.GetXaxis().GetNbins() + 2):
-        for ybin in xrange(0, r.GetYaxis().GetNbins() + 2):
-            binValue = r.GetBinContent(xbin, ybin)
-            binError = r.GetBinError(xbin, ybin)
-            if binValue > 0:
-                relErr = binError / binValue
-                if relErr > 0.9 and warnings:
-                    print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin, ybin, relErr))
+    r.SetEntries(hist.GetEntries())
+
+    if warnings:
+        for xbin in xrange(0, r.GetXaxis().GetNbins() + 2):
+            for ybin in xrange(0, r.GetYaxis().GetNbins() + 2):
+                binValue = r.GetBinContent(xbin, ybin)
+                binError = r.GetBinError(xbin, ybin)
+                if binValue > 0:
+                    relErr = binError / binValue
+                    if relErr > 0.9:
+                        print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin, ybin, relErr))
     return r
 
 def frange(start, stop, step, closed=False):
