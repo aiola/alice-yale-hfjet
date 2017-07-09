@@ -61,6 +61,8 @@ def GenerateStdDevProfile(h, name, title, yaxisTitle):
 
 class RhoDefinition:
     def __init__(self, rho_name, rho_label, rho_title, jet_name):
+        self.fRhoObjectName = rho_name[rho_name.find("_") + 1:rho_name.rfind("_")]
+        print("Rho object name {}".format(self.fRhoObjectName))
         self.fRhoName = rho_name
         self.fRhoLabel = rho_label
         self.fRhoTitle = rho_title
