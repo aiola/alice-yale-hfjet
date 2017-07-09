@@ -218,6 +218,7 @@ def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
     hist_GetYaxis_GetNbins_2 = hist.GetYaxis().GetNbins() + 2
     hist_bin = 0
     rybin = 0
+    r_AddBinContent = r.AddBinContent
     for ybin in xrange(0, hist_GetYaxis_GetNbins_2):
         ybinCenter = hist_GetYaxis_GetBinCenter(ybin)
         while (ybinCenter > r_GetYaxis_GetBinUpEdge(rybin) and rybin < nbinsY + 1): rybin += 1
@@ -226,7 +227,7 @@ def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
             xbinCenter = hist_GetXaxis_GetBinCenter(xbin)
             while (xbinCenter > r_GetXaxis_GetBinUpEdge(rxbin) and rxbin < nbinsX + 1): rxbin += 1
             r_bin = rxbin + (nbinsX + 2) * rybin
-            r[r_bin] += hist[hist_bin]
+            r_AddBinContent(r_bin, hist[hist_bin])
             r_GetSumw2[r_bin] += hist_GetSumw2[hist_bin]
             hist_bin += 1
 
