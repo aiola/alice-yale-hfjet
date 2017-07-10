@@ -367,6 +367,9 @@ class UEHistograms:
 
             self.PlotMultiple("{}_DistributionCentralityBins".format(h_new_name), histograms["RhoCentralityBins"], True, True)
 
+            h_2d = histograms[h_new_name]
+            self.PlotSingle(h_2d)
+
         self.PlotMultiple("MeanRhoVsCent{}".format(suffix), hListMean, True)
         self.PlotMultiple("StdDevRhoVsCent{}".format(suffix), hListStdDev, False)
 
@@ -381,6 +384,9 @@ class UEHistograms:
             hListMean.append(h)
             h = histograms["{}_StdDev".format(h_new_name)]
             hListStdDev.append(h)
+
+            h_2d = histograms[h_new_name]
+            self.PlotSingle(h_2d)
         self.PlotMultiple("MeanRhoVsLeadJetPt{}".format(suffix), hListMean, True)
         self.PlotMultiple("StdDevRhoVsLeadJetPt{}".format(suffix), hListStdDev, False)
 
@@ -395,6 +401,9 @@ class UEHistograms:
             hListMean.append(h)
             h = histograms["{}_StdDev".format(h_new_name)]
             hListStdDev.append(h)
+
+            h_2d = histograms[h_new_name]
+            self.PlotSingle(h_2d)
         self.PlotMultiple("MeanRhoVsLeadTrackPt{}".format(suffix), hListMean, True)
         self.PlotMultiple("StdDevRhoVsLeadTrackPt{}".format(suffix), hListStdDev, False)
 
@@ -407,6 +416,9 @@ class UEHistograms:
         h = histograms["{}_StdDev".format(h_new_name)]
         self.PlotSingle(h)
 
+        h_2d = histograms[h_new_name]
+        self.PlotSingle(h_2d)
+
     def PlotLeadTrackPtVsCent(self, rho_def):
         hname = rho_def.GetLeadTrackPtVsCentName()
         h_new_name = CleanUpHistogramName(hname)
@@ -415,6 +427,9 @@ class UEHistograms:
         self.PlotSingle(h)
         h = histograms["{}_StdDev".format(h_new_name)]
         self.PlotSingle(h)
+
+        h_2d = histograms[h_new_name]
+        self.PlotSingle(h_2d)
 
     def PlotRhoVsDPt(self, meson_name):
         hname = "{taskName}_histos/histos{taskName}/{meson_name}/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHistRhoVsLeadDPt".format(taskName=self.fDMesonTaskName, meson_name=meson_name, jet_type=self.fJetType, jet_radius=self.fJetRadius)
@@ -425,6 +440,9 @@ class UEHistograms:
         h = histograms["{}_StdDev".format(h_new_name)]
         self.PlotSingle(h)
 
+        h_2d = histograms[h_new_name]
+        self.PlotSingle(h_2d)
+
     def PlotRhoVsJetPt(self, meson_name):
         hname = "{taskName}_histos/histos{taskName}/{meson_name}/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHistRhoVsLeadJetPt".format(taskName=self.fDMesonTaskName, meson_name=meson_name, jet_type=self.fJetType, jet_radius=self.fJetRadius)
         h_new_name = CleanUpHistogramName(hname)
@@ -434,12 +452,16 @@ class UEHistograms:
         h = histograms["{}_StdDev".format(h_new_name)]
         self.PlotSingle(h)
 
+        h_2d = histograms[h_new_name]
+        self.PlotSingle(h_2d)
+
     def PlotSingle(self, h):
         cname = h.GetName()
         c = ROOT.TCanvas(cname, cname)
         globalList.append(c)
         c.cd()
         if isinstance(h, ROOT.TH2):
+            c.SetLogz()
             h.Draw("colz")
         else:
             h.Draw("")
