@@ -60,13 +60,13 @@ def GenerateStdDevProfile(h, name, title, yaxisTitle):
     return std_dev
 
 class RhoDefinition:
-    def __init__(self, rho_name, rho_label, rho_title, jet_name):
+    def __init__(self, rho_name, rho_label, rho_title, jet_name, occ_corr):
         self.fRhoObjectName = rho_name[rho_name.find("_") + 1:rho_name.rfind("_")]
-        print("Rho object name {}".format(self.fRhoObjectName))
         self.fRhoName = rho_name
         self.fRhoLabel = rho_label
         self.fRhoTitle = rho_title
         self.fJetName = jet_name
+        self.fHasOccCorrFactor = occ_corr
         self.GenerateHash()
         self.GenerateName()
 
@@ -119,6 +119,10 @@ class RhoDefinition:
     def GetLeadTrackPtVsCentName(self):
         return "{}/fHistLeadTrackPtVsCent".format(self.fRhoName)
 
+    def GetOccCorrVsCentName(self):
+        if self.fHasOccCorrFactor: return "{}/fHistOccCorrvsCent".format(self.fRhoName)
+        else: return ""
+
     def GetRCDeltaPtVsCentName(self, jet_type, jet_radius):
         hist_name = "RCDeltaPt"
         return self.GetDeltaPtVsCentName(jet_type, jet_radius, hist_name)
@@ -159,6 +163,7 @@ class UEHistograms:
         self.fPtBins = numpy.array([0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30, 40, 50, 60, 80, 100], dtype=numpy.float32)
         self.fRhoBins = numpy.array(list(DMesonJetUtils.frange(0, 15, 0.5, True)), dtype=numpy.float32)
         self.fCentBins = numpy.array(list(DMesonJetUtils.frange(0, 100, 5, True)), dtype=numpy.float32)
+        self.fOccCorrBins = numpy.array(list(DMesonJetUtils.frange(0, 1.01, 0.005, True)), dtype=numpy.float32)
         self.fCoarseCentBins = numpy.array([0, 10, 30, 50, 90], dtype=numpy.float32)
         self.fFiles = []
         self.fTitle = config["collision_system"]
@@ -175,17 +180,19 @@ class UEHistograms:
         self.GenerateDMesonTaskName()
 
     def GenerateStandardRhoDefinitions(self):
-        self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_Rho_histos", "", "CMS Method", "Background"))
-        self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTrans_histos", "", "Trans Plane", "Signal"))
-        self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B", "Trans Plane, back-to-back", "Signal"))
+        self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_Rho_histos", "", "CMS Method", "Signal", True))
+        # self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoExclLeadJets_histos", "", "CMS Method, excl. lead. jets", "Signal", True))
+        self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTrans_histos", "", "Trans Plane", "Signal", False))
+        # self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B", "Trans Plane, back-to-back", "Signal", False))
 
-        self.fDefaultRhoDetLevDefinition = RhoDefinition("AliAnalysisTaskRhoDev_Rho_histos", "", "CMS Method", "Background")
+        self.fDefaultRhoDetLevDefinition = RhoDefinition("AliAnalysisTaskRhoDev_Rho_histos", "", "CMS Method", "Signal", True)
 
-        self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoGen_histos", "", "CMS Method (gen. lev.)", "Background"))
-        self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "", "Trans Plane (gen. lev.)", "Signal"))
-        self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B", "Trans Plane, back-to-back (gen. lev.)", "Signal"))
+        self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoGen_histos", "", "CMS Method (gen. lev.)", "Signal", True))
+        # self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoExclLeadJetsGen_histos", "", "CMS Method, excl. lead. jets", "Signal", True))
+        self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "", "Trans Plane (gen. lev.)", "Signal", False))
+        # self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B", "Trans Plane, back-to-back (gen. lev.)", "Signal", False))
 
-        self.fDefaultRhoGenLevDefinition = RhoDefinition("AliAnalysisTaskRhoDev_RhoGen_histos", "", "CMS Method", "Background")
+        self.fDefaultRhoGenLevDefinition = RhoDefinition("AliAnalysisTaskRhoDev_RhoGen_histos", "", "CMS Method", "Background", True)
 
     def GenerateDMesonTaskName(self):
         self.fTrigger = self.fYamlConfig["analysis"][0]["trigger"][0]
@@ -206,6 +213,10 @@ class UEHistograms:
         histograms = dict()
 
         hist_2d = DMesonJetUtils.GetObjectAndMerge(self.fFiles, hname)
+        if hist_2d.GetXaxis().GetTitle():
+            hist_2d.GetXaxis().SetTitle(hist_2d.GetXaxis().GetTitle().replace("Centrality", "Multiplicity"))
+        else:
+            hist_2d.GetXaxis().SetTitle("Multiplicity (%)")
         hist_2d.GetZaxis().SetTitle("counts")
         hist_2d.SetName(CleanUpHistogramName(hname))
         histograms[hist_2d.GetName()] = hist_2d
@@ -215,7 +226,8 @@ class UEHistograms:
         histograms[hist_2d_rebin.GetName()] = hist_2d_rebin
 
         prof = hist_2d_rebin.ProfileX("{}_Profile".format(hist_2d.GetName()), 1, -1, "i")
-        prof.GetYaxis().SetTitle("<{}> ({})".format(varname, units))
+        if units: prof.GetYaxis().SetTitle("<{}> ({})".format(varname, units))
+        else: prof.GetYaxis().SetTitle("<{}>".format(varname))
         prof.GetYaxis().SetTitleOffset(1)
         prof.SetTitle(title)
         histograms[prof.GetName()] = prof
@@ -229,6 +241,7 @@ class UEHistograms:
         self.LoadRhoVsDPt(self.fMesonName)
         self.LoadRhoVsJetPt(self.fMesonName)
         for rhoDef in self.fRhoDetLevDefinitions:
+            if rhoDef.fHasOccCorrFactor: self.LoadOccCorrVsCent(rhoDef)
             self.LoadDeltaPt(rhoDef)
 
             h_new_name = self.LoadRhoVsTrackPt(rhoDef)
@@ -252,6 +265,7 @@ class UEHistograms:
         self.LoadRhoVsDPt("{}_MCTruth".format(self.fMesonName))
         self.LoadRhoVsJetPt("{}_MCTruth".format(self.fMesonName))
         for rhoDef in self.fRhoGenLevDefinitions:
+            if rhoDef.fHasOccCorrFactor: self.LoadOccCorrVsCent(rhoDef)
             self.LoadDeltaPt(rhoDef)
 
             h_new_name = self.LoadRhoVsTrackPt(rhoDef)
@@ -284,6 +298,7 @@ class UEHistograms:
             h_new_name = CleanUpHistogramName(hname)
 
             h_2d = DMesonJetUtils.GetObjectAndMerge(self.fFiles, hname)
+            h_2d.GetXaxis().SetTitle(h_2d.GetXaxis().GetTitle().replace("Centrality", "Multiplicity"))
             deltaPt_list[h_new_name] = h_2d
 
             deltaPt = Projections(h_2d, None, 0)
@@ -295,6 +310,26 @@ class UEHistograms:
             deltaPt_list[h_deltapt_name] = deltaPt
 
             self.fHistograms[h_new_name] = deltaPt_list
+
+    def LoadOccCorrVsCent(self, rho_definition):
+        hname = rho_definition.GetOccCorrVsCentName()
+        h_new_name = CleanUpHistogramName(hname)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "C", "", self.fCentBins, self.fOccCorrBins)
+
+        occ_corr_vs_cent_2d = histograms[h_new_name]
+        occ_corr_vs_cent_2d.GetXaxis().SetTitle("Multiplicity (%)")
+        occ_corr_vs_cent_2d.GetYaxis().SetTitle("#it{C}")
+        occ_corr = Projections(occ_corr_vs_cent_2d, None, 0)
+        h_occ_corr_name = "OccCorrFactDistribution_{}".format(rho_definition.fShortName)
+        occ_corr.SetName(h_occ_corr_name)
+        occ_corr.GetXaxis().SetTitle("#it{C}")
+        occ_corr.GetYaxis().SetTitle("#counts")
+        histograms[h_occ_corr_name] = occ_corr
+
+        if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
+        self.fHistograms[h_new_name] = histograms
+
+        return h_new_name
 
     def LoadRhoVsCent(self, rho_definition):
         hname = rho_definition.GetRhoVsCentName()
@@ -372,6 +407,7 @@ class UEHistograms:
 
     def PlotDetLevHistograms(self):
         self.PlotDeltaPt(self.fRhoDetLevDefinitions)
+        self.PlotOccCorrVsCent(self.fRhoDetLevDefinitions)
         self.PlotRhoVsDPt(self.fMesonName)
         self.PlotRhoVsJetPt(self.fMesonName)
         self.PlotRhoVsTrackPt(self.fRhoDetLevDefinitions, "DetLev")
@@ -384,6 +420,7 @@ class UEHistograms:
 
     def PlotGenLevHistograms(self):
         self.PlotDeltaPt(self.fRhoGenLevDefinitions)
+        self.PlotOccCorrVsCent(self.fRhoGenLevDefinitions)
         self.PlotRhoVsDPt("{}_MCTruth".format(self.fMesonName))
         self.PlotRhoVsJetPt("{}_MCTruth".format(self.fMesonName))
         self.PlotRhoVsTrackPt(self.fRhoGenLevDefinitions, "GenLev")
@@ -404,7 +441,23 @@ class UEHistograms:
             hname = "RhoDistribution_{}".format(rho_def.fShortName)
             h = self.fHistograms[hname]
             hListRho.append(h)
-        self.PlotMultiple("RhoDistribution{}".format(suffix), hListRho, True, True)
+        self.PlotMultiple("RhoDistribution{}".format(suffix), hListRho, True, True, "stat")
+
+    def PlotOccCorrVsCent(self, rho_definitions):
+        for rho_definition in rho_definitions:
+            if not rho_definition.fHasOccCorrFactor: continue
+            hname = rho_definition.GetOccCorrVsCentName()
+            h_new_name = CleanUpHistogramName(hname)
+            histograms = self.fHistograms[h_new_name]
+
+            h = histograms[h_new_name]
+            self.PlotSingle(h)
+            h = histograms["OccCorrFactDistribution_{}".format(rho_definition.fShortName)]
+            self.PlotSingle(h)
+            h = histograms["{}_Profile".format(h_new_name)]
+            self.PlotSingle(h)
+            h = histograms["{}_StdDev".format(h_new_name)]
+            self.PlotSingle(h)
 
     def PlotRhoVsCent(self, rho_definitions, suffix):
         hListMean = []
@@ -418,7 +471,7 @@ class UEHistograms:
             h = histograms["{}_StdDev".format(h_new_name)]
             hListStdDev.append(h)
 
-            self.PlotMultiple("{}_DistributionCentralityBins".format(h_new_name), histograms["RhoCentralityBins"], True, True)
+            self.PlotMultiple("{}_DistributionCentralityBins".format(h_new_name), histograms["RhoCentralityBins"], True, True, "stat")
 
             h_2d = histograms[h_new_name]
             self.PlotSingle(h_2d)
@@ -518,22 +571,10 @@ class UEHistograms:
                 h_deltapt_name = "{}Distribution_{}".format(RCname, rho_def.fShortName)
                 deltaPt = self.fHistograms[h_new_name][h_deltapt_name]
                 hlist.append(deltaPt)
-            comp = self.PlotMultiple("RCDeltaPt_{}".format(rho_def.fShortName), hlist, True, True, False)
-            y1 = comp.fY1LegSpectrum - comp.fLegLineHeight * 4 * 1.8 / comp.fNColsLegSpectrum
-            if y1 < 0.2: y1 = 0.2
-            leg = ROOT.TLegend(0.505, y1, 0.900, comp.fY1LegSpectrum)
-            leg.SetName("{0}_legend".format(comp.fCanvasSpectra.GetName()))
-            leg.SetNColumns(comp.fNColsLegSpectrum)
-            leg.SetFillStyle(0)
-            leg.SetBorderSize(0)
-            leg.SetTextFont(43)
-            leg.SetTextSize(comp.fLegTextSize)
-            for h in hlist:
-                leg.AddEntry(h, h.GetTitle(), "pe")
-                entry = leg.AddEntry(ROOT.nullptr, "#mu={:.3f} GeV/#it{{c}}, #sigma={:.3f} GeV/#it{{c}}".format(h.GetMean(), h.GetStdDev()), "")
-                entry.SetTextSize(comp.fLegTextSize * 0.8)
-            leg.Draw()
-            globalList.append(leg)
+            comp = self.PlotMultiple("RCDeltaPt_{}".format(rho_def.fShortName), hlist, True, True, "stat")
+            comp.fLegendSpectra.SetX1(0.08)
+            comp.fLegendSpectra.SetX2(0.47)
+            for r in comp.fResults: globalList.append(r)
 
     def PlotSingle(self, h):
         cname = h.GetName()
@@ -557,6 +598,9 @@ class UEHistograms:
             print("Plotting {}".format(name))
         comp = DMesonJetCompare.DMesonJetCompare(name)
         comp.fDoSpectrumLegend = leg
+        if leg == "stat":
+            xaxis = hlist[0].GetXaxis().GetTitle()
+            comp.fUnits = xaxis[xaxis.rfind("(") + 1:xaxis.rfind(")")]
         if logY:
             comp.fDoSpectraPlot = "logy"
         else:
