@@ -303,7 +303,7 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
             elif config["beam_type"] == "pPb":
                 pGenRhoTask.SetRhoSparse(True)
 
-            pGenRhoExclLeadJetsTask = ROOT.AliAnalysisTaskRhoDev.AddTaskRhoDev("mcparticles", 0.15, "", 0.30, "RhoExclLeadJetsGen", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
+            pGenRhoExclLeadJetsTask = ROOT.AliAnalysisTaskRhoDev.AddTaskRhoDev("mcparticles", 0, "", 0, "RhoExclLeadJetsGen", 0.4, ROOT.AliEmcalJet.kTPCfid, ROOT.AliJetContainer.kChargedJet, True)
             pGenRhoExclLeadJetsTask.SelectCollisionCandidates(physSel)
             pGenRhoExclLeadJetsTask.SetVzRange(-10, 10)
             pGenRhoExclLeadJetsTask.SetEventSelectionAfterRun(True)
