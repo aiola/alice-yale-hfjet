@@ -45,7 +45,7 @@ def Projections(hist, bins, rebinX, xmin=0, xmax=0):
 def CleanUpHistogramName(orig):
     return orig.replace("AliAnalysisTask", "").replace("_histos", "").replace("fHist", "").replace('/', "_").replace("__", "_")
 
-def GenerateStdDevProfile(h, name, title, yaxisTitle):
+def GenerateStdDevProfile(h, name, title, yaxisTitle, rel):
     prof_stddev = h.ProfileX("{}_profSigma".format(name), 1, -1, "s")
     if h.GetXaxis().GetXbins().GetSize() == h.GetNbinsX() + 1:
         std_dev = ROOT.TH1F(name, title, h.GetNbinsX(), h.GetXaxis().GetXbins().GetArray())
@@ -56,7 +56,8 @@ def GenerateStdDevProfile(h, name, title, yaxisTitle):
     std_dev.GetYaxis().SetTitleOffset(1)
     for i in range(0, prof_stddev.GetNbinsX() + 2):
         if prof_stddev.GetBinContent(i) == 0: continue
-        std_dev.SetBinContent(i, prof_stddev.GetBinError(i) / prof_stddev.GetBinContent(i))
+        if rel: std_dev.SetBinContent(i, prof_stddev.GetBinError(i) / prof_stddev.GetBinContent(i))
+        else: std_dev.SetBinContent(i, prof_stddev.GetBinError(i))
     return std_dev
 
 class RhoDefinition:
@@ -160,13 +161,13 @@ class RhoDefinition:
         return self.GetDeltaPtVsRhoName(jet_type, jet_radius, hist_name)
 
     def GetDeltaPtVsCentName(self, jet_type, jet_radius, hist_name):
-        GetDeltaPtName(self, jet_type, jet_radius, hist_name, "Cent")
+        return self.GetDeltaPtName(jet_type, jet_radius, hist_name, "Cent")
 
     def GetDeltaPtVsLeadJetPtName(self, jet_type, jet_radius, hist_name):
-        GetDeltaPtName(self, jet_type, jet_radius, hist_name, "LeadJetPt")
+        return self.GetDeltaPtName(jet_type, jet_radius, hist_name, "LeadJetPt")
 
     def GetDeltaPtVsRhoName(self, jet_type, jet_radius, hist_name):
-        GetDeltaPtName(self, jet_type, jet_radius, hist_name, "Rho")
+        return self.GetDeltaPtName(jet_type, jet_radius, hist_name, "Rho")
 
     def GetDeltaPtName(self, jet_type, jet_radius, hist_name, obs_name):
         if "Gen" in self.fRhoName: gen = True
@@ -197,6 +198,7 @@ class UEHistograms:
         self.fRhoBins = numpy.array(list(DMesonJetUtils.frange(0, 15, 0.5, True)), dtype=numpy.float32)
         self.fCentBins = numpy.array(list(DMesonJetUtils.frange(0, 100, 5, True)), dtype=numpy.float32)
         self.fOccCorrBins = numpy.array(list(DMesonJetUtils.frange(0, 1.2, 0.02, True)), dtype=numpy.float32)
+        self.fDeltaPtBins = numpy.array(list(DMesonJetUtils.frange(-50, 50, 0.5, True)), dtype=numpy.float32)
         self.fCoarseCentBins = numpy.array([0, 10, 30, 50, 90], dtype=numpy.float32)
         self.fFiles = []
         self.fTitle = config["collision_system"]
@@ -206,6 +208,9 @@ class UEHistograms:
         self.fJetNames = []
         self.fCanvases = []
         self.fHistograms = dict()
+
+        self.fRCNames = ["RCDeltaPt", "RCPerpDeltaPt", "RCExclLeadJetDeltaPt"]
+        self.fRCTitles = ["Random Cones", "RC perp. lead. jet", "RC excl. lead. jet"]
 
         if not self.fYamlConfig["monte_carlo"]: self.fGeneratorLevel = False
 
@@ -242,7 +247,7 @@ class UEHistograms:
             f = ROOT.TFile(fname, "read")
             self.fFiles.append(f)
 
-    def LoadHistograms(self, hname, title, varname, units, binsX, binsY):
+    def LoadHistograms(self, hname, title, varname, units, binsX, binsY, relStdDev):
         histograms = dict()
 
         hist_2d = DMesonJetUtils.GetObjectAndMerge(self.fFiles, hname)
@@ -265,7 +270,12 @@ class UEHistograms:
         prof.SetTitle(title)
         histograms[prof.GetName()] = prof
 
-        std_dev = GenerateStdDevProfile(hist_2d_rebin, "{}_StdDev".format(hist_2d.GetName()), "Std Dev {}".format(title), "#sigma({varname}) / <{varname}>".format(varname=varname))
+        if relStdDev:
+            std_dev_yaxis = "#sigma({varname}) / <{varname}>".format(varname=varname)
+        else:
+            if units: std_dev_yaxis = "#sigma({varname}) ({units})".format(varname=varname, units=units)
+            else: std_dev_yaxis = "#sigma({varname})".format(varname=varname)
+        std_dev = GenerateStdDevProfile(hist_2d_rebin, "{}_StdDev".format(hist_2d.GetName()), "Std Dev {}".format(title), std_dev_yaxis, relStdDev)
         histograms[std_dev.GetName()] = std_dev
 
         return histograms
@@ -275,79 +285,84 @@ class UEHistograms:
         self.LoadRhoVsJetPt(self.fMesonName)
         for rhoDef in self.fRhoDetLevDefinitions:
             if rhoDef.fHasOccCorrFactor: self.LoadOccCorrVsCent(rhoDef)
-            self.LoadDeltaPt(rhoDef)
+            h_deltapt_new_names = self.LoadDeltaPtVsRho(rhoDef)
+            self.LoadDeltaPtVsLeadJetPt(rhoDef)
 
-            h_new_name = self.LoadRhoVsTrackPt(rhoDef)
+            h_rho_new_name = self.LoadRhoVsTrackPt(rhoDef)
             self.LoadRhoVsLeadJetPt(rhoDef)
 
-            rho_vs_trackpt_2d = self.fHistograms[h_new_name][h_new_name]
+            rho_vs_trackpt_2d = self.fHistograms[h_rho_new_name][h_rho_new_name]
             rho = Projections(rho_vs_trackpt_2d, None, 5, 0, 25)
             rho.SetTitle(rhoDef.fRhoTitle)
             rho.GetYaxis().SetTitle("counts")
             hrhoname = "RhoDistribution_{}".format(rhoDef.fShortName)
             rho.SetName(hrhoname)
             self.fHistograms[hrhoname] = rho
+
+            for h_deltapt_new_name, RCName, RCtitle in zip(h_deltapt_new_names, self.fRCNames, self.fRCTitles):
+                deltapt_vs_trackpt_2d = self.fHistograms[h_deltapt_new_name][h_deltapt_new_name]
+                deltaPt = Projections(deltapt_vs_trackpt_2d, None, 0)
+                deltaPt.Scale(1. / deltaPt.Integral(), "width")
+                deltaPt.GetYaxis().SetTitle("probability density")
+                deltaPt.SetTitle(RCtitle)
+                h_deltapt_name = "{}Distribution_{}".format(RCName, rhoDef.fShortName)
+                deltaPt.SetName(h_deltapt_name)
+                self.fHistograms[h_deltapt_name] = deltaPt
         if self.fCentrality: self.LoadCentDetLevHistograms()
 
     def LoadCentDetLevHistograms(self):
         self.LoadLeadTrackPtVsCent(self.fDefaultRhoDetLevDefinition)
         self.LoadLeadJetPtVsCent(self.fDefaultRhoDetLevDefinition)
-        for rhoDef in self.fRhoDetLevDefinitions: self.LoadRhoVsCent(rhoDef)
+        for rhoDef in self.fRhoDetLevDefinitions:
+            self.LoadRhoVsCent(rhoDef)
+            self.LoadDeltaPtVsCent(rhoDef)
 
     def LoadGenLevHistograms(self):
         self.LoadRhoVsDPt("{}_MCTruth".format(self.fMesonName))
         self.LoadRhoVsJetPt("{}_MCTruth".format(self.fMesonName))
         for rhoDef in self.fRhoGenLevDefinitions:
             if rhoDef.fHasOccCorrFactor: self.LoadOccCorrVsCent(rhoDef)
-            self.LoadDeltaPt(rhoDef)
+            h_deltapt_new_names = self.LoadDeltaPtVsRho(rhoDef)
+            self.LoadDeltaPtVsLeadJetPt(rhoDef)
 
-            h_new_name = self.LoadRhoVsTrackPt(rhoDef)
+            h_rho_new_name = self.LoadRhoVsTrackPt(rhoDef)
             self.LoadRhoVsLeadJetPt(rhoDef)
 
-            rho_vs_trackpt_2d = self.fHistograms[h_new_name][h_new_name]
+            rho_vs_trackpt_2d = self.fHistograms[h_rho_new_name][h_rho_new_name]
             rho = Projections(rho_vs_trackpt_2d, None, 5, 0, 25)
             rho.GetYaxis().SetTitle("counts")
             rho.SetTitle(rhoDef.fRhoTitle)
             hrhoname = "RhoDistribution_{}".format(rhoDef.fShortName)
             rho.SetName(hrhoname)
             self.fHistograms[hrhoname] = rho
+
+            for h_deltapt_new_name, RCName, RCtitle in zip(h_deltapt_new_names, self.fRCNames, self.fRCTitles):
+                deltapt_vs_trackpt_2d = self.fHistograms[h_deltapt_new_name][h_deltapt_new_name]
+                deltaPt = Projections(deltapt_vs_trackpt_2d, None, 0)
+                deltaPt.Scale(1. / deltaPt.Integral(), "width")
+                deltaPt.GetYaxis().SetTitle("probability density")
+                deltaPt.SetTitle(RCtitle)
+                h_deltapt_name = "{}Distribution_{}".format(RCName, rho_definition.fShortName)
+                deltaPt.SetName(h_deltapt_name)
+                self.fHistograms[h_deltapt_name] = deltaPt
+
         if self.fCentrality: self.LoadCentGenLevHistograms()
 
     def LoadCentGenLevHistograms(self):
         self.LoadLeadTrackPtVsCent(self.fDefaultRhoGenLevDefinition)
         self.LoadLeadJetPtVsCent(self.fDefaultRhoGenLevDefinition)
-        for rhoDef in self.fRhoGenLevDefinitions: self.LoadRhoVsCent(rhoDef)
+        for rhoDef in self.fRhoGenLevDefinitions:
+            self.LoadRhoVsCent(rhoDef)
+            self.LoadDeltaPtVsCent(rhoDef)
 
     def LoadAllHistograms(self):
         self.LoadDetLevHistograms()
         if self.fGeneratorLevel: self.LoadGenLevHistograms()
 
-    def LoadDeltaPt(self, rho_definition):
-        RC_names = ["RCDeltaPt", "RCPerpDeltaPt", "RCExclLeadJetDeltaPt"]
-        RC_titles = ["Random Cones", "RC perp. lead. jet", "RC excl. lead. jet"]
-        for RCname, RCtitle in zip(RC_names, RC_titles):
-            deltaPt_list = dict()
-            hname = rho_definition.GetDeltaPtVsCentName(self.fJetType, self.fJetRadius, RCname)
-            h_new_name = CleanUpHistogramName(hname)
-
-            h_2d = DMesonJetUtils.GetObjectAndMerge(self.fFiles, hname)
-            h_2d.GetXaxis().SetTitle(h_2d.GetXaxis().GetTitle().replace("Centrality", "Multiplicity"))
-            deltaPt_list[h_new_name] = h_2d
-
-            deltaPt = Projections(h_2d, None, 0)
-            deltaPt.Scale(1. / deltaPt.Integral(), "width")
-            deltaPt.GetYaxis().SetTitle("probability density")
-            deltaPt.SetTitle(RCtitle)
-            h_deltapt_name = "{}Distribution_{}".format(RCname, rho_definition.fShortName)
-            deltaPt.SetName(h_deltapt_name)
-            deltaPt_list[h_deltapt_name] = deltaPt
-
-            self.fHistograms[h_new_name] = deltaPt_list
-
     def LoadOccCorrVsCent(self, rho_definition):
         hname = rho_definition.GetOccCorrVsCentName()
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "C", "", self.fCentBins, self.fOccCorrBins)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "C", "", self.fCentBins, self.fOccCorrBins, True)
 
         occ_corr_vs_cent_2d = histograms["{}_Rebinned".format(h_new_name)]
         occ_corr_vs_cent_2d.GetXaxis().SetTitle("Multiplicity (%)")
@@ -366,10 +381,46 @@ class UEHistograms:
 
         return h_new_name
 
+    def LoadDeltaPtVsCent(self, rho_definition):
+        result = []
+        for RCname, RCtitle in zip(self.fRCNames, self.fRCTitles):
+            hname = rho_definition.GetDeltaPtVsCentName(self.fJetType, self.fJetRadius, RCname)
+            h_new_name = CleanUpHistogramName(hname)
+            histograms = self.LoadHistograms(hname, RCtitle, "#Delta#it{p}_{T}^{RC}", "GeV/#it{c}", self.fCentBins, self.fDeltaPtBins, False)
+
+            if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
+            self.fHistograms[h_new_name] = histograms
+            result.append(h_new_name)
+        return result
+
+    def LoadDeltaPtVsLeadJetPt(self, rho_definition):
+        result = []
+        for RCname, RCtitle in zip(self.fRCNames, self.fRCTitles):
+            hname = rho_definition.GetDeltaPtVsLeadJetPtName(self.fJetType, self.fJetRadius, RCname)
+            h_new_name = CleanUpHistogramName(hname)
+            histograms = self.LoadHistograms(hname, RCtitle, "#Delta#it{p}_{T}^{RC}", "GeV/#it{c}", self.fPtBins, self.fDeltaPtBins, False)
+
+            if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
+            self.fHistograms[h_new_name] = histograms
+            result.append(h_new_name)
+        return result
+
+    def LoadDeltaPtVsRho(self, rho_definition):
+        result = []
+        for RCname, RCtitle in zip(self.fRCNames, self.fRCTitles):
+            hname = rho_definition.GetDeltaPtVsRhoName(self.fJetType, self.fJetRadius, RCname)
+            h_new_name = CleanUpHistogramName(hname)
+            histograms = self.LoadHistograms(hname, RCtitle, "#Delta#it{p}_{T}^{RC}", "GeV/#it{c}", self.fRhoBins, self.fDeltaPtBins, False)
+
+            if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
+            self.fHistograms[h_new_name] = histograms
+            result.append(h_new_name)
+        return result
+
     def LoadRhoVsCent(self, rho_definition):
         hname = rho_definition.GetRhoVsCentName()
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#rho", "GeV/#it{c}", self.fCentBins, self.fRhoBins)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#rho", "GeV/#it{c}", self.fCentBins, self.fRhoBins, True)
 
         rho_vs_cent_2d = histograms[h_new_name]
         histograms["RhoCentralityBins"] = Projections(rho_vs_cent_2d, self.fCoarseCentBins, 5, 0, 25)
@@ -383,7 +434,7 @@ class UEHistograms:
     def LoadRhoVsLeadJetPt(self, rho_definition):
         hname = rho_definition.GetRhoVsLeadJetPtName()
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins, True)
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
         self.fHistograms[h_new_name] = histograms
@@ -393,7 +444,7 @@ class UEHistograms:
     def LoadRhoVsTrackPt(self, rho_definition):
         hname = rho_definition.GetRhoVsTrackPtName()
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins, True)
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
         self.fHistograms[h_new_name] = histograms
@@ -403,7 +454,7 @@ class UEHistograms:
     def LoadLeadJetPtVsCent(self, rho_definition):
         hname = rho_definition.GetLeadJetPtVsCentName()
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#it{p}_{T,jet}^{lead}", "GeV/#it{c}", self.fCentBins, self.fPtBins)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#it{p}_{T,jet}^{lead}", "GeV/#it{c}", self.fCentBins, self.fPtBins, True)
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
         self.fHistograms[h_new_name] = histograms
@@ -413,7 +464,7 @@ class UEHistograms:
     def LoadLeadTrackPtVsCent(self, rho_definition):
         hname = rho_definition.GetLeadTrackPtVsCentName()
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#it{p}_{T,track}^{lead}", "GeV/#it{c}", self.fCentBins, self.fPtBins)
+        histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "#it{p}_{T,track}^{lead}", "GeV/#it{c}", self.fCentBins, self.fPtBins, True)
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
         self.fHistograms[h_new_name] = histograms
@@ -423,7 +474,7 @@ class UEHistograms:
     def LoadRhoVsDPt(self, meson_name):
         hname = "{taskName}_histos/histos{taskName}/{meson_name}/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHistRhoVsLeadDPt".format(taskName=self.fDMesonTaskName, meson_name=meson_name, jet_type=self.fJetType, jet_radius=self.fJetRadius)
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, "#rho vs. #it{p}_{T,D}", "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins)
+        histograms = self.LoadHistograms(hname, "#rho vs. #it{p}_{T,D}", "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins, True)
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
         self.fHistograms[h_new_name] = histograms
@@ -433,7 +484,7 @@ class UEHistograms:
     def LoadRhoVsJetPt(self, meson_name):
         hname = "{taskName}_histos/histos{taskName}/{meson_name}/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHistRhoVsLeadJetPt".format(taskName=self.fDMesonTaskName, meson_name=meson_name, jet_type=self.fJetType, jet_radius=self.fJetRadius)
         h_new_name = CleanUpHistogramName(hname)
-        histograms = self.LoadHistograms(hname, "#rho vs. #it{p}_{T,jet}", "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins)
+        histograms = self.LoadHistograms(hname, "#rho vs. #it{p}_{T,jet}", "#rho", "GeV/#it{c}", self.fPtBins, self.fRhoBins, True)
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
         self.fHistograms[h_new_name] = histograms
@@ -441,8 +492,10 @@ class UEHistograms:
         return h_new_name
 
     def PlotDetLevHistograms(self):
-        self.PlotDeltaPt(self.fRhoDetLevDefinitions)
+        self.PlotDeltaPtDistributions(self.fRhoDetLevDefinitions)
         self.PlotOccCorrVsCent(self.fRhoDetLevDefinitions)
+        self.PlotDeltaPtVsLeadJetPt(self.fRhoDetLevDefinitions)
+        self.PlotDeltaPtVsRho(self.fRhoDetLevDefinitions)
         self.PlotRhoVsDPt(self.fMesonName)
         self.PlotRhoVsJetPt(self.fMesonName)
         self.PlotRhoVsTrackPt(self.fRhoDetLevDefinitions, "DetLev")
@@ -452,10 +505,13 @@ class UEHistograms:
             self.PlotLeadTrackPtVsCent(self.fDefaultRhoDetLevDefinition)
             self.PlotLeadJetPtVsCent(self.fDefaultRhoDetLevDefinition)
             self.PlotRhoVsCent(self.fRhoDetLevDefinitions, "DetLev")
+            self.PlotDeltaPtVsCent(self.fRhoDetLevDefinitions)
 
     def PlotGenLevHistograms(self):
-        self.PlotDeltaPt(self.fRhoGenLevDefinitions)
+        self.PlotDeltaPtDistributions(self.fRhoGenLevDefinitions)
         self.PlotOccCorrVsCent(self.fRhoGenLevDefinitions)
+        self.PlotDeltaPtVsLeadJetPt(self.fRhoGenLevDefinitions)
+        self.PlotDeltaPtVsRho(self.fRhoGenLevDefinitions)
         self.PlotRhoVsDPt("{}_MCTruth".format(self.fMesonName))
         self.PlotRhoVsJetPt("{}_MCTruth".format(self.fMesonName))
         self.PlotRhoVsTrackPt(self.fRhoGenLevDefinitions, "GenLev")
@@ -465,6 +521,7 @@ class UEHistograms:
             self.PlotLeadTrackPtVsCent(self.fDefaultRhoGenLevDefinition)
             self.PlotLeadJetPtVsCent(self.fDefaultRhoGenLevDefinition)
             self.PlotRhoVsCent(self.fRhoGenLevDefinitions, "GenLev")
+            self.PlotDeltaPtVsCent(self.fRhoGenLevDefinitions)
 
     def PlotAllHistograms(self):
         self.PlotDetLevHistograms()
@@ -596,20 +653,71 @@ class UEHistograms:
         h_2d = histograms[h_new_name]
         self.PlotSingle(h_2d)
 
-    def PlotDeltaPt(self, rho_definitions):
+    def PlotDeltaPtDistributions(self, rho_definitions):
         for rho_def in rho_definitions:
-            RC_names = ["RCDeltaPt", "RCPerpDeltaPt", "RCExclLeadJetDeltaPt"]
             hlist = []
-            for RCname in RC_names:
-                hname = rho_def.GetDeltaPtVsCentName(self.fJetType, self.fJetRadius, RCname)
-                h_new_name = CleanUpHistogramName(hname)
+            for RCname in self.fRCNames:
                 h_deltapt_name = "{}Distribution_{}".format(RCname, rho_def.fShortName)
-                deltaPt = self.fHistograms[h_new_name][h_deltapt_name]
+                deltaPt = self.fHistograms[h_deltapt_name]
                 hlist.append(deltaPt)
             comp = self.PlotMultiple("RCDeltaPt_{}".format(rho_def.fShortName), hlist, True, True, "stat")
             comp.fLegendSpectra.SetX1(0.08)
             comp.fLegendSpectra.SetX2(0.47)
             for r in comp.fResults: globalList.append(r)
+
+    def PlotDeltaPtVsCent(self, rho_definitions):
+        for rho_def in rho_definitions:
+            hListMean = []
+            hListStdDev = []
+            for RCname in self.fRCNames:
+                hname = rho_def.GetDeltaPtVsCentName(self.fJetType, self.fJetRadius, RCname)
+                h_new_name = CleanUpHistogramName(hname)
+                histograms = self.fHistograms[h_new_name]
+                h = histograms["{}_Profile".format(h_new_name)]
+                hListMean.append(h)
+                h = histograms["{}_StdDev".format(h_new_name)]
+                hListStdDev.append(h)
+
+                h_2d = histograms[h_new_name]
+                self.PlotSingle(h_2d)
+            self.PlotMultiple("MeanDeltaPtVsCent{}".format(rho_def.fShortName), hListMean, True)
+            self.PlotMultiple("StdDevDeltaPtVsCent{}".format(rho_def.fShortName), hListStdDev, False)
+
+    def PlotDeltaPtVsLeadJetPt(self, rho_definitions):
+        for rho_def in rho_definitions:
+            hListMean = []
+            hListStdDev = []
+            for RCname in self.fRCNames:
+                hname = rho_def.GetDeltaPtVsLeadJetPtName(self.fJetType, self.fJetRadius, RCname)
+                h_new_name = CleanUpHistogramName(hname)
+                histograms = self.fHistograms[h_new_name]
+                h = histograms["{}_Profile".format(h_new_name)]
+                hListMean.append(h)
+                h = histograms["{}_StdDev".format(h_new_name)]
+                hListStdDev.append(h)
+
+                h_2d = histograms[h_new_name]
+                self.PlotSingle(h_2d)
+            self.PlotMultiple("MeanDeltaPtVsLeadJetPt{}".format(rho_def.fShortName), hListMean, True)
+            self.PlotMultiple("StdDevDeltaPtVsLeadJetPt{}".format(rho_def.fShortName), hListStdDev, False)
+
+    def PlotDeltaPtVsRho(self, rho_definitions):
+        for rho_def in rho_definitions:
+            hListMean = []
+            hListStdDev = []
+            for RCname in self.fRCNames:
+                hname = rho_def.GetDeltaPtVsRhoName(self.fJetType, self.fJetRadius, RCname)
+                h_new_name = CleanUpHistogramName(hname)
+                histograms = self.fHistograms[h_new_name]
+                h = histograms["{}_Profile".format(h_new_name)]
+                hListMean.append(h)
+                h = histograms["{}_StdDev".format(h_new_name)]
+                hListStdDev.append(h)
+
+                h_2d = histograms[h_new_name]
+                self.PlotSingle(h_2d)
+            self.PlotMultiple("MeanDeltaPtVsRho{}".format(rho_def.fShortName), hListMean, True)
+            self.PlotMultiple("StdDevDeltaPtVsRho{}".format(rho_def.fShortName), hListStdDev, False)
 
     def PlotSingle(self, h, opt=None):
         cname = h.GetName()
