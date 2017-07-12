@@ -135,7 +135,40 @@ class RhoDefinition:
         hist_name = "RCExclLeadJetDeltaPt"
         return self.GetDeltaPtVsCentName(jet_type, jet_radius, hist_name)
 
+    def GetRCDeltaPtVsLeadJetPtName(self, jet_type, jet_radius):
+        hist_name = "RCDeltaPt"
+        return self.GetDeltaPtVsLeadJetPtName(jet_type, jet_radius, hist_name)
+
+    def GetRCPerpDeltaPtVsLeadJetPtName(self, jet_type, jet_radius):
+        hist_name = "RCPerpDeltaPt"
+        return self.GetDeltaPtVsLeadJetPtName(jet_type, jet_radius, hist_name)
+
+    def GetRCExclLeadJetDeltaPtVsLeadJetPtName(self, jet_type, jet_radius):
+        hist_name = "RCExclLeadJetDeltaPt"
+        return self.GetDeltaPtVsLeadJetPtName(jet_type, jet_radius, hist_name)
+
+    def GetRCDeltaPtVsRhoName(self, jet_type, jet_radius):
+        hist_name = "RCDeltaPt"
+        return self.GetDeltaPtVsRhoName(jet_type, jet_radius, hist_name)
+
+    def GetRCPerpDeltaPtVsRhoName(self, jet_type, jet_radius):
+        hist_name = "RCPerpDeltaPt"
+        return self.GetDeltaPtVsRhoName(jet_type, jet_radius, hist_name)
+
+    def GetRCExclLeadJetDeltaPtVsRhoName(self, jet_type, jet_radius):
+        hist_name = "RCExclLeadJetDeltaPt"
+        return self.GetDeltaPtVsRhoName(jet_type, jet_radius, hist_name)
+
     def GetDeltaPtVsCentName(self, jet_type, jet_radius, hist_name):
+        GetDeltaPtName(self, jet_type, jet_radius, hist_name, "Cent")
+
+    def GetDeltaPtVsLeadJetPtName(self, jet_type, jet_radius, hist_name):
+        GetDeltaPtName(self, jet_type, jet_radius, hist_name, "LeadJetPt")
+
+    def GetDeltaPtVsRhoName(self, jet_type, jet_radius, hist_name):
+        GetDeltaPtName(self, jet_type, jet_radius, hist_name, "Rho")
+
+    def GetDeltaPtName(self, jet_type, jet_radius, hist_name, obs_name):
         if "Gen" in self.fRhoName: gen = True
         else: gen = False
         if gen:
@@ -147,7 +180,7 @@ class RhoDefinition:
                 jet_name = "Jet_AKTFull{jet_radius}_tracks_pT0150_caloClusters_ET0300_pt_scheme".format(jet_radius=jet_radius)
             else:
                 jet_name = "Jet_AKTCharged{jet_radius}_tracks_pT0150_pt_scheme".format(jet_radius=jet_radius)
-        return "{task_name}/{jet_name}/{rho_object_name}/fHist{rho_label}{hist_name}VsCent".format(task_name=task_name, jet_name=jet_name, rho_object_name=self.fRhoObjectName, rho_label=self.fRhoLabel, hist_name=hist_name)
+        return "{task_name}/{jet_name}/{rho_object_name}/fHist{rho_label}{hist_name}Vs{obs_name}".format(task_name=task_name, jet_name=jet_name, rho_object_name=self.fRhoObjectName, rho_label=self.fRhoLabel, hist_name=hist_name, obs_name=obs_name)
 
     def Print(self):
         print(self.fHash, self.fJetName, self.fRhoLabel, self.fRhoName, self.fRhoTitle)
@@ -163,7 +196,7 @@ class UEHistograms:
         self.fPtBins = numpy.array([0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30, 40, 50, 60, 80, 100], dtype=numpy.float32)
         self.fRhoBins = numpy.array(list(DMesonJetUtils.frange(0, 15, 0.5, True)), dtype=numpy.float32)
         self.fCentBins = numpy.array(list(DMesonJetUtils.frange(0, 100, 5, True)), dtype=numpy.float32)
-        self.fOccCorrBins = numpy.array(list(DMesonJetUtils.frange(0, 1.01, 0.005, True)), dtype=numpy.float32)
+        self.fOccCorrBins = numpy.array(list(DMesonJetUtils.frange(0, 1.2, 0.02, True)), dtype=numpy.float32)
         self.fCoarseCentBins = numpy.array([0, 10, 30, 50, 90], dtype=numpy.float32)
         self.fFiles = []
         self.fTitle = config["collision_system"]
@@ -181,14 +214,14 @@ class UEHistograms:
 
     def GenerateStandardRhoDefinitions(self):
         self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_Rho_histos", "", "CMS Method", "Signal", True))
-        # self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoExclLeadJets_histos", "", "CMS Method, excl. lead. jets", "Signal", True))
+        self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoExclLeadJets_histos", "", "CMS Method, excl. lead. jets", "Signal", True))
         self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTrans_histos", "", "Trans Plane", "Signal", False))
         # self.fRhoDetLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTrans_histos", "B2B", "Trans Plane, back-to-back", "Signal", False))
 
         self.fDefaultRhoDetLevDefinition = RhoDefinition("AliAnalysisTaskRhoDev_Rho_histos", "", "CMS Method", "Signal", True)
 
         self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoGen_histos", "", "CMS Method (gen. lev.)", "Signal", True))
-        # self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoExclLeadJetsGen_histos", "", "CMS Method, excl. lead. jets", "Signal", True))
+        self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoDev_RhoExclLeadJetsGen_histos", "", "CMS Method, excl. lead. jets", "Signal", True))
         self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "", "Trans Plane (gen. lev.)", "Signal", False))
         # self.fRhoGenLevDefinitions.append(RhoDefinition("AliAnalysisTaskRhoTransDev_RhoTransGen_histos", "B2B", "Trans Plane, back-to-back (gen. lev.)", "Signal", False))
 
@@ -316,14 +349,16 @@ class UEHistograms:
         h_new_name = CleanUpHistogramName(hname)
         histograms = self.LoadHistograms(hname, rho_definition.fRhoTitle, "C", "", self.fCentBins, self.fOccCorrBins)
 
-        occ_corr_vs_cent_2d = histograms[h_new_name]
+        occ_corr_vs_cent_2d = histograms["{}_Rebinned".format(h_new_name)]
         occ_corr_vs_cent_2d.GetXaxis().SetTitle("Multiplicity (%)")
         occ_corr_vs_cent_2d.GetYaxis().SetTitle("#it{C}")
         occ_corr = Projections(occ_corr_vs_cent_2d, None, 0)
         h_occ_corr_name = "OccCorrFactDistribution_{}".format(rho_definition.fShortName)
         occ_corr.SetName(h_occ_corr_name)
         occ_corr.GetXaxis().SetTitle("#it{C}")
-        occ_corr.GetYaxis().SetTitle("#counts")
+        occ_corr.GetXaxis().SetTitleOffset(1)
+        occ_corr.GetYaxis().SetTitle("counts")
+        occ_corr.GetYaxis().SetTitleOffset(1)
         histograms[h_occ_corr_name] = occ_corr
 
         if h_new_name in self.fHistograms: raise OverwriteError(self.fHistograms, h_new_name)
@@ -453,7 +488,7 @@ class UEHistograms:
             h = histograms[h_new_name]
             self.PlotSingle(h)
             h = histograms["OccCorrFactDistribution_{}".format(rho_definition.fShortName)]
-            self.PlotSingle(h)
+            self.PlotSingle(h, "stat")
             h = histograms["{}_Profile".format(h_new_name)]
             self.PlotSingle(h)
             h = histograms["{}_StdDev".format(h_new_name)]
@@ -576,7 +611,7 @@ class UEHistograms:
             comp.fLegendSpectra.SetX2(0.47)
             for r in comp.fResults: globalList.append(r)
 
-    def PlotSingle(self, h):
+    def PlotSingle(self, h, opt=None):
         cname = h.GetName()
         c = ROOT.TCanvas(cname, cname)
         globalList.append(c)
@@ -585,7 +620,20 @@ class UEHistograms:
             c.SetLogz()
             h.Draw("colz")
         else:
+            h.SetMarkerStyle(ROOT.kFullCircle)
+            h.SetMarkerSize(0.9)
             h.Draw("")
+            if opt == "stat":
+                leg = ROOT.TPaveText(0.57, 0.75, 0.92, 0.83, "NB NDC")
+                leg.SetName("{0}_legend".format(cname))
+                leg.SetFillStyle(0)
+                leg.SetBorderSize(0)
+                leg.SetTextFont(43)
+                leg.SetTextSize(20)
+                leg.AddText("#mu={:.3f}".format(h.GetMean()))
+                leg.AddText("#sigma={:.3f}".format(h.GetStdDev()))
+                leg.Draw()
+                globalList.append(leg)
         self.fCanvases.append(c)
         return c
 
