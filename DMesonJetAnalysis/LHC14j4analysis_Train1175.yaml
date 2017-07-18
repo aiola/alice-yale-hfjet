@@ -1,7 +1,7 @@
 # MB Monte Carlo: c,b->D0
-name: LHC14j4_Train1167
+name: LHC14j4_Train1175
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1167_1168_1169_1170
+train: Jets_EMC_pp_MC_1175_1176_1177_1178
 file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
