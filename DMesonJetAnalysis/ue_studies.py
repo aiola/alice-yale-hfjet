@@ -342,7 +342,7 @@ class UEHistograms:
                 deltaPt.Scale(1. / deltaPt.Integral(), "width")
                 deltaPt.GetYaxis().SetTitle("probability density")
                 deltaPt.SetTitle(RCtitle)
-                h_deltapt_name = "{}Distribution_{}".format(RCName, rho_definition.fShortName)
+                h_deltapt_name = "{}Distribution_{}".format(RCName, rhoDef.fShortName)
                 deltaPt.SetName(h_deltapt_name)
                 self.fHistograms[h_deltapt_name] = deltaPt
 
@@ -792,16 +792,19 @@ class UEHistograms:
 
         self.fCompareRhoDefinitions = rho_definitions1 & rho_definitions2
 
-        self.CompareGeneric("RCDeltaPtVsCent", "", True)
+        # self.CompareGeneric("RCDeltaPtVsRho", "", True)
         self.CompareGeneric("RhoVsLeadDPt", self.fMesonName)
         self.CompareGeneric("RhoVsLeadJetPt", self.fMesonName)
         self.CompareGeneric("RhoVsTrackPt")
         self.CompareGeneric("RhoVsLeadJetPt")
-        self.CompareGeneric("RhoDistr", "", True)
+        self.CompareGeneric("RhoDistribution", "", True)
+        self.CompareGeneric("RCDeltaPtDistribution", "", True)
+        self.CompareGeneric("RCExclLeadJetDeltaPtDistribution", "", True)
         if self.fCentrality and ue2.fCentrality:
             self.CompareGeneric("LeadTrackPtVsCent")
             self.CompareGeneric("LeadJetPtVsCent")
             self.CompareGeneric("RhoVsCent")
+            # self.CompareGeneric("RCDeltaPtVsCent", "", True)
 
     def CompareGeneric(self, func, meson_name="", logY=False):
         if meson_name: meson_name_genlev = "{}_MCTruth".format(meson_name)
@@ -813,8 +816,8 @@ class UEHistograms:
 
             def AddRhoDefinition(rho_def, title, ue, meson_name_internal):
                 if not rho_def_comp == rho_def: return
-                if func == "RhoDistr":
-                    hname = "RhoDistribution_{}".format(rho_def.fShortName)
+                if "Distribution" in func:
+                    hname = "{}_{}".format(func, rho_def.fShortName)
                     h = ue.fHistograms[hname]
                     h_copy = h.Clone()
                     h_copy.SetTitle(title)
@@ -824,32 +827,19 @@ class UEHistograms:
                     if meson_name_internal:
                         hname = "{taskName}_histos/histos{taskName}/{meson_name}/Jet_AKT{jet_type}{jet_radius}_pt_scheme/fHist{hname}".format(taskName=ue.fDMesonTaskName, meson_name=meson_name_internal, jet_type=ue.fJetType, jet_radius=ue.fJetRadius, hname=func)
                     else:
-                        if "DeltaPt" in func:
-                            hname = getattr(rho_def, "Get{}Name".format(func))(self.fJetType, self.fJetRadius)
-                        else:
-                            hname = getattr(rho_def, "Get{}Name".format(func))()
-                    if "DeltaPt" in func:
-                        h_new_name = CleanUpHistogramName(hname)
-                        histograms = ue.fHistograms[h_new_name]
-                        RCname = "RCDeltaPt"
-                        h = histograms["{}Distribution_{}".format(RCname, rho_def.fShortName)]
-                        h_copy = h.Clone()
-                        h_copy.SetTitle(title)
-                        globalList.append(h_copy)
-                        hListMean.append(h_copy)
-                    else:
-                        h_new_name = CleanUpHistogramName(hname)
-                        histograms = ue.fHistograms[h_new_name]
-                        h = histograms["{}_Profile".format(h_new_name)]
-                        h_copy = h.Clone()
-                        h_copy.SetTitle(title)
-                        globalList.append(h_copy)
-                        hListMean.append(h_copy)
-                        h = histograms["{}_StdDev".format(h_new_name)]
-                        h_copy = h.Clone()
-                        h_copy.SetTitle(title)
-                        globalList.append(h_copy)
-                        hListStdDev.append(h_copy)
+                        hname = getattr(rho_def, "Get{}Name".format(func))()
+                    h_new_name = CleanUpHistogramName(hname)
+                    histograms = ue.fHistograms[h_new_name]
+                    h = histograms["{}_Profile".format(h_new_name)]
+                    h_copy = h.Clone()
+                    h_copy.SetTitle(title)
+                    globalList.append(h_copy)
+                    hListMean.append(h_copy)
+                    h = histograms["{}_StdDev".format(h_new_name)]
+                    h_copy = h.Clone()
+                    h_copy.SetTitle(title)
+                    globalList.append(h_copy)
+                    hListStdDev.append(h_copy)
 
             for rho_def in self.fCompareRhoDetLevDefinitions1:
                 AddRhoDefinition(rho_def, self.fTitle, self, meson_name)
