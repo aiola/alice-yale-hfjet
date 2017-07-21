@@ -67,9 +67,7 @@ def subprocessCheckOutput(cmd):
     return subprocess.check_output(cmd, universal_newlines=True)
 
 def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
-    output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, TrainName + "/" + str(TrainNumber) + "_*"], universal_newlines=True)
-    # print("alien_find", "-d", "-l", "1", SearchPath, TrainName + "/" + str(TrainNumber) + "_*")
-    # print(output)
+    output = subprocessCheckOutput(["alien_find", "-d", "-l", "2", SearchPath, TrainName + "/" + str(TrainNumber) + "_*"])
     i = output.rfind(str(TrainNumber) + "_")
     j = len(str(TrainNumber)) + 14 + i
     FullTrainNumber = output[i:j]
@@ -79,9 +77,7 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
     for Dataset, TrainNumber in zip(sorted(Datasets.iterkeys()), TrainNumbers):
 
         AlienPath = "/alice/sim/" + str(Year) + "/" + Dataset
-        FirtRun = Datasets[Dataset][0]
-        SearchPath = "{0}/{1}".format(AlienPath, FirtRun)
-        FullTrainNumber = GetFullTrainNumber(SearchPath, TrainName, TrainNumber)
+        FullTrainNumber = GetFullTrainNumber(AlienPath, TrainName, TrainNumber)
 
         dest = "/alice/cern.ch/user/s/saiola/{0}/{1}".format(TrainName, FullTrainNumber)
 
