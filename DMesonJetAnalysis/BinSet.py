@@ -81,10 +81,10 @@ class BinSet:
 
     def AmIJetDependent(self):
         for axis in self.fAxis:
-            if "jet" in axis.fName or axis.fName == "d_z": return True
+            if "jet" in axis.fName or axis.fName == "d_z" or axis.fName == "d_corrz": return True
         for axis in self.fBinCountSpectraAxis:
             for a in axis:
-                if "jet" in a.fName or a.fName == "d_z": return True
+                if "jet" in a.fName or a.fName == "d_z" or a.fName == "d_corrz": return True
         for cut in self.fCuts.fCuts:
             if cut["object"] == "jet": return True
         return False
@@ -138,7 +138,7 @@ class BinSet:
                 rlist.Add(bin.fInvMassHisto)
             if bin.fMassFitter:
                 rlist.Add(bin.fMassFitter)
-            for h in bin.fBinCountSpectra.itervalues():
+            for _, h in bin.fBinCountSpectra.itervalues():
                 rlist.Add(h)
         return rlist
 
@@ -150,7 +150,9 @@ class BinSet:
                 self.AddBinsRecursive(limitSetList[1:], limits)
         else:
             bin = BinLimits(limits)
-            bin.fBinCountSpectraAxis = self.fBinCountSpectraAxis
+            bin.fBinCountSpectra = dict()
+            for n, a in self.fBinCountSpectraAxis.iteritems():
+                bin.fBinCountSpectra[n] = (a, None)
             self.fBins.append(bin)
 
     def FindBin(self, dmeson, jet):
@@ -167,8 +169,7 @@ class BinLimits:
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
-        self.fBinCountSpectra = dict()
-        self.fBinCountSpectraAxis = None
+        self.fBinCountSpectra = None
         self.fCounts = 0
         self.fSumw2 = 0
 
@@ -178,13 +179,15 @@ class BinLimits:
         if self.fInvMassHisto:
             self.fInvMassHisto.Fill(dmeson.fInvMass, w)
 
-        for axis, hist in zip(self.fBinCountSpectraAxis.itervalues(), self.fBinCountSpectra.itervalues()):
+        for axis, hist in self.fBinCountSpectra.itervalues():
             obsVal = []
             for a in axis:
                 if a.fName == "jet_pt":
                     obsVal.append(jet.fPt)
                 elif a.fName == "d_z":
                     obsVal.append(jet.fZ)
+                elif a.fName == "d_corrz":
+                    obsVal.append(jet.fCorrZ)
                 elif a.fName == "jet_n":
                     obsVal.append(jet.fN)
                 elif a.fName == "jet_corrpt":
@@ -230,6 +233,9 @@ class BinLimits:
     def SetDZLimits(self, min, max):
         self.fLimits["d_z"] = min, max
 
+    def SetDCorrZLimits(self, min, max):
+        self.fLimits["d_corrz"] = min, max
+
     def SetJetEtaLimits(self, min, max):
         self.fLimits["jet_eta"] = min, max
 
@@ -251,6 +257,8 @@ class BinLimits:
             elif name == "jet_eta" and (jet.fEta < min or jet.fEta >= max):
                 return False
             elif name == "d_z" and (jet.fZ < min or jet.fZ >= max):
+                return False
+            elif name == "d_corrz" and (jet.fCorrZ < min or jet.fCorrZ >= max):
                 return False
 
         return True
@@ -277,6 +285,8 @@ class BinLimits:
                 name += "JetEta_{0}_{1}_".format(int(min * 10), int(max * 10)).replace("-", "N")
             elif varName == "d_z":
                 name += "DZ_{0}_{1}_".format(int(min * 100), int(max * 100))
+            elif varName == "d_corrz":
+                name += "DCorrZ_{0}_{1}_".format(int(min * 100), int(max * 100))
 
         # remove last "_"
         if name: name = name[:-1]
@@ -299,6 +309,8 @@ class BinLimits:
                 title += "{0:.0f} < #it{{#eta}}_{{jet}} < {1:.0f}, ".format(min, max)
             elif varName == "d_z":
                 title += "{0:.1f} < #it{{z}}_{{||, D}} < {1:.1f}, ".format(min, max)
+            elif varName == "d_corrz":
+                title += "{0:.1f} < #it{{z}}_{{||, D}}^{{sub}} < {1:.1f}, ".format(min, max)
 
         # remove last ", "
         if title: title = title[:-2]
@@ -331,7 +343,7 @@ class BinLimits:
             self.fInvMassHisto.SetLineColor(ROOT.kBlue + 2)
 
         massAxis = array.array('d', numpy.linspace(minMass, maxMass, nMassBins * 100 + 1, True))
-        for sname, axis in self.fBinCountSpectraAxis.iteritems():
+        for sname, (axis, _) in self.fBinCountSpectra.iteritems():
             if trigger: hnameSB = "InvMassBinCounting_{}_{}_{}_{}".format(trigger, DMesonDef, self.GetName(), sname)
             else: hnameSB = "InvMassBinCounting_{}_{}_{}".format(DMesonDef, self.GetName(), sname)
             if len(axis) == 2:
@@ -347,4 +359,4 @@ class BinLimits:
             else:
                 print("Error!! Bin counting histograms only allowed for a maximum of 2 axis. Spectrum {}".format(sname))
                 exit(1)
-            self.fBinCountSpectra[sname] = h
+            self.fBinCountSpectra[sname] = (axis, h)
