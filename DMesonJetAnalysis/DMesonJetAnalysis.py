@@ -588,7 +588,7 @@ class DMesonJetAnalysisEngine:
                 print("Skipping bin {0} because fit was unsuccessful".format(bin.GetTitle()))
                 continue
 
-            binCountAnalysisHisto = bin.fBinCountSpectra[s.fSimpleName]
+            binCountAnalysisHisto = bin.fBinCountSpectra[s.fSimpleName][1]
 
             print("Bin: {0}".format(bin.GetTitle()))
             sigma = bin.fMassFitter.GetSignalWidth()

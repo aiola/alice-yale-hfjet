@@ -103,5 +103,10 @@ class Axis:
                 title = "#it{{z}}_{{||,D}}^{{{jetLabel},{label}}}".format(jetLabel=jetLabel, label=label)
             else:
                 title = "#it{{z}}_{{||,D}}^{{{jetLabel}}}".format(jetLabel=jetLabel)
+        elif self.fName == "d_corrz":
+            if label:
+                title = "#it{{z}}_{{||,D}}^{{sub,{jetLabel},{label}}}".format(jetLabel=jetLabel, label=label)
+            else:
+                title = "#it{{z}}_{{||,D}}^{{sub,{jetLabel}}}".format(jetLabel=jetLabel)
 
         return title

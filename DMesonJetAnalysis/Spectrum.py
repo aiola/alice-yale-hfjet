@@ -265,6 +265,8 @@ class Spectrum:
                 values.append(jet.fN)
             elif axis.fName == "d_z":
                 values.append(jet.fZ)
+            elif axis.fName == "d_corrz":
+                values.append(jet.fCorrZ)
             elif axis.fName == "d_pt":
                 values.append(dmeson.fPt)
             elif axis.fName == "d_eta":
