@@ -413,8 +413,8 @@ class DMesonJetResponseProjector:
         self.fCurrentRootFile = None
         self.fCurrentTreeNumber = -1
         if ROOT.gROOT.GetVersionInt() >= 60000:
-            ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
-            self.GetDetectorResponse = self.GetDetectorResponseRoot6
+            # ROOT.gROOT.LoadMacro("DJetTreeReaderRoot6.cxx+")
+            self.GetDetectorResponse = self.GetDetectorResponseRoot5
         else:
             self.GetDetectorResponse = self.GetDetectorResponseRoot5
 
@@ -513,7 +513,7 @@ class DMesonJetResponseProjector:
                     print("Stopping the analysis.")
                     break
 
-            self.RecalculateWeight()
+            self.OnFileChange()
             for r in response.itervalues():
                 r.Fill(dmeson, self.fWeight)
 
