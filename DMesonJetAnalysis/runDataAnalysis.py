@@ -2,6 +2,7 @@
 # python script to run the D meson jet analysis on 2010 pp data
 
 import ROOT
+print("ROOT {} imported".format(ROOT.gROOT.GetVersionInt()))
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 import argparse
 import yaml
