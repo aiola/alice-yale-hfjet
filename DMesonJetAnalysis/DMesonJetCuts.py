@@ -121,7 +121,12 @@ class DMesonJetCuts:
 
     def InitializeCuts(self):
         self.fFastCuts = []
+        self.fFastCutsGeneratorOnly = []
         for cut in self.fCuts:
+            if "apply" in cut and cut["apply"] == "gen":
+                cuts = self.fFastCutsGeneratorOnly
+            else:
+                cuts = self.fFastCuts
             if "min" in cut: min = cut["min"]
             else: min = -sys.float_info.max
             if "max" in cut: max = cut["max"]
@@ -134,36 +139,41 @@ class DMesonJetCuts:
                 max = None
             if cut["object"] == "d":
                 if cut["variable"] == "fPt":
-                    self.fFastCuts.append((self.CutDPt, None, min, max))
+                    cuts.append((self.CutDPt, None, min, max))
                 elif cut["variable"] == "fEta":
-                    self.fFastCuts.append((self.CutDEta, None, min, max))
+                    cuts.append((self.CutDEta, None, min, max))
                 elif cut["variable"] == "fPhi":
-                    self.fFastCuts.append((self.CutDPhi, None, min, max))
+                    cuts.append((self.CutDPhi, None, min, max))
                 elif "include" in cut:
-                    self.fFastCuts.append((self.CutDInclude, cut["variable"], min, max))
+                    cuts.append((self.CutDInclude, cut["variable"], min, max))
                 elif "exclude" in cut:
-                    self.fFastCuts.append((self.CutDExclude, cut["variable"], min, max))
+                    cuts.append((self.CutDExclude, cut["variable"], min, max))
                 else:
-                    self.fFastCuts.append((self.CutD, cut["variable"], min, max))
+                    cuts.append((self.CutD, cut["variable"], min, max))
             elif cut["object"] == "jet":
                 if cut["variable"] == "fPt":
-                    self.fFastCuts.append((self.CutJetPt, None, min, max))
+                    cuts.append((self.CutJetPt, None, min, max))
                 elif cut["variable"] == "fCorrPt":
-                    self.fFastCuts.append((self.CutJetCorrPt, None, min, max))
+                    cuts.append((self.CutJetCorrPt, None, min, max))
                 elif cut["variable"] == "fEta":
-                    self.fFastCuts.append((self.CutJetEta, None, min, max))
+                    cuts.append((self.CutJetEta, None, min, max))
                 elif cut["variable"] == "fPhi":
-                    self.fFastCuts.append((self.CutJetPhi, None, min, max))
+                    cuts.append((self.CutJetPhi, None, min, max))
                 elif cut["variable"] == "fZ":
-                    self.fFastCuts.append((self.CutJetZ, None, min, max))
+                    cuts.append((self.CutJetZ, None, min, max))
                 elif "include" in cut:
-                    self.fFastCuts.append((self.CutJetInclude, cut["variable"], min, max))
+                    cuts.append((self.CutJetInclude, cut["variable"], min, max))
                 elif "exclude" in cut:
-                    self.fFastCuts.append((self.CutJetExclude, cut["variable"], min, max))
+                    cuts.append((self.CutJetExclude, cut["variable"], min, max))
                 else:
-                    self.fFastCuts.append((self.CutJet, cut["variable"], min, max))
+                    cuts.append((self.CutJet, cut["variable"], min, max))
 
     def ApplyCuts(self, dmeson, jet):
         for funct, var, value1, value2 in self.fFastCuts:
+            if not funct(dmeson, jet, var, value1, value2): return False
+        return True
+
+    def ApplyCutsGeneratorOnly(self, dmeson, jet):
+        for funct, var, value1, value2 in self.fFastCutsGeneratorOnly:
             if not funct(dmeson, jet, var, value1, value2): return False
         return True

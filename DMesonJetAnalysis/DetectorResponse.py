@@ -502,16 +502,17 @@ class DetectorResponse:
         else:
             weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
 
-        if dMesonTruth.fPt > 0 and dMesonMeasured.fPt > 0:
-            if self.fCuts.ApplyCuts(dMesonMeasured, jetMeasured):
-                self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
-                self.FillResolution(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
-                self.FillMeasured(dMesonMeasured, jetMeasured, w * weff)
-                self.FillRecoTruth(dMesonTruth, jetTruth, w * weff)
+        if dMesonTruth.fPt <= 0: return
+        if not self.fCuts.ApplyCutsGeneratorOnly(dMesonTruth, jetTruth): return
 
-        if dMesonTruth.fPt > 0:
-            if self.fCuts.ApplyCuts(dMesonTruth, jetTruth):
-                self.FillTruth(dMesonTruth, jetTruth, w)
+        if dMesonMeasured.fPt > 0 and self.fCuts.ApplyCuts(dMesonMeasured, jetMeasured):
+            self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
+            self.FillResolution(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
+            self.FillMeasured(dMesonMeasured, jetMeasured, w * weff)
+            self.FillRecoTruth(dMesonTruth, jetTruth, w * weff)
+
+        if self.fCuts.ApplyCuts(dMesonTruth, jetTruth):
+            self.FillTruth(dMesonTruth, jetTruth, w)
 
 class ResponseAxis:
     def __init__(self, detector, truth):
