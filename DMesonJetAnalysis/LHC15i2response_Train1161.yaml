@@ -33,7 +33,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      apply: gen # implement special treatment!!!
+      apply: gen
       include: 4
   -
     name: JetPtEtaSpectrum_DPt_30_Prompt
@@ -55,6 +55,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 4
   -
     name: DPtEtaSpectrum_JetPt_5_Prompt
@@ -81,6 +82,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 4
   -
     name: JetPtZSpectrum_Prompt
@@ -103,6 +105,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 4
   -
     name: JetPtDPtSpectrum_CoarseBins_Prompt
@@ -124,6 +127,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 4
   -
     name: JetPtDPtSpectrum_Prompt
@@ -145,6 +149,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 4
   -
     name: JetPtSpectrum_DPt_30_NonPrompt
@@ -167,6 +172,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 5
   -
     name: JetPtEtaSpectrum_DPt_30_NonPrompt
@@ -188,6 +194,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 5
   -
     name: DPtEtaSpectrum_JetPt_5_NonPrompt
@@ -214,6 +221,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 5
   -
     name: JetPtZSpectrum_NonPrompt
@@ -236,6 +244,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 5
   -
     name: JetPtDPtSpectrum_CoarseBins_NonPrompt
@@ -257,6 +266,7 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 5
   -
     name: JetPtDPtSpectrum_NonPrompt
@@ -278,4 +288,5 @@ analysis:
     -
       object: d
       variable: fPartonType
+      apply: gen
       include: 5
