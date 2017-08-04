@@ -35,6 +35,30 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
             else:
                 print("D meson '{0}' not valid.".format(dmeson))
                 return
+        elif period == "LHC16k" and recopass == "pass1" and cent == -1:
+            if dmeson == "D0":
+                fnameInput = "D0toKpiCuts_pp2016_SQM17_SCostanza.root"
+                fileInput = ROOT.TFile(fnameInput)
+                if not fileInput or fileInput.IsZombie():
+                    print("Could not find file {}".format(fnameInput))
+                    exit(1)
+                cuts = fileInput.Get("D0toKpiCuts")
+                fileInput.Close()
+            else:
+                print("D meson '{0}' not valid.".format(dmeson))
+                return
+        elif period == "LHC12a" and recopass == "pass2" and cent == -1:
+            if dmeson == "D0":
+                fnameInput = "D0toKpiCuts_pp2012_SQM17_SCostanza.root"
+                fileInput = ROOT.TFile(fnameInput)
+                if not fileInput or fileInput.IsZombie():
+                    print("Could not find file {}".format(fnameInput))
+                    exit(1)
+                cuts = fileInput.Get("D0toKpiCuts")
+                fileInput.Close()
+            else:
+                print("D meson '{0}' not valid.".format(dmeson))
+                return
         elif period == "LHC15o" and recopass == "pass1" and (cent == 0 or cent == 1):
             if dmeson == "D0":
                 ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
