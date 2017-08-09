@@ -1,5 +1,5 @@
 # Response c,b->D0
-name: LHC15i2_Train1161_cresponse
+name: LHC15i2_Train1161_response
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_1161_1162_1163_1164
 file_name: AnalysisResults.root
@@ -19,6 +19,29 @@ analysis:
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: JetPtSpectrum_DPt_30_Prompt_Extended
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt:
+        bins: [3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
         coarse: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
