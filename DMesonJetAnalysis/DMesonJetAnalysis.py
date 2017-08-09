@@ -2,7 +2,6 @@
 # python program to perform a D meson jet analysis
 
 import math
-import array
 import copy
 import collections
 import os

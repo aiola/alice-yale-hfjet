@@ -2,7 +2,6 @@
 # python base classes and utilities for D Meson jet analysis
 
 import ROOT
-import array
 import os
 import math
 import copy
