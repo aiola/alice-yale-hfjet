@@ -233,17 +233,17 @@ def data_raw_comparison_for_generator(gen, charm_ts, beauty_ts, jet_type, jet_ra
     loader.fRawYieldMethod = "SideBand"
     loader.fUseReflections = False
 
-    loader.fSpectrumName = "DZSpectrum"
+    loader.fVariableName = "JetZ"
     events = loader.LoadNumberOfEvents()
     print("The number of events is {0}".format(events))
-    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis()
+    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
     data_JetZSpectrum_JetPt_5_30_DPt_30 = h.Clone("data_JetZSpectrum_JetPt_5_7_DPt_30")
     data_JetZSpectrum_JetPt_5_30_DPt_30.SetTitle("Data, 5 < #it{p}_{T, ch jet} < 30 GeV/#it{c}")
     data_JetZSpectrum_JetPt_5_30_DPt_30.Scale(crossSection / events / branchingRatio / 25 / 2, "width")
 
     loader.fDataSpectrumList = None
-    loader.fSpectrumName = "DZJetPtSpectrum"
-    data_JetZPtSpectrum_DPt_30 = loader.GetDefaultSpectrumFromDMesonJetAnalysis()
+    loader.fVariableName = "JetPtZ"
+    data_JetZPtSpectrum_DPt_30 = loader.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
 
     h = data_JetZPtSpectrum_DPt_30.ProjectionX("data_JetZSpectrum_JetPt_5_7_DPt_30", 1, 1)
     data_JetZSpectrum_JetPt_5_7_DPt_30 = h.Clone("data_JetZSpectrum_JetPt_5_7_DPt_30")

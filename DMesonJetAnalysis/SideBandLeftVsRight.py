@@ -83,7 +83,9 @@ def SideBandPlot():
     loader.fDMeson = "D0"
     loader.fJetType = "Charged"
     loader.fJetRadius = "R040"
-    loader.fSpectrumName = "JetPtSpectrum_DPt_30_SideBand"
+    loader.fVariableName = "JetPt"
+    loader.fKinematicCuts = "DPt_30"
+    loader.fRawYieldMethod = "SideBand"
     loader.LoadDataListFromDMesonJetAnalysis()
     dptbinList = loader.fDataJetList.FindObject("D0_Charged_R040_DPtBins_JetPt_5_30")
     spectrumList = loader.fDataSpectrumList
