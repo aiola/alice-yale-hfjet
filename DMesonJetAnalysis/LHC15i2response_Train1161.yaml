@@ -36,12 +36,82 @@ analysis:
       apply: gen
       include: 4
   -
-    name: JetPtSpectrum_DPt_30_Prompt_Extended
+    name: JetZSpectrum_DPt_30_JetPt_5_30_Prompt
+    active: yes
+    efficiency: no
+    bins:
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: DPtSpectrum_Prompt
+    active: yes
+    efficiency: no
+    bins:
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: JetPtDPtSpectrum_Prompt
     active: yes
     efficiency: no
     bins:
       jet_pt:
-        bins: [3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
+        bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: JetPtSpectrum_DPt_30_NonPrompt
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
         coarse: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
@@ -57,7 +127,78 @@ analysis:
       object: d
       variable: fPartonType
       apply: gen
-      include: 4
+      include: 5
+  -
+    name: JetZSpectrum_DPt_30_JetPt_5_30_NonPrompt
+    active: yes
+    efficiency: no
+    bins:
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+  -
+    name: DPtSpectrum_NonPrompt
+    active: yes
+    efficiency: no
+    bins:
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+  -
+    name: JetPtDPtSpectrum_NonPrompt
+    active: yes
+    efficiency: no
+    bins:
+      jet_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+#following is optional
   -
     name: JetPtEtaSpectrum_DPt_30_Prompt
     active: yes
@@ -131,73 +272,6 @@ analysis:
       apply: gen
       include: 4
   -
-    name: JetPtDPtSpectrum_CoarseBins_Prompt
-    active: yes
-    efficiency: no
-    bins:
-      jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
-      d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPartonType
-      apply: gen
-      include: 4
-  -
-    name: JetPtDPtSpectrum_Prompt
-    active: yes
-    efficiency: no
-    bins:
-      jet_pt:
-        bins: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 45, 50, 55, 60, 70, 80, 90, 100]
-        coarse: [5, 6, 8, 10, 14, 20, 30, 40, 60, 80, 100]
-      d_pt:
-        bins: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 45, 50, 55, 60, 70, 80, 90, 100]
-        coarse: [0, 1, 3, 5, 8, 12, 16, 30, 40, 50, 60, 80, 100]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPartonType
-      apply: gen
-      include: 4
-  -
-    name: JetPtSpectrum_DPt_30_NonPrompt
-    active: yes
-    efficiency: no
-    bins:
-      jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPt
-      min: 3.0
-    -
-      object: d
-      variable: fPartonType
-      apply: gen
-      include: 5
-  -
     name: JetPtEtaSpectrum_DPt_30_NonPrompt
     active: yes
     efficiency: no
@@ -258,50 +332,6 @@ analysis:
         min: 0
         max: 1
         width: 0.1
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPartonType
-      apply: gen
-      include: 5
-  -
-    name: JetPtDPtSpectrum_CoarseBins_NonPrompt
-    active: yes
-    efficiency: no
-    bins:
-      jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 30]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
-      d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPartonType
-      apply: gen
-      include: 5
-  -
-    name: JetPtDPtSpectrum_NonPrompt
-    active: yes
-    efficiency: no
-    bins:
-      jet_pt:
-        bins: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
-      d_pt:
-        bins: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32]
-        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
     cuts:
     -
       object: jet

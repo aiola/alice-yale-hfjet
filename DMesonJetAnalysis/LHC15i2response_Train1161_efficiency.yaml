@@ -1,0 +1,175 @@
+# Response c,b->D0
+name: LHC15i2_Train1161_response_efficiency
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_MC_1161_1162_1163_1164
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJetsDetectorResponse
+analysis:
+- 
+  d_meson: [D0]
+  jets:
+  -
+    type: Charged
+    radius: R040
+  response:
+  -
+    name: JetPtSpectrum_DPt_30_Prompt
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1161_1162_1163_1164/LHC15i2_Train1161_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    bins:
+      jet_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: JetZSpectrum_DPt_30_JetPt_5_30_Prompt
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1161_1162_1163_1164/LHC15i2_Train1161_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    bins:
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: DPtSpectrum_Prompt
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1161_1162_1163_1164/LHC15i2_Train1161_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_NoJet
+    bins:
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
+    name: JetPtSpectrum_DPt_30_NonPrompt
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1161_1162_1163_1164/LHC15i2_Train1161_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_NonPrompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_NonPrompt_Efficiency_JetPt_500_3000
+    bins:
+      jet_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+  -
+    name: JetZSpectrum_DPt_30_JetPt_5_30_NonPrompt
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1161_1162_1163_1164/LHC15i2_Train1161_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_NonPrompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_NonPrompt_Efficiency_JetPt_500_3000
+    bins:
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+  -
+    name: DPtSpectrum_NonPrompt
+    active: yes
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1161_1162_1163_1164/LHC15i2_Train1161_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_NonPrompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_NonPrompt_Efficiency_NoJet
+    bins:
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+      
