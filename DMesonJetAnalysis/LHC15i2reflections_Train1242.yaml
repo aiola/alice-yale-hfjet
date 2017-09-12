@@ -1,7 +1,7 @@
-# MB Monte Carlo: reflection templates with old pass2 cuts
-name: LHC15i2_Train1091_reflections
+# MB Monte Carlo: reflection templates
+name: LHC15i2_Train1242_reflections
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1091_1092_1093_1094
+train: Jets_EMC_pp_MC_1242_1243_1244_1245
 file_name: AnalysisResults.root
 merging_type: weighted_sum
 task_name: AliAnalysisTaskDmesonJets
@@ -19,24 +19,6 @@ analysis:
     radius: R040
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
-  -
-    name: JetPtBins_DPt_20
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
-    active_mesons: [D0_kSignalOnly, D0_WrongPID]
-    need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
-    bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPt
-      min: 2.0
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
@@ -56,31 +38,13 @@ analysis:
       variable: fPt
       min: 3.0
   -
-    name: JetPtBins_DPt_40
-    title: "#it{p}_{T,D} > 4 GeV/#it{c}"
-    active_mesons: [D0_kSignalOnly, D0_WrongPID]
-    need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
-    efficiency: no
-    bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: d
-      variable: fPt
-      min: 4.0
-  -
     name: DPtBins_JetPt_5_30
     title: ""
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+      d_pt: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
     -
       object: jet
