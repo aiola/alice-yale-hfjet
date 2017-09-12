@@ -50,13 +50,17 @@ Go in `rawYieldUnc` folder:
 
 Then execute:
 
-`./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train883.yaml --refl DoubleGaus`
+`./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train993.yaml --refl DoubleGaus -b`
 
-`./ExtractDZeroJetRawYieldReflectionUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train883.yaml`
+`./ExtractDZeroJetRawYieldReflectionUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train993.yaml -b` 
 
-`./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train883_efficiency.yaml --refl DoubleGaus`
+`./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train993.yaml --no-refl -b`
 
-`./ExtractDZeroJetRawYieldReflectionUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train883_efficiency.yaml`
+`./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train993_efficiency.yaml --refl DoubleGaus -b`
+
+`./ExtractDZeroJetRawYieldReflectionUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train993_efficiency.yaml -b`
+
+`./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train993_efficiency.yaml --no-refl -b`
 
 ## Unfolding
 
