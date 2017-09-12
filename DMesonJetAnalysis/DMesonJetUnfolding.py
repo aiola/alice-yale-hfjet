@@ -35,7 +35,8 @@ class DMesonJetUnfoldingEngine:
         self.fDMeson = config["d_meson"]
         self.fJetType = config["jet_type"]
         self.fJetRadius = config["jet_radius"]
-        self.fSpectrumName = config["spectrum"]
+        self.fVariableName = config["variable"]
+        self.fSpectrumName = "{}Spectrum".format(self.fVariableName)
         self.fKinematicCuts = config["kinematic_cuts"]
         self.fRawYieldMethod = config["raw_yield_method"]
         self.fFullSpectrumName = "_".join([s for s in [self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
@@ -219,7 +220,7 @@ class DMesonJetUnfoldingEngine:
         wrap.fDMeson = self.fDMeson
         wrap.fJetType = self.fJetType
         wrap.fJetRadius = self.fJetRadius
-        wrap.fSpectrumName = self.fSpectrumName
+        wrap.fVariableName = self.fVariableName
         wrap.fKinematicCuts = self.fKinematicCuts
         wrap.fDataSpectrumList = self.fDataList
         wrap.fUseReflections = self.fUseReflections

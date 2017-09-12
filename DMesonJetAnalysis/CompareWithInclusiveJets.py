@@ -30,7 +30,7 @@ def GetRawDJetSpectrum(trigger, config, meson_name, jet_type, jet_radius, refl, 
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = "JetPtSpectrum"
+    wrap.fVariableName = "JetPt"
     wrap.fKinematicCuts = "DPt_30"
     wrap.fRawYieldMethod = raw_yield_method
     wrap.fUseReflections = refl
@@ -56,7 +56,7 @@ def GetRawDJetSpectrum(trigger, config, meson_name, jet_type, jet_radius, refl, 
             exit(1)
         wrap.fFDConfig = spectraConfig["FD"]
 
-    h = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(FDcorr)
+    h = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(FDcorr, 0, 0)
     if not wrap.fEvents: wrap.LoadNumberOfEvents()
     h.Scale(1. / wrap.fEvents)
     h.GetYaxis().SetTitle("per-event raw yield")

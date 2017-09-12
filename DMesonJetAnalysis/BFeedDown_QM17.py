@@ -16,11 +16,11 @@ def GetBFeedDownSpectra():
     loader.fDMeson = "D0"
     loader.fJetType = "Charged"
     loader.fJetRadius = "R040"
-    loader.fSpectrumName = "JetPtSpectrum"
+    loader.fVariableName = "JetPt"
     loader.fKinematicCuts = "DPt_30"
     loader.fRawYieldMethod = "SideBand"
-    h = loader.GetDefaultSpectrumFromMultiTrial(False)
-    hFDsub = loader.GetDefaultSpectrumFromMultiTrial(True)
+    h = loader.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
+    hFDsub = loader.GetDefaultSpectrumFromMultiTrial(True, 0, 0)
     hFD = loader.GetFDCorrection()
     hFD_up = loader.GetFDCorrection(1)
     hFD_down = loader.GetFDCorrection(-1)

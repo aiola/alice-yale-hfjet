@@ -54,12 +54,12 @@ def GetDPtSpectrum(kincuts=None, jet_radius=None, jet_type=None):
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_823_824_825_826", "LHC10_Train823_efficiency")
     loader.fUseReflections = False
     loader.fDMeson = "D0"
-    loader.fSpectrumName = "DPtSpectrum"
+    loader.fVariableName = "DPt"
     loader.fJetType = jet_type
     loader.fJetRadius = jet_radius
     loader.fKinematicCuts = kincuts
     loader.fRawYieldMethod = "InvMassFit"
-    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis(True)
+    h = loader.GetDefaultSpectrumFromDMesonJetAnalysis(True, 0, 0)
     h.Scale(crossSection / (events * branchingRatio * antiPartNorm), "width")
     return h
 

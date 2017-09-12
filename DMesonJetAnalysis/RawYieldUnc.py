@@ -28,7 +28,7 @@ def main(config, meson_name, jet_type, jet_radius):
     wrap.fInputPath = config["input_path"]
     wrap.fTrain = config["train"]
     wrap.fAnalysisName = config["name"]
-    spectrum = "JetPtSpectrum"
+    var = "JetPt"
     kincuts = "DPt_30"
 
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
@@ -45,12 +45,12 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
     comp.fFills = [3245] * 2
     comp.fOptSpectrumBaseline = "e2"
-    default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
     comp.fColors = [ROOT.kRed + 2] * 2
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fFills = [3254] * 2
     comp.fOptSpectrumBaseline = "e2 same"
-    default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefault")
     comp.fOptRatio = "hist"
@@ -63,11 +63,11 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fNoErrorInBaseline = True
     comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
     comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fOptSpectrumBaseline = "same"
-    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefaultUncertainties")
     comp.fDoSpectraPlot = "lineary"
@@ -83,10 +83,10 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLinLowerSpace = 0.1  # this factor will be used to adjust the y axis in linear scale
     comp.fNoErrorInBaseline = True
     comp.fColors = [ROOT.kBlue + 2, ROOT.kBlue + 2]
-    default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
     comp.fColors = [ROOT.kRed + 2, ROOT.kRed + 2]
     comp.fOptSpectrumBaseline = "same hist"
-    default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("SideBandReflectionVariationComparison")
     comp.fX1LegRatio = 0.15
@@ -97,7 +97,7 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
     comp.fGridyRatio = True
     comp.fNoErrorInBaseline = True
-    reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("InvMassFitReflectionVariationComparison")
     comp.fX1LegRatio = 0.15
@@ -108,11 +108,11 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
     comp.fGridyRatio = True
     comp.fNoErrorInBaseline = True
-    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, spectrum, kincuts)
+    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
-    SideBandRawYieldUnc(config["input_path"], config["train"], config["name"])
-    SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"])
-    SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"])
+    SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var)
+    SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var)
+    SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var)
 
     outputPath = "{0}/{1}/{2}/RawYieldUnc_pdf".format(config["input_path"], config["train"], config["name"])
     if not os.path.isdir(outputPath): os.makedirs(outputPath)
@@ -121,23 +121,23 @@ def main(config, meson_name, jet_type, jet_radius):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
             obj.SaveAs(fname)
 
-def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = spectrum
+    wrap.fVariableName = var
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
     wrap.fUseReflections = False
 
     wrap.fDataSpectrumList = None
     wrap.fDataFile = None
-    default_spectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis()
+    default_spectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
     xaxisTitle = default_spectrum.GetXaxis().GetTitle()
     yaxisTitle = default_spectrum.GetYaxis().GetTitle()
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
 
-    default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_from_mt.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     default_spectrum_from_mt.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_from_mt.GetYaxis().SetTitle(yaxisTitle)
@@ -149,23 +149,23 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
-def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = spectrum
+    wrap.fVariableName = var
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
     wrap.fUseReflections = False
 
     wrap.fDataSpectrumList = None
     wrap.fDataFile = None
-    default_spectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis()
+    default_spectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
     xaxisTitle = default_spectrum.GetXaxis().GetTitle()
     yaxisTitle = default_spectrum.GetYaxis().GetTitle()
     default_spectrum.SetTitle("Def DMesonJetAnalysis, {0}".format(method))
 
-    default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_from_mt = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_from_mt.SetTitle("Trial Expo Free Sigma, {0}".format(method))
     default_spectrum_from_mt.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_from_mt.GetYaxis().SetTitle(yaxisTitle)
@@ -176,20 +176,20 @@ def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_ra
         if not obj in globalList:
             globalList.append(obj)
 
-def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = spectrum
+    wrap.fVariableName = var
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
 
     wrap.fUseReflections = True
     wrap.fReflFitFunc = "DoubleGaus"
     wrap.fFixedReflOverSignal = 0
-    default_spectrum = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum.SetTitle("Trial Expo Free Sigma, {0}".format(method))
-    average_spectrum = wrap.GetAverageSpectrumFromMultiTrial()
+    average_spectrum = wrap.GetAverageSpectrumFromMultiTrial(False, 0)
     average_spectrum.SetTitle("Avg Raw Yield Extr Trials, {0}".format(method))
     average_spectrum.GetXaxis().SetTitle(xaxisTitle)
     average_spectrum.GetYaxis().SetTitle(yaxisTitle)
@@ -201,11 +201,11 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
         if not obj in globalList:
             globalList.append(obj)
 
-def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, spectrum, kincuts):
+def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = spectrum
+    wrap.fVariableName = var
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
 
@@ -213,7 +213,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fUseReflections = True
     wrap.fReflectionFit = "DoubleGaus"
     wrap.fReflectionRoS = 0
-    default_spectrum_wrefl_DoubleGaus = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_wrefl_DoubleGaus = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_wrefl_DoubleGaus.SetTitle("Trial Expo Free Sigma w/ refl double gaus, {0}".format(method))
     globalList.append(default_spectrum_wrefl_DoubleGaus)
     # histos.append(default_spectrum_wrefl_DoubleGaus)
@@ -221,7 +221,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fUseReflections = True
     wrap.fReflectionFit = "DoubleGaus"
     wrap.fReflectionRoS = 5
-    default_spectrum_wrefl_DoubleGaus_5 = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_wrefl_DoubleGaus_5 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_wrefl_DoubleGaus_5.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 0.5 R/S, {0}".format(method))
     globalList.append(default_spectrum_wrefl_DoubleGaus_5)
     histos.append(default_spectrum_wrefl_DoubleGaus_5)
@@ -229,7 +229,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fUseReflections = True
     wrap.fReflectionFit = "DoubleGaus"
     wrap.fReflectionRoS = 15
-    default_spectrum_wrefl_DoubleGaus_15 = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_wrefl_DoubleGaus_15 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_wrefl_DoubleGaus_15.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 1.5 R/S, {0}".format(method))
     globalList.append(default_spectrum_wrefl_DoubleGaus_15)
     histos.append(default_spectrum_wrefl_DoubleGaus_15)
@@ -237,7 +237,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fUseReflections = True
     wrap.fReflectionFit = "gaus"
     wrap.fReflectionRoS = 0
-    default_spectrum_wrefl_gaus = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_wrefl_gaus = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_wrefl_gaus.SetTitle("Trial Expo Free Sigma w/ refl gaus, {0}".format(method))
     globalList.append(default_spectrum_wrefl_gaus)
     histos.append(default_spectrum_wrefl_gaus)
@@ -245,7 +245,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fUseReflections = True
     wrap.fReflectionFit = "pol3"
     wrap.fReflectionRoS = 0
-    default_spectrum_wrefl_pol3 = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_wrefl_pol3 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_wrefl_pol3.SetTitle("Trial Expo Free Sigma w/ refl pol3, {0}".format(method))
     globalList.append(default_spectrum_wrefl_pol3)
     histos.append(default_spectrum_wrefl_pol3)
@@ -253,13 +253,13 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fUseReflections = True
     wrap.fReflectionFit = "pol6"
     wrap.fReflectionRoS = 0
-    default_spectrum_wrefl_pol6 = wrap.GetDefaultSpectrumFromMultiTrial()
+    default_spectrum_wrefl_pol6 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     default_spectrum_wrefl_pol6.SetTitle("Trial Expo Free Sigma w/ refl pol6, {0}".format(method))
     globalList.append(default_spectrum_wrefl_pol6)
     histos.append(default_spectrum_wrefl_pol6)
 
     wrap.fUseReflections = False
-    default_spectrum_worefl = wrap.GetAverageSpectrumFromMultiTrial()
+    default_spectrum_worefl = wrap.GetAverageSpectrumFromMultiTrial(False, 0)
     default_spectrum_worefl.SetTitle("Trial Expo Free Sigma w/o refl, {0}".format(method))
     default_spectrum_worefl.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_worefl.GetYaxis().SetTitle(yaxisTitle)
@@ -273,10 +273,14 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
-def SideBandFinalRawYieldUnc(input_path, train, ana):
-    fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_Dzero_AfterDbinSum.root".format(input_path, train, ana)
+def SideBandFinalRawYieldUnc(input_path, train, ana, var):
+    fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_{var}_Dzero_AfterDbinSum.root".format(input_path=input_path, train=train, ana=ana, var=var)
     file = ROOT.TFile(fname)
-    canvas = file.Get("cDistr_Dzero_SideBand")
+    cname = "cDistr_{var}_Dzero_SideBand".format(var=var)
+    canvas = file.Get(cname)
+    if not isinstance(canvas, ROOT.TCanvas):
+        print("Object {} in file {} is not a TCanvas??".format(cname, fname))
+        exit(1)
     histos = []
     for obj in canvas.GetListOfPrimitives():
         if isinstance(obj, ROOT.TH1):
@@ -287,9 +291,13 @@ def SideBandFinalRawYieldUnc(input_path, train, ana):
             h_copy.GetYaxis().SetTitle("counts")
             histos.append(h_copy)
     file.Close()
-    fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand.root".format(input_path, train, ana)
+    fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_{var}_Dzero_SideBand.root".format(input_path=input_path, train=train, ana=ana, var=var)
     file = ROOT.TFile(fname)
-    baseline = file.Get("fJetSpectrSBDef")
+    hname = "f{}SpectrSBDef".format(var)
+    baseline = file.Get(hname)
+    if not baseline:
+        print("Could not find histogram {} in file {}".format(hname, fname))
+        exit(1)
     baseline_copy = baseline.Clone("baseline")
     baseline_copy.SetTitle("TrialExpoFreeS")
     baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
@@ -311,9 +319,9 @@ def SideBandFinalRawYieldUnc(input_path, train, ana):
         if not obj in globalList:
             globalList.append(obj)
 
-def SideBandRawYieldUnc(input_path, train, ana):
+def SideBandRawYieldUnc(input_path, train, ana, var):
     for ibin in range(0, 9):
-        fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_Dzero_Bin{3}.root".format(input_path, train, ana, ibin)
+        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin)
         file = ROOT.TFile(fname)
         canvas = file.Get("cDistr_Dzero_SideBand_{0}".format(ibin))
         histos = []
@@ -326,9 +334,13 @@ def SideBandRawYieldUnc(input_path, train, ana):
                 h_copy.GetYaxis().SetTitle("counts")
                 histos.append(h_copy)
         file.Close()
-        fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand_{3}.root".format(input_path, train, ana, ibin)
+        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_{var}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin)
         file = ROOT.TFile(fname)
-        baseline = file.Get("hjetpt{0}".format(ibin))
+        hname = "hjet{0}".format(ibin)
+        baseline = file.Get(hname)
+        if not baseline:
+            print("Could not find histogram {} in file {}".format(hname, fname))
+            exit(1)
         baseline_copy = baseline.Clone("bin{0}_baseline".format(ibin))
         baseline_copy.SetTitle("TrialExpoFreeS")
         baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
@@ -350,23 +362,32 @@ def SideBandRawYieldUnc(input_path, train, ana):
             if not obj in globalList:
                 globalList.append(obj)
 
-def SideBandRawYieldReflUnc(input_path, train, ana):
+def SideBandRawYieldReflUnc(input_path, train, ana, variable):
     reflVar = ["DoubleGaus_15", "DoubleGaus_5", "gaus", "pol3", "pol6"]
     for ibin in range(0, 9):
         histos = []
-        for var in reflVar:
-            fname = "{0}/{1}/{2}/RawYieldUnc_refl_{3}/TrialExpoFreeS_Dzero_SideBand_{4}.root".format(input_path, train, ana, var, ibin)
+        for variation in reflVar:
+            fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_{variation}/TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, variation=variation)
             file = ROOT.TFile(fname)
-            h = file.Get("hjetpt{0}".format(ibin))
-            h_copy = h.Clone("bin{0}_var{1}".format(ibin, var))
-            h_copy.SetTitle("TrialExpoFreeS, refl={0}".format(var))
+            hname = "hjet{0}".format(ibin)
+            h = file.Get(hname)
+            if not h:
+                print("Could not find histogram {} in file {}".format(hname, fname))
+                exit(1)
+            h_copy = h.Clone("bin{0}_var{1}".format(ibin, variation))
+            h_copy.SetTitle("TrialExpoFreeS, refl={0}".format(variation))
             h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
             h_copy.GetYaxis().SetTitle("counts")
             file.Close()
             histos.append(h_copy)
-        fname = "{0}/{1}/{2}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_Dzero_SideBand_{3}.root".format(input_path, train, ana, ibin)
+        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin)
         file = ROOT.TFile(fname)
-        baseline = file.Get("hjetpt{0}".format(ibin))
+        hname = "hjet{0}".format(ibin)
+        baseline = file.Get(hname)
+        if not baseline:
+            print("Could not find histogram {} in file {}".format(hname, fname))
+            exit(1)
+
         baseline_copy = baseline.Clone("bin{0}_baseline".format(ibin))
         baseline_copy.SetTitle("TrialExpoFreeS, refl=DoubleGaus")
         baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")

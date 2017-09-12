@@ -189,20 +189,20 @@ def RawYieldComparison(cname, title1, config1, title2, config2, refl=True):
     comp.fColors = [ROOT.kBlue + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     loader1 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config1["input_path"], config1["train"], config1["name"])
-    loader1.fSpectrumName = "JetPtSpectrum"
+    loader1.fVariableName = "JetPt"
     loader1.fKinematicCuts = "DPt_30"
     loader1.fRawYieldMethod = "SideBand"
     loader1.fUseReflections = False
-    spectrum1 = loader1.GetDefaultSpectrumFromMultiTrial()
+    spectrum1 = loader1.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     spectrum1.SetTitle(title1)
     spectrum1.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     spectrum1.GetYaxis().SetTitle("raw yield")
     loader2 = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config2["input_path"], config2["train"], config2["name"])
-    loader2.fSpectrumName = "JetPtSpectrum"
+    loader2.fVariableName = "JetPt"
     loader2.fKinematicCuts = "DPt_30"
     loader2.fRawYieldMethod = "SideBand"
     loader2.fUseReflections = False
-    spectrum2 = loader2.GetDefaultSpectrumFromMultiTrial()
+    spectrum2 = loader2.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     spectrum2.SetTitle(title2)
     spectrum2.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     spectrum2.GetYaxis().SetTitle("raw yield")

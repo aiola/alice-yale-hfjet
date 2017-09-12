@@ -28,14 +28,14 @@ def GetFeedDown(config, fd, meson_name, jet_type, jet_radius):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
-    wrap.fSpectrumName = "JetPtSpectrum"
+    wrap.fVariableName = "JetPt"
     wrap.fKinematicCuts = "DPt_30"
     wrap.fRawYieldMethod = "SideBand"
     wrap.fUseReflections = True
     wrap.fFDConfig = fd
 
     hFDCorr = wrap.GetFDCorrection(0)
-    h = wrap.GetDefaultSpectrumFromMultiTrial(False)
+    h = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
 
     hFDCorr.Divide(h)
     hFDCorr.GetYaxis().SetTitle("FD Fraction")

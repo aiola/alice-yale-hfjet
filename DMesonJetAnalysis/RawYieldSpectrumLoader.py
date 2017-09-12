@@ -20,7 +20,7 @@ class RawYieldSpectrumLoader:
         self.fDMeson = None
         self.fJetType = None
         self.fJetRadius = None
-        self.fSpectrumName = None
+        self.fVariableName = None
         self.fKinematicCuts = None
         self.fRawYieldMethod = None
         self.fDataSpectrumList = None
@@ -41,8 +41,14 @@ class RawYieldSpectrumLoader:
         self.fDataFile = ROOT.TFile("{0}/{1}/{2}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName))
         return self.fDataFile
 
-    def LoadDataListFromDMesonJetAnalysis(self,):
+    def LoadDataListFromDMesonJetAnalysis(self):
         if not self.fDataFile: self.LoadDataFileFromDMesonJetAnalysis()
+        if self.fVariableName:
+            var = self.fVariableName.replace("z", "Z")
+        else:
+            print("No variable name provided!")
+            exit(1)
+        spectrumName = "{}Spectrum".format(var)
         if self.fDMeson:
             if self.fTrigger:
                 dataMesonListName = "{}_{}".format(self.fTrigger, self.fDMeson)
@@ -59,15 +65,15 @@ class RawYieldSpectrumLoader:
                     print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, self.fDataFile.GetName()))
                     self.fDataMesonList.Print()
                     exit(1)
-                if self.fSpectrumName:
-                    dataListName = "_".join([s for s in [self.fDMeson, dataJetListName, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
+                if var:
+                    dataListName = "_".join([s for s in [self.fDMeson, dataJetListName, spectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
                     self.fDataSpectrumList = self.fDataJetList.FindObject(dataListName)
                     if not self.fDataSpectrumList:
                         print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
                         self.fDataJetList.Print()
                         exit(1)
-            if self.fSpectrumName and not (self.fJetType and self.fJetRadius):
-                dataListName = "_".join([s for s in [self.fDMeson, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
+            if var and not (self.fJetType and self.fJetRadius):
+                dataListName = "_".join([s for s in [self.fDMeson, spectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
                 self.fDataSpectrumList = self.fDataMesonList.FindObject(dataListName)
                 if not self.fDataSpectrumList:
                     print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataListName, self.fDataFile.GetName()))
@@ -75,23 +81,29 @@ class RawYieldSpectrumLoader:
                     exit(1)
         return self.fDataSpectrumList
 
-    def GetDefaultSpectrumFromDMesonJetAnalysis(self, fd=False, fd_error_band=0, ry_error_band=0):
-        if not self.fSpectrumName:
-            print("No spectrum name provided!")
+    def GetDefaultSpectrumFromDMesonJetAnalysis(self, fd, fd_error_band, ry_error_band):
+        if self.fVariableName:
+            var = self.fVariableName.replace("z", "Z")
+        else:
+            print("No variable name provided!")
             exit(1)
         if self.fUseReflections:
             print("****Attention Attention Attention****")
             print("You asked for reflections, but reflections are not available in DMesonJetAnalysis!")
             exit(1)
         if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
-        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
+        spectrumName = "{}Spectrum".format(var)
+        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, spectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         h_orig = self.fDataSpectrumList.FindObject(inputSpectrumName)
         if not h_orig:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))
             self.fDataSpectrumList.Print()
             exit(1)
         h = h_orig.Clone(h_orig.GetName())
-        h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        if var == "JetPt":
+            h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        elif var == "JetZ":
+            h.GetXaxis().SetTitle("#it{z}_{||,ch jet}")
         h.GetYaxis().SetTitle("raw yield")
 
         if fd: self.ApplyFDCorrection(h, fd_error_band)
@@ -100,8 +112,8 @@ class RawYieldSpectrumLoader:
         return h
 
     def GetDefaultSpectrumInvMassFitFromMultiTrial(self):
-        if not self.fSpectrumName:
-            print("No spectrum name provided!")
+        if not self.fVariableName == "JetPt":
+            print("Fatal error: inv. mass fit multi-trial available only for jet pt. Requested for: {}".format(var))
             exit(1)
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
@@ -132,15 +144,17 @@ class RawYieldSpectrumLoader:
         return h
 
     def GetDefaultSpectrumSideBandFromMultiTrial(self):
-        if not self.fSpectrumName:
-            print("No spectrum name provided!")
+        if self.fVariableName:
+            var = self.fVariableName.replace("Z", "z")
+        else:
+            print("No variable name provided!")
             exit(1)
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{0}/{1}/{2}/{3}/TrialExpoFreeS_Dzero_SideBand.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir)
+        fname = "{input_path}/{train}/{name}/{subdir}/TrialExpoFreeS_{var}_Dzero_SideBand.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
@@ -148,18 +162,22 @@ class RawYieldSpectrumLoader:
             exit(1)
         else:
             print("File {0} open successfully".format(fname))
-        h = file.Get("fJetSpectrSBDef")
+        hname = "f{var}SpectrSBDef".format(var=var)
+        h = file.Get(hname)
         if not h:
-            print("Could not find histogram {0} in file {1}".format("fJetSpectrSBDef", fname))
+            print("Could not find histogram {0} in file {1}".format(hname, fname))
             file.ls()
             exit(1)
         h_copy = h.Clone("TrialExpoFreeSigmaSideBand")
         h_copy.SetTitle("Trial Expo Free Sigma Inv. Mass Fit")
-        h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        if var == "JetPt":
+            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        elif var == "JetZ":
+            h_copy.GetXaxis().SetTitle("#it{z}_{||,ch jet}")
         h_copy.GetYaxis().SetTitle("raw yield")
         return h_copy
 
-    def GetDefaultSpectrumFromMultiTrial(self, fd=False, fd_error_band=0, ry_error_band=0):
+    def GetDefaultSpectrumFromMultiTrial(self, fd, fd_error_band, ry_error_band):
         if self.fRawYieldMethod == "SideBand": h = self.GetDefaultSpectrumSideBandFromMultiTrial()
         elif self.fRawYieldMethod == "InvMassFit": h = self.GetDefaultSpectrumInvMassFitFromMultiTrial()
         else:
@@ -169,55 +187,73 @@ class RawYieldSpectrumLoader:
         if ry_error_band <> 0: self.ApplyRawYieldSystFromMultiTrial(h, ry_error_band)
         return h
 
-    def GetAverageSpectrumFromMultiTrial(self, fd=False, fd_error_band=0):
-        if not self.fSpectrumName:
-            print("No spectrum name provided!")
+    def GetAverageSpectrumFromMultiTrial(self, fd, fd_error_band):
+        if self.fVariableName:
+            var = self.fVariableName.replace("Z", "z")
+        else:
+            print("No variable name provided!")
+            exit(1)
+        if self.fRawYieldMethod == "InvMassFit" and not var == "JetPt":
+            print("Fatal error: multi-trial available only for jet pt. Requested for: {}".format(self.fVariableName))
             exit(1)
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{0}/{1}/{2}/{3}/FinalRawYieldCentralPlusSystUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, self.fRawYieldMethod)
+        fname = "{input_path}/{train}/{name}/{subdir}/FinalRawYieldCentralPlusSystUncertainty_{var}_Dzero_{meth}.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, meth=self.fRawYieldMethod)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
             file.ls()
             exit(1)
-        h = file.Get("JetRawYieldCentral")
+        hname = "{var}RawYieldCentral".format(var=var)
+        h = file.Get(hname)
         if not h:
-            print("Could not find histogram {0} in file {1}".format("JetRawYieldCentral", fname))
+            print("Could not find histogram {0} in file {1}".format(hname, fname))
             file.ls()
             exit(1)
         h_copy = h.Clone("{0}_copy".format(h.GetName()))
         if fd: self.ApplyFDCorrection(h_copy, fd_error_band)
         return h_copy
 
-    def ApplyFDCorrection(self, h, error_band=0):
+    def ApplyFDCorrection(self, h, error_band):
         print("Applying FD correction with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
         fdHist = self.GetFDCorrection(-error_band)
         h.Add(fdHist, -1)
 
     def GenerateFDConfig(self):
+        if self.fVariableName:
+            var = self.fVariableName.replace("z", "Z")
+        else:
+            print("No variable name provided!")
+            exit(1)
         self.fFDConfig = dict()
         self.fFDConfig["file_name"] = "BFeedDown.root"
         self.fFDConfig["central_points"] = "default"
-        if "JetPt" in self.fSpectrumName:
+        if self.fVariableName == "JetPt":
             if "efficiency" in self.fAnalysisName:
                 self.fFDConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
                 print("Using FD correction with efficiency")
             else:
                 self.fFDConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply"
                 print("Using FD correction without efficiency")
-        elif "DPt" in self.fSpectrumName:
+        elif self.fVariableName == "DPt":
             if "efficiency" in self.fAnalysisName:
                 self.fFDConfig["spectrum"] = "GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
                 print("Using FD correction with efficiency")
             else:
                 self.fFDConfig["spectrum"] = "DetectorLevel_DPtSpectrum_bEfficiencyMultiply"
                 print("Using FD correction without efficiency")
+        elif self.fVariableName == "JetZ":
+            if "efficiency" in self.fAnalysisName:
+                self.fFDConfig["spectrum"] = "GeneratorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
+                print("Using FD correction with efficiency")
+            else:
+                self.fFDConfig["spectrum"] = "DetectorLevel_JetZSpectrum_bEfficiencyMultiply"
+                print("Using FD correction without efficiency")
         else:
-            print("ApplyFDCorrection: Not jet pt nor d pt?")
+            print("ApplyFDCorrection: Variable {} not know".format(self.fVariableName))
             exit(1)
 
     def GetFDCorrection(self, error_band=0):
@@ -226,7 +262,12 @@ class RawYieldSpectrumLoader:
             print("The FD correction configuration was not provided. It will be generated automatically. This can lead to wrong or misleading results. It is safer to provide a FD correction configuration!")
             self.GenerateFDConfig()
 
-        spectrumName = self.fSpectrumName
+        if self.fVariableName:
+            var = self.fVariableName.replace("z", "Z")
+        else:
+            print("No variable name provided!")
+            exit(1)
+        spectrumName = "{}Spectrum".format(var)
         if self.fKinematicCuts: spectrumName += "_{0}".format(self.fKinematicCuts)
         fdCorrection = DMesonJetFDCorrection.DMesonJetFDCorrection(self.fFDConfig, spectrumName, self.fInputPath, "D0", "Charged", "R040")
         fdHist = fdCorrection.fFDHistogram.Clone("FD")
@@ -262,7 +303,7 @@ class RawYieldSpectrumLoader:
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{0}/{1}/{2}/{3}/FinalRawYieldUncertainty_Dzero_{4}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, self.fRawYieldMethod)
+        fname = "{input_path}/{train}/{name}/{subdir}/FinalRawYieldUncertainty_{var}_Dzero_{meth}.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, meth=self.fRawYieldMethod)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))

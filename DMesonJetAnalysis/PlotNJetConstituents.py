@@ -23,11 +23,11 @@ def main(data_config, mc_config):
     data_loader.fDMeson = "D0"
     data_loader.fJetType = "Charged"
     data_loader.fJetRadius = "R040"
-    data_loader.fSpectrumName = "JetPtNConst"
+    data_loader.fVariableName = "JetPtNConst"
     data_loader.fKinematicCuts = "DPt_30"
     data_loader.fRawYieldMethod = "SideBand"
 
-    h = data_loader.GetDefaultSpectrumFromDMesonJetAnalysis()
+    h = data_loader.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
     h2D_data = h.Clone("JetPtNConst_Data")
 
     mc_loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(mc_config["input_path"], mc_config["train"], mc_config["name"])
@@ -35,11 +35,11 @@ def main(data_config, mc_config):
     mc_loader.fDMeson = "D0_kSignalOnly"
     mc_loader.fJetType = "Charged"
     mc_loader.fJetRadius = "R040"
-    mc_loader.fSpectrumName = "JetPtNConst"
+    mc_loader.fVariableName = "JetPtNConst"
     mc_loader.fKinematicCuts = "DPt_30"
     mc_loader.fRawYieldMethod = "SignalOnly"
 
-    h = mc_loader.GetDefaultSpectrumFromDMesonJetAnalysis()
+    h = mc_loader.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
     h2D_mc = h.Clone("JetPtNConst_MCdet")
 
     mc_loader_truth = RawYieldSpectrumLoader.RawYieldSpectrumLoader(mc_config["input_path"], mc_config["train"], mc_config["name"])
@@ -47,11 +47,11 @@ def main(data_config, mc_config):
     mc_loader_truth.fDMeson = "D0_MCTruth"
     mc_loader_truth.fJetType = "Charged"
     mc_loader_truth.fJetRadius = "R040"
-    mc_loader_truth.fSpectrumName = "JetPtNConst"
+    mc_loader_truth.fVariableName = "JetPtNConst"
     mc_loader_truth.fKinematicCuts = "DPt_30"
     mc_loader_truth.fRawYieldMethod = "Truth"
 
-    h = mc_loader_truth.GetDefaultSpectrumFromDMesonJetAnalysis()
+    h = mc_loader_truth.GetDefaultSpectrumFromDMesonJetAnalysis(False, 0, 0)
     h2D_mc_truth = h.Clone("JetPtNConst_MCgen")
 
     if h2D_data.GetNbinsX() <= 3:
