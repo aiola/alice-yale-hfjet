@@ -103,7 +103,7 @@ class RawYieldSpectrumLoader:
         if var == "JetPt":
             h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
         elif var == "JetZ":
-            h.GetXaxis().SetTitle("#it{z}_{||,ch jet}")
+            h.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
         h.GetYaxis().SetTitle("raw yield")
 
         if fd: self.ApplyFDCorrection(h, fd_error_band)
@@ -113,7 +113,7 @@ class RawYieldSpectrumLoader:
 
     def GetDefaultSpectrumInvMassFitFromMultiTrial(self):
         if not self.fVariableName == "JetPt":
-            print("Fatal error: inv. mass fit multi-trial available only for jet pt. Requested for: {}".format(var))
+            print("Fatal error: inv. mass fit multi-trial available only for jet pt. Requested for: {}".format(self.fVariableName))
             exit(1)
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
@@ -172,8 +172,8 @@ class RawYieldSpectrumLoader:
         h_copy.SetTitle("Trial Expo Free Sigma Inv. Mass Fit")
         if var == "JetPt":
             h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-        elif var == "JetZ":
-            h_copy.GetXaxis().SetTitle("#it{z}_{||,ch jet}")
+        elif var == "Jetz":
+            h_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
         h_copy.GetYaxis().SetTitle("raw yield")
         return h_copy
 
