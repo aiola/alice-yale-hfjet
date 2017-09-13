@@ -17,7 +17,7 @@ wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader()
 xaxisTitle = ""
 yaxisTitle = ""
 
-def main(config, meson_name, jet_type, jet_radius):
+def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -28,8 +28,6 @@ def main(config, meson_name, jet_type, jet_radius):
     wrap.fInputPath = config["input_path"]
     wrap.fTrain = config["train"]
     wrap.fAnalysisName = config["name"]
-    var = "JetPt"
-    kincuts = "DPt_30"
 
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
     comp.fOptSpectrum = "p x0"
@@ -41,16 +39,17 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
     comp.fLinUpperSpace = 0.25  # this factor will be used to adjust the y axis in linear scale
     comp.fLinLowerSpace = 0.05  # this factor will be used to adjust the y axis in linear scale
-    comp.fColors = [ROOT.kBlue + 2] * 2
-    comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    comp.fFills = [3245] * 2
-    comp.fOptSpectrumBaseline = "e2"
-    default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
     comp.fColors = [ROOT.kRed + 2] * 2
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
     comp.fFills = [3254] * 2
-    comp.fOptSpectrumBaseline = "e2 same"
+    comp.fOptSpectrumBaseline = "e2"
     default_vs_average_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
+    if var == "JetPt":
+        comp.fColors = [ROOT.kBlue + 2] * 2
+        comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
+        comp.fFills = [3245] * 2
+        comp.fOptSpectrumBaseline = "e2 same"
+        default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefault")
     comp.fOptRatio = "hist"
@@ -61,13 +60,14 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLinUpperSpace = 0.3  # this factor will be used to adjust the y axis in linear scale
     comp.fLinLowerSpace = 0.1  # this factor will be used to adjust the y axis in linear scale
     comp.fNoErrorInBaseline = True
-    comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
-    comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-    default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
     comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
-    comp.fOptSpectrumBaseline = "same"
     default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
+    if var == "JetPt":
+        comp.fOptSpectrumBaseline = "same"
+        comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
+        comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
+        default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefaultUncertainties")
     comp.fDoSpectraPlot = "lineary"
@@ -82,11 +82,12 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fLinUpperSpace = 0.3  # this factor will be used to adjust the y axis in linear scale
     comp.fLinLowerSpace = 0.1  # this factor will be used to adjust the y axis in linear scale
     comp.fNoErrorInBaseline = True
-    comp.fColors = [ROOT.kBlue + 2, ROOT.kBlue + 2]
-    default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
     comp.fColors = [ROOT.kRed + 2, ROOT.kRed + 2]
-    comp.fOptSpectrumBaseline = "same hist"
     default_vs_default_mt_unc(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
+    if var == "JetPt":
+        comp.fOptSpectrumBaseline = "same hist"
+        comp.fColors = [ROOT.kBlue + 2, ROOT.kBlue + 2]
+        default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("SideBandReflectionVariationComparison")
     comp.fX1LegRatio = 0.15
@@ -99,22 +100,23 @@ def main(config, meson_name, jet_type, jet_radius):
     comp.fNoErrorInBaseline = True
     reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
 
-    comp = DMesonJetCompare.DMesonJetCompare("InvMassFitReflectionVariationComparison")
-    comp.fX1LegRatio = 0.15
-    comp.fX1LegSpectrum = 0.20
-    comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
-    comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
-    comp.fLinUpperSpace = 0.8  # this factor will be used to adjust the y axis in linear scale
-    comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
-    comp.fGridyRatio = True
-    comp.fNoErrorInBaseline = True
-    reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
+    if var == "JetPt":
+        comp = DMesonJetCompare.DMesonJetCompare("InvMassFitReflectionVariationComparison")
+        comp.fX1LegRatio = 0.15
+        comp.fX1LegSpectrum = 0.20
+        comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+        comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
+        comp.fLinUpperSpace = 0.8  # this factor will be used to adjust the y axis in linear scale
+        comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
+        comp.fGridyRatio = True
+        comp.fNoErrorInBaseline = True
+        reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var)
     SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var)
     SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var)
 
-    outputPath = "{0}/{1}/{2}/RawYieldUnc_pdf".format(config["input_path"], config["train"], config["name"])
+    outputPath = "{}/{}/{}/RawYieldUnc_{}_{}_pdf".format(config["input_path"], config["train"], config["name"], var, kincuts)
     if not os.path.isdir(outputPath): os.makedirs(outputPath)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
@@ -274,6 +276,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
             globalList.append(obj)
 
 def SideBandFinalRawYieldUnc(input_path, train, ana, var):
+    var = var.replace("Z", "z")
     fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_{var}_Dzero_AfterDbinSum.root".format(input_path=input_path, train=train, ana=ana, var=var)
     file = ROOT.TFile(fname)
     cname = "cDistr_{var}_Dzero_SideBand".format(var=var)
@@ -287,7 +290,10 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var):
             n = len(histos)
             h_copy = obj.Clone("var{0}".format(n))
             h_copy.SetTitle("Variation {0}".format(n))
-            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+            if var == "JetPt":
+                h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+            elif var == "Jetz":
+                h_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
             h_copy.GetYaxis().SetTitle("counts")
             histos.append(h_copy)
     file.Close()
@@ -300,7 +306,10 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var):
         exit(1)
     baseline_copy = baseline.Clone("baseline")
     baseline_copy.SetTitle("TrialExpoFreeS")
-    baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    if var == "JetPt":
+        baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    elif var == "Jetz":
+        baseline_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
     baseline_copy.GetYaxis().SetTitle("counts")
     file.Close()
     globalList.append(baseline_copy)
@@ -320,6 +329,7 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var):
             globalList.append(obj)
 
 def SideBandRawYieldUnc(input_path, train, ana, var):
+    var = var.replace("Z", "z")
     for ibin in range(0, 9):
         fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin)
         file = ROOT.TFile(fname)
@@ -330,7 +340,10 @@ def SideBandRawYieldUnc(input_path, train, ana, var):
                 n = len(histos)
                 h_copy = obj.Clone("bin{0}_var{1}".format(ibin, n))
                 h_copy.SetTitle("Variation {0}".format(n))
-                h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+                if var == "JetPt":
+                    h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+                elif var == "Jetz":
+                    h_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
                 h_copy.GetYaxis().SetTitle("counts")
                 histos.append(h_copy)
         file.Close()
@@ -343,7 +356,10 @@ def SideBandRawYieldUnc(input_path, train, ana, var):
             exit(1)
         baseline_copy = baseline.Clone("bin{0}_baseline".format(ibin))
         baseline_copy.SetTitle("TrialExpoFreeS")
-        baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        if var == "JetPt":
+            baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        elif var == "Jetz":
+            baseline_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
         baseline_copy.GetYaxis().SetTitle("counts")
         file.Close()
         globalList.append(baseline_copy)
@@ -363,6 +379,7 @@ def SideBandRawYieldUnc(input_path, train, ana, var):
                 globalList.append(obj)
 
 def SideBandRawYieldReflUnc(input_path, train, ana, variable):
+    variable = variable.replace("Z", "z")
     reflVar = ["DoubleGaus_15", "DoubleGaus_5", "gaus", "pol3", "pol6"]
     for ibin in range(0, 9):
         histos = []
@@ -376,7 +393,10 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable):
                 exit(1)
             h_copy = h.Clone("bin{0}_var{1}".format(ibin, variation))
             h_copy.SetTitle("TrialExpoFreeS, refl={0}".format(variation))
-            h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+            if variable == "JetPt":
+                h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+            elif variable == "Jetz":
+                h_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
             h_copy.GetYaxis().SetTitle("counts")
             file.Close()
             histos.append(h_copy)
@@ -390,7 +410,10 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable):
 
         baseline_copy = baseline.Clone("bin{0}_baseline".format(ibin))
         baseline_copy.SetTitle("TrialExpoFreeS, refl=DoubleGaus")
-        baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        if variable == "JetPt":
+            baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        elif variable == "Jetz":
+            baseline_copy.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
         baseline_copy.GetYaxis().SetTitle("counts")
         file.Close()
         globalList.append(baseline_copy)
@@ -414,12 +437,17 @@ if __name__ == '__main__':
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
                         default="R040")
+    parser.add_argument('--variable', metavar='VAR',
+                        default="JetPt")
+    parser.add_argument('--kincuts', metavar='KINCUTS',
+                        default="DPt_30")
+
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.meson, args.jet_type, args.jet_radius)
+    main(config, args.meson, args.jet_type, args.jet_radius, args.variable, args.kincuts)
 
     IPython.embed()
