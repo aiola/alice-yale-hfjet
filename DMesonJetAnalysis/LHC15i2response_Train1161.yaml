@@ -106,6 +106,34 @@ analysis:
       apply: gen
       include: 4
   -
+    name: JetZDPtSpectrum_Prompt
+    active: yes
+    efficiency: no
+    bins:
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 4
+  -
     name: JetPtSpectrum_DPt_30_NonPrompt
     active: yes
     efficiency: no
@@ -193,6 +221,34 @@ analysis:
       variable: fEta
       min: -0.5
       max: 0.5
+    -
+      object: d
+      variable: fPartonType
+      apply: gen
+      include: 5
+  -
+    name: JetZDPtSpectrum_NonPrompt
+    active: yes
+    efficiency: no
+    bins:
+      d_z:
+        min: 0
+        max: 1
+        width: 0.1
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
     -
       object: d
       variable: fPartonType

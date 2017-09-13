@@ -1,0 +1,88 @@
+name: BFeedDown_X_1242
+input_path: /Volumes/DATA/ALICE/JetResults
+generator: powheg_beauty
+c_response:
+  train: Jets_EMC_pp_MC_1242_1243_1244_1245
+  name: LHC15i2_Train1242_response
+b_response:
+  train: Jets_EMC_pp_MC_1242_1243_1244_1245
+  name: LHC15i2_Train1242_response
+variations:
+-
+  name: default
+  active: yes
+  title: "Central Values"
+  ts: 1483385484
+  stage: 2
+-
+  name: mass_low
+  active: yes
+  title: "#it{m}_{b} = 4.5 GeV/#it{c}^{2}"
+  ts: 1481734661
+  stage: 1
+-
+  name: mass_high
+  active: yes
+  title: "#it{m}_{b} = 5.0 GeV/#it{c}^{2}"
+  ts: 1481821920
+  stage: 0
+-
+  name: PDF_CT10
+  active: yes
+  title: "PDF = CT10 (11000)" 
+  ts: 1483392034
+  stage: 1
+-
+  name: PDF_MSTW2008nlo68cl
+  active: yes
+  title: "PDF = MSTW2008nlo68cl (21200)" 
+  ts: 1484037661
+  stage: 1
+-
+  name: PDF_cteq6l1
+  active: no
+  title: "PDF = cteq6l1 (10042)" 
+  ts: 1483393628
+  stage: 1
+-
+  name: facscfact2_renscfact2
+  active: yes
+  title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
+  ts: 1483403243
+  stage: 0
+-
+  name: facscfact05_renscfact05
+  active: yes
+  title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
+  ts: 1483403037
+  stage: 0
+-
+  name: facscfact10_renscfact10
+  active: no
+  title: "#mu_{F} = 1.0, #mu_{R} = 1.0"
+  ts: 1483403147
+  stage: 0
+-
+  name: facscfact1_renscfact05
+  active: yes
+  title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
+  ts: 1483619400
+  stage: 0
+-
+  name: facscfact05_renscfact1
+  active: yes
+  title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
+  ts: 1483622213
+  stage: 0
+-
+  name: facscfact2_renscfact1
+  active: yes
+  title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
+  ts: 1483628767
+  stage: 0
+-
+  name: facscfact1_renscfact2
+  active: yes
+  title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
+  ts: 1483629492
+  stage: 0

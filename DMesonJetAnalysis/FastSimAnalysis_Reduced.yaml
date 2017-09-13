@@ -36,7 +36,7 @@ analysis:
     need_inv_mass: []
     efficiency: no
     bins:
-      d_z: [0.2, 0.4, 0.6, 0.8, 1.0]
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     cuts:
     -
       object: jet
@@ -191,6 +191,32 @@ analysis:
     spectra:
     -
       name: JetPtDPtSpectrum
+      title: ""
+      type: truth
+      active_mesons: [D0_MCTruth]
+  -
+    name: JetZDPtBins_JetPt_5_30
+    title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+    active_mesons: [D0_MCTruth]
+    need_inv_mass: []
+    efficiency: no
+    bins:
+      d_pt: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 80]
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    spectra:
+    -
+      name: JetZDPtSpectrum
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
