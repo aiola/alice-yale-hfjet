@@ -60,9 +60,9 @@ class DetectorResponse:
         self.fTruth = self.GenerateTruth(self.fAxis)
         self.fMeasured = self.GenerateMeasured(self.fAxis)
         self.fReconstructedTruth = self.GenerateTruth(self.fAxis, "ReconstructedTruth")
-        if self.fJetInfo and len(self.fAxis) == 1 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
+        if self.fJetInfo and len(self.fAxis) == 1 and self.fAxis[0].fCoarseResponseAxis:
             self.SetupStatistics(self.fAxis[0].fCoarseResponseAxis)
-        if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName and self.fAxis[0].fCoarseResponseAxis:
+        if len(self.fAxis) == 2 and self.fAxis[0].fCoarseResponseAxis and ("jet" in self.fAxis[0].fDetectorAxis.fName or self.fAxis[0].fDetectorAxis.fName == "d_z"):
             self.fResponseMatrix1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis, self.fAxis[1].fTruthAxis], bin, "DetectorResponse") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
             self.fTruth1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fTruthAxis, [self.fAxis[1].fTruthAxis], bin, "Truth") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fTruthAxis.fBins) + 1)]
             self.fMeasured1D = [self.GenerateLowerDimensionHistogram(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis, [self.fAxis[1].fDetectorAxis], bin, "Measured") for bin in xrange(0, len(self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.fBins) + 1)]
@@ -101,7 +101,7 @@ class DetectorResponse:
         else:
             binLimits = None
             binName = "NoJet"
-            binTitle = "All, no #it{p}_{T,jet} requirement"
+            binTitle = "All, no jet requirement"
 
         hist = self.GenerateHistogram(axis, "{0}_{1}".format(name, binName))
         hist.SetTitle(binTitle)
@@ -140,7 +140,7 @@ class DetectorResponse:
             rlist.Add(self.fResolution)
             rlist.Add(self.fEnergyScaleShift)
             rlist.Add(self.fEnergyScaleShiftMedian)
-        if len(self.fAxis) == 2 and "pt" in self.fAxis[0].fTruthAxis.fName:
+        if len(self.fAxis) == 2 and self.fAxis[0].fCoarseResponseAxis and ("jet" in self.fAxis[0].fDetectorAxis.fName or self.fAxis[0].fDetectorAxis.fName == "d_z"):
             for eff in self.fEfficiency1D:
                 rlist.Add(eff)
             for h in self.fTruth1D:
