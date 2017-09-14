@@ -25,9 +25,9 @@ analysis:
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
     efficiency:
-      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1073_cresponse.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -46,9 +46,9 @@ analysis:
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
     efficiency:
-      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1073_cresponse.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
@@ -68,9 +68,9 @@ analysis:
     active_mesons: [D0_kSignalOnly, D0_WrongPID]
     need_inv_mass: [D0_kSignalOnly, D0_WrongPID]
     efficiency:
-      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1073_cresponse.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_NoJet
+      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_NoJet
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
