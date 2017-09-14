@@ -3,13 +3,15 @@
 import argparse
 import yaml
 import IPython
-
 import sys
+import ROOT
+import os
+import glob
+import shutil
+
 sys.path.append("../DMesonJetAnalysis")
 import DMesonJetUtils
 sys.path.remove("../DMesonJetAnalysis")
-import ROOT
-import os
 
 ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
@@ -111,6 +113,11 @@ def main(config):
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol6");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "pol6");
     ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol6");
+
+    dest_dir = "./reflTemp"
+    for file in glob.glob("{}/*.root".format(path)):
+        print("Copying file '{}' to '{}'".format(file, dest_dir))
+        shutil.copy(file, dest_dir)
 
 if __name__ == '__main__':
 
