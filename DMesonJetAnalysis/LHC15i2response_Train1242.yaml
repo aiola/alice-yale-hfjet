@@ -1,7 +1,7 @@
 # Response c,b->D0
-name: LHC15i2_Train1161_response
+name: LHC15i2_Train1242_response
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1161_1162_1163_1164
+train: Jets_EMC_pp_MC_1242_1243_1244_1245
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJetsDetectorResponse
 analysis:
@@ -41,9 +41,8 @@ analysis:
     efficiency: no
     bins:
       d_z:
-        min: 0
-        max: 1
-        width: 0.1
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     cuts:
     -
       object: jet
@@ -111,9 +110,8 @@ analysis:
     efficiency: no
     bins:
       d_z:
-        min: 0
-        max: 1
-        width: 0.1
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
       d_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
         coarse: [0, 1, 3, 5, 8, 12, 16, 30]
@@ -162,9 +160,8 @@ analysis:
     efficiency: no
     bins:
       d_z:
-        min: 0
-        max: 1
-        width: 0.1
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     cuts:
     -
       object: jet
@@ -232,9 +229,8 @@ analysis:
     efficiency: no
     bins:
       d_z:
-        min: 0
-        max: 1
-        width: 0.1
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
       d_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
         coarse: [0, 1, 3, 5, 8, 12, 16, 30]
@@ -313,9 +309,8 @@ analysis:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
         coarse: [5, 6, 8, 10, 14, 20, 30]
       d_z:
-        min: 0
-        max: 1
-        width: 0.1
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     cuts:
     -
       object: jet
@@ -385,9 +380,8 @@ analysis:
         bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
         coarse: [5, 6, 8, 10, 14, 20, 30]
       d_z:
-        min: 0
-        max: 1
-        width: 0.1
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     cuts:
     -
       object: jet

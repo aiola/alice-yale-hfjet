@@ -1,11 +1,11 @@
-name: LHC10_Train883_efficiency
+name: LHC10_Train993_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_883_884_885_886
+train: Jets_EMC_pp_993_994_995_996
 file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
-reflection_templates: LHC15i2_Train1073_reflections_efficiency_{var}_fitted_{fit}
+reflection_templates: LHC15i2_Train1242_reflections_efficiency_{var}_fitted_{fit}
 analysis:
 - 
   trigger: ["AnyINT"]
@@ -25,9 +25,9 @@ analysis:
     active_mesons: [D0]
     need_inv_mass: [D0]
     efficiency:
-      file_name: Jets_EMC_pp_MC_1073_1074_1075_1076/LHC15i2_Train1073_cresponse.root
-      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -79,9 +79,9 @@ analysis:
       title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
       type: inv_mass_fit
       efficiency:
-        file_name: Jets_EMC_pp_MC_1073_1074_1075_1076/LHC15i2_Train1073_cresponse.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
       active_mesons: [D0]
     -
       name: JetPtSpectrum_DPt_30
@@ -89,9 +89,9 @@ analysis:
       title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: side_band
       efficiency:
-        file_name: Jets_EMC_pp_MC_1073_1074_1075_1076/LHC15i2_Train1073_cresponse.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
       active_mesons: [D0]
       FD:
         file_name: BFeedDown.root
@@ -124,9 +124,9 @@ analysis:
       title: "Inv.Mass Fit, |#eta_{D}| < 0.5"
       type: inv_mass_fit
       efficiency:
-        file_name: Jets_EMC_pp_MC_1073_1074_1075_1076/LHC15i2_Train1073_cresponse.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_NoJet
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_NoJet
       active_mesons: [D0]
       FD:
         file_name: BFeedDown.root
