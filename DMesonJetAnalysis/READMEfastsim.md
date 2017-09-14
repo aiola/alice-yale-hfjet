@@ -11,4 +11,4 @@ In order to make it work you'll have to setup `FastSimAnalysis.yaml` so that it 
 
 Inside output the script expects to find many directories 001, 002,.. and inside each of them a file named `AnalysisResults_FastSim_powheg_{PROC}_{TS}.root`
 
-The script will produce automatically a lot of pdf files and a root file will be saved in `{input_path}/FastSim_powheg_{PROC}_{TS}/stage_{X}/output/FastSimAnalysis_powheg_{PROC}_{TS}.root`
+The script will produce automatically a lot of pdf files and a root file will be saved in `{input_path}/FastSim_powheg_{PROC}_{TS}/FastSimAnalysis_powheg_{PROC}_{TS}.root`
