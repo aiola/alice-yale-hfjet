@@ -150,7 +150,7 @@ class DMesonJetUnfoldingEngine:
         responseListName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
         responseList = self.fResponseFile.Get(responseListName)
         if not responseList:
-            print("Could not find list {0} in file {1}". format(responseListName, responseFile.GetName()))
+            print("Could not find list {0} in file {1}". format(responseListName, self.fResponseFile.GetName()))
             exit(1)
         detectorResponseName = "{0}_Jet_AKT{1}{2}_pt_scheme_{3}_DetectorResponse".format(self.fDMesonResponse, self.fJetType, self.fJetRadius, self.fSpectrumResponseName)
         detectorResponse = responseList.FindObject(detectorResponseName)
