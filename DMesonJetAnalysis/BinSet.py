@@ -284,9 +284,9 @@ class BinLimits:
             elif varName == "jet_eta":
                 name += "JetEta_{0}_{1}_".format(int(min * 10), int(max * 10)).replace("-", "N")
             elif varName == "d_z":
-                name += "DZ_{0}_{1}_".format(int(min * 100), int(max * 100))
+                name += "JetZ_{0}_{1}_".format(int(min * 100), int(max * 100))
             elif varName == "d_corrz":
-                name += "DCorrZ_{0}_{1}_".format(int(min * 100), int(max * 100))
+                name += "JetCorrZ_{0}_{1}_".format(int(min * 100), int(max * 100))
 
         # remove last "_"
         if name: name = name[:-1]
