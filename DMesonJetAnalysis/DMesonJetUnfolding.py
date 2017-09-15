@@ -1064,17 +1064,25 @@ class DMesonJetUnfoldingEngine:
             axisCompare = DMesonJetUtils.CompareAxis(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
             if axisCompare < 0:
                 print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the response matrix, hopefully things will go well (and you know what you are doing!)".format(prior))
+                print("Prior axis: {}".format(list(priorHist.GetXaxis().GetXbins())))
+                print("Response matrix axis: {}".format(list(self.fDetectorResponse.GetYaxis().GetXbins())))
                 detectorResponse = DMesonJetUtils.Rebin2D(self.fDetectorResponse, self.fDetectorResponse.GetXaxis(), priorHist.GetXaxis(), False)
                 detectorTrainTruth = DMesonJetUtils.Rebin1D(self.fDetectorTrainTruth, priorHist.GetXaxis())
             elif axisCompare > 0:
                 print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the custom prior, hopefully things will go well (and you know what you are doing!)".format(prior))
+                print("Prior axis: {}".format(list(priorHist.GetXaxis().GetXbins())))
+                print("Response matrix axis: {}".format(list(self.fDetectorResponse.GetYaxis().GetXbins())))
                 priorHist = DMesonJetUtils.Rebin1D(priorHist, self.fDetectorTrainTruth.GetXaxis())
                 detectorResponse = self.fDetectorResponse
                 detectorTrainTruth = self.fDetectorTrainTruth
             else:
                 detectorResponse = self.fDetectorResponse
                 detectorTrainTruth = self.fDetectorTrainTruth
-        priorHist.Scale(detectorTrainTruth.Integral() / priorHist.Integral())
+        priorHist_Integral = priorHist.Integral()
+        if priorHist_Integral != 0:
+            priorHist.Scale(detectorTrainTruth.Integral() / priorHist_Integral)
+        else:
+            print("Warning (DMesonJetUnfolding, NormalizeResponseMatrix): prior histogram '{}' is empty!".format(priorHist.GetName()))
         priorEffHist = priorHist.Clone("priorEffHist")
         priorEffHist.Multiply(detectorResponse.ProjectionY())
         priorEffHist.Divide(detectorTrainTruth)
