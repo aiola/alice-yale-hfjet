@@ -27,7 +27,7 @@ variations:
   name: PDF_MSTW2008nlo68cl
   active: no
   title: "PDF = MSTW2008nlo68cl (21200)" 
-  ts: 1484037661
+  ts: 1505395218
 -
   name: PDF_cteq6l1
   active: no
@@ -37,7 +37,7 @@ variations:
   name: facscfact2_renscfact2
   active: no
   title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
-  ts: 1483403243
+  ts: 1505506137
 -
   name: facscfact05_renscfact05
   active: no
