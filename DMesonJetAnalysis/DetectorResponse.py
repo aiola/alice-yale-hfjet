@@ -369,7 +369,10 @@ class DetectorResponse:
         if (not (recoJet and truthJet)) or recoJet.fPt <= 0 or truthJet.fPt <= 0:
             return
 
-        self.fStatistics.Fill(truthJet.fPt, (recoJet.fPt - truthJet.fPt) / truthJet.fPt, w)
+        if self.fStatistics.fAxis.fName == "jet_pt":
+            self.fStatistics.Fill(truthJet.fPt, (recoJet.fPt - truthJet.fPt) / truthJet.fPt, w)
+        elif self.fStatistics.fAxis.fName == "d_z":
+            self.fStatistics.Fill(truthJet.fZ, (recoJet.fZ - truthJet.fZ) / truthJet.fZ, w)
 
     def FillResponseMatrix(self, axis, resp, recoDmeson, truthDmeson, recoJet, truthJet, w):
         naxis = len(axis)

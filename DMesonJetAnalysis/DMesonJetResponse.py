@@ -78,7 +78,10 @@ class DMesonJetResponseEngine:
                 pad.SetBottomMargin(0.18)
                 h = s.fHistogram.DrawCopy()
                 h.GetYaxis().SetTitle("Probability density")
-                h.GetXaxis().SetRangeUser(-1, 0.5)
+                if resp.fStatistics.fAxis.fName == "jet_pt":
+                    h.GetXaxis().SetRangeUser(-1, 0.6)
+                elif resp.fStatistics.fAxis.fName == "d_z":
+                    h.GetXaxis().SetRangeUser(-0.6, 1)
                 h.SetMarkerColor(ROOT.kRed + 2)
                 h.SetMarkerStyle(ROOT.kFullCircle)
                 h.SetMarkerSize(0.8)
