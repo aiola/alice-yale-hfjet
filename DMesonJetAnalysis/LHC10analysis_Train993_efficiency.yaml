@@ -6,10 +6,11 @@ merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 reflection_templates: LHC15i2_Train1242_reflections_efficiency_{var}_fitted_{fit}
+monte_carlo: no
 analysis:
 - 
   trigger: ["AnyINT"]
-  d_meson: [D0] #, 2ProngLikeSign]
+  d_meson: [D0]
   n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015
@@ -52,10 +53,47 @@ analysis:
         central_points: default
         spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
   -
+    name: JetZBins_DPt_30_JetPt_5_30
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+      list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+      object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    bins:
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    spectra:
+    -
+      name: JetZSpectrum_DPt_30_JetPt_5_30
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      type: inv_mass_fit
+      active_mesons: [D0]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+  -
     name: DPtBins_JetPt_5_30
     title: ""
-    active_mesons: [D0, 2ProngLikeSign]
-    need_inv_mass: [D0, 2ProngLikeSign]
+    active_mesons: [D0]
+    need_inv_mass: [D0]
     efficiency: no
     bins:
       d_pt: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
@@ -70,8 +108,6 @@ analysis:
       variable: fPt
       min: 5
       max: 30
-    bin_count_analysis:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
@@ -88,21 +124,111 @@ analysis:
       suffix: SideBand
       title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
       type: side_band
-      efficiency:
-        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
-        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
-        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
       active_mesons: [D0]
+      axis:
+        jet_pt: [5, 6, 8, 10, 14, 20, 30]
       FD:
         file_name: BFeedDown.root
         central_points: default
-        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
       side_band:
         min_sigmas: 4
         max_sigmas: 8
         max_signal_sigmas: 2
         backup_mean: 1.86484
         backup_sigma: 0.015
+      efficiency:
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    -
+      name: JetCorrPtSpectrum_DPt_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
+      type: side_band
+      active_mesons: []
+      axis:
+        jet_corrpt: [5, 6, 8, 10, 14, 20, 30]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+      efficiency:
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    -
+      name: JetBkgPtSpectrum_DPt_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}"
+      type: side_band
+      active_mesons: []
+      axis:
+        jet_bkgpt: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3, 4, 5, 10]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+      efficiency:
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    -
+      name: JetZSpectrum_DPt_30_JetPt_5_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      type: side_band
+      active_mesons: [D0]
+      axis:
+        d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+      efficiency:
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
+    -
+      name: JetCorrZSpectrum_DPt_30_JetPt_5_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      type: side_band
+      active_mesons: []
+      axis:
+        d_corrz: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+      efficiency:
+        file_name: Jets_EMC_pp_MC_1242_1243_1244_1245/LHC15i2_Train1242_response.root
+        list_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt
+        object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
   -
     name: DPtBins
     title: ""
