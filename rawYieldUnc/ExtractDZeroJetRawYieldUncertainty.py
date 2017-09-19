@@ -21,7 +21,7 @@ sigmafixed_DPtBins = [0.010, 0.014, 0.016, 0.015, 0.016, 0.015, 0.023, 0.023, 0.
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 sigmafixed_JetPtBins = [0.012, 0.015, 0.014, 0.016, 0.018, 0.020]
 
-zJetbins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]  # used for sideband approach to define the bins of the output jet spectrum
+zJetbins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]  # used for sideband approach to define the bins of the output jet spectrum
 
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
