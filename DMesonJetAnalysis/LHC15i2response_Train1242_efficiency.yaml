@@ -47,8 +47,8 @@ analysis:
       object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_Prompt_Efficiency_JetPt_500_3000
     bins:
       d_z:
-        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
     cuts:
     -
       object: jet
@@ -126,8 +126,8 @@ analysis:
       object_name: D0_Jet_AKTChargedR040_pt_scheme_JetPtDPtSpectrum_NonPrompt_Efficiency_JetPt_500_3000
     bins:
       d_z:
-        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+        coarse: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
     cuts:
     -
       object: jet
@@ -170,4 +170,3 @@ analysis:
       variable: fPartonType
       apply: gen
       include: 5
-      

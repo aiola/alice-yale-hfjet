@@ -56,7 +56,7 @@ analysis:
     need_inv_mass: [D0]
     efficiency: no
     bins:
-      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
     cuts:
     -
       object: jet
@@ -170,7 +170,7 @@ analysis:
       type: side_band
       active_mesons: [D0]
       axis:
-        d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
       FD:
         file_name: BFeedDown.root
         central_points: default
