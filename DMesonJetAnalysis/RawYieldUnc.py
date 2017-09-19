@@ -16,11 +16,16 @@ wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader()
 
 xaxisTitle = ""
 yaxisTitle = ""
+do_spectra_plot = "logy"
 
 def main(config, meson_name, jet_type, jet_radius, var, kincuts):
+    global do_spectra_plot
+
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
+
+    if var == "JetZ" or var == "Jetz": do_spectra_plot = "lineary"
 
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
@@ -30,6 +35,7 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fAnalysisName = config["name"]
 
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
+    comp.fDoSpectraPlot = do_spectra_plot
     comp.fOptSpectrum = "p x0"
     comp.fOptRatio = ""
     comp.fSeparateBaselineUncertainty = True
@@ -52,6 +58,7 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
         default_vs_average_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefault")
+    comp.fDoSpectraPlot = do_spectra_plot
     comp.fOptRatio = "hist"
     comp.fX1LegRatio = 0.15
     comp.fX1LegSpectrum = 0.20
@@ -90,6 +97,7 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
         default_vs_default_mt_unc(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
     comp = DMesonJetCompare.DMesonJetCompare("SideBandReflectionVariationComparison")
+    comp.fDoSpectraPlot = do_spectra_plot
     comp.fX1LegRatio = 0.15
     comp.fX1LegSpectrum = 0.20
     comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
@@ -316,6 +324,7 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var):
     globalList.extend(histos)
     cname = "CompareRawYieldUncVariations_AfterDbinSum"
     comp = DMesonJetCompare.DMesonJetCompare(cname)
+    comp.fDoSpectraPlot = do_spectra_plot
     comp.fOptRatio = "hist"
     comp.fNColsLegRatio = 3
     comp.fNColsLegSpectrum = 3
@@ -366,6 +375,7 @@ def SideBandRawYieldUnc(input_path, train, ana, var):
         globalList.extend(histos)
         cname = "CompareRawYieldUncVariations_{0}".format(ibin)
         comp = DMesonJetCompare.DMesonJetCompare(cname)
+        comp.fDoSpectraPlot = do_spectra_plot
         comp.fDoSpectrumLegend = False
         comp.fDoRatioLegend = False
         comp.fOptRatio = "hist"
@@ -420,6 +430,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable):
         globalList.extend(histos)
         cname = "CompareRawYieldUncReflVariations_{0}".format(ibin)
         comp = DMesonJetCompare.DMesonJetCompare(cname)
+        comp.fDoSpectraPlot = do_spectra_plot
         comp.fOptRatio = "hist"
         comp.fX1LegRatio = 0.30
         comp.fX1LegSpectrum = 0.30
