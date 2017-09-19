@@ -25,7 +25,7 @@ variations:
   ts: 1505318474
 -
   name: PDF_MSTW2008nlo68cl
-  active: no
+  active: yes
   title: "PDF = MSTW2008nlo68cl (21200)" 
   ts: 1505395218
 -
@@ -35,32 +35,32 @@ variations:
   ts: 1505382004
 -
   name: facscfact2_renscfact2
-  active: no
+  active: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
   ts: 1505506137
 -
   name: facscfact05_renscfact05
-  active: no
+  active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
-  ts: 1483403037
+  ts: 1505744361
 -
   name: facscfact1_renscfact05
-  active: no
+  active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
-  ts: 1483619400
+  ts: 1505760169
 -
   name: facscfact05_renscfact1
-  active: no
+  active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
-  ts: 1483622213
+  ts: 1505760774
 -
   name: facscfact2_renscfact1
-  active: no
+  active: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
-  ts: 1483628767
+  ts: 1505761121
 -
   name: facscfact1_renscfact2
-  active: no
+  active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
-  ts: 1483629492
+  ts: 1505764272
 
