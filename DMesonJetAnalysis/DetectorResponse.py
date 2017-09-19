@@ -434,6 +434,8 @@ class DetectorResponse:
                 bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthJet.fPt) + 1
             elif self.fAxis[0].fTruthAxis.fName == "d_pt":
                 bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthDmeson.fPt) + 1
+            elif self.fAxis[0].fTruthAxis.fName == "d_z":
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthJet.fZ) + 1
             else:
                 bin = 0
             if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
@@ -450,6 +452,8 @@ class DetectorResponse:
                 bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(jet.fPt) + 1
             elif self.fAxis[0].fDetectorAxis.fName == "d_pt":
                 bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(dmeson.fPt) + 1
+            elif self.fAxis[0].fDetectorAxis.fName == "d_z":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(jet.fZ) + 1
             else:
                 bin = 0
             if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.GetNbins():
@@ -466,6 +470,8 @@ class DetectorResponse:
                 bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(jet.fPt) + 1
             elif self.fAxis[0].fTruthAxis.fName == "d_pt":
                 bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(dmeson.fPt) + 1
+            elif self.fAxis[0].fTruthAxis.fName == "d_z":
+                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(jet.fZ) + 1
             else:
                 bin = 0
             if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
@@ -482,6 +488,8 @@ class DetectorResponse:
                 bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(jet.fPt) + 1
             elif self.fAxis[0].fTruthAxis.fName == "d_pt":
                 bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(dmeson.fPt) + 1
+            elif self.fAxis[0].fDetectorAxis.fName == "d_z":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(jet.fZ) + 1
             else:
                 bin = 0
             if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
