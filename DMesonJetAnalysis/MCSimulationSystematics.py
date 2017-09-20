@@ -103,7 +103,7 @@ def PlotFSspectraAndSyst(results):
         hname = name[name.rfind("/") + 1:]
         syst = results["SystematicUncertainty"][name]["{0}_CentralAsymmSyst".format(hname)]
         canvas = ROOT.TCanvas("{0}_canvas".format(name), "{0}_canvas".format(name))
-        canvas.SetLogy()
+        if not "JetZ" in name: canvas.SetLogy()
         canvas.SetLeftMargin(0.13)
         canvas.cd()
         syst_copy = syst.Clone()
@@ -117,7 +117,10 @@ def PlotFSspectraAndSyst(results):
         stat_copy.SetMarkerStyle(ROOT.kFullCircle)
         stat_copy.SetMarkerSize(0.6)
         stat_copy.SetLineColor(ROOT.kBlue + 1)
-        leg = ROOT.TLegend(0.35, 0.71, 0.89, 0.89, "NB")
+        if "JetZ" in name:
+            leg = ROOT.TLegend(0.15, 0.71, 0.70, 0.89, "NB")
+        else:
+            leg = ROOT.TLegend(0.35, 0.71, 0.89, 0.89, "NB")
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(43)
@@ -208,7 +211,7 @@ def GenerateSystematicUncertainty(baseline, spectra):
         asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
     elif "it{z}" in baseline.GetXaxis().GetTitle():
         symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
-        asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{||,D}^{ch jet}} (mb)")
+        asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
 
     result[symmetricUncGraph.GetName()] = symmetricUncGraph
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
@@ -241,6 +244,14 @@ def CompareVariations(variations, results):
                      ]
 
     for name in spectrumNames:
+        if "JetZ" in name:
+            comp_template.fDoSpectraPlot = "lineary"
+            comp_template.fX1LegSpectrum = 0.15
+            comp_template.fX2LegSpectrum = 0.70
+        else:
+            comp_template.fDoSpectraPlot = "logy"
+            comp_template.fX1LegSpectrum = 0.55
+            comp_template.fX2LegSpectrum = 0.90
         r = CompareVariationsForSpectrum(comp_template, variations, results, name)
         if r: result[name] = r
 
