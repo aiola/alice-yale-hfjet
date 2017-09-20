@@ -84,6 +84,162 @@ analysis:
         central_points: default
         spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
   -
+    name: JetZBins_DPt_10_JetPt_5_15
+    title: "#it{p}_{T,D} > 1 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency: no
+    bins:
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fPt
+      min: 1.0
+    spectra:
+    -
+      name: JetZSpectrum_DPt_30_JetPt_5_15
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      type: inv_mass_fit
+      active_mesons: [D0]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+  -
+    name: JetZBins_DPt_30_JetPt_15_30
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency: no
+    bins:
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+    spectra:
+    -
+      name: JetZSpectrum_DPt_30_JetPt_15_30
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      type: inv_mass_fit
+      active_mesons: [D0]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+  -
+    name: DPtBins_JetPt_5_15
+    title: ""
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency: no
+    bins:
+      d_pt: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_5_15
+      suffix: InvMassFit
+      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      type: inv_mass_fit
+      active_mesons: [D0]
+    -
+      name: JetZSpectrum_DPt_10_JetPt_5_15
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 1 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      type: side_band
+      active_mesons: [D0]
+      axis:
+        d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_15_30
+    title: ""
+    active_mesons: [D0]
+    need_inv_mass: [D0]
+    efficiency: no
+    bins:
+      d_pt: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_15_30
+      suffix: InvMassFit
+      title: "Inv.Mass Fit, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      type: inv_mass_fit
+      active_mesons: [D0]
+    -
+      name: JetZSpectrum_DPt_30_JetPt_15_30
+      suffix: SideBand
+      title: "SB method, #it{p}_{T,D} > 3 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      type: side_band
+      active_mesons: [D0]
+      axis:
+        d_z: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+      FD:
+        file_name: BFeedDown.root
+        central_points: default
+        spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
     name: DPtBins_JetPt_5_30
     title: ""
     active_mesons: [D0]
