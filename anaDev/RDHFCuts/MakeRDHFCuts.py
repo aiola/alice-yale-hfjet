@@ -3,109 +3,115 @@
 
 import argparse
 import ROOT
+import array
 
 def MakeRDHFCuts(dmesons, period, recopass, cent):
+    ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
+    ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
+    ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli.C+g")
+    ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng.C+g")
+    ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng.C+g")
+
     cutlist = []
-
     for dmeson in dmesons:
-        print("Processing {}".format(dmeson))
-        if period == "LHC10" and recopass == "pass2" and cent == -1:
-            if dmeson == "D0":
-                cuts = ROOT.AliRDHFCutsD0toKpi()
-            elif dmeson == "DStar":
-                cuts = ROOT.AliRDHFCutsDStartoKpipi()
-            else:
-                print("D meson '{0}' not valid.".format(dmeson))
-                return
-            cuts.SetStandardCutsPP2010()
-        elif period == "LHC10" and recopass == "pass4" and cent == -1:
-            if dmeson == "D0":
-                ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
-                ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
-                ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli.C+g")
-                cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(False)
-            elif dmeson == "DStar":
-                fnameInput = "DStartoKpipiCuts_pp2010pass4_arXiv_1702_00766_AGrelli.root"
-                fileInput = ROOT.TFile(fnameInput)
-                if not fileInput or fileInput.IsZombie():
-                    print("Could not find file {}".format(fnameInput))
-                    exit(1)
-                cuts = fileInput.Get("DStartoKpipiCuts")
-                fileInput.Close()
-            else:
-                print("D meson '{0}' not valid.".format(dmeson))
-                return
-        elif period == "LHC16k" and recopass == "pass1" and cent == -1:
-            if dmeson == "D0":
-                fnameInput = "D0toKpiCuts_pp2016_SQM17_SCostanza.root"
-                fileInput = ROOT.TFile(fnameInput)
-                if not fileInput or fileInput.IsZombie():
-                    print("Could not find file {}".format(fnameInput))
-                    exit(1)
-                cuts = fileInput.Get("D0toKpiCuts")
-                fileInput.Close()
-            else:
-                print("D meson '{0}' not valid.".format(dmeson))
-                return
-        elif period == "LHC12a" and recopass == "pass2" and cent == -1:
-            if dmeson == "D0":
-                fnameInput = "D0toKpiCuts_pp2012_SQM17_SCostanza.root"
-                fileInput = ROOT.TFile(fnameInput)
-                if not fileInput or fileInput.IsZombie():
-                    print("Could not find file {}".format(fnameInput))
-                    exit(1)
-                cuts = fileInput.Get("D0toKpiCuts")
-                fileInput.Close()
-            else:
-                print("D meson '{0}' not valid.".format(dmeson))
-                return
-        elif period == "LHC15o" and recopass == "pass1" and (cent == 0 or cent == 1):
-            if dmeson == "D0":
-                ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
-                ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
-                ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng.C+g")
-                cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng(False)
-            elif dmeson == "DStar":
-                fnameInput = "DStartoKpiCuts_PbPb2015_Cent0_10_Raa_WIP_SJaelani.root"
-                fileInput = ROOT.TFile(fnameInput)
-                if not fileInput or fileInput.IsZombie():
-                    print("Could not find file {}".format(fnameInput))
-                    exit(1)
-                cuts = fileInput.Get("DStartoKpipiCuts")
-                fileInput.Close()
-            else:
-                print("D meson '{0}' not valid.".format(dmeson))
-                return
-        elif period == "LHC15o" and recopass == "pass1" and cent == 2:
-            if dmeson == "D0":
-                ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
-                ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
-                ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng.C+g")
-                cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng(False)
-            elif dmeson == "DStar":
-                fnameInput = "DStartoKpiCuts_PbPb2015_Cent30_50_Raa_QM17_SJaelani.root"
-                fileInput = ROOT.TFile(fnameInput)
-                if not fileInput or fileInput.IsZombie():
-                    print("Could not find file {}".format(fnameInput))
-                    exit(1)
-                cuts = fileInput.Get("DStartoKpipiCuts")
-                fileInput.Close()
-            else:
-                print("D meson '{0}' not valid.".format(dmeson))
-                return
+        if dmeson == "D0" and period == "LHC10" and recopass == "pass4":
+            cut_strenghts = ["standard", "loosest"]  # , "loose", "tight"]
         else:
-            print("Period {0}, pass {1}, cent {2} not valid".format(period, recopass, cent))
-            return
+            cut_strenghts = ["standard"]
+        for cut_strenght in cut_strenghts:
+            print("Processing {} {}".format(dmeson, cut_strenght))
+            if period == "LHC10" and recopass == "pass2" and cent == -1:
+                if dmeson == "D0":
+                    cuts = ROOT.AliRDHFCutsD0toKpi()
+                elif dmeson == "DStar":
+                    cuts = ROOT.AliRDHFCutsDStartoKpipi()
+                else:
+                    print("D meson '{0}' not valid.".format(dmeson))
+                    return
+                cuts.SetStandardCutsPP2010()
+            elif period == "LHC10" and recopass == "pass4" and cent == -1:
+                if dmeson == "D0":
+                    cuts = MakeD0toKpiCuts_pp2010pass4(cut_strenght)
+                elif dmeson == "DStar":
+                    fnameInput = "DStartoKpipiCuts_pp2010pass4_arXiv_1702_00766_AGrelli.root"
+                    fileInput = ROOT.TFile(fnameInput)
+                    if not fileInput or fileInput.IsZombie():
+                        print("Could not find file {}".format(fnameInput))
+                        exit(1)
+                    cuts = fileInput.Get("DStartoKpipiCuts")
+                    fileInput.Close()
+                else:
+                    print("D meson '{0}' not valid.".format(dmeson))
+                    return
+            elif period == "LHC16k" and recopass == "pass1" and cent == -1:
+                if dmeson == "D0":
+                    fnameInput = "D0toKpiCuts_pp2016_SQM17_SCostanza.root"
+                    fileInput = ROOT.TFile(fnameInput)
+                    if not fileInput or fileInput.IsZombie():
+                        print("Could not find file {}".format(fnameInput))
+                        exit(1)
+                    cuts = fileInput.Get("D0toKpiCuts")
+                    fileInput.Close()
+                else:
+                    print("D meson '{0}' not valid.".format(dmeson))
+                    return
+            elif period == "LHC12a" and recopass == "pass2" and cent == -1:
+                if dmeson == "D0":
+                    fnameInput = "D0toKpiCuts_pp2012_SQM17_SCostanza.root"
+                    fileInput = ROOT.TFile(fnameInput)
+                    if not fileInput or fileInput.IsZombie():
+                        print("Could not find file {}".format(fnameInput))
+                        exit(1)
+                    cuts = fileInput.Get("D0toKpiCuts")
+                    fileInput.Close()
+                else:
+                    print("D meson '{0}' not valid.".format(dmeson))
+                    return
+            elif period == "LHC15o" and recopass == "pass1" and (cent == 0 or cent == 1):
+                if dmeson == "D0":
+                    cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng(False)
+                elif dmeson == "DStar":
+                    fnameInput = "DStartoKpiCuts_PbPb2015_Cent0_10_Raa_WIP_SJaelani.root"
+                    fileInput = ROOT.TFile(fnameInput)
+                    if not fileInput or fileInput.IsZombie():
+                        print("Could not find file {}".format(fnameInput))
+                        exit(1)
+                    cuts = fileInput.Get("DStartoKpipiCuts")
+                    fileInput.Close()
+                else:
+                    print("D meson '{0}' not valid.".format(dmeson))
+                    return
+            elif period == "LHC15o" and recopass == "pass1" and cent == 2:
+                if dmeson == "D0":
+                    cuts = ROOT.MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng(False)
+                elif dmeson == "DStar":
+                    fnameInput = "DStartoKpiCuts_PbPb2015_Cent30_50_Raa_QM17_SJaelani.root"
+                    fileInput = ROOT.TFile(fnameInput)
+                    if not fileInput or fileInput.IsZombie():
+                        print("Could not find file {}".format(fnameInput))
+                        exit(1)
+                    cuts = fileInput.Get("DStartoKpipiCuts")
+                    fileInput.Close()
+                else:
+                    print("D meson '{0}' not valid.".format(dmeson))
+                    return
+            else:
+                print("Period {0}, pass {1}, cent {2} not valid".format(period, recopass, cent))
+                return
 
-        cuts.SetUsePhysicsSelection(False)
-        cuts.SetTriggerClass("", "")
-        cuts.SetMinCentrality(0)
-        cuts.SetMaxCentrality(100)
-        if dmeson == "D0":
-            cuts.SetName("D0toKpiCuts")
-        elif dmeson == "Dstar":
-            cuts.SetName("DStartoKpipiCuts")
-        cutlist.append(cuts)
+            if dmeson == "D0":
+                cuts_name = "D0toKpiCuts"
+            elif dmeson == "DStar":
+                cuts_name = "DStartoKpipiCuts"
+            if not cut_strenght == "standard":
+                cuts_name += "_{}".format(cut_strenght)
+
+            cuts.SetUsePhysicsSelection(False)
+            cuts.SetTriggerClass("", "")
+            cuts.SetMinCentrality(0)
+            cuts.SetMaxCentrality(100)
+            cuts.SetName(cuts_name)
+            cutlist.append(cuts)
 
     fname = "RDHFCuts_{}_{}".format(period, recopass)
     if cent >= 0: fname += "_Cent{}".format(cent)
@@ -119,6 +125,67 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
     for cuts in cutlist:
         cuts.Write()
     file.Close()
+
+def MakeD0toKpiCuts_pp2010pass4(cut_strenght):
+    esdTrackCuts = ROOT.AliESDtrackCuts("AliESDtrackCuts", "default")
+    esdTrackCuts.SetRequireSigmaToVertex(False)  # not present in the AOD filtering
+    esdTrackCuts.SetRequireTPCRefit(True)
+    esdTrackCuts.SetMinNClustersTPC(70)  # 50 in the AOD filtering
+    esdTrackCuts.SetRequireITSRefit(True)
+    esdTrackCuts.SetClusterRequirementITS(ROOT.AliESDtrackCuts.kSPD, ROOT.AliESDtrackCuts.kAny)
+    esdTrackCuts.SetMinDCAToVertexXY(0.)
+    esdTrackCuts.SetPtRange(0.3, 1.e10)
+    esdTrackCuts.SetEtaRange(-0.8, +0.8)
+    esdTrackCuts.SetMinRatioCrossedRowsOverFindableClustersTPC(0.8)  # not present in the AOD filtering
+
+    pidObj = ROOT.AliAODPidHF()
+    mode = 1
+    plims = array.array('d', [0.6, 0.8])  # TPC limits in momentum [GeV/c]
+    compat = True  # effective only for this mode
+    asym = True
+    sigmas = array.array('d', [2., 1., 0., 3., 0.])  # to be checked and to be modified with new implementation of setters by Rossella
+    pidObj.SetAsym(asym)  # if you want to use the asymmetric bands in TPC
+    pidObj.SetMatch(mode)
+    pidObj.SetPLimit(plims, len(plims))
+    pidObj.SetSigma(sigmas)
+    pidObj.SetCompat(compat)
+    pidObj.SetTPC(True)
+    pidObj.SetTOF(True)
+    pidObj.SetPCompatTOF(1.5)
+    pidObj.SetSigmaForTPCCompat(3.)
+    pidObj.SetSigmaForTOFCompat(3.)
+    pidObj.SetOldPid(False)
+
+    if cut_strenght == "standard":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(False)
+    elif cut_strenght == "loosest":
+        # Same as AOD filtering in AliPhysics/PWGHF/vertexingHF/ConfigVertexingHF.C
+        cuts = ROOT.AliRDHFCutsD0toKpi()
+        cuts.SetName("D0toKpiCuts")
+        cuts.SetTitle("Cuts for D0 analysis (loosest)")
+        cuts.SetSelectCandTrackSPDFirst(True, 3.)
+        # PILE UP REJECTION
+        cuts.SetOptPileup(ROOT.AliRDHFCuts.kRejectPileupEvent)
+        # EVENT CUTS
+        cuts.SetMinVtxContr(1)
+        # MAX Z-VERTEX CUT
+        cuts.SetMaxVtxZ(10.)
+
+        cutsArrayD0toKpi = array.array('f', [0.3, 999999., 1.1, 0., 0., 999999., 999999., 999999., 0., -1, 0.])
+        cuts.SetCuts(11, cutsArrayD0toKpi)
+        cuts.AddTrackCuts(esdTrackCuts)
+
+        # No PID cuts in the AOD filtering, following comes from standard pass4 cuts (C. Terrevoli)
+        cuts.SetUsePID(True)
+        cuts.SetPidHF(pidObj)
+
+        # Do not recalculate the vertex
+        cuts.SetRemoveDaughtersFromPrim(True)  # activate for pp
+        cuts.SetUseDefaultPID(False)
+        cuts.SetLowPt(False)
+        cuts.PrintAll()
+
+    return cuts
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generates RDHF cuts.')
