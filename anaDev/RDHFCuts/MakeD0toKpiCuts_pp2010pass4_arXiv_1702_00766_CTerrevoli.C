@@ -62,9 +62,9 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(Bool
   ptbins[15] = 36.;
   ptbins[16] = 9999.;
 
-  RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
+  RDHFD0toKpi->SetPtBins(nptbins,ptbins);
   RDHFD0toKpi->SetGlobalIndex(nvars,nptbins);
-  RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
+
   //m    dca      cost*  ptk ptpi  d0k          d0pi       d0d0          cosp  cosxy normdxy
   Float_t cutsMatrixD0toKpiStand[nptbins][nvars]=  {{0.400,350.*1E-4, 0.8, 0.5, 0.5, 1000.*1E-4, 1000.*1E-4, -5000. *1E-8, 0.80,  0.,0.},/* pt<0.5*/
       {0.400,350.*1E-4, 0.8, 0.5, 0.5, 1000.*1E-4, 1000.*1E-4, -5000. *1E-8, 0.80,  0.,0.},/* 0.5<pt<1*/
@@ -104,7 +104,7 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(Bool
 
   RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
   RDHFD0toKpi->SetUseSpecialCuts(kTRUE);
-  RDHFD0toKpi->SetRemoveDaughtersFromPrim(kTRUE);
+  RDHFD0toKpi->SetRemoveDaughtersFromPrim(kTRUE); //Do not recalculate the vertex
   for (Int_t iv = 0; iv < nvars; iv++) delete [] cutsMatrixTransposeStand[iv];
   delete [] cutsMatrixTransposeStand;
   cutsMatrixTransposeStand = nullptr;
@@ -137,10 +137,6 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(Bool
   pidObj->SetSigmaForTPCCompat(3.);
   pidObj->SetSigmaForTOFCompat(3.);
   pidObj->SetOldPid(kFALSE);
-  RDHFD0toKpi->SetPidHF(pidObj);
-
-  //Do not recalculate the vertex
-  RDHFD0toKpi->SetRemoveDaughtersFromPrim(kTRUE); //activate for pp
   RDHFD0toKpi->SetPidHF(pidObj);
   RDHFD0toKpi->SetUseDefaultPID(kFALSE);
   RDHFD0toKpi->SetLowPt(kFALSE);
