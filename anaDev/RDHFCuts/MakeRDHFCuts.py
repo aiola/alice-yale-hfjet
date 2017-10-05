@@ -8,14 +8,16 @@ import array
 def MakeRDHFCuts(dmesons, period, recopass, cent):
     ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include")
     ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include")
+
     ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli.C+g")
+    ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_pp2010pass4_Variations.C+g")
     ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent0_10_Raa_WIP_XPeng.C+g")
     ROOT.gROOT.LoadMacro("MakeD0toKpiCuts_PbPb2015_Cent30_50_Raa_QM17_XPeng.C+g")
 
     cutlist = []
     for dmeson in dmesons:
         if dmeson == "D0" and period == "LHC10" and recopass == "pass4":
-            cut_strenghts = ["standard", "loosest"]  # , "loose", "tight"]
+            cut_strenghts = ["standard", "loosest_nopid", "loosest_pid", "LoosePointingLoosed0d0", "LoosePointing", "Loosed0d0", "TopoOnlyNSigma1", "TopoOnlyNSigma2", "TopoOnlyNSigma3", "TopoOnlyNSigma4"]
         else:
             cut_strenghts = ["standard"]
         for cut_strenght in cut_strenghts:
@@ -158,7 +160,32 @@ def MakeD0toKpiCuts_pp2010pass4(cut_strenght):
 
     if cut_strenght == "standard":
         cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(False)
-    elif cut_strenght == "loosest":
+    elif cut_strenght == "loosest_nopid":
+        # Same as AOD filtering in AliPhysics/PWGHF/vertexingHF/ConfigVertexingHF.C
+        cuts = ROOT.AliRDHFCutsD0toKpi()
+        cuts.SetName("D0toKpiCuts")
+        cuts.SetTitle("Cuts for D0 analysis (loosest)")
+        cuts.SetSelectCandTrackSPDFirst(True, 3.)
+        # PILE UP REJECTION
+        cuts.SetOptPileup(ROOT.AliRDHFCuts.kRejectPileupEvent)
+        # EVENT CUTS
+        cuts.SetMinVtxContr(1)
+        # MAX Z-VERTEX CUT
+        cuts.SetMaxVtxZ(10.)
+
+        cutsArrayD0toKpi = array.array('f', [0.3, 999999., 1.1, 0., 0., 999999., 999999., 999999., 0., -1, 0.])
+        cuts.SetCuts(11, cutsArrayD0toKpi)
+        cuts.AddTrackCuts(esdTrackCuts)
+
+        # No PID cuts in the AOD filtering
+        cuts.SetUsePID(False)
+
+        # Do not recalculate the vertex
+        cuts.SetRemoveDaughtersFromPrim(True)  # activate for pp
+        cuts.SetUseDefaultPID(False)
+        cuts.SetLowPt(False)
+        cuts.PrintAll()
+    elif cut_strenght == "loosest_pid":
         # Same as AOD filtering in AliPhysics/PWGHF/vertexingHF/ConfigVertexingHF.C
         cuts = ROOT.AliRDHFCutsD0toKpi()
         cuts.SetName("D0toKpiCuts")
@@ -184,14 +211,31 @@ def MakeD0toKpiCuts_pp2010pass4(cut_strenght):
         cuts.SetUseDefaultPID(False)
         cuts.SetLowPt(False)
         cuts.PrintAll()
-
+    elif cut_strenght == "LoosePointingLoosed0d0":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kLoosePointingLoosed0d0, True)
+    elif cut_strenght == "Loosed0d0":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kLoosed0d0, True)
+    elif cut_strenght == "LoosePointing":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kLoosePointing, True)
+    elif cut_strenght == "TopoOnlyNSigma1":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kTopoOnlyNSigma1, False)
+    elif cut_strenght == "TopoOnlyNSigma2":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kTopoOnlyNSigma2, False)
+    elif cut_strenght == "TopoOnlyNSigma3":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kTopoOnlyNSigma3, False)
+    elif cut_strenght == "TopoOnlyNSigma4":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kTopoOnlyNSigma4, False)
+    else:
+        print("Cut '{}' not known!".format(cut_strenght))
+        cuts = None
     return cuts
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generates RDHF cuts.')
     parser.add_argument('dmesons',
                         default="D0", nargs='*',
-                        help='D meson (D0, Dstar, Dplus, Ds')
+                        help='D meson (D0, DStar, DPlus, Ds)')
     parser.add_argument('--cent',
                         default=-1, type=int,
                         help='Centrality class')
