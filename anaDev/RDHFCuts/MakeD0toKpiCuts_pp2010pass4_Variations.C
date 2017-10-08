@@ -307,7 +307,7 @@ void SetCutsTopoOnly(AliRDHFCutsD0toKpi* RDHFD0toKpi, Float_t nsigma)
     }
   }
   //new cut
-  Float_t cutvalTopo[nptbins] = {nsigma};
+  Float_t cutvalTopo[nptbins] = {nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma};
   RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins,cutvalTopo);
   RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
 
