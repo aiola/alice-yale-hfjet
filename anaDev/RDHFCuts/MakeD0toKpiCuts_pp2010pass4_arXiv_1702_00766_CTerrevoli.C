@@ -1,8 +1,15 @@
-#include <Riostream.h>
-#include <TFile.h>
-#include <AliRDHFCutsD0toKpi.h>
-#include <TClonesArray.h>
-#include <TParameter.h>
+// ROOT
+#include "Riostream.h"
+#include "TFile.h"
+#include "TClonesArray.h"
+#include "TParameter.h"
+
+// ALiRoot
+#include "AliESDtrackCuts.h"
+#include "AliVEvent.h"
+
+// AliPhysics
+#include "AliRDHFCutsD0toKpi.h"
 
 /*
  * Generates the RDHF cuts for D0 mesons (RAA analysis).
@@ -71,7 +78,7 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_arXiv_1702_00766_CTerrevoli(Bool
       {0.400,350.*1E-4, 0.8, 0.5, 0.5, 1000.*1E-4, 1000.*1E-4,  -5000. *1E-8, 0.80,  0.,0.},/* pt<0.5*/
       {0.400,350.*1E-4, 0.8, 0.5, 0.5, 1000.*1E-4, 1000.*1E-4,  -5000. *1E-8, 0.80,  0.,0.},/* 0.5<pt<1*/
       {0.400,300.*1E-4, 0.8, 0.4, 0.4, 1000.*1E-4, 1000.*1E-4, -25000. *1E-8, 0.80,  0.,0.},/* 1<pt<2 */
-      {0.400,300.*1E-4, 0.8, 0.7, 0.7, 1000.*1E-4, 1000.*1E-4, -20000. *1E-8, 0.90,  0.,0.},/* 2<pt<3 *///d0d0 e cosp
+      {0.400,300.*1E-4, 0.8, 0.7, 0.7, 1000.*1E-4, 1000.*1E-4, -20000. *1E-8, 0.90,  0.,0.},/* 2<pt<3 */
       {0.400,300.*1E-4, 0.8, 0.7, 0.7, 1000.*1E-4, 1000.*1E-4, -12000. *1E-8, 0.90,  0.,0.},/* 3<pt<4 */
       {0.400,300.*1E-4, 0.8, 0.7, 0.7, 1000.*1E-4, 1000.*1E-4,  -8000. *1E-8, 0.85,  0.,0.},/* 4<pt<5 */
       {0.400,300.*1E-4, 0.8, 0.7, 0.7, 1000.*1E-4, 1000.*1E-4,  -8000. *1E-8, 0.85,  0.,0.},/* 5<pt<6 */

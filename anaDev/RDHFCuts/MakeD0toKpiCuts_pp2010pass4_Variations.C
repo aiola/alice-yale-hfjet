@@ -1,8 +1,15 @@
-#include <Riostream.h>
-#include <TFile.h>
-#include <AliRDHFCutsD0toKpi.h>
-#include <TClonesArray.h>
-#include <TParameter.h>
+// ROOT
+#include "Riostream.h"
+#include "TFile.h"
+#include "TClonesArray.h"
+#include "TParameter.h"
+
+// ALiRoot
+#include "AliESDtrackCuts.h"
+#include "AliVEvent.h"
+
+// AliPhysics
+#include "AliRDHFCutsD0toKpi.h"
 
 /*
  * Generates the RDHF cuts for D0 mesons (RAA analysis).
