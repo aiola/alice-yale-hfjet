@@ -18,8 +18,8 @@ def LoadMacros():
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerQA.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMakerNew.C")
     ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskCleanupVertexingHF.C")
-    ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskD0Mass.C")
+    # ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskCleanupVertexingHF.C")
+    # ROOT.gROOT.LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskD0Mass.C")
 
 def AddTaskCDBConnect():
   mgr = ROOT.AliAnalysisManager.GetAnalysisManager()
