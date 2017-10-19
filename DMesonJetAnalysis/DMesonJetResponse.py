@@ -13,6 +13,21 @@ import Axis
 
 globalList = []
 
+class DMesonJetResponseContainer:
+    def __init__(self, DMesonDef, jetDefinitions, respDefinitions):
+        self.fResponseObjects = dict()
+        for jetDef in jetDefinitions:
+            jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
+            for axisName, (axisDef, DMesonWeight, applyEffTruth, cuts) in respDefinitions.iteritems():
+                respName = "{0}_{1}_{2}".format(DMesonDef, jetName, axisName)
+                resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, DMesonWeight, applyEffTruth)
+                resp.GenerateHistograms()
+                self.fResponseObjects[respName] = resp
+
+    def Fill(self, event, eventWeight):
+        for r in self.fResponseObjects.itervalues():
+            r.Fill(event, eventWeight)
+
 class DMesonJetResponseEngine:
     def __init__(self, dmeson, jets, axis, projector):
         self.fDMeson = dmeson
@@ -32,7 +47,9 @@ class DMesonJetResponseEngine:
             c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
 
     def ProjectResponse(self):
-        self.fResponses = self.fProjector.GetDetectorResponse(self.fAxis, self.fDMeson, self.fJetDefinitions)
+        response_container = DMesonJetResponseContainer(self.fDMeson, self.fJetDefinitions, self.fAxis)
+        self.fProjector.StartProjection("", self.fDMeson, "kSignalOnly", response_container)
+        self.fResponses = response_container.fResponseObjects
 
     def Start(self):
         self.ProjectResponse()

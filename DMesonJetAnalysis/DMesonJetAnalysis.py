@@ -17,6 +17,37 @@ import Axis
 
 globalList = []
 
+class DMesonJetContainer:
+    def __init__(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass,):
+        self.fBinMultiSets = binMultiSets
+        self.fNMassBins = nMassBins
+        self.fMinMass = minMass
+        self.fMaxMass = maxMass
+        self.fDMesonDef = DMesonDef
+        self.fMassAxisTitle = "#it{m}(K#pi) GeV/#it{c}^{2}"
+        self.fYieldAxisTitle = "counts"
+        self.fTrigger = trigger
+
+    def Fill(self, event, eventWeight):
+        dmeson = event.DmesonJet
+
+        for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
+            if jtype or jradius:
+                jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+                jet = getattr(event, jetName)
+                if jet.fPt == 0:
+                    continue
+            else:
+                jet = None
+
+            bins = binMultiSet.FindBin(dmeson, jet, self.fDMesonDef)
+            for bin, DMesonWeight in bins:
+                if bin.fCounts == 0: bin.CreateHistograms(self.fTrigger, self.fDMesonDef, self.fMassAxisTitle, self.fYieldAxisTitle, self.fNMassBins, self.fMinMass, self.fMaxMass)
+                bin.Fill(dmeson, jet, DMesonWeight * eventWeight)
+
+            spectra = binMultiSet.FindSpectra(dmeson, jet)
+            for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, DMesonWeight * eventWeight)
+
 class DMesonJetAnalysisEngine:
     def __init__(self, collision, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, projector):
         self.fCollision = collision
@@ -175,8 +206,8 @@ class DMesonJetAnalysisEngine:
         return fitter
 
     def DoProjections(self):
-        self.fProjector.StartProjection(self.fTrigger, self.fDMeson,
-                                        self.fBinMultiSets, self.fNMassBins, self.fMinMass, self.fMaxMass)
+        data_container = DMesonJetContainer(self.fTrigger, self.fDMeson, self.fBinMultiSets, self.fNMassBins, self.fMinMass, self.fMaxMass)
+        self.fProjector.StartProjection(self.fTrigger, self.fDMeson, None, data_container)
 
         self.fHistEvents = self.fProjector.fHistEvents
         if self.fHistEvents: self.fEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("Normalized"))
