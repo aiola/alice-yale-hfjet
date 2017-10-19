@@ -16,7 +16,7 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
-def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
+def main(config, maxEvents, format, gen, proc, ts, stage):
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -42,8 +42,6 @@ def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
 
         input_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
 
-        if pt_hard_bins > 0: input_path += "{ptHard}/"
-
         if stage >= 0:
             input_path += "stage_{0}/output".format(stage)
             file_name = "AnalysisResults_FastSim_{0}.root".format(suffix)
@@ -61,7 +59,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage, pt_hard_bins):
         output_path = input_path
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetDataProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents, pt_hard_bins)
+    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
@@ -87,14 +85,12 @@ if __name__ == '__main__':
                         default=None)
     parser.add_argument('--stage', metavar='N',
                         default=-1, type=int)
-    parser.add_argument('--pthard', metavar='N',
-                        default=0, type=int)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.pthard)
+    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage)
 
     IPython.embed()

@@ -4,6 +4,7 @@ input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_1242_1243_1244_1245
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJetsDetectorResponse
+merging_type: weighted_sum
 analysis:
 - 
   d_meson: [D0]

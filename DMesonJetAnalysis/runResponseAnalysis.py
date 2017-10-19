@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python script to run the D meson jet analysis on 2010 pp data
+# python script to run the D meson jet analysis on 2010 pp data
 
 import argparse
 import yaml
@@ -24,17 +24,17 @@ def main(config, maxEvents, suffix, format):
 
     ana = DMesonJetResponse.DMesonJetResponse(name)
 
-    projector = DMesonJetProjectors.DMesonJetResponseProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], maxEvents)
+    projector = DMesonJetProjectors.DMesonJetProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], config["merging_type"], maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
         ana.StartAnalysis(anaConfig)
-    
+
     ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
     ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='D meson jet response for 2010 pp MC.')
     parser.add_argument('yaml', metavar='config.yaml',
                         help='YAML configuration file')
@@ -45,12 +45,12 @@ if __name__ == '__main__':
     parser.add_argument('--format', metavar='pdf',
                         default="pdf")
     args = parser.parse_args()
-    
+
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
     main(config, args.events, args.suffix, args.format)
-    
+
     IPython.embed()
-    
+
