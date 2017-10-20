@@ -7,6 +7,11 @@ task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 reflection_templates: LHC15i2_Train1242_reflections_{var}_fitted_{fit}
 monte_carlo: no
+topo_studies:
+-
+  title: Data
+  d_meson_suffix: D0toKpiCuts_loosest_nopid
+  trigger: AnyINT
 analysis:
 - 
   trigger: ["AnyINT"]
