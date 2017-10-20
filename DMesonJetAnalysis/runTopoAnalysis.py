@@ -30,8 +30,8 @@ def main(config, maxEvents, format):
     manager = DMesonJetTopoAnalysis.DMesonJetTopoAnalysisManager("D0")
 
     projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
-    manager.AddAnalysis("Background", "", projector, "kBackgroundOnly_D0toKpiCuts_loosest_nopid")
     manager.AddAnalysis("Signal", "", projector, "kSignalOnly_D0toKpiCuts_loosest_nopid")
+    manager.AddAnalysis("Background", "", projector, "kBackgroundOnly_D0toKpiCuts_loosest_nopid")
 
     globalList.append(manager)
 
