@@ -27,14 +27,18 @@ def main(config, maxEvents, format):
     file_name = config["file_name"]
     output_path = input_path
 
+    manager = DMesonJetTopoAnalysis.DMesonJetTopoAnalysisManager("D0")
+
     projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
-    ana = DMesonJetTopoAnalysis.DMesonJetTopoAnalysisManager("", "D0", projector)
-    globalList.append(ana)
+    manager.AddAnalysis("Background", "", projector, "kBackgroundOnly_D0toKpiCuts_loosest_nopid")
+    manager.AddAnalysis("Signal", "", projector, "kSignalOnly_D0toKpiCuts_loosest_nopid")
 
-    ana.StartAnalysis()
+    globalList.append(manager)
 
-    ana.SaveRootFile("{0}/{1}".format(output_path, train))
-    ana.SavePlots("{0}/{1}".format(output_path, train), format)
+    manager.StartAnalysis()
+
+    manager.SaveRootFile("{0}/{1}".format(output_path, train))
+    manager.SavePlots("{0}/{1}".format(output_path, train), format)
 
 if __name__ == '__main__':
 

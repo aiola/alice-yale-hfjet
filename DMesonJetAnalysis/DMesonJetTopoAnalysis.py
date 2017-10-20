@@ -77,7 +77,7 @@ class DMesonJetVariable:
 
     @classmethod
     def d0d0(cls):
-        obj = cls("d0d0", "fd0d0", 500, -5e-5, 1e-4)
+        obj = cls("d0d0", "fd0d0", 100, -5e-5, 1e-4)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
@@ -96,6 +96,8 @@ class DMesonJetVariable:
         obj.CalculateCutEfficiency = obj.CalculateRightCutEfficiency
         return obj
 
+DMesonJetVariable.fgVariableList = [DMesonJetVariable.DCA, DMesonJetVariable.CosThetaStar, DMesonJetVariable.d0d0, DMesonJetVariable.MaxNormd0, DMesonJetVariable.CosPointing]
+
 class DMesonJetTopoContainer:
     def __init__(self, jet_pt_bins, jet_type, jet_radius):
         self.fJetPtBins = jet_pt_bins
@@ -111,11 +113,8 @@ class DMesonJetTopoContainer:
     def GenerateVariables(self):
         variables = dict()
 
-        self.AddVariable(variables, DMesonJetVariable.DCA())
-        self.AddVariable(variables, DMesonJetVariable.CosThetaStar())
-        self.AddVariable(variables, DMesonJetVariable.d0d0())
-        self.AddVariable(variables, DMesonJetVariable.MaxNormd0())
-        self.AddVariable(variables, DMesonJetVariable.CosPointing())
+        for var in DMesonJetVariable.fgVariableList:
+            self.AddVariable(variables, var())
 
         return variables
 
@@ -133,54 +132,13 @@ class DMesonJetTopoContainer:
             for var in self.fVariables[(jetPtMin, jetPtMax)].itervalues():
                 var.Fill(dmeson, eventWeight)
 
-class DMesonJetTopoAnalysisManager:
-    def __init__(self, trigger, dmeson, projector):
-        self.fBkgAnalysis = DMesonJetTopoAnalysis("Background", trigger, "{}_kBackgroundOnly_D0toKpiCuts_loosest_nopid".format(dmeson), projector)
-        self.fSigAnalysis = DMesonJetTopoAnalysis("Signal", trigger, "{}_kSignalOnly_D0toKpiCuts_loosest_nopid".format(dmeson), projector)
-
-    def StartAnalysis(self):
-        self.fBkgAnalysis.Start()
-        self.fSigAnalysis.Start()
-        self.Plot()
-
-    def SaveRootFile(self, path):
-        pass
-
-    def SavePlots(self, path, format):
-        for c in self.fCanvases:
-            if c: c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
-
-    def Plot(self):
-        self.fCanvases = []
-        self.fCompareObjects = []
-        for (jetPtMin, jetPtMax), sigVariables, bkgVariables in zip(self.fSigAnalysis.fVariables.iterkeys(), self.fSigAnalysis.fVariables.itervalues(), self.fBkgAnalysis.fVariables.itervalues()):
-            for signal, background in zip(sigVariables.itervalues(), bkgVariables.itervalues()):
-                cname = "{}_{}_{}".format(signal.fCutEfficiency.GetName(), jetPtMin, jetPtMax)
-                comp = DMesonJetCompare.DMesonJetCompare(cname)
-                comp.fDoSpectraPlot = "lineary"
-                comp.fDoRatioPlot = False
-                signal.fCutEfficiency.SetTitle("Signal")
-                background.fCutEfficiency.SetTitle("Background")
-                comp.CompareSpectra(signal.fCutEfficiency, [background.fCutEfficiency])
-                self.fCompareObjects.append(comp)
-                self.fCanvases.append(comp.fCanvasSpectra)
-
-                cname = "{}_{}_{}".format(signal.fHistogram.GetName(), jetPtMin, jetPtMax)
-                comp = DMesonJetCompare.DMesonJetCompare(cname)
-                comp.fDoSpectraPlot = "logy"
-                comp.fDoRatioPlot = False
-                signal.fHistogram.SetTitle("Signal")
-                background.fHistogram.SetTitle("Background")
-                comp.CompareSpectra(signal.fHistogram, [background.fHistogram])
-                self.fCompareObjects.append(comp)
-                self.fCanvases.append(comp.fCanvasSpectra)
-
 class DMesonJetTopoAnalysis:
-    def __init__(self, name, trigger, dmeson, projector):
+    def __init__(self, name, trigger, dmeson, jet_pt_bins, projector):
         self.fName = name
         self.fTrigger = trigger
         self.fDMeson = dmeson
         self.fProjector = projector
+        self.fJetPtBins = jet_pt_bins
 
     def SaveRootFile(self, file):
         rlist = ROOT.TList()
@@ -210,7 +168,7 @@ class DMesonJetTopoAnalysis:
             rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
 
     def DoProjections(self):
-        data_container = DMesonJetTopoContainer([(5, 15), (15, 30)], "Charged", "R040")
+        data_container = DMesonJetTopoContainer(self.fJetPtBins, "Charged", "R040")
         self.fProjector.StartProjection(self.fTrigger, self.fDMeson, None, data_container)
         self.fVariables = data_container.fVariables
 
@@ -223,3 +181,55 @@ class DMesonJetTopoAnalysis:
             for v in variables.itervalues():
                 v.Analyze()
 
+class DMesonJetTopoAnalysisManager:
+    def __init__(self, dmeson):
+        self.fDMeson = dmeson
+        self.fAnalysisList = dict()
+        self.fJetPtBins = [(5, 15), (15, 30)]
+
+    def AddAnalysis(self, name, trigger, projector, dmesonSuffix):
+        self.fAnalysisList[name] = DMesonJetTopoAnalysis(name, trigger, "{}_{}".format(self.fDMeson, dmesonSuffix), self.fJetPtBins, projector)
+
+    def StartAnalysis(self):
+        for ana in self.fAnalysisList.itervalues():
+            ana.Start()
+        self.Plot()
+
+    def SaveRootFile(self, path):
+        pass
+
+    def SavePlots(self, path, format):
+        for c in self.fCanvases:
+            if c: c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
+
+    def Plot(self):
+        self.fCanvases = []
+        self.fCompareObjects = []
+
+        for (jetPtMin, jetPtMax) in self.fJetPtBins:
+            for variableName in [varFunct().fName for varFunct in DMesonJetVariable.fgVariableList]:
+                hVariable = []
+                hEfficiency = []
+                for ana in self.fAnalysisList.itervalues():
+                    hVar = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fHistogram
+                    hVar.SetTitle(ana.fName)
+                    hVariable.append(hVar)
+                    hEff = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutEfficiency
+                    hEff.SetTitle(ana.fName)
+                    hEfficiency.append(hEff)
+
+                cname = "{}_{}_{}".format(hEfficiency[0].GetName(), jetPtMin, jetPtMax)
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                comp.fDoSpectraPlot = "lineary"
+                comp.fDoRatioPlot = False
+                comp.CompareSpectra(hEfficiency[0], hEfficiency[1:])
+                self.fCompareObjects.append(comp)
+                self.fCanvases.append(comp.fCanvasSpectra)
+
+                cname = "{}_{}_{}".format(hVariable[0].GetName(), jetPtMin, jetPtMax)
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                comp.fDoSpectraPlot = "logy"
+                comp.fDoRatioPlot = False
+                comp.CompareSpectra(hVariable[0], hVariable[1:])
+                self.fCompareObjects.append(comp)
+                self.fCanvases.append(comp.fCanvasSpectra)
