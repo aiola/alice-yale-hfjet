@@ -25,13 +25,15 @@ enum pp2010pass4_CutVariation {
   kTopoOnlyNSigma1 = 11,
   kTopoOnlyNSigma2 = 12,
   kTopoOnlyNSigma3 = 13,
-  kTopoOnlyNSigma4 = 14
+  kTopoOnlyNSigma4 = 14,
+  kD0JetOptimv1 = 21
 };
 
 void SetCutsLoosePointingLoosed0d0(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetCutsLoosed0d0(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetCutsLoosePointing(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetCutsTopoOnly(AliRDHFCutsD0toKpi* RDHFD0toKpi, Float_t nsigma);
+void SetD0JetOptim(AliRDHFCutsD0toKpi* RDHFD0toKpi, Int_t v);
 
 AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_Variations(pp2010pass4_CutVariation cutIndex, Bool_t pidflag = kTRUE)
 {
@@ -83,6 +85,9 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_Variations(pp2010pass4_CutVariat
     break;
   case kTopoOnlyNSigma4:
     SetCutsTopoOnly(RDHFD0toKpi, 4);
+    break;
+  case kD0JetOptimv1:
+    SetD0JetOptim(RDHFD0toKpi, 1);
     break;
   default:
     Printf("Error: cut index %d not defined!", cutIndex);
@@ -315,6 +320,54 @@ void SetCutsTopoOnly(AliRDHFCutsD0toKpi* RDHFD0toKpi, Float_t nsigma)
   }
   //new cut
   Float_t cutvalTopo[nptbins] = {nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma, nsigma};
+  RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins,cutvalTopo);
+  RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+
+  for (Int_t iv = 0; iv < nvars; iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand = nullptr;
+}
+
+
+void SetD0JetOptim(AliRDHFCutsD0toKpi* RDHFD0toKpi, Int_t v)
+{
+  const Int_t nvars = 11;
+  const Int_t nptbins = 16;
+  Float_t ptbins[nptbins+1] = {0., 0.5, 1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 20., 24., 36., 9999.};
+
+  RDHFD0toKpi->SetPtBins(nptbins,ptbins);
+  RDHFD0toKpi->SetGlobalIndex(nvars,nptbins);
+
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]=  {
+      //m     dca        cost*  ptk  ptpi d0k         d0pi        d0d0          cosp   cosxy  normdxy
+      {0.400, 350.*1E-4, 0.8,   0.5, 0.5, 999999.,    999999.,  15000. *1E-8, 0.80,  0.,    0.},/* pt<0.5*/
+      {0.400, 350.*1E-4, 0.8,   0.5, 0.5, 999999.,    999999.,  15000. *1E-8, 0.80,  0.,    0.},/* 0.5<pt<1*/
+      {0.400, 300.*1E-4, 0.8,   0.4, 0.4, 999999.,    999999.,  -5000. *1E-8, 0.80,  0.,    0.},/* 1<pt<2 */
+      {0.400, 300.*1E-4, 0.8,   0.7, 0.7, 999999.,    999999.,      0. *1E-8, 0.90,  0.,    0.},/* 2<pt<3 */
+      {0.400, 300.*1E-4, 0.8,   0.7, 0.7, 999999.,    999999.,   8000. *1E-8, 0.90,  0.,    0.},/* 3<pt<4 */
+      {0.400, 300.*1E-4, 0.8,   0.7, 0.7, 999999.,    999999.,  12000. *1E-8, 0.85,  0.,    0.},/* 4<pt<5 */
+      {0.400, 300.*1E-4, 0.8,   0.7, 0.7, 999999.,    999999.,  12000. *1E-8, 0.85,  0.,    0.},/* 5<pt<6 */
+      {0.400, 300.*1E-4, 0.8,   0.7, 0.7, 999999.,    999999.,  12000. *1E-8, 0.85,  0.,    0.},/* 6<pt<7 */
+      {0.400, 300.*1E-4, 0.8,   0.7, 0.7, 999999.,    999999.,  13000. *1E-8, 0.85,  0.,    0.},/* 7<pt<8 */
+      {0.400, 300.*1E-4, 0.9,   0.7, 0.7, 999999.,    999999.,  15000. *1E-8, 0.85,  0.,    0.},/* 8<pt<10 */
+      {0.400, 300.*1E-4, 0.9,   0.7, 0.7, 999999.,    999999.,  15000. *1E-8, 0.85,  0.,    0.},/* 10<pt<12 */
+      {0.400, 300.*1E-4, 1.0,   0.7, 0.7, 999999.,    999999.,  30000. *1E-8, 0.85,  0.,    0.},/* 12<pt<16 */
+      {0.400, 300.*1E-4, 1.0,   0.7, 0.7, 999999.,    999999., 999999. *1E-8, 0.85,  0.,    0.},/* 16<pt<20 */
+      {0.400, 300.*1E-4, 1.0,   0.7, 0.7, 999999.,    999999., 999999. *1E-8, 0.85,  0.,    0.},/* 20<pt<24 */
+      {0.400, 300.*1E-4, 1.0,   0.7, 0.7, 999999.,    999999., 999999. *1E-8, 0.85,  0.,    0.},/* 24<pt<36 */
+      {0.400, 300.*1E-4, 1.0,   0.6, 0.6, 999999.,    999999., 999999. *1E-8, 0.80,  0.,    0.}};/* pt>36 */
+
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand = new Float_t*[nvars];
+  for(Int_t iv = 0; iv < nvars; iv++) cutsMatrixTransposeStand[iv] = new Float_t[nptbins];
+
+  for (Int_t ibin = 0; ibin < nptbins; ibin++) {
+    for (Int_t ivar = 0; ivar < nvars; ivar++) {
+      cutsMatrixTransposeStand[ivar][ibin] = cutsMatrixD0toKpiStand[ibin][ivar];
+    }
+  }
+  //new cut
+  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2., 3., 3., 3., 3., 3., 4., 3., 2.5, 2.5, 2.};
   RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins,cutvalTopo);
   RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
 
