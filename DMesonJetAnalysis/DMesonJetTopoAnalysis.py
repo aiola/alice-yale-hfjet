@@ -14,6 +14,7 @@ import DMesonJetUtils
 from DMesonJetBase import AnalysisType
 import BinSet
 import Axis
+import collections
 
 globalList = []
 
@@ -26,6 +27,10 @@ class DMesonJetVariable:
         self.fHigh = high
         self.fHistogram = ROOT.TH1F(self.fName, self.fName, self.fNBins, self.fLow, self.fHigh)
         self.fHistogram.Sumw2()
+        self.fTargetEfficiency = None
+        self.fTargetCutValue = None
+        self.fEfficiencyAtTarget = None
+        self.fCutValueAtTarget = None
 
     def FillStd(self, dmeson, w):
         v = getattr(dmeson, self.fVariableName)
@@ -51,6 +56,14 @@ class DMesonJetVariable:
             partialInt += self.fHistogram.GetBinContent(ibin)
             self.fCutEfficiency.SetBinContent(ibin, partialInt)
             self.fCutEfficiency.SetBinError(ibin, partialIntErr)
+            if self.fTargetEfficiency and self.fEfficiencyAtTarget is None:
+                if partialInt >= self.fTargetEfficiency:
+                    self.fEfficiencyAtTarget = partialInt
+                    self.fCutValueAtTarget = self.fHistogram.GetXaxis().GetBinUpEdge(ibin)
+            elif self.fTargetCutValue and self.fEfficiencyAtTarget is None:
+                if self.fTargetCutValue > self.fHistogram.GetXaxis().GetBinLowEdge(ibin) and self.fTargetCutValue <= self.fHistogram.GetXaxis().GetBinUpEdge(ibin):
+                    self.fEfficiencyAtTarget = partialInt
+                    self.fCutValueAtTarget = self.fHistogram.GetXaxis().GetBinUpEdge(ibin)
 
     def CalculateRightCutEfficiency(self):
         partialIntErr = 0.
@@ -60,6 +73,14 @@ class DMesonJetVariable:
             partialInt += self.fHistogram.GetBinContent(ibin)
             self.fCutEfficiency.SetBinContent(ibin, partialInt)
             self.fCutEfficiency.SetBinError(ibin, partialIntErr)
+            if self.fTargetEfficiency and self.fEfficiencyAtTarget is None:
+                if partialInt >= self.fTargetEfficiency:
+                    self.fEfficiencyAtTarget = partialInt
+                    self.fCutValueAtTarget = self.fHistogram.GetXaxis().GetBinLowEdge(ibin)
+            elif self.fTargetCutValue and self.fEfficiencyAtTarget is None:
+                if self.fTargetCutValue >= self.fHistogram.GetXaxis().GetBinLowEdge(ibin) and self.fTargetCutValue < self.fHistogram.GetXaxis().GetBinUpEdge(ibin):
+                    self.fEfficiencyAtTarget = partialInt
+                    self.fCutValueAtTarget = self.fHistogram.GetXaxis().GetBinLowEdge(ibin)
 
     @classmethod
     def DCA(cls):
@@ -84,7 +105,7 @@ class DMesonJetVariable:
 
     @classmethod
     def MaxNormd0(cls):
-        obj = cls("MaxNormd0", "fMaxNormd0", 1000, 0, 100)
+        obj = cls("MaxNormd0", "fMaxNormd0", 20, 0, 10)
         obj.Fill = obj.FillAbs
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
@@ -139,6 +160,8 @@ class DMesonJetTopoAnalysis:
         self.fDMeson = dmeson
         self.fProjector = projector
         self.fJetPtBins = jet_pt_bins
+        self.fTargetEfficiency = None
+        self.fTargetCutValueFromAnalysis = None
 
     def SaveRootFile(self, file):
         rlist = ROOT.TList()
@@ -172,27 +195,42 @@ class DMesonJetTopoAnalysis:
         self.fProjector.StartProjection(self.fTrigger, self.fDMeson, None, data_container)
         self.fVariables = data_container.fVariables
 
-    def Start(self):
-        self.DoProjections()
-        self.Analyze()
-
     def Analyze(self):
         for (jetPtMin, jetPtMax), variables in self.fVariables.iteritems():
-            for v in variables.itervalues():
+            for vname, v in variables.iteritems():
+                if self.fTargetEfficiency:
+                    v.fTargetEfficiency = self.fTargetEfficiency
+                elif self.fTargetCutValueFromAnalysis:
+                    v.fTargetCutValue = self.fTargetCutValueFromAnalysis.fVariables[(jetPtMin, jetPtMax)][vname].fCutValueAtTarget
                 v.Analyze()
 
 class DMesonJetTopoAnalysisManager:
     def __init__(self, dmeson):
         self.fDMeson = dmeson
-        self.fAnalysisList = dict()
+        self.fAnalysisList = collections.OrderedDict()
         self.fJetPtBins = [(5, 15), (15, 30)]
 
     def AddAnalysis(self, name, trigger, projector, dmesonSuffix):
         self.fAnalysisList[name] = DMesonJetTopoAnalysis(name, trigger, "{}_{}".format(self.fDMeson, dmesonSuffix), self.fJetPtBins, projector)
 
-    def StartAnalysis(self):
+    def Analyze(self):
+        first = None
         for ana in self.fAnalysisList.itervalues():
-            ana.Start()
+            if not first:
+                ana.fTargetEfficiency = 0.9
+                first = ana
+            else:
+                ana.fTargetCutValueFromAnalysis = first
+            ana.Analyze()
+        pass
+
+    def DoProjections(self):
+        for ana in self.fAnalysisList.itervalues():
+            ana.DoProjections()
+
+    def StartAnalysis(self):
+        self.DoProjections()
+        self.Analyze()
         self.Plot()
 
     def SaveRootFile(self, path):
@@ -205,12 +243,17 @@ class DMesonJetTopoAnalysisManager:
     def Plot(self):
         self.fCanvases = []
         self.fCompareObjects = []
-
+        self.fKeepObjects = []
+        summary = ""
         for (jetPtMin, jetPtMax) in self.fJetPtBins:
             for variableName in [varFunct().fName for varFunct in DMesonJetVariable.fgVariableList]:
+                summary += "Jet Pt bin [{}. {}]\nVariable name {}\n".format(jetPtMin, jetPtMax, variableName)
                 hVariable = []
                 hEfficiency = []
+                cutValue = None
                 for ana in self.fAnalysisList.itervalues():
+                    cutValue = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget
+                    summary += "Name: {}\nCut value: {}\nEfficiency: {}\n".format(ana.fName, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fEfficiencyAtTarget)
                     hVar = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fHistogram
                     hVar.SetTitle(ana.fName)
                     hVariable.append(hVar)
@@ -223,6 +266,12 @@ class DMesonJetTopoAnalysisManager:
                 comp.fDoSpectraPlot = "lineary"
                 comp.fDoRatioPlot = False
                 comp.CompareSpectra(hEfficiency[0], hEfficiency[1:])
+                line = ROOT.TLine(cutValue, comp.fMainHistogram.GetMinimum(), cutValue, comp.fMainHistogram.GetMaximum())
+                line.SetLineColor(ROOT.kRed)
+                line.SetLineStyle(2)
+                line.SetLineWidth(2)
+                line.Draw()
+                self.fKeepObjects.append(line)
                 self.fCompareObjects.append(comp)
                 self.fCanvases.append(comp.fCanvasSpectra)
 
@@ -231,5 +280,14 @@ class DMesonJetTopoAnalysisManager:
                 comp.fDoSpectraPlot = "logy"
                 comp.fDoRatioPlot = False
                 comp.CompareSpectra(hVariable[0], hVariable[1:])
+                line = ROOT.TLine(cutValue, comp.fMainHistogram.GetMinimum(), cutValue, comp.fMainHistogram.GetMaximum())
+                line.SetLineColor(ROOT.kRed)
+                line.SetLineStyle(2)
+                line.SetLineWidth(2)
+                line.Draw()
+                self.fKeepObjects.append(line)
                 self.fCompareObjects.append(comp)
                 self.fCanvases.append(comp.fCanvasSpectra)
+
+        print(summary)
+
