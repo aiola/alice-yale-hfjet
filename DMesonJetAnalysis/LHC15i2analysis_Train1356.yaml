@@ -5,3 +5,12 @@ train: Jets_EMC_pp_MC_1356_1357_1358_1359
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
 merging_type: weighted_sum
+topo_studies:
+-
+  title: Signal
+  d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_nopid
+  trigger: ""
+-
+  title: Background
+  d_meson_suffix: kBackgroundOnly_D0toKpiCuts_loosest_nopid
+  trigger: ""
