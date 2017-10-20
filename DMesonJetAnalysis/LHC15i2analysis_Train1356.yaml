@@ -1,0 +1,7 @@
+# Analysis c,b->D0
+name: LHC15i2_Train1356
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_MC_1356_1357_1358_1359
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJets
+merging_type: weighted_sum
