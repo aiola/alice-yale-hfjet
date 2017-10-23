@@ -9,7 +9,7 @@ import yaml
 import IPython
 import DMesonJetProjectors
 import DMesonJetTopoAnalysis
-import subprocess
+import os
 
 globalList = []
 
@@ -24,15 +24,13 @@ def main(configs, maxEvents, format):
     manager = DMesonJetTopoAnalysis.DMesonJetTopoAnalysisManager("D0")
     globalList.append(manager)
 
-    name_chain = ""
+    name_chain = "_".join([config["name"] for config in configs])
 
     for config in configs:
         name = config["name"]
         train = config["train"]
         input_path = config["input_path"]
         file_name = config["file_name"]
-        output_path = input_path
-        name_chain += name
 
         projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
 
@@ -41,8 +39,12 @@ def main(configs, maxEvents, format):
 
     manager.StartAnalysis()
 
-    manager.SaveRootFile("{0}/{1}".format(output_path, name_chain))
-    manager.SavePlots("{0}/{1}".format(output_path, name_chain), format)
+    output_path = "{0}/{1}".format(input_path, name_chain)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    manager.SaveRootFile(output_path)
+    manager.SavePlots(output_path, format)
 
 if __name__ == '__main__':
 

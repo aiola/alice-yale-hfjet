@@ -98,7 +98,7 @@ class DMesonJetVariable:
 
     @classmethod
     def d0d0(cls):
-        obj = cls("d0d0", "fd0d0", 100, -5e-5, 1e-4)
+        obj = cls("d0d0", "fd0d0", 150, -5e-5, 10e-5)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
@@ -112,7 +112,7 @@ class DMesonJetVariable:
 
     @classmethod
     def CosPointing(cls):
-        obj = cls("CosPointing", "fCosPointing", 50, 0, 1)
+        obj = cls("CosPointing", "fCosPointing", 100, 0, 1)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateRightCutEfficiency
         return obj
@@ -247,13 +247,13 @@ class DMesonJetTopoAnalysisManager:
         summary = ""
         for (jetPtMin, jetPtMax) in self.fJetPtBins:
             for variableName in [varFunct().fName for varFunct in DMesonJetVariable.fgVariableList]:
-                summary += "Jet Pt bin [{}. {}]\nVariable name {}\n".format(jetPtMin, jetPtMax, variableName)
+                summary += "******\nJet Pt bin [{}. {}]\nVariable name {}\n******\n".format(jetPtMin, jetPtMax, variableName)
                 hVariable = []
                 hEfficiency = []
                 cutValue = None
                 for ana in self.fAnalysisList.itervalues():
                     cutValue = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget
-                    summary += "Name: {}\nCut value: {}\nEfficiency: {}\n".format(ana.fName, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fEfficiencyAtTarget)
+                    summary += "Name: {}\nCut value: {}\nEfficiency: {}\n\n".format(ana.fName, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fEfficiencyAtTarget)
                     hVar = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fHistogram
                     hVar.SetTitle(ana.fName)
                     hVariable.append(hVar)
