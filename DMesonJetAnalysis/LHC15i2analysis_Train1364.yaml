@@ -1,0 +1,21 @@
+# Analysis c,b->D0
+name: LHC15i2_Train1364
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_MC_1364_1365_1366_1367
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJets
+merging_type: weighted_sum
+topo_studies:
+-
+  title: Signal
+  d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
+  trigger: "Prompt"
+-
+  title: Background
+  d_meson_suffix: kBackgroundOnly_D0toKpiCuts_loosest_pid
+  trigger: "Prompt"
+-
+  title: Non-Prompt
+  d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
+  trigger: "NonPrompt"
+  
