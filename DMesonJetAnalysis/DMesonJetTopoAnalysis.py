@@ -19,13 +19,14 @@ import collections
 globalList = []
 
 class DMesonJetVariable:
-    def __init__(self, name, varname, bins, low, high):
+    def __init__(self, name, varname, vartitle, bins, low, high):
         self.fName = name
         self.fVariableName = varname
         self.fNBins = bins
         self.fLow = low
         self.fHigh = high
-        self.fHistogram = ROOT.TH1F(self.fName, self.fName, self.fNBins, self.fLow, self.fHigh)
+        self.fXaxisTitle = vartitle
+        self.fHistogram = ROOT.TH1F(self.fName, "{};{};probability".format(self.fName, self.fXaxisTitle), self.fNBins, self.fLow, self.fHigh)
         self.fHistogram.Sumw2()
         self.fTargetEfficiency = None
         self.fTargetCutValue = None
@@ -46,6 +47,10 @@ class DMesonJetVariable:
         self.fHistogram.Scale(1. / integral)
         self.fCutEfficiency = self.fHistogram.Clone("{}_CutEfficiency".format(self.fName))
         self.fCutEfficiency.Reset()
+        if self.CalculateCutEfficiency == self.CalculateLeftCutEfficiency:
+            self.fCutEfficiency.GetYaxis().SetTitle("Efficiency for cut > {}".format(self.fCutEfficiency.GetXaxis().GetTitle()))
+        else:
+            self.fCutEfficiency.GetYaxis().SetTitle("Efficiency for cut < {}".format(self.fCutEfficiency.GetXaxis().GetTitle()))
         self.CalculateCutEfficiency()
 
     def CalculateLeftCutEfficiency(self):
@@ -84,35 +89,35 @@ class DMesonJetVariable:
 
     @classmethod
     def DCA(cls):
-        obj = cls("DCA", "fDCA", 30, 0, 0.3)
+        obj = cls("DCA", "fDCA", "DCA (cm)", 30, 0, 0.3)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
 
     @classmethod
     def CosThetaStar(cls):
-        obj = cls("CosThetaStar", "fCosThetaStar", 50, 0, 1)
+        obj = cls("CosThetaStar", "fCosThetaStar", "|cos(#theta*)|", 50, 0, 1)
         obj.Fill = obj.FillAbs
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
 
     @classmethod
     def d0d0(cls):
-        obj = cls("d0d0", "fd0d0", 150, -5e-5, 10e-5)
+        obj = cls("d0d0", "fd0d0", "#it{d}_{0,#pi}#it{d}_{0,K} (cm^{2})", 150, -5e-5, 10e-5)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
 
     @classmethod
     def MaxNormd0(cls):
-        obj = cls("MaxNormd0", "fMaxNormd0", 20, 0, 10)
+        obj = cls("MaxNormd0", "fMaxNormd0", "max(|#it{d}_{0,#pi}|, |#it{d}_{0,K}|) / #sigma(#it{d}_{0})", 20, 0, 10)
         obj.Fill = obj.FillAbs
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
         return obj
 
     @classmethod
     def CosPointing(cls):
-        obj = cls("CosPointing", "fCosPointing", 100, 0, 1)
+        obj = cls("CosPointing", "fCosPointing", "cos(#theta_{p})", 50, 0, 1)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateRightCutEfficiency
         return obj
@@ -154,8 +159,9 @@ class DMesonJetTopoContainer:
                 var.Fill(dmeson, eventWeight)
 
 class DMesonJetTopoAnalysis:
-    def __init__(self, name, trigger, dmeson, jet_pt_bins, projector):
+    def __init__(self, name, title, trigger, dmeson, jet_pt_bins, projector):
         self.fName = name
+        self.fTitle = title
         self.fTrigger = trigger
         self.fDMeson = dmeson
         self.fProjector = projector
@@ -165,26 +171,23 @@ class DMesonJetTopoAnalysis:
 
     def SaveRootFile(self, file):
         rlist = ROOT.TList()
-        if self.fTrigger:
-            rlist.SetName("{}_{}".format(self.fTrigger, self.fDMeson))
-        else:
-            rlist.SetName(self.fDMeson)
+        rlist.SetName(self.fName)
 
-        for (jetPtMin, jetPtMax), histograms in self.fHistograms.iteritems():
+        for (jetPtMin, jetPtMax), variables in self.fVariables.iteritems():
             hListName = "Histograms_{}_{}".format(jetPtMin, jetPtMax)
             hList = ROOT.TList()
-            hList.SetName(jetName)
-            for h in histograms:
-                hList.Add(h)
-            rlist.Add(hList)
+            hList.SetName(hListName)
 
-        for (jetPtMin, jetPtMax), histograms in self.fCutEfficiency.iteritems():
-            hListName = "CutEfficiency_{}_{}".format(jetPtMin, jetPtMax)
-            hList = ROOT.TList()
-            hList.SetName(jetName)
-            for h in histograms:
-                hList.Add(h)
+            eListName = "CutEfficiency_{}_{}".format(jetPtMin, jetPtMax)
+            eList = ROOT.TList()
+            eList.SetName(eListName)
+
+            for v in variables.itervalues():
+                hList.Add(v.fHistogram)
+                eList.Add(v.fCutEfficiency)
+
             rlist.Add(hList)
+            rlist.Add(eList)
 
         if rlist.GetEntries() > 0:
             file.cd()
@@ -210,8 +213,8 @@ class DMesonJetTopoAnalysisManager:
         self.fAnalysisList = collections.OrderedDict()
         self.fJetPtBins = [(5, 15), (15, 30)]
 
-    def AddAnalysis(self, name, trigger, projector, dmesonSuffix):
-        self.fAnalysisList[name] = DMesonJetTopoAnalysis(name, trigger, "{}_{}".format(self.fDMeson, dmesonSuffix), self.fJetPtBins, projector)
+    def AddAnalysis(self, name, title, trigger, projector, dmesonSuffix):
+        self.fAnalysisList[name] = DMesonJetTopoAnalysis(name, title, trigger, "{}_{}".format(self.fDMeson, dmesonSuffix), self.fJetPtBins, projector)
 
     def Analyze(self):
         first = None
@@ -222,7 +225,6 @@ class DMesonJetTopoAnalysisManager:
             else:
                 ana.fTargetCutValueFromAnalysis = first
             ana.Analyze()
-        pass
 
     def DoProjections(self):
         for ana in self.fAnalysisList.itervalues():
@@ -234,7 +236,14 @@ class DMesonJetTopoAnalysisManager:
         self.Plot()
 
     def SaveRootFile(self, path):
-        pass
+        fname = "{}/TopoAnalysis.root".format(path)
+        file = ROOT.TFile(fname, "recreate")
+        if not file or file.IsZombie():
+            print("Could not open file '{}'".format(fname))
+            return
+        for ana in self.fAnalysisList.itervalues():
+            ana.SaveRootFile(file)
+        print("Results stored in '{}'".format(fname))
 
     def SavePlots(self, path, format):
         for c in self.fCanvases:
@@ -253,12 +262,14 @@ class DMesonJetTopoAnalysisManager:
                 cutValue = None
                 for ana in self.fAnalysisList.itervalues():
                     cutValue = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget
-                    summary += "Name: {}\nCut value: {}\nEfficiency: {}\n\n".format(ana.fName, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fEfficiencyAtTarget)
-                    hVar = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fHistogram
-                    hVar.SetTitle(ana.fName)
+                    summary += "Name: {}\nCut value: {}\nEfficiency: {}\n\n".format(ana.fTitle, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutValueAtTarget, ana.fVariables[(jetPtMin, jetPtMax)][variableName].fEfficiencyAtTarget)
+                    h = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fHistogram
+                    hVar = h.Clone("{}_copy".format(h.GetName()))
+                    hVar.SetTitle(ana.fTitle)
                     hVariable.append(hVar)
-                    hEff = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutEfficiency
-                    hEff.SetTitle(ana.fName)
+                    h = ana.fVariables[(jetPtMin, jetPtMax)][variableName].fCutEfficiency
+                    hEff = h.Clone("{}_copy".format(h.GetName()))
+                    hEff.SetTitle(ana.fTitle)
                     hEfficiency.append(hEff)
 
                 cname = "{}_{}_{}".format(hEfficiency[0].GetName(), jetPtMin, jetPtMax)
