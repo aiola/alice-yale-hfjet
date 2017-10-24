@@ -1,24 +1,29 @@
 # Analysis c,b->D0
-name: LHC15i2_Train1364
+name: LHC14j4_Train1368
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_MC_1364_1365_1366_1367
+train: Jets_EMC_pp_MC_1368_1369_1370_1371
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
-merging_type: weighted_sum
+merging_type: simple_sum
 topo_studies:
 -
-  name: PtHardCharm_Signal
-  title: Signal
+  name: MB_Signal
+  title: Signal (MB)
   d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
   trigger: "Prompt"
 -
-  name: PtHardCharm_Bkg
-  title: Background
+  name: MB_Bkg
+  title: Background (MB)
   d_meson_suffix: kBackgroundOnly_D0toKpiCuts_loosest_pid
   trigger: "Prompt"
 -
-  name: PtHardCharm_NonPrompt
-  title: Non-Prompt
+  name: MB_NonPrompt
+  title: Non-Prompt (MB)
   d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
   trigger: "NonPrompt"
+-
+  name: MB_SigBkg
+  title: Signal+Bkg (MB)
+  d_meson_suffix: D0toKpiCuts_loosest_pid
+  trigger: "Prompt"
   
