@@ -9,3 +9,4 @@ tempChecksum_*
 event_stat.root
 std*
 *.pyc
+*.pcm
