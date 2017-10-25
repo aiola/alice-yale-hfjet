@@ -6,19 +6,16 @@ file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
 merging_type: weighted_sum
 topo_studies:
--
-  name: PtHardCharm_Signal
-  title: Signal
-  d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
-  trigger: "Prompt"
--
-  name: PtHardCharm_Bkg
-  title: Background
-  d_meson_suffix: kBackgroundOnly_D0toKpiCuts_loosest_pid
-  trigger: "Prompt"
--
-  name: PtHardCharm_NonPrompt
-  title: Non-Prompt
-  d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
-  trigger: "NonPrompt"
-  
+  jet_pt_bins: [5, 15, 30]
+  d_pt_bins: [1, 3, 6, 9, 15, 30]
+  analysis:
+  -
+    name: PtHardCharm_Signal
+    title: Signal
+    d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
+    trigger: "Prompt"
+  -
+    name: PtHardCharm_NonPrompt
+    title: Non-Prompt
+    d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
+    trigger: "NonPrompt"
