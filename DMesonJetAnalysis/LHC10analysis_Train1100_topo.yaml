@@ -125,7 +125,7 @@ analysis:
     -
       object: d
       variable: fCosPointing
-      min: 0.85
+      min: 0.8
     -
       object: d
       variable: fPtK
