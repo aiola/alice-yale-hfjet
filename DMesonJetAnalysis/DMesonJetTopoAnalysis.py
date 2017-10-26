@@ -104,7 +104,7 @@ class DMesonJetVariable:
 
     @classmethod
     def d0d0(cls):
-        bins = numpy.linspace(-20e-5, 20e-5, 201, True)
+        bins = numpy.linspace(-500e-6, 500e-6, 251, True)
         obj = cls("d0d0", "fd0d0", "#it{d}_{0,#pi}#it{d}_{0,K} (cm^{2})", bins)
         obj.Fill = obj.FillStd
         obj.CalculateCutEfficiency = obj.CalculateLeftCutEfficiency
