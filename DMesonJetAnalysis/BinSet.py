@@ -194,6 +194,8 @@ class BinLimits:
                     obsVal.append(jet.fCorrPt)
                 elif a.fName == "jet_bkgpt":
                     obsVal.append(jet.fPt - jet.fCorrPt)
+                elif a.fName == "d_pt":
+                    obsVal.append(dmeson.fPt)
 
             if hist.GetDimension() == 2:
                 hist.Fill(dmeson.fInvMass, obsVal[0], w)
