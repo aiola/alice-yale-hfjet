@@ -1,0 +1,287 @@
+name: LHC10_Train1100_topo_DPt_1_3_JetPt_5_15
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_1100_1101_1102_1103
+file_name: AnalysisResults.root
+merging_type: simple_sum
+task_name: AliAnalysisTaskDmesonJets
+collision_system: "pp #sqrt{#it{s}} = 7 TeV"
+reflection_templates: LHC15i2_Train1242_reflections_{var}_fitted_{fit}
+monte_carlo: no
+topo_studies:
+  jet_pt_bins: [5, 15, 30]
+  d_pt_bins: [1, 3, 6, 9, 15, 30]
+  analysis:
+  -
+    name: Data
+    title: Data
+    d_meson_suffix: D0toKpiCuts_loosest_pid
+    trigger: "AnyINT"
+analysis:
+- 
+  trigger: ["AnyINT"]
+  d_meson: [D0_D0toKpiCuts_loosest_pid]
+  n_mass_bins: 50
+  min_mass: 1.715
+  max_mass: 2.015
+  jets:
+  -
+    type: Charged
+    radius: R040
+    title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
+  binLists:
+  -
+    name: Cut0
+    title: ""
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [1, 3]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.03
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.8
+      max: 0.8
+    -
+      object: d
+      variable: fd0d0
+      max: -0.20e-3
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.85
+    -
+      object: d
+      variable: fPtK
+      min: 0.5
+    -
+      object: d
+      variable: fPtPi
+      min: 0.5
+    spectra:
+    -
+      name: DPtSpectrum_Cut0
+      suffix: SideBand
+      title: "Cut 0"
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [1, 2, 3]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: Cut1
+    title: ""
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [1, 3]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.03
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.8
+      max: 0.8
+    -
+      object: d
+      variable: fd0d0
+      max: -0.25e-3
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.8
+    -
+      object: d
+      variable: fPtK
+      min: 0.5
+    -
+      object: d
+      variable: fPtPi
+      min: 0.5
+    spectra:
+    -
+      name: DPtSpectrum_Cut1
+      suffix: SideBand
+      title: "Cut 1"
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [1, 2, 3]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: Cut2
+    title: ""
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [1, 3]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.03
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.75
+      max: 0.75
+    -
+      object: d
+      variable: fd0d0
+      max: -0.05e-3
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -1.5
+      max: 1.5
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.75
+    -
+      object: d
+      variable: fPtK
+      min: 0.5
+    -
+      object: d
+      variable: fPtPi
+      min: 0.5
+    spectra:
+    -
+      name: DPtSpectrum_Cut2
+      suffix: SideBand
+      title: "Cut 2"
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [1, 2, 3]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: Cut3
+    title: ""
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [1, 3]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.03
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.75
+      max: 0.75
+    -
+      object: d
+      variable: fd0d0
+      max: -0.10e-3
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -1.5
+      max: 1.5
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.75
+    -
+      object: d
+      variable: fPtK
+      min: 0.5
+    -
+      object: d
+      variable: fPtPi
+      min: 0.5
+    spectra:
+    -
+      name: DPtSpectrum_Cut3
+      suffix: SideBand
+      title: "Cut 3"
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [1, 2, 3]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
