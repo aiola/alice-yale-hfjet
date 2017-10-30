@@ -30,8 +30,8 @@ analysis:
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: DPtBins_JetPt_5_15_DPt1_cut0
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt1_Cut0
+    title: "Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -80,14 +80,22 @@ analysis:
       min: 0.5
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt1_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt1_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [1, 2, 3]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt1_cut1
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt1_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -136,14 +144,22 @@ analysis:
       min: 0.5
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt1_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt1_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [1, 2, 3]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt2_cut0
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt2_Cut0
+    title: "Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -192,14 +208,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt2_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt2_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [3, 4, 5, 6]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt2_cut1
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt2_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -248,14 +272,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt2_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt2_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [3, 4, 5, 6]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt3_cut0
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt3_Cut0
+    title: "Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -304,14 +336,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt3_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt3_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [6, 7, 8, 9]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt3_cut1
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt3_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -360,14 +400,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt3_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt3_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [6, 7, 8, 9]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt4_cut0
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt4_Cut0
+    title: "Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -416,14 +464,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt4_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt4_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [9, 12, 15]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_DPt4_cut1
-    title: ""
+    name: DPtBins_JetPt_5_15_DPt4_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -472,14 +528,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt4_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_5_15_DPt4_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [9, 12, 15]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt1_cut0
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt1_Cut0
+    title: "Cuto 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -528,14 +592,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt1_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt1_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [3, 4, 5, 6, 7, 8, 9]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt1_cut1
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt1_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -584,14 +656,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt1_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt1_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [3, 4, 5, 6, 7, 8, 9]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt1_cut2
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt1_Cut2
+    title: "Cut 2"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -640,14 +720,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt1_cut2
-      suffix: InvMassFit
-      title: "Cut 2"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt1_Cut2
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [3, 4, 5, 6, 7, 8, 9]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt2_cut0
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt2_Cut0
+    title: "Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -696,14 +784,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt2_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt2_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [9, 12, 15]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt2_cut1
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt2_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -752,14 +848,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt2_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt2_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [9, 12, 15]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt3_cut0
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt3_Cut0
+    title: "Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -808,14 +912,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt3_cut0
-      suffix: InvMassFit
-      title: "Cut 0"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt3_Cut0
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [15, 20, 30]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt3_cut1
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt3_Cut1
+    title: "Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -864,14 +976,22 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt3_cut1
-      suffix: InvMassFit
-      title: "Cut 1"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt3_Cut1
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [15, 20, 30]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_15_30_DPt3_cut2
-    title: ""
+    name: DPtBins_JetPt_15_30_DPt3_Cut2
+    title: "Cut 2"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -920,8 +1040,16 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt3_cut2
-      suffix: InvMassFit
-      title: "Cut 2"
-      type: inv_mass_fit
+      name: DPtSpectrum_JetPt_15_30_DPt3_Cut2
+      suffix: SideBand
+      title: ""
+      type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [15, 20, 30]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
