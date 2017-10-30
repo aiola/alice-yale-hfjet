@@ -52,6 +52,7 @@ class Spectrum:
                 self.fTitle += ", "
             self.fTitle += binSet.fTitle
 
+        self.fComparisonDone = False
         if "compare" in config:
             self.fCompare = config["compare"]
         else:

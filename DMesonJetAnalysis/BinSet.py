@@ -63,6 +63,11 @@ class BinMultiSet:
             for s in binSet.fSpectra.itervalues():
                 yield s
 
+    def ResetAllComaprisonDone(self):
+        for binSet in self.fBinSets.itervalues():
+            for s in binSet.fSpectra.itervalues():
+                s.fComparisonDone = False
+
 class BinSet:
     def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, weight, fitOptions):
         self.fBinSetName = name
