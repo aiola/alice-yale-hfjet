@@ -75,41 +75,33 @@ class DMesonJetAnalysisEngine:
 
     def CompareSpectra(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
-            n = 999
-            while(n > 0): n = self.CompareSpectraForJetDef(binMultiSet)
-            binMultiSet.ResetAllComaprisonDone()
+            comparison_groups = binMultiSet.GetAllComparisonGroups()
+            for group in comparison_groups:
+                n = 999
+                while(n > 0): n = self.CompareSpectraForJetDef(binMultiSet, group)
+                binMultiSet.ResetAllComaprisonDone()
 
-    def CompareSpectraForJetDef(self, binMultiSet):
+    def CompareSpectraForJetDef(self, binMultiSet, group):
         spectraToCompare = []
         histToCompare = []
         for binSet in binMultiSet.fBinSets.itervalues():
             for s in binSet.fSpectra.itervalues():
-                if s.fComparisonDone:
-                    continue
-                if not s.fCompare:
-                    continue
-                if not s.fNormHistogram:
-                    continue
-                if len(s.fAxis) != 1:
-                    continue
+                if s.fComparisonDone: continue
+                if len(s.fAxis) != 1: continue
+                if not s.fNormHistogram: continue
+                if not s.fCompare: continue
+                if not group in s.fCompare: continue
+
                 if len(spectraToCompare) > 0:
                     if s.fAxis[0].fName != spectraToCompare[0].fAxis[0].fName:
                         continue
                     if s.fAxis[0].fBins[0] != spectraToCompare[0].fAxis[0].fBins[0] or s.fAxis[0].fBins[-1] != spectraToCompare[0].fAxis[0].fBins[-1]:
                         continue
                 else:
-                    cname = '_'.join(obj for obj in [self.fTrigger, self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, s.fAxis[0].fName, str(int(s.fAxis[0].fBins[0] * 10)), str(int(s.fAxis[0].fBins[-1] * 10)), "SpectraComparison"] if obj)
+                    cname = '_'.join(obj for obj in [self.fTrigger, self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, group, s.fAxis[0].fName, str(int(s.fAxis[0].fBins[0] * 10)), str(int(s.fAxis[0].fBins[-1] * 10)), "SpectraComparison"] if obj)
                 h = s.fNormHistogram.Clone("{0}_{1}_copy".format(s.fNormHistogram.GetName(), cname))
-                if binSet.fTitle:
-                    title = binSet.fTitle
-                else:
-                    title = None
-                if s.fTitle:
-                    if title:
-                        title += ", {}".format(s.fTitle)
-                    else:
-                       title = s.fTitle
-                if title: h.SetTitle(s.fTitle)
+                title = s.fComparisonTitles[s.fCompare.index(group)]
+                h.SetTitle(title)
                 globalList.append(h)
                 histToCompare.append(h)
                 spectraToCompare.append(s)
@@ -1090,7 +1082,6 @@ class DMesonJetAnalysis:
         jetDef["title"] = None
         self.CompareDMesons(config["binLists"], jetDef)
 
-    # fixme: spectra should have the same suffix (s["suffix"]). another comparisom method should be implemented to cover the case of same D meson, different suffix
     def CompareDMesons(self, binLists, jetDef):
         if len(self.fAnalysisEngine) <= 1:
             return
@@ -1101,10 +1092,11 @@ class DMesonJetAnalysis:
             if len(binList["bins"]) != 1:
                 continue
             for s in binList["spectra"]:
-                allSpectrumNames.add(s["name"])
+                allSpectrumNames.add((s["name"], s["suffix"]))
         for spectrum_name in allSpectrumNames:
             spectraToCompare = []
             for eng in self.fAnalysisEngine:
+                if "MCTruth" in eng.fDMeson: continue
                 for binList in binLists:
                     if not binList["name"] in eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets:
                         continue
@@ -1115,7 +1107,7 @@ class DMesonJetAnalysis:
                     if not eng.fDMeson in binList["active_mesons"]:
                         continue
                     for s in binList["spectra"]:
-                        if not s["name"] == spectrum_name:
+                        if cmp((s["name"], s["suffix"]), spectrum_name) != 0:
                             continue
                         if not eng.fDMeson in s["active_mesons"]:
                             continue
@@ -1125,18 +1117,15 @@ class DMesonJetAnalysis:
                             suffix = None
                         sname = '_'.join(obj for obj in [eng.fDMeson, jetDef["type"], jetDef["radius"], s["name"], suffix] if obj)
                         binSet = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]]
-                        h = binSet.fSpectra[sname].fHistogram
+                        h = binSet.fSpectra[sname].fNormHistogram
                         if not h:
                             continue
-                        if "MCTruth" in eng.fDMeson:
-                            continue
                         h_copy = h.Clone("{0}_copy".format(h.GetName()))
-                        title = ", ".join(obj for obj in [eng.fDMeson, binList["title"], s["title"]] if obj)
-                        h_copy.SetTitle(title)
+                        h_copy.SetTitle(eng.fDMeson)
                         globalList.append(h_copy)
                         spectraToCompare.append(h_copy)
             if len(spectraToCompare) > 1:
-                cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name, "SpectraComparison"] if obj)
+                cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name[0], spectrum_name[1], "SpectraComparison"] if obj)
                 comp = DMesonJetCompare.DMesonJetCompare(cname)
                 results = comp.CompareSpectra(spectraToCompare[0], spectraToCompare[1:])
                 for obj in results:

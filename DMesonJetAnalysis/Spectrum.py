@@ -56,7 +56,12 @@ class Spectrum:
         if "compare" in config:
             self.fCompare = config["compare"]
         else:
-            self.fCompare = True
+            self.fCompare = None
+
+        if "comp_titles" in config:
+            self.fComparisonTitles = config["comp_titles"]
+        else:
+            self.fComparisonTitles = None
 
         if config["type"] == "side_band":
             self.fAnalysisType = AnalysisType.SideBand
