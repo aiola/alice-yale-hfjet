@@ -42,7 +42,9 @@ analysis:
     -
       name: JetPtSpectrum_DPt_10
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, #it{p}_{T,D} > 1 GeV/#it{c}"
+      compare: [DPtCut]
+      comp_titles: ["#it{p}_{T,D} > 1 GeV/#it{c}"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv1, D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
       FD:
@@ -71,7 +73,9 @@ analysis:
     -
       name: JetPtSpectrum_DPt_20
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}"
+      compare: [DPtCut]
+      comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c}"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv1, D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
       FD:
@@ -100,7 +104,9 @@ analysis:
     -
       name: JetPtSpectrum_DPt_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, #it{p}_{T,D} > 3 GeV/#it{c}"
+      compare: [DPtCut, Method]
+      comp_titles: ["#it{p}_{T,D} > 3 GeV/#it{c}", "Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv1, D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
       FD:
@@ -134,7 +140,9 @@ analysis:
     -
       name: JetZSpectrum_DPt_10_JetPt_5_15
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, #it{p}_{T,D} > 1 GeV/#it{c}, 5 < #it{p}_{T,ch jet} > 15 GeV/#it{c}"
+      compare: [Method]
+      comp_titles: ["Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv1]
       FD:
@@ -168,7 +176,9 @@ analysis:
     -
       name: JetZSpectrum_DPt_30_JetPt_15_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, #it{p}_{T,D} > 3 GeV/#it{c}, 15 < #it{p}_{T,ch jet} > 30 GeV/#it{c}"
+      compare: [Method]
+      comp_titles: ["Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
       FD:
@@ -198,13 +208,17 @@ analysis:
     -
       name: DPtSpectrum_JetPt_5_15
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      compare: [JetPtCut]
+      comp_titles: ["5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv1]
     -
       name: JetZSpectrum_DPt_10_JetPt_5_15
       suffix: SideBand
-      title: "SB method"
+      title: "Side Band, #it{p}_{T,D} > 1 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      compare: [Method]
+      comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv1]
       axis:
@@ -242,13 +256,17 @@ analysis:
     -
       name: DPtSpectrum_JetPt_15_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      title: "Inv.Mass Fit, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [JetPtCut]
+      comp_titles: ["15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
     -
       name: JetZSpectrum_DPt_30_JetPt_15_30
       suffix: SideBand
-      title: "SB method"
+      title: "Side Band, #it{p}_{T,D} > 3 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [Method]
+      comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
       axis:
@@ -286,13 +304,17 @@ analysis:
     -
       name: DPtSpectrum_JetPt_5_30
       suffix: InvMassFit_FineBins
-      title: "Inv.Mass Fit, fine bins"
+      title: "Inv.Mass Fit (fine bins), 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [DPtBins]
+      comp_titles: ["Fine bins"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts]
     -
       name: JetPtSpectrum_DPt_30
       suffix: SideBand_FineBins
-      title: "SB method, fine bins"
+      title: "Side Band (fine bins), #it{p}_{T,D} > 3 GeV/#it{c}"
+      compare: [DPtBins]
+      comp_titles: ["Fine bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts]
       axis:
@@ -310,7 +332,9 @@ analysis:
     -
       name: JetZSpectrum_DPt_30_JetPt_5_30
       suffix: SideBand_FineBins
-      title: "SB method, fine bins"
+      title: "Side Band (fine bins), #it{p}_{T,D} > 3 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [DPtBins]
+      comp_titles: ["Fine bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts]
       axis:
@@ -347,14 +371,18 @@ analysis:
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
-      suffix: InvMassFit
-      title: "Inv.Mass Fit"
+      suffix: InvMassFit_CoarseBins
+      title: "Inv.Mass Fit (coarse bins), 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [DPtBins, JetPtCut]
+      comp_titles: ["Coarse bins", "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts]
     -
       name: JetPtSpectrum_DPt_30
-      suffix: SideBand
-      title: "SB method"
+      suffix: SideBand_CoarseBins
+      title: "Side Band (coarse bins), #it{p}_{T,D} > 3 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [DPtBins, Method]
+      comp_titles: ["Coarse bins", "Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts]
       axis:
@@ -371,8 +399,10 @@ analysis:
         backup_sigma: 0.015
     -
       name: JetZSpectrum_DPt_30_JetPt_5_30
-      suffix: SideBand
-      title: "SB method"
+      suffix: SideBand_CoarseBins
+      title: "Side Band (coarse bins), #it{p}_{T,D} > 3 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [DPtBins]
+      comp_titles: ["Coarse bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts]
       axis:

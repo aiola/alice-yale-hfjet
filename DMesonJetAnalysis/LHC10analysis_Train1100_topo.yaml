@@ -31,7 +31,7 @@ analysis:
   binLists:
   -
     name: DPtBins_JetPt_5_15_DPt1_Cut0
-    title: "Cut 0"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  1 < #it{p}_{T,D} < 3 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -80,9 +80,11 @@ analysis:
       min: 0.5
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt1_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt1
+      suffix: SideBand_Cut0
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  1 < #it{p}_{T,D} < 3 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -95,7 +97,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt1_Cut1
-    title: "Cut 1"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  1 < #it{p}_{T,D} < 3 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -144,9 +146,11 @@ analysis:
       min: 0.5
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt1_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt1
+      suffix: SideBand_Cut1
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  1 < #it{p}_{T,D} < 3 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -159,7 +163,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt2_Cut0
-    title: "Cut 0"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  3 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -208,9 +212,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt2_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt2
+      suffix: SideBand_Cut0
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  3 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -223,7 +229,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt2_Cut1
-    title: "Cut 1"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  3 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -272,9 +278,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt2_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt2
+      suffix: SideBand_Cut1
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  3 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -287,7 +295,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt3_Cut0
-    title: "Cut 0"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  6 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -336,9 +344,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt3_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt3
+      suffix: SideBand_Cut0
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  6 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -351,7 +361,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt3_Cut1
-    title: "Cut 1"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  6 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -400,9 +410,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt3_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt3
+      suffix: SideBand_Cut1
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  6 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -415,7 +427,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt4_Cut0
-    title: "Cut 0"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -464,9 +476,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt4_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt4
+      suffix: SideBand_Cut0
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -479,7 +493,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_5_15_DPt4_Cut1
-    title: "Cut 1"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -528,9 +542,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15_DPt4_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_5_15_DPt4
+      suffix: SideBand_Cut1
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -543,7 +559,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt1_Cut0
-    title: "Cuto 0"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  3 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -592,9 +608,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt1_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt1
+      suffix: SideBand_Cut0
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  3 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -607,7 +625,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt1_Cut1
-    title: "Cut 1"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  3 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -656,9 +674,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt1_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt1
+      suffix: SideBand_Cut1
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  3 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -671,7 +691,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt1_Cut2
-    title: "Cut 2"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  3 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 2"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -720,9 +740,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt1_Cut2
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt1
+      suffix: SideBand_Cut2
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  3 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut 2"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 2"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -735,7 +757,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt2_Cut0
-    title: "Cut 0"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -784,9 +806,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt2_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt2
+      suffix: SideBand_Cut0
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -799,7 +823,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt2_Cut1
-    title: "Cut 1"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -848,9 +872,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt2_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt2
+      suffix: SideBand_Cut1
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -863,7 +889,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt3_Cut0
-    title: "Cut 0"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  15 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -912,9 +938,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt3_Cut0
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt3
+      suffix: SideBand_Cut0
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  15 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 0"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 0"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -927,7 +955,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt3_Cut1
-    title: "Cut 1"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  15 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 1"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -976,9 +1004,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt3_Cut1
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt3
+      suffix: SideBand_Cut1
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  15 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 1"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 1"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -991,7 +1021,7 @@ analysis:
         backup_sigma: 0.015
   -
     name: DPtBins_JetPt_15_30_DPt3_Cut2
-    title: "Cut 2"
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  15 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 2"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
@@ -1040,9 +1070,11 @@ analysis:
       min: 0.7
     spectra:
     -
-      name: DPtSpectrum_JetPt_15_30_DPt3_Cut2
-      suffix: SideBand
-      title: ""
+      name: DPtSpectrum_JetPt_15_30_DPt3
+      suffix: SideBand_Cut2
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  15 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 2"
+      compare: [TopoCuts]
+      comp_titles: ["Cut 2"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
