@@ -119,21 +119,21 @@ analysis:
     -
       object: d
       variable: fCosThetaStar
-      min: -0.8
-      max: 0.8
+      min: -0.65
+      max: 0.65
     -
       object: d
       variable: fd0d0
-      max: -0.25e-3
+      max: -0.15e-3
     -
       object: d
       variable: fMaxNormd0
-      min: -2.0
-      max: 2.0
+      min: -1.5
+      max: 1.5
     -
       object: d
       variable: fCosPointing
-      min: 0.8
+      min: 0.85
     -
       object: d
       variable: fPtK
@@ -183,12 +183,12 @@ analysis:
     -
       object: d
       variable: fCosThetaStar
-      min: -0.75
-      max: 0.75
+      min: -0.65
+      max: 0.65
     -
       object: d
       variable: fd0d0
-      max: -0.05e-3
+      max: -0.09e-3
     -
       object: d
       variable: fMaxNormd0
@@ -197,7 +197,7 @@ analysis:
     -
       object: d
       variable: fCosPointing
-      min: 0.75
+      min: 0.85
     -
       object: d
       variable: fPtK
@@ -211,70 +211,6 @@ analysis:
       name: DPtSpectrum_Cut2
       suffix: SideBand
       title: "Cut 2"
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts_loosest_pid]
-      axis:
-        d_pt: [1, 2, 3]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-  -
-    name: Cut3
-    title: ""
-    active_mesons: [D0_D0toKpiCuts_loosest_pid]
-    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
-    efficiency: no
-    bins:
-      d_pt: [1, 3]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: jet
-      variable: fPt
-      min: 5
-      max: 15
-    -
-      object: d
-      variable: fDCA
-      max: 0.03
-    -
-      object: d
-      variable: fCosThetaStar
-      min: -0.75
-      max: 0.75
-    -
-      object: d
-      variable: fd0d0
-      max: -0.10e-3
-    -
-      object: d
-      variable: fMaxNormd0
-      min: -1.5
-      max: 1.5
-    -
-      object: d
-      variable: fCosPointing
-      min: 0.75
-    -
-      object: d
-      variable: fPtK
-      min: 0.5
-    -
-      object: d
-      variable: fPtPi
-      min: 0.5
-    spectra:
-    -
-      name: DPtSpectrum_Cut3
-      suffix: SideBand
-      title: "Cut 3"
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
