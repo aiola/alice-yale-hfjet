@@ -1,4 +1,4 @@
-name: LHC10_Train1100_topo_DPt_1_3_JetPt_5_15
+name: LHC10_Train1100_topo_DPt_6_8_JetPt_15_30
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_1100_1101_1102_1103
 file_name: AnalysisResults.root
@@ -23,11 +23,11 @@ analysis:
   -
     name: Cut0
     title: ""
-    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    active_mesons: []
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
     bins:
-      d_pt: [1, 3]
+      d_pt: [6, 8]
     cuts:
     -
       object: jet
@@ -37,8 +37,8 @@ analysis:
     -
       object: jet
       variable: fPt
-      min: 5
-      max: 15
+      min: 15
+      max: 30
     -
       object: d
       variable: fDCA
@@ -51,7 +51,7 @@ analysis:
     -
       object: d
       variable: fd0d0
-      max: -0.20e-3
+      max: -100.0e-6
     -
       object: d
       variable: fMaxNormd0
@@ -64,11 +64,11 @@ analysis:
     -
       object: d
       variable: fPtK
-      min: 0.5
+      min: 0.7
     -
       object: d
       variable: fPtPi
-      min: 0.5
+      min: 0.7
     spectra:
     -
       name: DPtSpectrum_Cut0
@@ -77,7 +77,7 @@ analysis:
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
-        d_pt: [1, 2, 3]
+        d_pt: [6, 7, 8]
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -91,7 +91,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
     bins:
-      d_pt: [1, 3]
+      d_pt: [6, 12]
     cuts:
     -
       object: jet
@@ -101,8 +101,8 @@ analysis:
     -
       object: jet
       variable: fPt
-      min: 5
-      max: 15
+      min: 15
+      max: 30
     -
       object: d
       variable: fDCA
@@ -110,29 +110,29 @@ analysis:
     -
       object: d
       variable: fCosThetaStar
-      min: -0.65
-      max: 0.65
+      min: -0.85
+      max: 0.85
     -
       object: d
       variable: fd0d0
-      max: -0.15e-3
+      max: -0.035e-3
     -
       object: d
       variable: fMaxNormd0
-      min: -1.5
-      max: 1.5
+      min: -2.0
+      max: 2.0
     -
       object: d
       variable: fCosPointing
-      min: 0.85
+      min: 0.9
     -
       object: d
       variable: fPtK
-      min: 0.5
+      min: 0.7
     -
       object: d
       variable: fPtPi
-      min: 0.5
+      min: 0.7
     spectra:
     -
       name: DPtSpectrum_Cut1
@@ -141,7 +141,7 @@ analysis:
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
-        d_pt: [1, 2, 3]
+        d_pt: [6, 7, 8, 9, 10, 11, 12]
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -155,7 +155,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
     efficiency: no
     bins:
-      d_pt: [1, 3]
+      d_pt: [6, 12]
     cuts:
     -
       object: jet
@@ -165,38 +165,38 @@ analysis:
     -
       object: jet
       variable: fPt
-      min: 5
-      max: 15
+      min: 15
+      max: 30
     -
       object: d
       variable: fDCA
-      max: 0.03
+      max: 0.025
     -
       object: d
       variable: fCosThetaStar
-      min: -0.65
-      max: 0.65
+      min: -0.85
+      max: 0.85
     -
       object: d
       variable: fd0d0
-      max: -0.09e-3
+      max: -0.035e-3
     -
       object: d
       variable: fMaxNormd0
-      min: -1.5
-      max: 1.5
+      min: -2.0
+      max: 2.0
     -
       object: d
       variable: fCosPointing
-      min: 0.85
+      min: 0.95
     -
       object: d
       variable: fPtK
-      min: 0.5
+      min: 0.7
     -
       object: d
       variable: fPtPi
-      min: 0.5
+      min: 0.7
     spectra:
     -
       name: DPtSpectrum_Cut2
@@ -205,10 +205,75 @@ analysis:
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
-        d_pt: [1, 2, 3]
+        d_pt: [6, 7, 8, 9, 10, 11, 12]
       side_band:
         min_sigmas: 4
         max_sigmas: 8
         max_signal_sigmas: 2
         backup_mean: 1.86484
         backup_sigma: 0.015
+  -
+    name: Cut3
+    title: ""
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [6, 12]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
+    -
+      object: d
+      variable: fDCA
+      max: 0.025
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.75
+      max: 0.75
+    -
+      object: d
+      variable: fd0d0
+      max: -0.04e-3
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.95
+    -
+      object: d
+      variable: fPtK
+      min: 0.7
+    -
+      object: d
+      variable: fPtPi
+      min: 0.7
+    spectra:
+    -
+      name: DPtSpectrum_Cut3
+      suffix: SideBand
+      title: "Cut 3"
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [6, 7, 8, 9, 10, 11, 12]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+ 
