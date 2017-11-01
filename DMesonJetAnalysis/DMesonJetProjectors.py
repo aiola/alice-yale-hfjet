@@ -319,6 +319,7 @@ class DMesonJetProjector:
         else:
             treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
 
+        self.fHistEvents = None
         self.GenerateChain(treeName)
 
         print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
