@@ -89,7 +89,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts_D0JetOptimLowJetPtv1]
     efficiency: no
     bins:
-      d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
     cuts:
     -
       object: jet
@@ -125,7 +125,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
     efficiency: no
     bins:
-      d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
     cuts:
     -
       object: jet
@@ -263,7 +263,7 @@ analysis:
       type: side_band
       active_mesons: [D0_D0toKpiCuts_D0JetOptimHighJetPtv1]
       axis:
-        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+        d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       FD:
         file_name: BFeedDown.root
         central_points: default

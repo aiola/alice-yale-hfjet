@@ -1,4 +1,4 @@
-name: LHC10_Train1100_topo_DPt_6_8_JetPt_15_30
+name: LHC10_Train1100_topo_DPt_6_12_JetPt_15_30
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_1100_1101_1102_1103
 file_name: AnalysisResults.root
@@ -106,16 +106,16 @@ analysis:
     -
       object: d
       variable: fDCA
-      max: 0.03
+      max: 0.025
     -
       object: d
       variable: fCosThetaStar
-      min: -0.85
-      max: 0.85
+      min: -0.75
+      max: 0.75
     -
       object: d
       variable: fd0d0
-      max: -0.035e-3
+      max: -0.04e-3
     -
       object: d
       variable: fMaxNormd0
@@ -124,7 +124,7 @@ analysis:
     -
       object: d
       variable: fCosPointing
-      min: 0.9
+      min: 0.95
     -
       object: d
       variable: fPtK
@@ -174,12 +174,12 @@ analysis:
     -
       object: d
       variable: fCosThetaStar
-      min: -0.85
-      max: 0.85
+      min: -0.65
+      max: 0.65
     -
       object: d
       variable: fd0d0
-      max: -0.035e-3
+      max: -0.04e-3
     -
       object: d
       variable: fMaxNormd0
@@ -188,7 +188,7 @@ analysis:
     -
       object: d
       variable: fCosPointing
-      min: 0.95
+      min: 0.98
     -
       object: d
       variable: fPtK
@@ -238,12 +238,12 @@ analysis:
     -
       object: d
       variable: fCosThetaStar
-      min: -0.75
-      max: 0.75
+      min: -0.65
+      max: 0.65
     -
       object: d
       variable: fd0d0
-      max: -0.04e-3
+      max: -0.1e-3
     -
       object: d
       variable: fMaxNormd0
@@ -252,7 +252,7 @@ analysis:
     -
       object: d
       variable: fCosPointing
-      min: 0.95
+      min: 0.98
     -
       object: d
       variable: fPtK
@@ -276,4 +276,3 @@ analysis:
         max_signal_sigmas: 2
         backup_mean: 1.86484
         backup_sigma: 0.015
- 
