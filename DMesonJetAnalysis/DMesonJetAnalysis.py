@@ -255,7 +255,7 @@ class DMesonJetAnalysisEngine:
         else:
             cname = "{0}_canvas".format(s.fNormHistogram.GetName())
         c = ROOT.TCanvas(cname, cname)
-        c.SetLogy()
+        if s.fAxis[0].fName != "d_z": c.SetLogy()
         self.fCanvases.append(c)
         c.cd()
         h = s.fNormHistogram.DrawCopy()
@@ -265,11 +265,16 @@ class DMesonJetAnalysisEngine:
         h.SetMarkerSize(0.9)
         h.SetLineColor(ROOT.kBlue + 2)
 
-        pave = ROOT.TPaveText(0.60, 0.88, 0.9, 0.55, "NB NDC")
+        if s.fAxis[0].fName == "d_z":
+            pave = ROOT.TPaveText(0.10, 0.80, 0.40, 0.65, "NB NDC")
+            pave.SetTextAlign(13)
+        else:
+            pave = ROOT.TPaveText(0.10, 0.30, 0.40, 0.15, "NB NDC")
+            pave.SetTextAlign(13)
         pave.SetFillStyle(0)
         pave.SetBorderSize(0)
         pave.SetTextFont(43)
-        pave.SetTextSize(15)
+        pave.SetTextSize(16)
         pave.AddText(self.fCollision)
         if s.fJetTitle: pave.AddText(s.fJetTitle)
         pave.AddText(DMesonJetUtils.ConvertDMesonName(self.fDMeson))
@@ -420,13 +425,19 @@ class DMesonJetAnalysisEngine:
             pad.SetBottomMargin(0.13)
             (hSig, hBkg, hSub) = self.PlotBackgroundVsSignalSpectra(None, sig, None, bkg, None)
             hSig.GetXaxis().SetTitleFont(43)
-            hSig.GetXaxis().SetTitleOffset(2.3)
+            if ncanvases > 3:
+                hSig.GetXaxis().SetTitleOffset(2.3)
+            else:
+                hSig.GetXaxis().SetTitleOffset(1.0)
             hSig.GetXaxis().SetTitleSize(19)
             hSig.GetXaxis().SetLabelFont(43)
             hSig.GetXaxis().SetLabelOffset(0.009)
             hSig.GetXaxis().SetLabelSize(18)
             hSig.GetYaxis().SetTitleFont(43)
-            hSig.GetYaxis().SetTitleOffset(2.3)
+            if ncanvases > 3:
+                hSig.GetYaxis().SetTitleOffset(2.3)
+            else:
+                hSig.GetYaxis().SetTitleOffset(1.0)
             hSig.GetYaxis().SetTitleSize(19)
             hSig.GetYaxis().SetLabelFont(43)
             hSig.GetYaxis().SetLabelOffset(0.009)
@@ -989,13 +1000,19 @@ class DMesonJetAnalysisEngine:
                 globalList.append(h)
                 h.SetMaximum(h.GetMaximum() * 1.8)
             h.GetXaxis().SetTitleFont(43)
-            h.GetXaxis().SetTitleOffset(2.3)
+            if nbins > 3:
+                h.GetXaxis().SetTitleOffset(2.3)
+            else:
+                h.GetXaxis().SetTitleOffset(1.0)
             h.GetXaxis().SetTitleSize(19)
             h.GetXaxis().SetLabelFont(43)
             h.GetXaxis().SetLabelOffset(0.009)
             h.GetXaxis().SetLabelSize(18)
             h.GetYaxis().SetTitleFont(43)
-            h.GetYaxis().SetTitleOffset(2.3)
+            if nbins > 3:
+                h.GetYaxis().SetTitleOffset(2.3)
+            else:
+                h.GetYaxis().SetTitleOffset(1.0)
             h.GetYaxis().SetTitleSize(19)
             h.GetYaxis().SetLabelFont(43)
             h.GetYaxis().SetLabelOffset(0.009)
