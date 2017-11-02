@@ -146,16 +146,22 @@ DMesonJetVariable.fgVariableList = [DMesonJetVariable.DCA, DMesonJetVariable.Cos
                                     DMesonJetVariable.CosPointing, DMesonJetVariable.PtK, DMesonJetVariable.PtPi]
 
 class DMesonJetTopoContainer:
-    def __init__(self, jet_pt_bins, d_pt_bins, jet_type, jet_radius):
+    def __init__(self, jet_pt_bins, d_pt_bins, sigma_mass, jet_type, jet_radius):
         self.fJetPtBins = jet_pt_bins
         self.fDPtBins = d_pt_bins
         self.fVariables = collections.OrderedDict()
         self.fJetType = jet_type
         self.fJetRadius = jet_radius
+        self.fPDGMass = 1.86484
+        self.fSigmaMass = sigma_mass
         for jetPtBin in self.fJetPtBins:
             self.fVariables[jetPtBin] = collections.OrderedDict()
-            for dPtBin in self.fDPtBins:
+            for dPtBin in self.fDPtBins[jetPtBin]:
                 self.fVariables[jetPtBin][dPtBin] = self.GenerateVariables()
+
+    def GetMassRange(self, jetPtBin, dPtBin):
+        sigma = self.fSigmaMass[jetPtBin][dPtBin]
+        return self.fPDGMass - 3 * sigma, self.fPDGMass + 3 * sigma
 
     def AddVariable(self, variables, v):
         variables[v.fName] = v
@@ -180,13 +186,15 @@ class DMesonJetTopoContainer:
 
         for (jetPtMin, jetPtMax) in self.fJetPtBins:
             if jet.fPt < jetPtMin or jet.fPt >= jetPtMax: continue
-            for (dPtMin, dPtMax) in self.fDPtBins:
+            for (dPtMin, dPtMax) in self.fDPtBins[(jetPtMin, jetPtMax)]:
                 if dmeson.fPt < dPtMin or dmeson.fPt >= dPtMax: continue
+                (minMass, maxMass) = self.GetMassRange((jetPtMin, jetPtMax), (dPtMin, dPtMax))
+                if dmeson.fInvMass < minMass or dmeson.fInvMass > maxMass: continue
                 for var in self.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)].itervalues():
                     var.Fill(dmeson, eventWeight)
 
 class DMesonJetTopoAnalysis:
-    def __init__(self, name, title, trigger, dmeson, jet_pt_bins, d_pt_bins, projector):
+    def __init__(self, name, title, trigger, dmeson, jet_pt_bins, d_pt_bins, sigma_mass, projector):
         self.fName = name
         self.fTitle = title
         self.fTrigger = trigger
@@ -194,6 +202,7 @@ class DMesonJetTopoAnalysis:
         self.fProjector = projector
         self.fJetPtBins = jet_pt_bins
         self.fDPtBins = d_pt_bins
+        self.fSigmaMass = sigma_mass
         self.fTargetEfficiency = None
         self.fTargetCutValueFromAnalysis = None
 
@@ -223,7 +232,7 @@ class DMesonJetTopoAnalysis:
             rlist.Write(rlist.GetName(), ROOT.TObject.kSingleKey)
 
     def DoProjections(self):
-        data_container = DMesonJetTopoContainer(self.fJetPtBins, self.fDPtBins, "Charged", "R040")
+        data_container = DMesonJetTopoContainer(self.fJetPtBins, self.fDPtBins, self.fSigmaMass, "Charged", "R040")
         self.fProjector.StartProjection(self.fTrigger, self.fDMeson, None, data_container)
         self.fVariables = data_container.fVariables
 
@@ -238,14 +247,23 @@ class DMesonJetTopoAnalysis:
                     v.Analyze()
 
 class DMesonJetTopoAnalysisManager:
-    def __init__(self, dmeson, jet_pt_bin_limits, d_pt_bin_limits):
+    def __init__(self, dmeson, jet_pt_bins):
         self.fDMeson = dmeson
         self.fAnalysisList = collections.OrderedDict()
-        self.fJetPtBins = [(minpt, maxpt) for minpt, maxpt in zip(jet_pt_bin_limits[:-1], jet_pt_bin_limits[1:])]
-        self.fDPtBins = [(minpt, maxpt) for minpt, maxpt in zip(d_pt_bin_limits[:-1], d_pt_bin_limits[1:])]
+        self.fDPtBins = dict()
+        self.fSigmaMass = dict()
+        self.fJetPtBins = []
+        for jet_pt_bin in jet_pt_bins:
+            self.fJetPtBins.append((jet_pt_bin["min"], jet_pt_bin["max"]))
+            d_pt_bin_limits = jet_pt_bin["d_pt_bins"]
+            self.fDPtBins[(jet_pt_bin["min"], jet_pt_bin["max"])] = []
+            self.fSigmaMass[(jet_pt_bin["min"], jet_pt_bin["max"])] = dict()
+            for i, (minpt, maxpt) in enumerate(zip(d_pt_bin_limits[:-1], d_pt_bin_limits[1:])):
+                self.fDPtBins[(jet_pt_bin["min"], jet_pt_bin["max"])].append((minpt, maxpt))
+                self.fSigmaMass[(jet_pt_bin["min"], jet_pt_bin["max"])][(minpt, maxpt)] = jet_pt_bin["sigma_mass"][i]
 
     def AddAnalysis(self, name, title, trigger, projector, dmesonSuffix):
-        self.fAnalysisList[name] = DMesonJetTopoAnalysis(name, title, trigger, "{}_{}".format(self.fDMeson, dmesonSuffix), self.fJetPtBins, self.fDPtBins, projector)
+        self.fAnalysisList[name] = DMesonJetTopoAnalysis(name, title, trigger, "{}_{}".format(self.fDMeson, dmesonSuffix), self.fJetPtBins, self.fDPtBins, self.fSigmaMass, projector)
 
     def Analyze(self):
         first = None
@@ -286,7 +304,7 @@ class DMesonJetTopoAnalysisManager:
         self.fKeepObjects = []
         summary = ""
         for (jetPtMin, jetPtMax) in self.fJetPtBins:
-            for (dPtMin, dPtMax) in self.fDPtBins:
+            for (dPtMin, dPtMax) in self.fDPtBins[(jetPtMin, jetPtMax)]:
                 for variableName in [varFunct().fName for varFunct in DMesonJetVariable.fgVariableList]:
                     summary += "******\nJet Pt bin [{}. {}]\nD Pt bin [{}. {}]\nVariable name {}\n******\n".format(jetPtMin, jetPtMax, dPtMin, dPtMax, variableName)
                     hVariable = []
