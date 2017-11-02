@@ -106,7 +106,7 @@ class EfficiencyWeightCalculator:
             return 1. / eff
 
 class DMesonJetProjector:
-    def __init__(self, inputPath, train, fileName, taskName, merging_type, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, merging_type, norm_factor, maxEvents):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -122,6 +122,7 @@ class DMesonJetProjector:
         self.fNFiles = 0
         self.fMergingType = merging_type
         self.fHistEvents = None
+        self.fNormFactor = norm_factor
 
     def GenerateChain(self, treeName):
         self.fChain = ROOT.TChain(treeName)
@@ -135,7 +136,7 @@ class DMesonJetProjector:
             self.fChain.Add(file)
             self.fNFiles += 1
 
-    def ExtractWeightFromHistogramList(self, hlist):
+    def ExtractWeightFromHistogramListOld(self, hlist):
         xsection = hlist.FindObject("fHistXsection")
         trials = hlist.FindObject("fHistTrials")
 
@@ -150,7 +151,7 @@ class DMesonJetProjector:
         if valNTRIALS > 0:
             self.fWeight = valXSEC / valNTRIALS;
 
-    def ExtractWeightFromHistogramListFastSim(self, hlist):
+    def ExtractWeightFromHistogramList(self, hlist):
         xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
         trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
@@ -179,16 +180,19 @@ class DMesonJetProjector:
                 print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
                 self.fWeight = 1
 
-            if "fastsim" in self.fMergingType:
-                self.ExtractWeightFromHistogramListFastSim(hlist)
+            if "weighted_sum_old" in self.fMergingType:
+                self.ExtractWeightFromHistogramListOld(hlist)
             else:
                 self.ExtractWeightFromHistogramList(hlist)
 
             if self.fMergingType == "average":
                 averageFactor = 1. / self.fNFiles
-                if self.fMaxEvents > 0:
-                    averageFactor *= self.fChain.GetEntries() / self.fMaxEvents
+                totEvents = self.fChain.GetEntries()
+                if self.fMaxEvents > 0 and self.fMaxEvents < totEvents:
+                    averageFactor *= totEvents / self.fMaxEvents
                 self.fWeight *= averageFactor
+            else:
+                self.fWeight /= self.fNormFactor
 
     def GetInfoFromFileName(self, fname):
         lastSlash = fname.rfind('/')

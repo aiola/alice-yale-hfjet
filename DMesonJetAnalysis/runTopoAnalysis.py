@@ -21,7 +21,7 @@ def main(configs, maxEvents, format):
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
 
-    manager = DMesonJetTopoAnalysis.DMesonJetTopoAnalysisManager("D0", configs[0]["topo_studies"]["jet_pt_bins"], configs[0]["topo_studies"]["d_pt_bins"])
+    manager = DMesonJetTopoAnalysis.DMesonJetTopoAnalysisManager("D0", configs[0]["topo_studies"]["jet_pt_bins"])
     globalList.append(manager)
 
     name_chain = "_".join([config["name"] for config in configs])
@@ -32,7 +32,7 @@ def main(configs, maxEvents, format):
         input_path = config["input_path"]
         file_name = config["file_name"]
 
-        projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
+        projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], config["normalization_factor"], maxEvents)
 
         for topo_ana in config["topo_studies"]["analysis"]:
             manager.AddAnalysis(topo_ana["name"], topo_ana["title"], topo_ana["trigger"], projector, topo_ana["d_meson_suffix"])

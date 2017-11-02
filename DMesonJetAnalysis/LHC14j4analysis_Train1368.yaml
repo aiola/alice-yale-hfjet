@@ -4,10 +4,20 @@ input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_1368_1369_1370_1371
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
-merging_type: simple_sum
+merging_type: weighted_sum
+normalization_factor: 4  # get absolute normalization by dividing for the LHC data taking periods
 topo_studies:
-  jet_pt_bins: [5, 15, 30]
-  d_pt_bins: [1, 3, 6, 9, 15, 30]
+  jet_pt_bins:
+  -
+    min: 5
+    max: 15
+    d_pt_bins: [2, 4, 6, 9, 15]
+    sigma_mass: [0.10, 0.14, 0.15, 0.17]
+  -
+    min: 15
+    max: 30
+    d_pt_bins: [6, 12, 30]
+    sigma_mass: [0.16, 0.16]
   analysis:
   -
     name: MB_Bkg
