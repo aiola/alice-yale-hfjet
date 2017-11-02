@@ -471,10 +471,10 @@ class DMesonJetAnalysisEngine:
             globalList.append(c)
 
         hSig = hSigOrig.DrawCopy()
-        hSig.SetMarkerColor(ROOT.kBlue + 2)
+        hSig.SetMarkerColor(ROOT.Red + 2)
         hSig.SetMarkerStyle(ROOT.kOpenCircle)
         hSig.SetMarkerSize(0.9)
-        hSig.SetLineColor(ROOT.kBlue + 2)
+        hSig.SetLineColor(ROOT.Red + 2)
         hSig.GetYaxis().SetTitleFont(43)
         hSig.GetYaxis().SetTitleSize(22)
         hSig.GetYaxis().SetTitleOffset(1.1)
@@ -489,17 +489,17 @@ class DMesonJetAnalysisEngine:
         hSig.SetMinimum(0)
 
         hBkg = hBkgOrig.DrawCopy("same")
-        hBkg.SetMarkerColor(ROOT.kRed + 2)
+        hBkg.SetMarkerColor(ROOT.kGreen + 2)
         hBkg.SetMarkerStyle(ROOT.kOpenSquare)
         hBkg.SetMarkerSize(0.9)
-        hBkg.SetLineColor(ROOT.kRed + 2)
+        hBkg.SetLineColor(ROOT.kGreen + 2)
 
         hSub = hSigOrig.DrawCopy("same")
         hSub.Add(hBkgOrig, -1)
-        hSub.SetMarkerColor(ROOT.kGreen + 2)
+        hSub.SetMarkerColor(ROOT.kBlue + 2)
         hSub.SetMarkerStyle(ROOT.kStar)
         hSub.SetMarkerSize(0.9)
-        hSub.SetLineColor(ROOT.kGreen + 2)
+        hSub.SetLineColor(ROOT.kBlue + 2)
 
         if hTitleSig and hTitleBkg:
             leg = ROOT.TLegend(0.42, 0.84, 0.87, 0.93, "", "NB NDC")
