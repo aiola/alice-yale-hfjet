@@ -19,7 +19,9 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
         if dmeson == "D0" and period == "LHC10" and recopass == "pass4":
             cut_strenghts = ["standard", "loosest_nopid", "loosest_pid", "LoosePointingLoosed0d0", "LoosePointing", "Loosed0d0",
                              "TopoOnlyNSigma1", "TopoOnlyNSigma2", "TopoOnlyNSigma3", "TopoOnlyNSigma4",
-                             "D0JetOptimLowJetPtv1", "D0JetOptimHighJetPtv1", "D0JetOptimLowJetPtv2", "D0JetOptimHighJetPtv2"]
+                             "D0JetOptimLowJetPtv1", "D0JetOptimHighJetPtv1", 
+                             "D0JetOptimLowJetPtv2", "D0JetOptimHighJetPtv2",
+                             "D0JetOptimLowJetPtv3", "D0JetOptimHighJetPtv3"]
         else:
             cut_strenghts = ["standard"]
         for cut_strenght in cut_strenghts:
@@ -235,6 +237,10 @@ def MakeD0toKpiCuts_pp2010pass4(cut_strenght):
         cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimLowJetPtv2, True)
     elif cut_strenght == "D0JetOptimHighJetPtv2":
         cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimHighJetPtv2, True)
+    elif cut_strenght == "D0JetOptimLowJetPtv3":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimLowJetPtv3, True)
+    elif cut_strenght == "D0JetOptimHighJetPtv3":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimHighJetPtv3, True)
     else:
         print("Cut '{}' not known!".format(cut_strenght))
         cuts = None
