@@ -35,7 +35,7 @@ def main(configs, maxEvents, format):
         projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], config["normalization_factor"], maxEvents)
 
         for topo_ana in config["topo_studies"]["analysis"]:
-            manager.AddAnalysis(topo_ana["name"], topo_ana["title"], topo_ana["trigger"], projector, topo_ana["d_meson_suffix"])
+            manager.AddAnalysis(topo_ana["name"], topo_ana["title"], topo_ana["trigger"], projector, topo_ana["d_meson_suffix"], topo_ana["normalization"])
 
     manager.StartAnalysis()
 

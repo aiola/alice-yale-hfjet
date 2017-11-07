@@ -5,7 +5,7 @@ train: Jets_EMC_pp_MC_1364_1365_1366_1367
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
 merging_type: weighted_sum
-normalization_factor: 4  # get absolute normalization by dividing for the LHC data taking periods
+normalization_factor: 1.2e+6  # get absolute normalization by dividing for the 4 LHC data taking periods (in this case: also multiply by the integrated luminosity) 300e6 / 62.2 / 4
 topo_studies:
   jet_pt_bins:
   -
@@ -24,8 +24,10 @@ topo_studies:
     title: Signal
     d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
     trigger: "Prompt"
+    normalization: 1.865 # R = 13.83 = c->D (2.2150e8 pb) over b->D (0.16016e8 pb) cross sections: 2*R/(R+1)
   -
     name: PtHardCharm_NonPrompt
     title: Non-Prompt
     d_meson_suffix: kSignalOnly_D0toKpiCuts_loosest_pid
     trigger: "NonPrompt"
+    normalization: 0.135 # R = 13.83 = c->D (2.2150e8 pb) over b->D (0.16016e8 pb) cross sections: 2/(R+1)

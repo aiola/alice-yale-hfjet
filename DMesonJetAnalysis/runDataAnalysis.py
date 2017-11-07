@@ -58,8 +58,13 @@ def main(config, maxEvents, format, gen, proc, ts, stage):
         file_name = config["file_name"]
         output_path = input_path
 
+    if "normalization_factor" in config:
+        norm_factor = config["normalization_factor"]
+    else:
+        norm_factor = 1
+
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], maxEvents)
+    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], norm_factor, maxEvents)
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
