@@ -192,7 +192,7 @@ class DMesonJetProjector:
                     averageFactor *= totEvents / self.fMaxEvents
                 self.fWeight *= averageFactor
             else:
-                self.fWeight /= self.fNormFactor
+                self.fWeight *= self.fNormFactor
 
     def GetInfoFromFileName(self, fname):
         lastSlash = fname.rfind('/')
@@ -317,7 +317,7 @@ class DMesonJetProjector:
         if self.fHistEvents: self.fHistEvents.Add(events)
         else: self.fHistEvents = events
 
-    def StartProjection(self, trigger, DMesonDef, DMesonDefSuffix, output):
+    def StartProjection(self, trigger, DMesonDef, DMesonDefSuffix, output, norm=1.0):
         if trigger:
             treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
         else:
@@ -337,6 +337,6 @@ class DMesonJetProjector:
                     print("Stopping the analysis.")
                     break
             self.OnFileChange(DMesonDef, DMesonDefSuffix, trigger)
-            output.Fill(dmesonEvent, self.fWeight)
+            output.Fill(dmesonEvent, self.fWeight * norm)
 
         self.CalculateNormalizedEvents()

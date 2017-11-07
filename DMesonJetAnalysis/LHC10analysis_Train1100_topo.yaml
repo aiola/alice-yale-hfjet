@@ -162,6 +162,72 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
   -
+    name: DPtBins_JetPt_5_15_DPt1_CutMaxSig
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  2 < #it{p}_{T,D} < 4 GeV/#it{c}, Cut MaxSig"
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [2, 4]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.05
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.8
+      max: 0.8
+    -
+      object: d
+      variable: fd0d0
+      max: -52.0e-6
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.84
+    -
+      object: d
+      variable: fPtK
+      min: 0.5
+    -
+      object: d
+      variable: fPtPi
+      min: 0.5
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_5_15_DPt1
+      suffix: SideBand_CutMaxSig
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  2 < #it{p}_{T,D} < 4 GeV/#it{c}, Cut MaxSig"
+      compare: [TopoCuts]
+      comp_titles: ["Cut MaxSig"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [2, 3, 4]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
     name: DPtBins_JetPt_5_15_DPt2_Cut0
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  4 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
@@ -283,6 +349,72 @@ analysis:
       title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  4 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut 1"
       compare: [TopoCuts]
       comp_titles: ["Cut 1"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [4, 5, 6]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_5_15_DPt2_CutMaxSig
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  4 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut MaxSig"
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [4, 6]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.035
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.74
+      max: 0.74
+    -
+      object: d
+      variable: fd0d0
+      max: -36.0e-6
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.94
+    -
+      object: d
+      variable: fPtK
+      min: 0.7
+    -
+      object: d
+      variable: fPtPi
+      min: 0.7
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_5_15_DPt2
+      suffix: SideBand_CutMaxSig
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  4 < #it{p}_{T,D} < 6 GeV/#it{c}, Cut MaxSig"
+      compare: [TopoCuts]
+      comp_titles: ["Cut MaxSig"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -426,6 +558,72 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
   -
+    name: DPtBins_JetPt_5_15_DPt3_CutMaxSig
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  6 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut MaxSig"
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [6, 9]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.03
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.76
+      max: 0.76
+    -
+      object: d
+      variable: fd0d0
+      max: -16.0e-6
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.96
+    -
+      object: d
+      variable: fPtK
+      min: 0.7
+    -
+      object: d
+      variable: fPtPi
+      min: 0.7
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_5_15_DPt3
+      suffix: SideBand_CutMaxSig
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  6 < #it{p}_{T,D} < 9 GeV/#it{c}, Cut MaxSig"
+      compare: [TopoCuts]
+      comp_titles: ["Cut MaxSig"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [6, 7, 8, 9]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
     name: DPtBins_JetPt_5_15_DPt4_Cut0
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 0"
     active_mesons: [D0_D0toKpiCuts_loosest_pid]
@@ -547,6 +745,72 @@ analysis:
       title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut 1"
       compare: [TopoCuts]
       comp_titles: ["Cut 1"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [9, 12, 15]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_5_15_DPt4_CutMaxSig
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut MaxSig"
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [9, 15]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    -
+      object: d
+      variable: fDCA
+      max: 0.025
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.82
+      max: 0.82
+    -
+      object: d
+      variable: fd0d0
+      max: -4.0e-6
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.98
+    -
+      object: d
+      variable: fPtK
+      min: 0.7
+    -
+      object: d
+      variable: fPtPi
+      min: 0.7
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_5_15_DPt4
+      suffix: SideBand_CutMaxSig
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c},  9 < #it{p}_{T,D} < 15 GeV/#it{c}, Cut MaxSig"
+      compare: [TopoCuts]
+      comp_titles: ["Cut MaxSig"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -745,6 +1009,72 @@ analysis:
       title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  6 < #it{p}_{T,D} < 12 GeV/#it{c}, Cut 2"
       compare: [TopoCuts]
       comp_titles: ["Cut 2"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [6, 7, 8, 9, 10, 11, 12]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_15_30_DPt1_CutMaxSig
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  6 < #it{p}_{T,D} < 12 GeV/#it{c}, Cut MaxSig"
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [6, 12]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
+    -
+      object: d
+      variable: fDCA
+      max: 0.02
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.8
+      max: 0.8
+    -
+      object: d
+      variable: fd0d0
+      max: -32.0e-6
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.98
+    -
+      object: d
+      variable: fPtK
+      min: 0.7
+    -
+      object: d
+      variable: fPtPi
+      min: 0.7
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_15_30_DPt1
+      suffix: SideBand_CutMaxSig
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  6 < #it{p}_{T,D} < 12 GeV/#it{c}, Cut MaxSig"
+      compare: [TopoCuts]
+      comp_titles: ["Cut MaxSig"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
@@ -1075,6 +1405,72 @@ analysis:
       title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  12 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 4"
       compare: [TopoCuts]
       comp_titles: ["Cut 4"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts_loosest_pid]
+      axis:
+        d_pt: [12, 15, 20, 30]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_15_30_DPt2_CutMaxSig
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  12 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut MaxSig"
+    active_mesons: [D0_D0toKpiCuts_loosest_pid]
+    need_inv_mass: [D0_D0toKpiCuts_loosest_pid]
+    efficiency: no
+    bins:
+      d_pt: [12, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
+    -
+      object: d
+      variable: fDCA
+      max: 0.02
+    -
+      object: d
+      variable: fCosThetaStar
+      min: -0.8
+      max: 0.8
+    -
+      object: d
+      variable: fd0d0
+      max: -4.0e-6
+    -
+      object: d
+      variable: fMaxNormd0
+      min: -2.0
+      max: 2.0
+    -
+      object: d
+      variable: fCosPointing
+      min: 0.98
+    -
+      object: d
+      variable: fPtK
+      min: 0.7
+    -
+      object: d
+      variable: fPtPi
+      min: 0.7
+    spectra:
+    -
+      name: DPtSpectrum_JetPt_15_30_DPt2
+      suffix: SideBand_CutMaxSig
+      title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c},  12 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut MaxSig"
+      compare: [TopoCuts]
+      comp_titles: ["Cut MaxSig"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_loosest_pid]
       axis:
