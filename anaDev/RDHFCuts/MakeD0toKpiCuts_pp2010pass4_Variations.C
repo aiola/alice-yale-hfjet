@@ -27,9 +27,11 @@ enum pp2010pass4_CutVariation {
   kTopoOnlyNSigma3 = 13,
   kTopoOnlyNSigma4 = 14,
   kD0JetOptimLowJetPtv1 = 21,
-  kD0JetOptimHighJetPtv1 = 31,
   kD0JetOptimLowJetPtv2 = 22,
-  kD0JetOptimHighJetPtv2 = 32
+  kD0JetOptimLowJetPtv3 = 23,
+  kD0JetOptimHighJetPtv1 = 31,
+  kD0JetOptimHighJetPtv2 = 32,
+  kD0JetOptimHighJetPtv3 = 33
 };
 
 void SetCutsLoosePointingLoosed0d0(AliRDHFCutsD0toKpi* RDHFD0toKpi);
@@ -40,6 +42,8 @@ void SetD0JetOptimLowJetPtv1(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetD0JetOptimHighJetPtv1(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetD0JetOptimLowJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetD0JetOptimHighJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi);
+void SetD0JetOptimLowJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi);
+void SetD0JetOptimHighJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 
 AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_Variations(pp2010pass4_CutVariation cutIndex, Bool_t pidflag = kTRUE)
 {
@@ -103,6 +107,12 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_Variations(pp2010pass4_CutVariat
     break;
   case kD0JetOptimLowJetPtv2:
     SetD0JetOptimLowJetPtv2(RDHFD0toKpi);
+    break;
+  case kD0JetOptimHighJetPtv3:
+    SetD0JetOptimHighJetPtv3(RDHFD0toKpi);
+    break;
+  case kD0JetOptimLowJetPtv3:
+    SetD0JetOptimLowJetPtv3(RDHFD0toKpi);
     break;
   default:
     Printf("Error: cut index %d not defined!", cutIndex);
@@ -487,7 +497,7 @@ void SetD0JetOptimHighJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi)
     }
   }
   //new cut
-  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2., 2.};
+  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2.};
   RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
   RDHFD0toKpi->SetCuts(nvars, nptbins, cutsMatrixTransposeStand);
 
@@ -563,7 +573,7 @@ void SetD0JetOptimHighJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi)
     }
   }
   //new cut
-  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2., 2.};
+  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2.};
   RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
   RDHFD0toKpi->SetCuts(nvars, nptbins, cutsMatrixTransposeStand);
 
