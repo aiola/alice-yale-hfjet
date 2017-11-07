@@ -343,6 +343,7 @@ void SetCutsTopoOnly(AliRDHFCutsD0toKpi* RDHFD0toKpi, Float_t nsigma)
   cutsMatrixTransposeStand = nullptr;
 }
 
+// First optmizations
 void SetD0JetOptimLowJetPtv1(AliRDHFCutsD0toKpi* RDHFD0toKpi)
 {
   const Int_t nvars = 11;
@@ -419,6 +420,7 @@ void SetD0JetOptimHighJetPtv1(AliRDHFCutsD0toKpi* RDHFD0toKpi)
   cutsMatrixTransposeStand = nullptr;
 }
 
+// Second optmizations using wider bins
 void SetD0JetOptimLowJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi)
 {
   const Int_t nvars = 11;
@@ -474,6 +476,82 @@ void SetD0JetOptimHighJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi)
       {0.400, 250.*1E-4, 0.75,  0.7, 0.7, 999999.,    999999.,    -40. *1E-6,   0.95,  0.,    0.},/* 6<pt<12 */
       {0.400, 200.*1E-4, 0.70,  0.7, 0.7, 999999.,    999999., 999999. *1E-6,   0.98,  0.,    0.},/* 12<pt<30 */
       {0.400, 200.*1E-4, 0.70,  0.7, 0.7, 999999.,    999999., 999999. *1E-6,   0.98,  0.,    0.}};/* pt>30 */
+
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand = new Float_t*[nvars];
+  for(Int_t iv = 0; iv < nvars; iv++) cutsMatrixTransposeStand[iv] = new Float_t[nptbins];
+
+  for (Int_t ibin = 0; ibin < nptbins; ibin++) {
+    for (Int_t ivar = 0; ivar < nvars; ivar++) {
+      cutsMatrixTransposeStand[ivar][ibin] = cutsMatrixD0toKpiStand[ibin][ivar];
+    }
+  }
+  //new cut
+  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2., 2.};
+  RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
+  RDHFD0toKpi->SetCuts(nvars, nptbins, cutsMatrixTransposeStand);
+
+  for (Int_t iv = 0; iv < nvars; iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand = nullptr;
+}
+
+// Third optmizations using MC to maximize significance
+void SetD0JetOptimLowJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi)
+{
+  const Int_t nvars = 11;
+  const Int_t nptbins = 7;
+  Float_t ptbins[nptbins+1] = {0., 2., 4., 6., 9., 15., 30., 9999.};
+
+  RDHFD0toKpi->SetPtBins(nptbins,ptbins);
+  RDHFD0toKpi->SetGlobalIndex(nvars,nptbins);
+
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars] = {
+      //m     dca        cost*  ptk  ptpi d0k         d0pi     d0d0             cosp   cosxy  normdxy
+      {0.400, 500.*1E-4, 0.80,  0.5, 0.5, 999999.,    999999.,    -52. *1E-6,   0.84,  0.,    0.},/* pt<1*/
+      {0.400, 500.*1E-4, 0.80,  0.5, 0.5, 999999.,    999999.,    -52. *1E-6,   0.84,  0.,    0.},/* 2<pt<4 */
+      {0.400, 350.*1E-4, 0.74,  0.7, 0.7, 999999.,    999999.,    -36. *1E-6,   0.94,  0.,    0.},/* 4<pt<6 */
+      {0.400, 300.*1E-4, 0.76,  0.7, 0.7, 999999.,    999999.,    -16. *1E-6,   0.96,  0.,    0.},/* 6<pt<9 */
+      {0.400, 250.*1E-4, 0.82,  0.7, 0.7, 999999.,    999999.,     -4. *1E-6,   0.98,  0.,    0.},/* 9<pt<15 */
+      {0.400, 250.*1E-4, 0.82,  0.7, 0.7, 999999.,    999999.,     -4. *1E-6,   0.98,  0.,    0.},/* 15<pt<30 */
+      {0.400, 250.*1E-4, 0.82,  0.7, 0.7, 999999.,    999999.,     -4. *1E-6,   0.98,  0.,    0.}};/* pt>30 */
+
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand = new Float_t*[nvars];
+  for(Int_t iv = 0; iv < nvars; iv++) cutsMatrixTransposeStand[iv] = new Float_t[nptbins];
+
+  for (Int_t ibin = 0; ibin < nptbins; ibin++) {
+    for (Int_t ivar = 0; ivar < nvars; ivar++) {
+      cutsMatrixTransposeStand[ivar][ibin] = cutsMatrixD0toKpiStand[ibin][ivar];
+    }
+  }
+  //new cut
+  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2., 2.};
+  RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
+  RDHFD0toKpi->SetCuts(nvars, nptbins, cutsMatrixTransposeStand);
+
+  for (Int_t iv = 0; iv < nvars; iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand = nullptr;
+}
+
+void SetD0JetOptimHighJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi)
+{
+  const Int_t nvars = 11;
+  const Int_t nptbins = 6;
+  Float_t ptbins[nptbins+1] = {0., 1., 3., 6., 12., 30., 9999.};
+
+  RDHFD0toKpi->SetPtBins(nptbins,ptbins);
+  RDHFD0toKpi->SetGlobalIndex(nvars,nptbins);
+
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars] = {
+      //m     dca        cost*  ptk  ptpi d0k         d0pi     d0d0             cosp   cosxy  normdxy
+      {0.400, 200.*1E-4, 0.80,  0.5, 0.5, 999999.,    999999.,    -32. *1E-6,   0.98,  0.,    0.},/* pt<1*/
+      {0.400, 200.*1E-4, 0.80,  0.5, 0.5, 999999.,    999999.,    -32. *1E-6,   0.98,  0.,    0.},/* 1<pt<3 */
+      {0.400, 200.*1E-4, 0.80,  0.7, 0.7, 999999.,    999999.,    -32. *1E-6,   0.98,  0.,    0.},/* 3<pt<6 */
+      {0.400, 200.*1E-4, 0.80,  0.7, 0.7, 999999.,    999999.,    -32. *1E-6,   0.98,  0.,    0.},/* 6<pt<12 */
+      {0.400, 200.*1E-4, 0.80,  0.7, 0.7, 999999.,    999999.,     -4. *1E-6,   0.98,  0.,    0.},/* 12<pt<30 */
+      {0.400, 200.*1E-4, 0.80,  0.7, 0.7, 999999.,    999999.,     -4. *1E-6,   0.98,  0.,    0.}};/* pt>30 */
 
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
   Float_t **cutsMatrixTransposeStand = new Float_t*[nvars];
