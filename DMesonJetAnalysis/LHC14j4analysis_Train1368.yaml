@@ -5,7 +5,7 @@ train: Jets_EMC_pp_MC_1368_1369_1370_1371
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets
 merging_type: weighted_sum
-normalization_factor: 1.2e+6  # get absolute normalization by dividing for the 4 LHC data taking periods (in this case: also multiply by the integrated luminosity) 300e6 / 62.2 / 4
+normalization_factor: 1.4e+6  # get absolute normalization by dividing for the 4 LHC data taking periods (in this case: also multiply by the integrated luminosity) 350e6 / 62.2 / 4
 topo_studies:
   jet_pt_bins:
   -
