@@ -361,7 +361,7 @@ class DMesonJetTopoAnalysisManager:
         for (jetPtMin, jetPtMax) in self.fJetPtBins:
             for (dPtMin, dPtMax) in self.fDPtBins[(jetPtMin, jetPtMax)]:
                 for variableName in [varFunct().fName for varFunct in DMesonJetVariable.fgVariableList]:
-                    if not "Signal" in self.fAnalysisList.values()[0].fName:
+                    if not "Signal" in self.fAnalysisList.values()[0].fName and not "Sig" in self.fAnalysisList.values()[0].fName:
                         print("**ERROR** The first analysis in the list must be the signal. No fractions calculated (see CalculateFractions).")
                         return
                     signalAna = self.fAnalysisList.values()[0]
@@ -441,7 +441,7 @@ class DMesonJetTopoAnalysisManager:
                         line.SetLineStyle(2)
                         line.SetLineWidth(2)
                         line.Draw()
-                    self.fKeepObjects.append(line)
+                        self.fKeepObjects.append(line)
                     self.fCompareObjects.append(comp)
                     self.fCanvases.append(comp.fCanvasSpectra)
 
