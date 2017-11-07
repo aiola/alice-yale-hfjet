@@ -1335,7 +1335,7 @@ analysis:
     spectra:
     -
       name: DPtSpectrum_JetPt_15_30_DPt2
-      suffix: SideBand_Cut1
+      suffix: SideBand_Cut3
       title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, 12 < #it{p}_{T,D} < 30 GeV/#it{c}, Cut 3"
       compare: [TopoCuts]
       comp_titles: ["Cut 3"]
