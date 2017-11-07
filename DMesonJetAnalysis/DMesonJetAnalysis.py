@@ -471,10 +471,10 @@ class DMesonJetAnalysisEngine:
             globalList.append(c)
 
         hSig = hSigOrig.DrawCopy()
-        hSig.SetMarkerColor(ROOT.Red + 2)
+        hSig.SetMarkerColor(ROOT.kRed + 2)
         hSig.SetMarkerStyle(ROOT.kOpenCircle)
         hSig.SetMarkerSize(0.9)
-        hSig.SetLineColor(ROOT.Red + 2)
+        hSig.SetLineColor(ROOT.kRed + 2)
         hSig.GetYaxis().SetTitleFont(43)
         hSig.GetYaxis().SetTitleSize(22)
         hSig.GetYaxis().SetTitleOffset(1.1)
