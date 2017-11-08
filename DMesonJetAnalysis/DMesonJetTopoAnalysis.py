@@ -32,6 +32,8 @@ class DMesonJetVariable:
         self.fFraction = None
         self.fMaxSignificance = None
         self.fCutValueAtMaxSignificance = None
+        self.fMaxSigOverBkg = None
+        self.fCutValueAtMaxSigOverBkg = None
 
     def FillStd(self, dmeson, w):
         v = getattr(dmeson, self.fVariableName)
@@ -116,14 +118,23 @@ class DMesonJetVariable:
     def CalculateFraction(self, signal, rev):
         self.fFraction = self.fHistogram.Clone("{}_CutFraction".format(self.fName))
         self.fFraction.Reset()
+        if rev: self.fMaxSigOverBkg = -1
         for ibin in xrange(0, self.fHistogram.GetNbinsX() + 2):
             totSig = signal.fCutEfficiency.GetBinContent(ibin) * signal.fIntegral
             totBkg = self.fCutEfficiency.GetBinContent(ibin) * self.fIntegral
             totSigErr = signal.fCutEfficiency.GetBinError(ibin) * signal.fIntegral
             totBkgErr = self.fCutEfficiency.GetBinError(ibin) * self.fIntegral
             if totBkg == 0 or totSig == 0: continue
-            if rev: frac = totSig / totBkg
-            else: frac = totBkg / totSig
+            if rev:
+                frac = totSig / totBkg
+                if frac > self.fMaxSigOverBkg:
+                    self.fMaxSigOverBkg = frac
+                    if self.CalculateCutEfficiency == self.CalculateLeftCutEfficiency:
+                        self.fCutValueAtMaxSigOverBkg = self.fHistogram.GetXaxis().GetBinUpEdge(ibin)
+                    else:
+                        self.fCutValueAtMaxSigOverBkg = self.fHistogram.GetXaxis().GetBinLowEdge(ibin)
+            else:
+                frac = totBkg / totSig
             fracErr = frac * math.sqrt((totSigErr / totSig) ** 2 + (totBkgErr / totBkg) ** 2)
             self.fFraction.SetBinContent(ibin, frac)
             self.fFraction.SetBinError(ibin, fracErr)
@@ -184,8 +195,7 @@ class DMesonJetVariable:
         obj.CalculateCutEfficiency = obj.CalculateRightCutEfficiency
         return obj
 
-DMesonJetVariable.fgVariableList = [DMesonJetVariable.DCA, DMesonJetVariable.CosThetaStar, DMesonJetVariable.d0d0, DMesonJetVariable.MaxNormd0,
-                                    DMesonJetVariable.CosPointing]
+DMesonJetVariable.fgVariableList = [DMesonJetVariable.DCA, DMesonJetVariable.CosThetaStar, DMesonJetVariable.d0d0, DMesonJetVariable.CosPointing]
 
 class DMesonJetTopoContainer:
     def __init__(self, jet_pt_bins, d_pt_bins, sigma_mass, jet_type, jet_radius):
@@ -380,12 +390,18 @@ class DMesonJetTopoAnalysisManager:
                     hVariable = []
                     hEfficiency = []
                     hCounts = []
-                    cutValue = None
+                    cutValueMaxSignificance = None
+                    cutValueMaxSigOverBkg = None
                     for ana in self.fAnalysisList.itervalues():
                         if not ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fCutValueAtMaxSignificance is None:
-                            cutValue = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fCutValueAtMaxSignificance
+                            cutValueMaxSignificance = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fCutValueAtMaxSignificance
                             significance = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fMaxSignificance
-                            summary += "Name: {}\nCut value: {}\nSignificance: {}\n\n".format(ana.fTitle, cutValue, significance)
+                            summary += "Name: {}\nCut value: {}\nSignificance: {}\n\n".format(ana.fTitle, cutValueMaxSignificance, significance)
+
+                        if not ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fCutValueAtMaxSigOverBkg is None:
+                            cutValueMaxSigOverBkg = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fCutValueAtMaxSigOverBkg
+                            sigOverBkg = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fMaxSigOverBkg
+                            summary += "Name: {}\nCut value: {}\nS/B: {}\n\n".format(ana.fTitle, cutValueMaxSigOverBkg, sigOverBkg)
 
                         h = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fHistogram
                         hVar = h.Clone("{}_copy".format(h.GetName()))
@@ -414,6 +430,21 @@ class DMesonJetTopoAnalysisManager:
                             hFraction.SetMarkerColor(ROOT.kBlue + 2)
                             hFraction.SetLineColor(ROOT.kBlue + 2)
                             hFraction.Draw()
+                            c.Update()
+                            if not cutValueMaxSignificance is None:
+                                line = ROOT.TLine(cutValueMaxSignificance, c.GetUymin(), cutValueMaxSignificance, c.GetUymax())
+                                line.SetLineColor(ROOT.kMagenta + 2)
+                                line.SetLineStyle(2)
+                                line.SetLineWidth(2)
+                                line.Draw()
+                                self.fKeepObjects.append(line)
+                            if not cutValueMaxSigOverBkg is None:
+                                line = ROOT.TLine(cutValueMaxSigOverBkg, c.GetUymin(), cutValueMaxSigOverBkg, c.GetUymax())
+                                line.SetLineColor(ROOT.kGreen + 2)
+                                line.SetLineStyle(1)
+                                line.SetLineWidth(2)
+                                line.Draw()
+                                self.fKeepObjects.append(line)
                             self.fCanvases.append(c)
 
                         hSignificance = ana.fVariables[(jetPtMin, jetPtMax)][(dPtMin, dPtMax)][variableName].fSignificance
@@ -428,6 +459,21 @@ class DMesonJetTopoAnalysisManager:
                             hSignificance.SetMarkerColor(ROOT.kBlue + 2)
                             hSignificance.SetLineColor(ROOT.kBlue + 2)
                             hSignificance.Draw()
+                            c.Update()
+                            if not cutValueMaxSignificance is None:
+                                line = ROOT.TLine(cutValueMaxSignificance, c.GetUymin(), cutValueMaxSignificance, c.GetUymax())
+                                line.SetLineColor(ROOT.kMagenta + 2)
+                                line.SetLineStyle(2)
+                                line.SetLineWidth(2)
+                                line.Draw()
+                                self.fKeepObjects.append(line)
+                            if not cutValueMaxSigOverBkg is None:
+                                line = ROOT.TLine(cutValueMaxSigOverBkg, c.GetUymin(), cutValueMaxSigOverBkg, c.GetUymax())
+                                line.SetLineColor(ROOT.kGreen + 2)
+                                line.SetLineStyle(1)
+                                line.SetLineWidth(2)
+                                line.Draw()
+                                self.fKeepObjects.append(line)
                             self.fCanvases.append(c)
 
                     cname = "{}_JetPt{}_{}_DPt{}_{}".format(hEfficiency[0].GetName(), jetPtMin, jetPtMax, dPtMin, dPtMax)
@@ -435,13 +481,22 @@ class DMesonJetTopoAnalysisManager:
                     comp.fDoSpectraPlot = "lineary"
                     comp.fDoRatioPlot = False
                     comp.CompareSpectra(hEfficiency[0], hEfficiency[1:])
-                    if not cutValue is None:
-                        line = ROOT.TLine(cutValue, comp.fMainHistogram.GetMinimum(), cutValue, comp.fMainHistogram.GetMaximum())
-                        line.SetLineColor(ROOT.kRed)
+                    if not cutValueMaxSignificance is None:
+                        line = ROOT.TLine(cutValueMaxSignificance, comp.fMainHistogram.GetMinimum(), cutValueMaxSignificance, comp.fMainHistogram.GetMaximum())
+                        line.SetLineColor(ROOT.kMagenta + 2)
                         line.SetLineStyle(2)
                         line.SetLineWidth(2)
                         line.Draw()
                         self.fKeepObjects.append(line)
+                    if not cutValueMaxSigOverBkg is None:
+                        line = ROOT.TLine(cutValueMaxSigOverBkg, comp.fMainHistogram.GetMinimum(), cutValueMaxSigOverBkg, comp.fMainHistogram.GetMaximum())
+                        line.SetLineColor(ROOT.kGreen + 2)
+                        line.SetLineStyle(1)
+                        line.SetLineWidth(2)
+                        line.Draw()
+                        self.fKeepObjects.append(line)
+                    comp.fCanvasSpectra.SetGridx()
+                    comp.fCanvasSpectra.SetGridy()
                     self.fCompareObjects.append(comp)
                     self.fCanvases.append(comp.fCanvasSpectra)
 
@@ -450,13 +505,22 @@ class DMesonJetTopoAnalysisManager:
                     comp.fDoSpectraPlot = "logy"
                     comp.fDoRatioPlot = False
                     comp.CompareSpectra(hVariable[0], hVariable[1:])
-                    if not cutValue is None:
-                        line = ROOT.TLine(cutValue, comp.fMainHistogram.GetMinimum(), cutValue, comp.fMainHistogram.GetMaximum())
-                        line.SetLineColor(ROOT.kRed)
+                    if not cutValueMaxSignificance is None:
+                        line = ROOT.TLine(cutValueMaxSignificance, comp.fMainHistogram.GetMinimum(), cutValueMaxSignificance, comp.fMainHistogram.GetMaximum())
+                        line.SetLineColor(ROOT.kMagenta + 2)
                         line.SetLineStyle(2)
                         line.SetLineWidth(2)
                         line.Draw()
-                    self.fKeepObjects.append(line)
+                        self.fKeepObjects.append(line)
+                    if not cutValueMaxSigOverBkg is None:
+                        line = ROOT.TLine(cutValueMaxSigOverBkg, comp.fMainHistogram.GetMinimum(), cutValueMaxSigOverBkg, comp.fMainHistogram.GetMaximum())
+                        line.SetLineColor(ROOT.kGreen + 2)
+                        line.SetLineStyle(1)
+                        line.SetLineWidth(2)
+                        line.Draw()
+                        self.fKeepObjects.append(line)
+                    comp.fCanvasSpectra.SetGridx()
+                    comp.fCanvasSpectra.SetGridy()
                     self.fCompareObjects.append(comp)
                     self.fCanvases.append(comp.fCanvasSpectra)
 
@@ -465,13 +529,22 @@ class DMesonJetTopoAnalysisManager:
                     comp.fDoSpectraPlot = "logy"
                     comp.fDoRatioPlot = False
                     comp.CompareSpectra(hCounts[0], hCounts[1:])
-                    if not cutValue is None:
-                        line = ROOT.TLine(cutValue, comp.fMainHistogram.GetMinimum(), cutValue, comp.fMainHistogram.GetMaximum())
-                        line.SetLineColor(ROOT.kRed)
+                    if not cutValueMaxSignificance is None:
+                        line = ROOT.TLine(cutValueMaxSignificance, comp.fMainHistogram.GetMinimum(), cutValueMaxSignificance, comp.fMainHistogram.GetMaximum())
+                        line.SetLineColor(ROOT.kMagenta + 2)
                         line.SetLineStyle(2)
                         line.SetLineWidth(2)
                         line.Draw()
-                    self.fKeepObjects.append(line)
+                        self.fKeepObjects.append(line)
+                    if not cutValueMaxSigOverBkg is None:
+                        line = ROOT.TLine(cutValueMaxSigOverBkg, comp.fMainHistogram.GetMinimum(), cutValueMaxSigOverBkg, comp.fMainHistogram.GetMaximum())
+                        line.SetLineColor(ROOT.kGreen + 2)
+                        line.SetLineStyle(1)
+                        line.SetLineWidth(2)
+                        line.Draw()
+                        self.fKeepObjects.append(line)
+                    comp.fCanvasSpectra.SetGridx()
+                    comp.fCanvasSpectra.SetGridy()
                     self.fCompareObjects.append(comp)
                     self.fCanvases.append(comp.fCanvasSpectra)
 
