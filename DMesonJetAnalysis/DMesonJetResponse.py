@@ -29,8 +29,9 @@ class DMesonJetResponseContainer:
             r.Fill(event, eventWeight)
 
 class DMesonJetResponseEngine:
-    def __init__(self, dmeson, jets, axis, projector):
+    def __init__(self, dmeson, d_meson_cuts, jets, axis, projector):
         self.fDMeson = dmeson
+        self.fDMesonCuts = d_meson_cuts
         self.fJetDefinitions = jets
         self.fProjector = projector
         self.fAxis = axis
@@ -47,8 +48,8 @@ class DMesonJetResponseEngine:
             c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
 
     def ProjectResponse(self):
-        response_container = DMesonJetResponseContainer(self.fDMeson, self.fJetDefinitions, self.fAxis)
-        self.fProjector.StartProjection("", self.fDMeson, "kSignalOnly", response_container)
+        response_container = DMesonJetResponseContainer("{}_{}".format(self.fDMeson, self.fDMesonCuts), self.fJetDefinitions, self.fAxis)
+        self.fProjector.StartProjection("", "{}_kSignalOnly".format(self.fDMeson), self.fDMesonCuts, response_container)
         self.fResponses = response_container.fResponseObjects
 
     def Start(self):
@@ -449,9 +450,10 @@ class DMesonJetResponse:
             axis[resp["name"]] = axis_list, effWeight, apply_to_truth, cut_list
 
         for d_meson in config["d_meson"]:
-            eng = DMesonJetResponseEngine(d_meson, config["jets"], axis, self.fProjector)
-            self.fResponseEngine.append(eng)
-            eng.Start()
+            for d_meson_cuts in config["d_meson_cuts"]:
+                eng = DMesonJetResponseEngine(d_meson, d_meson_cuts, config["jets"], axis, self.fProjector)
+                self.fResponseEngine.append(eng)
+                eng.Start()
 
     def SaveRootFile(self, path):
         fname = "{0}/{1}.root".format(path, self.fName)
