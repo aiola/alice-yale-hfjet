@@ -142,7 +142,7 @@ class StatisticMultiSet:
         self.fStatisticSets = []
         for min, max in zip(axis.fBins[:-1], axis.fBins[1:]):
             hname = "{0}_{1}_{2}".format(self.fName, int(min), int(max))
-            if axis.fName == "jet_pt":
+            if axis.fName == "jet_pt" or axis.fName == "d_pt":
                 htitle = "{0} < {1} < {2} {3};{4};counts".format(int(min), axis.GetVariableName(), int(max), axis.GetVariableUnits(), variableName)
             elif axis.fName == "d_z":
                 htitle = "{0:.1f} < {1} < {2:.1f} {3};{4};counts".format(min, axis.GetVariableName(), max, axis.GetVariableUnits(), variableName)

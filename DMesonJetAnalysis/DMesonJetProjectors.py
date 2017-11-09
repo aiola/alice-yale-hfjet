@@ -236,6 +236,7 @@ class DMesonJetProjector:
         return events
 
     def CalculateNormalizedEvents(self):
+        if not self.fHistEvents: return
         self.fAcceptedEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("Accepted"))
         self.fZVtxOutFidEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("ZVtxOutFid"))
         self.fNoVertEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("NoVert"))
@@ -319,9 +320,9 @@ class DMesonJetProjector:
 
     def StartProjection(self, trigger, DMesonDef, DMesonDefSuffix, output, norm=1.0):
         if trigger:
-            treeName = "{0}_{1}_{2}".format(self.fTaskName, trigger, DMesonDef)
+            treeName = "{}_{}_{}_{}".format(self.fTaskName, trigger, DMesonDef, DMesonDefSuffix)
         else:
-            treeName = "{0}_{1}".format(self.fTaskName, DMesonDef)
+            treeName = "{}_{}_{}".format(self.fTaskName, DMesonDef, DMesonDefSuffix)
 
         self.fHistEvents = None
         self.GenerateChain(treeName)
