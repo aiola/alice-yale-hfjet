@@ -185,7 +185,7 @@ def ExtractTriggerSelection(triggerList):
             exit(1)
     return r
 
-def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency, taskName="JetDmesonAna", debugLevel=0):
+def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency, selectGen, taskName="JetDmesonAna", debugLevel=0):
 
     f = open(configFileName, 'r')
     config = yaml.load(f)
@@ -441,16 +441,17 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
         for cmin, cnmax in zip(config["cent_bins"][:-1], config["cent_bins"][1:]):
             pDMesonJetsTask = AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, cmin, cnmax)
             pDMesonJetsTask.SelectCollisionCandidates(physSel)
-            pDMesonJetsTask.SetTrackEfficiency(efficiency);
+            pDMesonJetsTask.SetTrackEfficiency(efficiency)
     else:
         pDMesonJetsTask = AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, None, None)
         pDMesonJetsTask.SelectCollisionCandidates(physSel)
-        pDMesonJetsTask.SetTrackEfficiency(efficiency);
+        pDMesonJetsTask.SetTrackEfficiency(efficiency)
 
     tasks = mgr.GetTasks()
     for task in tasks:
         if isinstance(task, ROOT.AliAnalysisTaskEmcalLight):
             task.SetIsPythia(config["is_pythia"])
+            if selectGen: pDMesonJetsTask.SelectGeneratorName(selectGen)
             if config["is_pythia"]: task.SetMaxMinimumBiasPtHard(5)
             if config["run_period"] == "LHC15o": task.SetSwitchOffLHC15oFaultyBranches(True)
             if config["beam_type"] == "pp":
@@ -545,6 +546,9 @@ if __name__ == '__main__':
     parser.add_argument('--efficiency',
                         default=0.0, type=float,
                         help='Artificial tracking inefficiency')
+    parser.add_argument('--select-gen',
+                        default=None,
+                        help='Select events with a generator name')
     parser.add_argument('--task-name',
                         default="JetDmesonAna",
                         help='Task name')
@@ -554,5 +558,6 @@ if __name__ == '__main__':
                         help='Debug level')
     args = parser.parse_args()
 
-    main(args.config, args.n_files, args.n_events, args.d2h, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, not args.no_wrong_pid, args.response, args.no_incl_jets, args.efficiency,
+    main(args.config, args.n_files, args.n_events, args.d2h, not args.no_rec_level, not args.no_signal_only, not args.no_mc_truth, not args.no_wrong_pid,
+         args.response, args.no_incl_jets, args.efficiency, args.select_gen,
          args.task_name, args.debug_level)
