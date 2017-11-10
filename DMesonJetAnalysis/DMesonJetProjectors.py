@@ -319,10 +319,7 @@ class DMesonJetProjector:
         else: self.fHistEvents = events
 
     def StartProjection(self, trigger, DMesonDef, DMesonDefSuffix, output, norm=1.0):
-        if trigger:
-            treeName = "{}_{}_{}_{}".format(self.fTaskName, trigger, DMesonDef, DMesonDefSuffix)
-        else:
-            treeName = "{}_{}_{}".format(self.fTaskName, DMesonDef, DMesonDefSuffix)
+        treeName = "_".join([obj for obj in [self.fTaskName, trigger, DMesonDef, DMesonDefSuffix] if obj])
 
         self.fHistEvents = None
         self.GenerateChain(treeName)
