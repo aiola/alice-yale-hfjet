@@ -1,6 +1,6 @@
-name: LHC10_Train1112
+name: LHC10_Train1116
 input_path: /Volumes/DATA/ALICE/JetResults
-train: Jets_EMC_pp_1112_1113_1114_1115
+train: Jets_EMC_pp_1116_1117_1118_1119
 file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
@@ -10,7 +10,7 @@ monte_carlo: no
 analysis:
 - 
   trigger: ["AnyINT"]
-  d_meson: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+  d_meson: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
   n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015
