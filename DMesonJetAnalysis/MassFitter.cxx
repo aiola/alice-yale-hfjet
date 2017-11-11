@@ -39,6 +39,7 @@ MassFitter::MassFitter() :
   fPDGMass(0),
   fMaxAllowedWidth(0),
   fMaxAllowedMeanShift(0),
+  fDefaultNSigmas(3.0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Default constructor.
@@ -74,6 +75,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fPDGMass(0),
   fMaxAllowedWidth(0),
   fMaxAllowedMeanShift(0),
+  fDefaultNSigmas(3.0),
   fPionMass(TDatabasePDG::Instance()->GetParticle(211)->Mass())
 {
   // Standard constructor.
@@ -247,14 +249,14 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
 //____________________________________________________________________________________
 Double_t MassFitter::GetSignalOverBackground() const
 {
-  Double_t bkg = GetBackground();
+  Double_t bkg = GetBackground(fDefaultNSigmas);
   return bkg > fgkEpsilon ? GetSignal()/bkg : 0;
 }
 
 //____________________________________________________________________________________
 Double_t MassFitter::GetSignalOverSqrtSignalBackgorund() const
 {
-  Double_t bkgSig = GetBackground() + GetSignal();
+  Double_t bkgSig = GetBackground(fDefaultNSigmas) + GetSignal();
   return bkgSig > fgkEpsilon ? fSignal/TMath::Sqrt(bkgSig) : 0;
 }
 
@@ -387,9 +389,9 @@ TString MassFitter::GetValueString(Double_t value, Double_t err)
 TString MassFitter::GetBackgroundString() const
 {
   Double_t bkgErr = 0;
-  Double_t bkg = GetBackgroundAndError(bkgErr);
+  Double_t bkg = GetBackgroundAndError(bkgErr, fDefaultNSigmas);
   TString r = GetValueString(bkg, bkgErr);
-  r.Prepend("B=");
+  r.Prepend(Form("B(%.0f#sigma)=", fDefaultNSigmas));
   return r;
 }
 
@@ -403,7 +405,7 @@ TString MassFitter::GetSignalOverBackgroundString() const
   if (vlog10 > -1) vlog10 = -1;
   
   Int_t prec = TMath::CeilNint(-vlog10);
-  r = Form("S/B=%%.%df", prec);
+  r = Form("S/B(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
   r = Form(r.Data(), v);
 
   return r;
@@ -419,7 +421,7 @@ TString MassFitter::GetSignalOverSqrtSignalBackgroundString() const
   if (vlog10 > -1) vlog10 = -1;
 
   Int_t prec = TMath::CeilNint(-vlog10);
-  r = Form("S/#sqrt{S+B}=%%.%df", prec);
+  r = Form("S/#sqrt{S+B}(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
   r = Form(r.Data(), v);
 
   return r;

@@ -165,7 +165,6 @@ class DMesonJetAnalysisEngine:
         for c in self.fCanvases:
             if c: c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
 
-
     def CreateMassFitter(self, name, invMassHist):
         if "D0" in self.fDMeson:
             minMass = self.fMinMass

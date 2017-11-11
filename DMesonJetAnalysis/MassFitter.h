@@ -51,10 +51,10 @@ class MassFitter : public TNamed {
   Double_t GetSignalError()                          const { return fDisableSig == kFALSE ? fSignalError : 0.     ; }
   Double_t GetSignal(Double_t sigmas)                const;
   Double_t GetSignalError(Double_t sigmas)           const;
-  Double_t GetBackground(Double_t sigmas=3.0)        const;
-  Double_t GetBackgroundError(Double_t sigmas=3.0)   const;
+  Double_t GetBackground(Double_t sigmas)            const;
+  Double_t GetBackgroundError(Double_t sigmas)       const;
   Double_t GetBackgroundAndError(Double_t& bkgErr,
-      Double_t sigmas=3.0)                           const;
+      Double_t sigmas)                               const;
   Double_t GetBackgroundAndError(Double_t& bkgErr,
       Double_t minMass, Double_t maxMass)            const;
   Double_t GetBackgroundAndErrorFullRange(Double_t& bkgErr) const;
@@ -122,6 +122,7 @@ class MassFitter : public TNamed {
   Double_t          fPDGMass           ;//  PDG mass
   Double_t          fMaxAllowedWidth   ;//  Maximum allowed width of the signal peak
   Double_t          fMaxAllowedMeanShift;// Maximum allowed mean shift of the signal peak
+  Double_t          fDefaultNSigmas    ;//  Default number of sigmas (for S/B, etc.)
   const Double_t    fPionMass          ;//! Pion mass 
   
  private:
