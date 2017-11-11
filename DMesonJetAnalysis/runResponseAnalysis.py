@@ -11,7 +11,7 @@ import ROOT
 
 globalList = []
 
-def main(config, maxEvents, suffix, format):
+def main(config, maxEvents, suffix, format, doNotAsk):
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -30,6 +30,7 @@ def main(config, maxEvents, suffix, format):
         norm_factor = 1
 
     projector = DMesonJetProjectors.DMesonJetProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], config["merging_type"], norm_factor, maxEvents)
+    projector.fDoNotAsk = not ask
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
@@ -49,13 +50,15 @@ if __name__ == '__main__':
                         default="")
     parser.add_argument('--format', metavar='pdf',
                         default="pdf")
+    parser.add_argument('-y', metavar='y', help='Does not stop before starting each analysis cycle',
+                        action='store_const', default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.suffix, args.format)
+    main(config, args.events, args.suffix, args.format, args.y)
 
     IPython.embed()
 
