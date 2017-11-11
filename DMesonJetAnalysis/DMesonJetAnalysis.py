@@ -110,6 +110,7 @@ class DMesonJetAnalysisEngine:
 
         comp = DMesonJetCompare.DMesonJetCompare(cname)
         comp.fOptRatio = "hist"
+        if spectraToCompare[0].fAxis[0].fName == "d_z": comp.fDoSpectraPlot = "lineary"
         results = comp.CompareSpectra(histToCompare[0], histToCompare[1:])
         for obj in results:
             if obj and isinstance(obj, ROOT.TCanvas):
@@ -1111,6 +1112,7 @@ class DMesonJetAnalysis:
             for s in binList["spectra"]:
                 allSpectrumNames.add((s["name"], s["suffix"]))
         for spectrum_name in allSpectrumNames:
+            logy = True
             spectraToCompare = []
             for eng in self.fAnalysisEngine:
                 if "MCTruth" in eng.fDMeson: continue
@@ -1134,9 +1136,11 @@ class DMesonJetAnalysis:
                             suffix = None
                         sname = '_'.join(obj for obj in [eng.fDMeson, jetDef["type"], jetDef["radius"], s["name"], suffix] if obj)
                         binSet = eng.fBinMultiSets[jetDef["type"], jetDef["radius"]].fBinSets[binList["name"]]
-                        h = binSet.fSpectra[sname].fNormHistogram
-                        if not h:
-                            continue
+                        s_obj = binSet.fSpectra[sname]
+                        if len(s_obj.fAxis) > 1: continue
+                        if s_obj.fAxis[0].fName == "d_z": logy = False
+                        h = s_obj.fNormHistogram
+                        if not h: continue
                         h_copy = h.Clone("{0}_copy".format(h.GetName()))
                         h_copy.SetTitle(eng.fDMeson)
                         globalList.append(h_copy)
@@ -1144,6 +1148,7 @@ class DMesonJetAnalysis:
             if len(spectraToCompare) > 1:
                 cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name[0], spectrum_name[1], "SpectraComparison"] if obj)
                 comp = DMesonJetCompare.DMesonJetCompare(cname)
+                if not logy: comp.fDoSpectraPlot = "lineary"
                 results = comp.CompareSpectra(spectraToCompare[0], spectraToCompare[1:])
                 for obj in results:
                     if isinstance(obj, ROOT.TCanvas):
