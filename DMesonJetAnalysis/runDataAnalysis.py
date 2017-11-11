@@ -16,7 +16,7 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
-def main(config, maxEvents, format, gen, proc, ts, stage):
+def main(config, maxEvents, format, gen, proc, ts, stage, ask):
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -65,6 +65,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage):
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
     projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], norm_factor, maxEvents)
+    projector.fDoNotAsk = not ask
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
@@ -90,12 +91,14 @@ if __name__ == '__main__':
                         default=None)
     parser.add_argument('--stage', metavar='N',
                         default=-1, type=int)
+    parser.add_argument('-a', metavar='a', help='Ask before starting each analysis cycle',
+                        action='store_const', default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage)
+    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.a)
 
     IPython.embed()

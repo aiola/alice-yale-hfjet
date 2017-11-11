@@ -3,6 +3,7 @@
 
 import math
 import os
+import time
 
 import ROOT
 
@@ -123,6 +124,7 @@ class DMesonJetProjector:
         self.fMergingType = merging_type
         self.fHistEvents = None
         self.fNormFactor = norm_factor
+        self.fDoNotAsk = True
 
     def GenerateChain(self, treeName):
         self.fChain = ROOT.TChain(treeName)
@@ -327,6 +329,11 @@ class DMesonJetProjector:
         print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
+
+        if self.fDoNotAsk:
+            time.sleep(3)
+        else:
+            raw_input("Press <ENTER> to continue...")
 
         for i, dmesonEvent in enumerate(self.fChain):
             if i % 10000 == 0:
