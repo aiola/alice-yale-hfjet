@@ -323,17 +323,19 @@ class DMesonJetProjector:
     def StartProjection(self, trigger, DMesonDef, DMesonDefSuffix, output, norm=1.0):
         treeName = "_".join([obj for obj in [self.fTaskName, trigger, DMesonDef, DMesonDefSuffix] if obj])
 
-        self.fHistEvents = None
-        self.GenerateChain(treeName)
-
-        print("Running analysis on tree {0}. Total number of entries is {1}".format(treeName, self.fChain.GetEntries()))
-        if self.fMaxEvents > 0:
-            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
-
+        print("Running analysis on tree {}.".format(treeName))
         if self.fDoNotAsk:
+            print("Waiting 3 seconds...")
             time.sleep(3)
         else:
             raw_input("Press <ENTER> to continue...")
+
+        self.fHistEvents = None
+        self.GenerateChain(treeName)
+
+        print("Total number of entries is {}".format(self.fChain.GetEntries()))
+        if self.fMaxEvents > 0:
+            print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
 
         for i, dmesonEvent in enumerate(self.fChain):
             if i % 10000 == 0:
