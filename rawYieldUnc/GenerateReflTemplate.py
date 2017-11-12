@@ -13,9 +13,6 @@ sys.path.append("../DMesonJetAnalysis")
 import DMesonJetUtils
 sys.path.remove("../DMesonJetAnalysis")
 
-ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
-
 def main(config):
     ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
     ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
@@ -42,82 +39,50 @@ def main(config):
     path = "{0}/{1}/{2}/reflTemp".format(config["input_path"], config["train"], config["name"])
     if not os.path.isdir(path): os.makedirs(path)
 
-    fnameJetPt = "{0}/{1}_JetPt.root".format(path, config["name"])
-    fileOutJetPt = ROOT.TFile(fnameJetPt, "recreate")
-    for ibin, (ptmin, ptmax) in enumerate(zip(ptJetbins[:-1], ptJetbins[1:])):
-        hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_JetPtBins_DPt_30/InvMass_D0_kSignalOnly_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
-        if not hSig: exit(1)
-        hSig.SetName("histSgn_{0}".format(ibin))
-        # sigInt = hSig.Integral(hSig.GetXaxis().FindBin(1.715), hSig.GetXaxis().FindBin(2.015))
-
-        hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_JetPtBins_DPt_30/InvMass_D0_WrongPID_JetPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
-        if not hRefl: exit(1)
-        hRefl.SetName("histRfl_{0}".format(ibin))
-        # refInt = hSig.Integral(hRefl.GetXaxis().FindBin(1.715), hRefl.GetXaxis().FindBin(2.015))
-
-        hSig.Scale(1. / hRefl.Integral())
-        hRefl.Scale(1. / hRefl.Integral())
-        fileOutJetPt.cd()
-        hSig.Write()
-        hRefl.Write()
-    fileOutJetPt.Close()
-
-    fnameDPt = "{0}/{1}/{2}/reflTemp/{2}_DPt.root".format(config["input_path"], config["train"], config["name"])
-    fileOutDPt = ROOT.TFile(fnameDPt, "recreate")
-    for ibin, (ptmin, ptmax) in enumerate(zip(ptDbins[:-1], ptDbins[1:])):
-        hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/Charged_R040/D0_kSignalOnly_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
-        if not hSig: exit(1)
-        hSig.SetName("histSgn_{0}".format(ibin))
-
-        hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/Charged_R040/D0_WrongPID_Charged_R040_DPtBins_JetPt_5_30/InvMass_D0_WrongPID_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
-        if not hRefl: exit(1)
-        hRefl.SetName("histRfl_{0}".format(ibin))
-
-        hSig.Scale(1. / hRefl.Integral())
-        hRefl.Scale(1. / hRefl.Integral())
-        fileOutDPt.cd()
-        hSig.Write()
-        hRefl.Write()
-    fileOutDPt.Close()
-
-    fnameDPtNoJet = "{0}/{1}/{2}/reflTemp/{2}_DPt_NoJet.root".format(config["input_path"], config["train"], config["name"])
-    fileOutDPtNoJet = ROOT.TFile(fnameDPtNoJet, "recreate")
-    for ibin, (ptmin, ptmax) in enumerate(zip(ptDbins[:-1], ptDbins[1:])):
-        hSig = DMesonJetUtils.GetObject(file, "D0_kSignalOnly/D0_kSignalOnly_DPtBins/InvMass_D0_kSignalOnly_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
-        if not hSig: exit(1)
-        hSig.SetName("histSgn_{0}".format(ibin))
-
-        hRefl = DMesonJetUtils.GetObject(file, "D0_WrongPID/D0_WrongPID_DPtBins/InvMass_D0_WrongPID_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
-        if not hRefl: exit(1)
-        hRefl.SetName("histRfl_{0}".format(ibin))
-
-        hSig.Scale(1. / hRefl.Integral())
-        hRefl.Scale(1. / hRefl.Integral())
-        fileOutDPtNoJet.cd()
-        hSig.Write()
-        hRefl.Write()
-    fileOutDPtNoJet.Close()
-
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "DoubleGaus");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "DoubleGaus");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "DoubleGaus");
-
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "gaus");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "gaus");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "gaus");
-
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol3");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "pol3");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol3");
-
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPt, "pol6");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptDbins) - 1, fnameDPtNoJet, "pol6");
-    ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(ptJetbins) - 1, fnameJetPt, "pol6");
+    for templ_config in config["analysis"]:
+        GenerateReflTemp(path, config["name"], templ_config)
 
     dest_dir = "./reflTemp"
     for file in glob.glob("{}/*.root".format(path)):
         print("Copying file '{}' to '{}'".format(file, dest_dir))
         shutil.copy(file, dest_dir)
+
+def GenerateReflTemp(path, name, templ_config):
+    for templ in templ_config["templates"]:
+        if jet_label:
+            fname = "{path}/{name}_{cuts}_{variable}_{jet_label}_{bin_list}.root".format(path=path, name=name, variable=templ["variable"], jet_label=templ["jet_label"], bin_list=templ["bin_list"])
+        else:
+            fname = "{path}/{name}_{cuts}_{variable}_{bin_list}.root".format(path=path, name=name, variable=templ["variable"], bin_list=templ["bin_list"])
+        fileOut = ROOT.TFile(fname, "recreate")
+
+        for ibin, (ptmin, ptmax) in enumerate(zip(templ_config["bins"][:-1], templ_config["bins"][1:])):
+            if jet_label:
+                obj_sig_name = "D0_kSignalOnly_{cuts}/{jet_label}/D0_kSignalOnly_{cuts}_{jet_label}_{bin_list}/InvMass_D0_kSignalOnly_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(jet_label=templ["jet_label"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+                obj_refl_name = "D0_WrongPID_{cuts}/{jet_label}/D0_WrongPID_{cuts}_{jet_label}_{bin_list}/InvMass_D0_WrongPID_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(jet_label=templ["jet_label"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+            else:
+                obj_sig_name = "D0_kSignalOnly_{cuts}/D0_kSignalOnly_{cuts}_{bin_list}/InvMass_D0_kSignalOnly_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+                obj_refl_name = "D0_WrongPID_{cuts}/D0_WrongPID_{cuts}_{bin_list}/InvMass_D0_WrongPID_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+
+            hSig = DMesonJetUtils.GetObject(file, obj_sig_name)
+            if not hSig: exit(1)
+            hSig.SetName("histSgn_{0}".format(ibin))
+            # sigInt = hSig.Integral(hSig.GetXaxis().FindBin(1.715), hSig.GetXaxis().FindBin(2.015))
+
+            hRefl = DMesonJetUtils.GetObject(file, obj_refl_name)
+            if not hRefl: exit(1)
+            hRefl.SetName("histRfl_{0}".format(ibin))
+            # refInt = hSig.Integral(hRefl.GetXaxis().FindBin(1.715), hRefl.GetXaxis().FindBin(2.015))
+
+            hSig.Scale(1. / hRefl.Integral())
+            hRefl.Scale(1. / hRefl.Integral())
+            fileOutJetPt.cd()
+            hSig.Write()
+            hRefl.Write()
+        fileOut.Close()
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "DoubleGaus");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "gaus");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "pol3");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "pol6");
 
 if __name__ == '__main__':
 
