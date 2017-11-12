@@ -30,7 +30,7 @@ def main(config, maxEvents, suffix, format, doNotAsk):
         norm_factor = 1
 
     projector = DMesonJetProjectors.DMesonJetProjector(config["input_path"], config["train"], config["file_name"], config["task_name"], config["merging_type"], norm_factor, maxEvents)
-    projector.fDoNotAsk = not ask
+    projector.fDoNotAsk = doNotAsk
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
