@@ -14,12 +14,12 @@ import Axis
 globalList = []
 
 class DMesonJetResponseContainer:
-    def __init__(self, DMesonDef, jetDefinitions, respDefinitions):
+    def __init__(self, trigger, DMesonDef, jetDefinitions, respDefinitions):
         self.fResponseObjects = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
             for axisName, (axisDef, DMesonWeight, applyEffTruth, cuts) in respDefinitions.iteritems():
-                respName = "{0}_{1}_{2}".format(DMesonDef, jetName, axisName)
+                respName = "_".join([obj for obj in [trigger, DMesonDef, jetName, axisName] if obj])
                 resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, DMesonWeight, applyEffTruth)
                 resp.GenerateHistograms()
                 self.fResponseObjects[respName] = resp
@@ -29,7 +29,7 @@ class DMesonJetResponseContainer:
             r.Fill(event, eventWeight)
 
 class DMesonJetResponseEngine:
-    def __init__(self, dmeson, d_meson_cuts, jets, axis, projector):
+    def __init__(self, trigger, dmeson, d_meson_cuts, jets, axis, projector):
         self.fDMeson = dmeson
         self.fDMesonCuts = d_meson_cuts
         self.fJetDefinitions = jets
@@ -37,6 +37,7 @@ class DMesonJetResponseEngine:
         self.fAxis = axis
         self.fResponses = None
         self.fCanvases = []
+        self.fTrigger = trigger
 
     def SaveRootFile(self, file):
         for resp in self.fResponses.itervalues():
@@ -48,8 +49,8 @@ class DMesonJetResponseEngine:
             c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
 
     def ProjectResponse(self):
-        response_container = DMesonJetResponseContainer("{}_{}".format(self.fDMeson, self.fDMesonCuts), self.fJetDefinitions, self.fAxis)
-        self.fProjector.StartProjection("", "{}_kSignalOnly".format(self.fDMeson), self.fDMesonCuts, response_container)
+        response_container = DMesonJetResponseContainer(self.fTrigger, "{}_{}".format(self.fDMeson, self.fDMesonCuts), self.fJetDefinitions, self.fAxis)
+        self.fProjector.StartProjection(self.fTrigger, "{}_kSignalOnly".format(self.fDMeson), self.fDMesonCuts, response_container)
         self.fResponses = response_container.fResponseObjects
 
     def Start(self):
@@ -449,11 +450,12 @@ class DMesonJetResponse:
 
             axis[resp["name"]] = axis_list, effWeight, apply_to_truth, cut_list
 
-        for d_meson in config["d_meson"]:
-            for d_meson_cuts in config["d_meson_cuts"]:
-                eng = DMesonJetResponseEngine(d_meson, d_meson_cuts, config["jets"], axis, self.fProjector)
-                self.fResponseEngine.append(eng)
-                eng.Start()
+        for trigger in config["trigger"]:
+            for d_meson in config["d_meson"]:
+                for d_meson_cuts in config["d_meson_cuts"]:
+                    eng = DMesonJetResponseEngine(trigger, d_meson, d_meson_cuts, config["jets"], axis, self.fProjector)
+                    self.fResponseEngine.append(eng)
+                    eng.Start()
 
     def SaveRootFile(self, path):
         fname = "{0}/{1}.root".format(path, self.fName)
