@@ -38,6 +38,24 @@ analysis:
       variable: fPt
       min: 2.0
   -
+    name: JetPtBins_DPt_30
+    title: "#it{p}_{T,D} > 3 GeV/#it{c}"
+    active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    efficiency: no
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 3.0
+  -
     name: DPtBins_JetPt_5_30
     title: ""
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]

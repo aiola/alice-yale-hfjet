@@ -28,6 +28,8 @@ analysis:
     efficiency: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
     cuts:
     -
       object: jet
@@ -47,6 +49,7 @@ analysis:
       comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Inv.Mass Fit)", "Inv.Mass Fit (#it{p}_{T,D} > 2 GeV/#it{c})"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       FD:
         file_name: BFeedDown.root
         central_points: default
@@ -162,6 +165,8 @@ analysis:
     efficiency: no
     bins:
       d_pt: [2, 4, 6, 9, 15]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016]
     cuts:
     -
       object: jet
@@ -202,6 +207,7 @@ analysis:
       comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
         d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       FD:
@@ -222,6 +228,8 @@ analysis:
     efficiency: no
     bins:
       d_pt: [6, 12, 30]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimHighJetPtv4: [0.015, 0.016]
     cuts:
     -
       object: jet
@@ -262,6 +270,7 @@ analysis:
       comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+      multitrial: [D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
       axis:
         d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       FD:
@@ -282,6 +291,8 @@ analysis:
     efficiency: no
     bins:
       d_pt: [2, 4, 6, 9, 15, 30]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
     cuts:
     -
       object: jet
@@ -322,6 +333,7 @@ analysis:
       comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 2 GeV/#it{c})"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
         jet_pt: [5, 6, 8, 10, 14, 20, 30]
       FD:
