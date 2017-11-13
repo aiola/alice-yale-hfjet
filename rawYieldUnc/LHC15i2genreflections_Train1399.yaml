@@ -57,11 +57,6 @@ analysis:
   d_meson_cuts: D0toKpiCuts_D0JetOptimHighJetPtv4
   templates:
   -
-    variable: JetPt
-    jet_label: Charged_R040
-    bin_list: JetPtBins_DPt_60
-    bins: [5, 6, 8, 10, 14, 20, 30]
-  -
     variable: JetZ
     jet_label: Charged_R040
     bin_list: JetZBins_DPt_60_JetPt_15_30
@@ -71,9 +66,4 @@ analysis:
     jet_label: Charged_R040
     bin_list: DPtBins_JetPt_15_30
     bins: [6, 12, 30]
-  -
-    variable: DPt
-    jet_label: null
-    bin_list: DPtBins
-    bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
   
