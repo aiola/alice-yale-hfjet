@@ -46,6 +46,8 @@ def GetObject(obj, name):
     else:
         name_lookup = name[:slash].replace("//", "/")
         name = name[slash + 1:]
+    res = None
+    name_obj = None
     if isinstance(obj, ROOT.TCollection):
         res = obj.FindObject(name_lookup)
         name_obj = obj.GetName()
@@ -56,8 +58,12 @@ def GetObject(obj, name):
         res = obj.Get(name_lookup)
         name_obj = obj.GetName()
     if not res:
-        print("Could not find object {0} in collection '{1}'".format(name_lookup, name_obj))
-        if isinstance(obj, ROOT.TObject): obj.ls()
+        if name_obj:
+            print("Could not find object {0} in collection '{1}'".format(name_lookup, name_obj))
+            if isinstance(obj, ROOT.TObject): obj.ls()
+        else:
+            print("Could not find object {} in following collection".format(name_lookup))
+            print(obj)
         return None
     if name:
         return GetObject(res, name)
