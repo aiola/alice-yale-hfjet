@@ -31,8 +31,8 @@ def main(config):
 
     ROOT.TH1.AddDirectory(False)
     fname = "{0}/{1}/{2}.root".format(config["input_path"], config["train"], config["name"])
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
+    fileIn = ROOT.TFile(fname)
+    if not fileIn or fileIn.IsZombie():
         print("Could not open file {0}".format(fname))
         exit(1)
 
@@ -40,49 +40,49 @@ def main(config):
     if not os.path.isdir(path): os.makedirs(path)
 
     for templ_config in config["analysis"]:
-        GenerateReflTemp(path, config["name"], templ_config)
+        GenerateReflTemp(fileIn, path, config["name"], templ_config)
 
     dest_dir = "./reflTemp"
     for file in glob.glob("{}/*.root".format(path)):
         print("Copying file '{}' to '{}'".format(file, dest_dir))
         shutil.copy(file, dest_dir)
 
-def GenerateReflTemp(path, name, templ_config):
+def GenerateReflTemp(fileIn, path, name, templ_config):
     for templ in templ_config["templates"]:
-        if jet_label:
-            fname = "{path}/{name}_{cuts}_{variable}_{jet_label}_{bin_list}.root".format(path=path, name=name, variable=templ["variable"], jet_label=templ["jet_label"], bin_list=templ["bin_list"])
+        if templ["jet_label"]:
+            fname = "{path}/{name}_{cuts}_{variable}_{jet_label}_{bin_list}.root".format(cuts=templ_config["d_meson_cuts"], path=path, name=name, variable=templ["variable"], jet_label=templ["jet_label"], bin_list=templ["bin_list"])
         else:
-            fname = "{path}/{name}_{cuts}_{variable}_{bin_list}.root".format(path=path, name=name, variable=templ["variable"], bin_list=templ["bin_list"])
+            fname = "{path}/{name}_{cuts}_{variable}_{bin_list}.root".format(cuts=templ_config["d_meson_cuts"], path=path, name=name, variable=templ["variable"], bin_list=templ["bin_list"])
         fileOut = ROOT.TFile(fname, "recreate")
 
-        for ibin, (ptmin, ptmax) in enumerate(zip(templ_config["bins"][:-1], templ_config["bins"][1:])):
-            if jet_label:
-                obj_sig_name = "D0_kSignalOnly_{cuts}/{jet_label}/D0_kSignalOnly_{cuts}_{jet_label}_{bin_list}/InvMass_D0_kSignalOnly_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(jet_label=templ["jet_label"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
-                obj_refl_name = "D0_WrongPID_{cuts}/{jet_label}/D0_WrongPID_{cuts}_{jet_label}_{bin_list}/InvMass_D0_WrongPID_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(jet_label=templ["jet_label"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+        for ibin, (ptmin, ptmax) in enumerate(zip(templ["bins"][:-1], templ["bins"][1:])):
+            if templ["jet_label"]:
+                obj_sig_name = "D0_kSignalOnly_{cuts}/{jet_label}/D0_kSignalOnly_{cuts}_{jet_label}_{bin_list}/InvMass_D0_kSignalOnly_{cuts}_{variable}_{minpt:.0f}_{maxpt:.0f}".format(cuts=templ_config["d_meson_cuts"], jet_label=templ["jet_label"], variable=templ["variable"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+                obj_refl_name = "D0_WrongPID_{cuts}/{jet_label}/D0_WrongPID_{cuts}_{jet_label}_{bin_list}/InvMass_D0_WrongPID_{cuts}_{variable}_{minpt:.0f}_{maxpt:.0f}".format(cuts=templ_config["d_meson_cuts"], jet_label=templ["jet_label"], variable=templ["variable"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
             else:
-                obj_sig_name = "D0_kSignalOnly_{cuts}/D0_kSignalOnly_{cuts}_{bin_list}/InvMass_D0_kSignalOnly_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
-                obj_refl_name = "D0_WrongPID_{cuts}/D0_WrongPID_{cuts}_{bin_list}/InvMass_D0_WrongPID_{cuts}_DPt_{minpt:.0f}_{maxpt:.0f}".format(bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+                obj_sig_name = "D0_kSignalOnly_{cuts}/D0_kSignalOnly_{cuts}_{bin_list}/InvMass_D0_kSignalOnly_{cuts}_{variable}_{minpt:.0f}_{maxpt:.0f}".format(cuts=templ_config["d_meson_cuts"], variable=templ["variable"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
+                obj_refl_name = "D0_WrongPID_{cuts}/D0_WrongPID_{cuts}_{bin_list}/InvMass_D0_WrongPID_{cuts}_{variable}_{minpt:.0f}_{maxpt:.0f}".format(cuts=templ_config["d_meson_cuts"], variable=templ["variable"], bin_list=templ["bin_list"], minpt=ptmin * 100, maxpt=ptmax * 100)
 
-            hSig = DMesonJetUtils.GetObject(file, obj_sig_name)
+            hSig = DMesonJetUtils.GetObject(fileIn, obj_sig_name)
             if not hSig: exit(1)
             hSig.SetName("histSgn_{0}".format(ibin))
             # sigInt = hSig.Integral(hSig.GetXaxis().FindBin(1.715), hSig.GetXaxis().FindBin(2.015))
 
-            hRefl = DMesonJetUtils.GetObject(file, obj_refl_name)
+            hRefl = DMesonJetUtils.GetObject(fileIn, obj_refl_name)
             if not hRefl: exit(1)
             hRefl.SetName("histRfl_{0}".format(ibin))
             # refInt = hSig.Integral(hRefl.GetXaxis().FindBin(1.715), hRefl.GetXaxis().FindBin(2.015))
 
             hSig.Scale(1. / hRefl.Integral())
             hRefl.Scale(1. / hRefl.Integral())
-            fileOutJetPt.cd()
+            fileOut.cd()
             hSig.Write()
             hRefl.Write()
         fileOut.Close()
-        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "DoubleGaus");
-        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "gaus");
-        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "pol3");
-        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ_config["bins"]) - 1, fname, "pol6");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "DoubleGaus");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "gaus");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "pol3");
+        ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "pol6");
 
 if __name__ == '__main__':
 
