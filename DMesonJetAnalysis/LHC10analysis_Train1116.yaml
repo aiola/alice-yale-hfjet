@@ -5,7 +5,7 @@ file_name: AnalysisResults.root
 merging_type: simple_sum
 task_name: AliAnalysisTaskDmesonJets
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
-reflection_templates: LHC15i2_Train1242_reflections_{var}_fitted_{fit}
+reflection_templates: LHC15i2_Train1399_reflections
 monte_carlo: no
 analysis:
 - 
@@ -284,7 +284,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_30_DPt_2
+    name: DPtBins_JetPt_5_30
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -306,7 +306,7 @@ analysis:
       max: 30
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_30_DPt_20
+      name: DPtSpectrum_JetPt_5_30
       suffix: SideBand
       title: "Side Band, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
       compare: []
