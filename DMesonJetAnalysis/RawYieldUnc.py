@@ -120,15 +120,16 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
         comp.fNoErrorInBaseline = True
         reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
-    SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var)
-    SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var)
-    SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var)
+    SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
+    SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
+    SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
 
     outputPath = "{}/{}/{}/RawYieldUnc_{}_{}_pdf".format(config["input_path"], config["train"], config["name"], var, kincuts)
     if not os.path.isdir(outputPath): os.makedirs(outputPath)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
+            print("Saving '{}'".format(obj.GetName()))
             obj.SaveAs(fname)
 
 def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
@@ -283,11 +284,14 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
-def SideBandFinalRawYieldUnc(input_path, train, ana, var):
+def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
     var = var.replace("Z", "z")
-    fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_{var}_Dzero_AfterDbinSum.root".format(input_path=input_path, train=train, ana=ana, var=var)
+    spectrumName = "{}Spectrum".format(var)
+    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
+
+    fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_AfterDbinSum.root".format(input_path=input_path, train=train, ana=ana, var=var, spectrum_name=inputSpectrumName)
     file = ROOT.TFile(fname)
-    cname = "cDistr_{var}_Dzero_SideBand".format(var=var)
+    cname = "{spectrum_name}_cDistr_{var}_Dzero_SideBand".format(var=var, spectrum_name=inputSpectrumName)
     canvas = file.Get(cname)
     if not isinstance(canvas, ROOT.TCanvas):
         print("Object {} in file {} is not a TCanvas??".format(cname, fname))
@@ -305,7 +309,7 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var):
             h_copy.GetYaxis().SetTitle("counts")
             histos.append(h_copy)
     file.Close()
-    fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_{var}_Dzero_SideBand.root".format(input_path=input_path, train=train, ana=ana, var=var)
+    fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_TrialExpoFreeS_{var}_Dzero_SideBand.root".format(input_path=input_path, train=train, ana=ana, var=var, spectrum_name=inputSpectrumName)
     file = ROOT.TFile(fname)
     hname = "f{}SpectrSBDef".format(var)
     baseline = file.Get(hname)
@@ -337,12 +341,17 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var):
         if not obj in globalList:
             globalList.append(obj)
 
-def SideBandRawYieldUnc(input_path, train, ana, var):
+def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
     var = var.replace("Z", "z")
-    for ibin in range(0, 9):
-        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin)
+    spectrumName = "{}Spectrum".format(var)
+    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
+
+    for ibin in range(0, 5):
+        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin, spectrum_name=inputSpectrumName)
         file = ROOT.TFile(fname)
         canvas = file.Get("cDistr_Dzero_SideBand_{0}".format(ibin))
+        file.ls()
+        canvas.Dump()
         histos = []
         for obj in canvas.GetListOfPrimitives():
             if isinstance(obj, ROOT.TH1):
@@ -356,7 +365,7 @@ def SideBandRawYieldUnc(input_path, train, ana, var):
                 h_copy.GetYaxis().SetTitle("counts")
                 histos.append(h_copy)
         file.Close()
-        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_{var}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin)
+        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_TrialExpoFreeS_{var}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin, spectrum_name=inputSpectrumName)
         file = ROOT.TFile(fname)
         hname = "hjet{0}".format(ibin)
         baseline = file.Get(hname)
@@ -388,13 +397,16 @@ def SideBandRawYieldUnc(input_path, train, ana, var):
             if not obj in globalList:
                 globalList.append(obj)
 
-def SideBandRawYieldReflUnc(input_path, train, ana, variable):
+def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts):
     variable = variable.replace("Z", "z")
+    spectrumName = "{}Spectrum".format(variable)
+    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
+
     reflVar = ["DoubleGaus_15", "DoubleGaus_5", "gaus", "pol3", "pol6"]
-    for ibin in range(0, 9):
+    for ibin in range(0, 5):
         histos = []
         for variation in reflVar:
-            fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_{variation}/TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, variation=variation)
+            fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_{variation}/{spectrum_name}_TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, variation=variation, spectrum_name=inputSpectrumName)
             file = ROOT.TFile(fname)
             hname = "hjet{0}".format(ibin)
             h = file.Get(hname)
@@ -410,7 +422,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable):
             h_copy.GetYaxis().SetTitle("counts")
             file.Close()
             histos.append(h_copy)
-        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin)
+        fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, spectrum_name=inputSpectrumName)
         file = ROOT.TFile(fname)
         hname = "hjet{0}".format(ibin)
         baseline = file.Get(hname)
@@ -443,7 +455,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
     parser.add_argument('yaml', metavar='config.yaml')
     parser.add_argument('--meson', metavar='MESON',
-                        default="D0")
+                        default="D0_D0toKpiCuts_D0JetOptimLowJetPtv4")
     parser.add_argument('--jet-type', metavar='TYPE',
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
@@ -451,7 +463,7 @@ if __name__ == '__main__':
     parser.add_argument('--variable', metavar='VAR',
                         default="JetPt")
     parser.add_argument('--kincuts', metavar='KINCUTS',
-                        default="DPt_30")
+                        default="DPt_20")
 
     args = parser.parse_args()
 

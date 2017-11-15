@@ -115,14 +115,20 @@ class RawYieldSpectrumLoader:
         if not self.fVariableName == "JetPt":
             print("Fatal error: inv. mass fit multi-trial available only for jet pt. Requested for: {}".format(self.fVariableName))
             exit(1)
+        else:
+            var = self.fVariableName
+        spectrumName = "{}Spectrum".format(var)
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
+
         h = ROOT.TH1D("TrialExpoFreeSigmaInvMassFit", "Trial Expo Free Sigma Inv. Mass Fit", len(self.fJetPtBins) - 1, numpy.array(self.fJetPtBins, dtype=numpy.float64))
         for ibin, (ptmin, ptmax) in enumerate(zip(self.fJetPtBins[:-1], self.fJetPtBins[1:])):
-            fname = "{0}/{1}/{2}/{3}/RawYieldVariations_Dzero_InvMassFit_{4:.1f}to{5:.1f}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, ptmin, ptmax)
+            fname = "{}/{}/{}/{}/{}_RawYieldVariations_Dzero_InvMassFit_{:.1f}to{:.1f}.root".format(self.fInputPath, self.fTrain, self.fAnalysisName, self.fMultiTrialSubDir, inputSpectrumName, ptmin, ptmax)
             file = ROOT.TFile(fname)
             if not file or file.IsZombie():
                 print("Could not open file {0}".format(fname))
@@ -145,16 +151,20 @@ class RawYieldSpectrumLoader:
 
     def GetDefaultSpectrumSideBandFromMultiTrial(self):
         if self.fVariableName:
-            var = self.fVariableName.replace("Z", "z")
+            var = self.fVariableName.replace("z", "Z")
         else:
             print("No variable name provided!")
             exit(1)
+        spectrumName = "{}Spectrum".format(var)
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{input_path}/{train}/{name}/{subdir}/TrialExpoFreeS_{var}_Dzero_SideBand.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var)
+
+        fname = "{input_path}/{train}/{name}/{subdir}/{spectrum_name}_TrialExpoFreeS_{var}_Dzero_SideBand.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, spectrum_name=inputSpectrumName)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
@@ -193,6 +203,9 @@ class RawYieldSpectrumLoader:
         else:
             print("No variable name provided!")
             exit(1)
+        spectrumName = "{}Spectrum".format(var)
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+
         if self.fRawYieldMethod == "InvMassFit" and not var == "JetPt":
             print("Fatal error: multi-trial available only for jet pt. Requested for: {}".format(self.fVariableName))
             exit(1)
@@ -201,7 +214,8 @@ class RawYieldSpectrumLoader:
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{input_path}/{train}/{name}/{subdir}/FinalRawYieldCentralPlusSystUncertainty_{var}_Dzero_{meth}.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, meth=self.fRawYieldMethod)
+
+        fname = "{input_path}/{train}/{name}/{subdir}/{spectrum_name}_FinalRawYieldCentralPlusSystUncertainty_{var}_Dzero_{meth}.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, meth=self.fRawYieldMethod, spectrum_name=inputSpectrumName)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
@@ -294,6 +308,14 @@ class RawYieldSpectrumLoader:
         return fdHist
 
     def ApplyRawYieldSystFromMultiTrial(self, h, error_band):
+        if self.fVariableName:
+            var = self.fVariableName.replace("Z", "z")
+        else:
+            print("No variable name provided!")
+            exit(1)
+        spectrumName = "{}Spectrum".format(var)
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+
         if error_band == 0:
             print("No raw yield systematic to apply!")
             return
@@ -303,7 +325,7 @@ class RawYieldSpectrumLoader:
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
         else:
             self.fMultiTrialSubDir = "RawYieldUnc"
-        fname = "{input_path}/{train}/{name}/{subdir}/FinalRawYieldUncertainty_{var}_Dzero_{meth}.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, meth=self.fRawYieldMethod)
+        fname = "{input_path}/{train}/{name}/{subdir}/{spectrum_name}_FinalRawYieldUncertainty_{var}_Dzero_{meth}.root".format(input_path=self.fInputPath, train=self.fTrain, name=self.fAnalysisName, subdir=self.fMultiTrialSubDir, var=var, meth=self.fRawYieldMethod, spectrum_name=inputSpectrumName)
         file = ROOT.TFile(fname)
         if not file or file.IsZombie():
             print("Could not open file {0}".format(fname))
