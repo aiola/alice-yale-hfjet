@@ -125,7 +125,11 @@ class BinSet:
             for a in self.fAxis:
                 a.fChargedJet = False
 
-        jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+        if jtype and jradius:
+            jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+        else:
+            # This is a temporary hack. The detector response analysis does not have an option for "no jet"
+            jetName = "Jet_AKTChargedR040_pt_scheme"
 
         if "MCTruth" in dmeson:
             self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
