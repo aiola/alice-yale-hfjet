@@ -146,7 +146,7 @@ def main(config, b, debug):
                     method = ROOT.AliDJetRawYieldUncertainty.kEffScale
                     spectrum_axis = binlist_axis
                     if "efficiency" in binlist:
-                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], None)
+                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", None)
                     else:
                         (dpt_bins, DMesonEff) = (None, None)
                 elif spectrum["type"] == "side_band":
@@ -160,7 +160,7 @@ def main(config, b, debug):
                     spectrum_axis = spectrum["axis"].items()[0]
                     dpt_bins = binlist_axis[1]
                     if "efficiency" in spectrum:
-                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, spectrum["efficiency"], dpt_bins)
+                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
                     else:
                         (dpt_bins, DMesonEff) = (dpt_bins, None)
                 else:

@@ -65,29 +65,36 @@ def ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_n
     globalList.append(interface)
     return interface
 
-def LoadEfficiency(config, eff_config, dpt_bins):
+def LoadEfficiency(config, eff_config, dmeson, jetName, dpt_bins):
     if not eff_config:
         print("No efficiency requested!")
         return (dpt_bins, None)
-    fname = "{0}/{1}".format(config["input_path"], eff_config["file_name"])
-    file = ROOT.TFile(fname)
+
+    # This is a temporary hack. The detector response analysis does not have an option for "no jet"
+    if not jetName: jetName = "Jet_AKTChargedR040_pt_scheme"
+
+    eff_file_name = "{0}/{1}".format(config["input_path"], eff_config["file_name"])
+    eff_list_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, eff_config["list_name"]] if obj])
+    eff_obj_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, eff_config["list_name"], eff_config["object_name"]] if obj])
+
+    file = ROOT.TFile(eff_file_name)
     if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
+        print("Could not open file {0}".format(eff_file_name))
         exit(1)
     else:
-        print("File {0} successfully open".format(fname))
-    rlist = file.Get(eff_config["list_name"])
+        print("File {0} successfully open".format(eff_file_name))
+    rlist = file.Get(eff_list_name)
     if not rlist:
-        print("Could not get list {0}".format(eff_config["list_name"]))
+        print("Could not get list {0}".format(eff_list_name))
         exit(1)
     else:
-        print("List {0} successfully open".format(eff_config["list_name"]))
-    hist = rlist.FindObject(eff_config["object_name"])
+        print("List {0} successfully open".format(eff_list_name))
+    hist = rlist.FindObject(eff_obj_name)
     if not hist:
-        print("Could not get histogram {0}".format(eff_config["object_name"]))
+        print("Could not get histogram {0}".format(eff_obj_name))
         exit(1)
     else:
-        print("Histogram {0} successfully open".format(eff_config["object_name"]))
+        print("Histogram {0} successfully open".format(eff_obj_name))
     eff_values = []
     ibinDest = 0
     dpt_bins_dest = []
@@ -107,6 +114,7 @@ def LoadEfficiency(config, eff_config, dpt_bins):
                                                           hist.GetXaxis().GetBinUpEdge(ibin)))
         ibinDest += 1
         if dpt_bins and ibinDest + 1 >= len(dpt_bins): break
+    dpt_bins_dest.append(hist.GetXaxis().GetBinUpEdge(ibin))
     return (dpt_bins_dest, eff_values)
 
 def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
@@ -336,7 +344,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                     method = ROOT.AliDJetRawYieldUncertainty.kEffScale
                     spectrum_axis = binlist_axis
                     if "efficiency" in binlist:
-                        (dpt_bins, DMesonEff) = LoadEfficiency(config, binlist["efficiency"], None)
+                        (dpt_bins, DMesonEff) = LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", None)
                     else:
                         (dpt_bins, DMesonEff) = (None, None)
                 elif spectrum["type"] == "side_band":
@@ -350,7 +358,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                     spectrum_axis = spectrum["axis"].items()[0]
                     dpt_bins = binlist_axis[1]
                     if "efficiency" in spectrum:
-                        (dpt_bins, DMesonEff) = LoadEfficiency(config, spectrum["efficiency"], dpt_bins)
+                        (dpt_bins, DMesonEff) = LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
                     else:
                         (dpt_bins, DMesonEff) = (dpt_bins, None)
                 else:
