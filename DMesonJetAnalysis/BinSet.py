@@ -103,6 +103,8 @@ class BinSet:
 
     def LoadEfficiency(self, inputPath, dmeson, jetName, eff):
         if eff:
+            dmeson = dmeson.replace("_kSignalOnly", "")
+            dmeson = dmeson.replace("_WrongPID", "")
             eff_file_name = "{0}/{1}".format(inputPath, self.fEfficiency["file_name"])
             eff_list_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, self.fEfficiency["list_name"]] if obj])
             eff_obj_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, self.fEfficiency["list_name"], self.fEfficiency["object_name"]] if obj])
