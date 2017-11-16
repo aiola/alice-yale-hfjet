@@ -430,12 +430,12 @@ class DetectorResponse:
 
         if self.fResponseMatrix1D:
             self.FillResponseMatrix([self.fAxis[1].fDetectorAxis.fName], self.fResponseMatrix1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins() + 1], recoDmeson, truthDmeson, recoJet, truthJet, w)
-            if self.fAxis[0].fTruthAxis.fName == "jet_pt":
-                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthJet.fPt) + 1
-            elif self.fAxis[0].fTruthAxis.fName == "d_pt":
-                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthDmeson.fPt) + 1
-            elif self.fAxis[0].fTruthAxis.fName == "d_z":
-                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(truthJet.fZ) + 1
+            if self.fAxis[0].fDetectorAxis.fName == "jet_pt":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoJet.fPt) + 1
+            elif self.fAxis[0].fDetectorAxis.fName == "d_pt":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoDmeson.fPt) + 1
+            elif self.fAxis[0].fDetectorAxis.fName == "d_z":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoJet.fZ) + 1
             else:
                 bin = 0
             if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
@@ -478,23 +478,23 @@ class DetectorResponse:
                 self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fTruth1D[bin], dmeson, jet, w)
                 self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fTruth1D[0], dmeson, jet, w)
 
-    def FillRecoTruth(self, dmeson, jet, w):
-        if not jet or jet.fPt > 0:
-            self.FillSpectrum([a.fTruthAxis.fName for a in self.fAxis], self.fReconstructedTruth, dmeson, jet, w)
+    def FillRecoTruth(self, recoDmeson, truthDmeson, recoJet, truthJet, w):
+        if not truthJet or truthJet.fPt > 0:
+            self.FillSpectrum([a.fTruthAxis.fName for a in self.fAxis], self.fReconstructedTruth, truthDmeson, truthJet, w)
 
         if self.fReconstructedTruth1D:
-            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins() + 1], dmeson, jet, w)
-            if self.fAxis[0].fTruthAxis.fName == "jet_pt":
-                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(jet.fPt) + 1
-            elif self.fAxis[0].fTruthAxis.fName == "d_pt":
-                bin = self.fAxis[0].fCoarseResponseAxis.fTruthAxis.FindBin(dmeson.fPt) + 1
+            self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins() + 1], truthDmeson, truthJet, w)
+            if self.fAxis[0].fDetectorAxis.fName == "jet_pt":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoJet.fPt) + 1
+            elif self.fAxis[0].fDetectorAxis.fName == "d_pt":
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoDmeson.fPt) + 1
             elif self.fAxis[0].fDetectorAxis.fName == "d_z":
-                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(jet.fZ) + 1
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoJet.fZ) + 1
             else:
                 bin = 0
-            if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins():
-                self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[bin], dmeson, jet, w)
-                self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[0], dmeson, jet, w)
+            if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.GetNbins():
+                self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[bin], truthDmeson, truthJet, w)
+                self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[0], truthDmeson, truthJet, w)
 
     def Fill(self, dmeson, w):
         if self.fJetInfo:
@@ -518,9 +518,9 @@ class DetectorResponse:
 
         if dMesonMeasured.fPt > 0 and self.fCuts.ApplyCuts(dMesonMeasured, jetMeasured):
             self.FillDetectorResponse(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
+            self.FillRecoTruth(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
             self.FillResolution(dMesonMeasured, dMesonTruth, jetMeasured, jetTruth, w * weff)
             self.FillMeasured(dMesonMeasured, jetMeasured, w * weff)
-            self.FillRecoTruth(dMesonTruth, jetTruth, w * weff)
 
         if self.fCuts.ApplyCuts(dMesonTruth, jetTruth):
             self.FillTruth(dMesonTruth, jetTruth, w)
