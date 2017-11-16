@@ -46,7 +46,7 @@ class DMesonJetContainer:
                 bin.Fill(dmeson, jet, DMesonWeight * eventWeight)
 
             spectra = binMultiSet.FindSpectra(dmeson, jet)
-            for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, DMesonWeight * eventWeight)
+            for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * eventWeight)
 
 class DMesonJetAnalysisEngine:
     def __init__(self, collision, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, projector):
@@ -1060,18 +1060,17 @@ class DMesonJetAnalysis:
                 bin_count_analysis = binLists["bin_count_analysis"]
             else:
                 bin_count_analysis = None
-            if "efficiency" in binLists and binLists["efficiency"]:
-                effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, binLists["efficiency"]["file_name"]), binLists["efficiency"]["list_name"], binLists["efficiency"]["object_name"])
+
+            if not "efficiency" in binLists: binLists["efficiency"] = False
+
+            if binLists["efficiency"] or self.fProjector.fMergingType == "simple_sum":
                 fitOptions = "0 WL S"
             else:
-                effWeight = DMesonJetProjectors.SimpleWeight()
-                if self.fProjector.fMergingType == "simple_sum":
-                    fitOptions = "0 L S"
-                else:
-                    fitOptions = "0 WL S"
+                fitOptions = "0 WL S"
+
             if not "spectra" in binLists:
                 binLists["spectra"] = []
-            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, effWeight, fitOptions))
+            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, binLists["efficiency"], fitOptions))
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:

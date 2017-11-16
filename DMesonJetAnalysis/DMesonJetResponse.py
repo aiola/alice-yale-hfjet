@@ -429,8 +429,10 @@ class DMesonJetResponse:
         for resp in config["response"]:
             if not resp["active"]:
                 continue
-            if resp["efficiency"]:
+            if "efficiency" in resp and resp["efficiency"]:
                 resp["efficiency"]["file_name"] = "{}/{}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"])
+            else:
+                resp["efficiency"] = False
             if resp["efficiency"] and "apply_to_truth" in resp["efficiency"]:
                 apply_to_truth = resp["efficiency"]["apply_to_truth"]
             else:
