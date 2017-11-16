@@ -2,10 +2,10 @@ name: BFeedDown_1505317519_1399
 input_path: /Volumes/DATA/ALICE/JetResults
 generator: powheg+pythia6_beauty
 c_response:
-  train: Jets_EMC_pp_MC_1399_1401_1402_1403
+  train: Jets_EMC_pp_MC_1399_1400_1401_1402
   name: LHC15i2_Train1399_response
 b_response:
-  train: Jets_EMC_pp_MC_1399_1401_1402_1403
+  train: Jets_EMC_pp_MC_1399_1400_1401_1402
   name: LHC15i2_Train1399_response
 variations:
 -
