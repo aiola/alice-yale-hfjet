@@ -1,5 +1,5 @@
 # MB Monte Carlo: reflection templates
-name: LHC15i2_Train1399_reflections
+name: LHC15i2_Train1399_reflections_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_1399_1400_1401_1402
 file_name: AnalysisResults.root
@@ -24,7 +24,10 @@ analysis:
     title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_5_30
+      object_name: Efficiency
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -42,7 +45,10 @@ analysis:
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_5_30
+      object_name: Efficiency
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -60,7 +66,10 @@ analysis:
     title: ""
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_5_30
+      object_name: Efficiency
     bins:
       d_pt: [2, 4, 6, 9, 15, 30]
     cuts:
@@ -79,7 +88,10 @@ analysis:
     title: ""
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_5_15
+      object_name: Efficiency
     bins:
       d_pt: [2, 4, 6, 9, 15]
     cuts:
@@ -98,7 +110,10 @@ analysis:
     title: ""
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_15_30
+      object_name: Efficiency
     bins:
       d_pt: [6, 12, 30]
     cuts:
@@ -115,9 +130,12 @@ analysis:
   -
     name: JetZBins_DPt_20_JetPt_5_15
     title: "#it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-    active_mesons: D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, [D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_5_15
+      object_name: Efficiency
     bins:
       d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
     cuts:
@@ -140,7 +158,10 @@ analysis:
     title: "#it{p}_{T,D} > 6 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_15_30
+      object_name: Efficiency
     bins:
       d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
     cuts:
@@ -163,7 +184,10 @@ analysis:
     title: ""
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency: no
+    efficiency:
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum
+      object_name: Efficiency
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
