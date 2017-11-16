@@ -18,9 +18,16 @@ class DMesonJetResponseContainer:
         self.fResponseObjects = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-            for axisName, (axisDef, DMesonWeight, applyEffTruth, cuts) in respDefinitions.iteritems():
+            for axisName, (axisDef, efficiency, applyEffTruth, cuts) in respDefinitions.iteritems():
                 respName = "_".join([obj for obj in [trigger, DMesonDef, jetName, axisName] if obj])
-                resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, DMesonWeight, applyEffTruth)
+                if efficiency:
+                    eff_file_name = efficiency["file_name"]
+                    eff_list_name = "_".join([obj for obj in [trigger, DMesonDef, jetName, efficiency["list_name"]] if obj])
+                    eff_obj_name = "_".join([obj for obj in [trigger, DMesonDef, jetName, efficiency["list_name"], efficiency["object_name"]] if obj])
+                    effWeight = DMesonJetProjectors.EfficiencyWeightCalculator(eff_file_name, eff_list_name, eff_obj_name)
+                else:
+                    effWeight = DMesonJetProjectors.SimpleWeight()
+                resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, effWeight, applyEffTruth)
                 resp.GenerateHistograms()
                 self.fResponseObjects[respName] = resp
 
@@ -423,9 +430,7 @@ class DMesonJetResponse:
             if not resp["active"]:
                 continue
             if resp["efficiency"]:
-                effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"]), resp["efficiency"]["list_name"], resp["efficiency"]["object_name"])
-            else:
-                effWeight = DMesonJetProjectors.SimpleWeight()
+                resp["efficiency"]["file_name"] = "{}/{}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"])
             if resp["efficiency"] and "apply_to_truth" in resp["efficiency"]:
                 apply_to_truth = resp["efficiency"]["apply_to_truth"]
             else:
@@ -448,7 +453,7 @@ class DMesonJetResponse:
             else:
                 cut_list = []
 
-            axis[resp["name"]] = axis_list, effWeight, apply_to_truth, cut_list
+            axis[resp["name"]] = axis_list, resp["efficiency"], apply_to_truth, cut_list
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
