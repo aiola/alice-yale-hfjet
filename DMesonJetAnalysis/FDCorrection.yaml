@@ -1,88 +1,65 @@
-name: BFeedDown
+name: BFeedDown_1505317519_1399
 input_path: /Volumes/DATA/ALICE/JetResults
-generator: powheg_beauty
+generator: powheg+pythia6_beauty
 c_response:
-  train: Jets_EMC_pp_MC_1073_1074_1075_1076
-  name: LHC15i2_Train1073_cresponse
+  train: Jets_EMC_pp_MC_1399_1400_1401_1402
+  name: LHC15i2_Train1399_response
 b_response:
-  train: Jets_EMC_pp_MC_1081_1082_1083_1084
-  name: LHC15i2_Train1081_bresponse
+  train: Jets_EMC_pp_MC_1399_1400_1401_1402
+  name: LHC15i2_Train1399_response
 variations:
 -
   name: default
   active: yes
   title: "Central Values"
-  ts: 1483385484
-  stage: 2
+  ts: 1505317519
 -
   name: mass_low
-  active: yes
+  active: no
   title: "#it{m}_{b} = 4.5 GeV/#it{c}^{2}"
-  ts: 1481734661
-  stage: 1
+  ts: 1505317954
 -
   name: mass_high
-  active: yes
+  active: no
   title: "#it{m}_{b} = 5.0 GeV/#it{c}^{2}"
-  ts: 1481821920
-  stage: 0
--
-  name: PDF_CT10
-  active: yes
-  title: "PDF = CT10 (11000)" 
-  ts: 1483392034
-  stage: 1
+  ts: 1505318474
 -
   name: PDF_MSTW2008nlo68cl
-  active: yes
+  active: no
   title: "PDF = MSTW2008nlo68cl (21200)" 
-  ts: 1484037661
-  stage: 1
+  ts: 1505395218
 -
   name: PDF_cteq6l1
-  active: no
+  active: no #do not use
   title: "PDF = cteq6l1 (10042)" 
-  ts: 1483393628
-  stage: 1
+  ts: 1505382004
 -
   name: facscfact2_renscfact2
-  active: yes
+  active: no
   title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
-  ts: 1483403243
-  stage: 0
+  ts: 1505506137
 -
   name: facscfact05_renscfact05
-  active: yes
-  title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
-  ts: 1483403037
-  stage: 0
--
-  name: facscfact10_renscfact10
   active: no
-  title: "#mu_{F} = 1.0, #mu_{R} = 1.0"
-  ts: 1483403147
-  stage: 0
+  title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
+  ts: 1505744361
 -
   name: facscfact1_renscfact05
-  active: yes
+  active: no
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
-  ts: 1483619400
-  stage: 0
+  ts: 1505760169
 -
   name: facscfact05_renscfact1
-  active: yes
+  active: no
   title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
-  ts: 1483622213
-  stage: 0
+  ts: 1505760774
 -
   name: facscfact2_renscfact1
-  active: yes
+  active: no
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
-  ts: 1483628767
-  stage: 0
+  ts: 1505761121
 -
   name: facscfact1_renscfact2
-  active: yes
+  active: no
   title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
-  ts: 1483629492
-  stage: 0
+  ts: 1505764272
