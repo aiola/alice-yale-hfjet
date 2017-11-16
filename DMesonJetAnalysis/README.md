@@ -10,10 +10,6 @@ When this is done, it should be repeated using results from the previous to appl
 
 `./runResponseAnalysis.py LHC15i2response_Train1399_efficiency.yaml`
 
-## B Feed-Down
-
-` ./MCSimulationSystematics.py FDCorrection.yaml `
-
 ## Reflection templates
 
 Generate reflection templates without reconstruction efficiency:
@@ -61,6 +57,10 @@ Then execute:
 `./ExtractDZeroJetRawYieldReflectionUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train1116_efficiency.yaml -b`
 
 `./ExtractDZeroJetRawYieldUncertainty.py ../DMesonJetAnalysis/LHC10analysis_Train1116_efficiency.yaml --no-refl -b`
+
+## B Feed-Down
+
+` ./MCSimulationSystematics.py FDCorrection.yaml `
 
 ## Unfolding
 
