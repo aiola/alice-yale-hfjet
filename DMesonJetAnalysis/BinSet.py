@@ -76,7 +76,7 @@ class BinMultiSet:
         return groups
 
 class BinSet:
-    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, weight, fitOptions):
+    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, efficiency, fitOptions):
         self.fBinSetName = name
         self.fTitle = title
         self.fBins = []
@@ -85,7 +85,7 @@ class BinSet:
         self.fAxis = axis
         self.fCuts = DMesonJetCuts.DMesonJetCuts(cutList)
         self.fFitOptions = fitOptions
-        self.fWeightEfficiency = weight
+        self.fEfficiency = efficiency
         self.fNeedInvMass = need_inv_mass
         self.fActiveMesons = active_mesons
         self.fBinCountSpectraAxis = dict()
@@ -101,6 +101,16 @@ class BinSet:
             if cut["object"] == "jet": return True
         return False
 
+    def LoadEfficiency(self, inputPath, dmeson, jetName, eff):
+        if eff:
+            eff_file_name = "{0}/{1}".format(inputPath, self.fEfficiency["file_name"])
+            eff_list_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, self.fEfficiency["list_name"]] if obj])
+            eff_obj_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, self.fEfficiency["list_name"], self.fEfficiency["object_name"]] if obj])
+            weightEfficiency = DMesonJetProjectors.EfficiencyWeightCalculator(eff_file_name, eff_list_name, eff_obj_name)
+        else:
+            weightEfficiency = DMesonJetProjectors.SimpleWeight()
+        return weightEfficiency
+
     def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
         self.fName = "_".join(obj for obj in [dmeson, jtype, jradius, self.fBinSetName] if not obj == None)
         jetDep = self.AmIJetDependent()
@@ -113,16 +123,24 @@ class BinSet:
             for a in self.fAxis:
                 a.fChargedJet = False
 
+        jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+
+        if "MCTruth" in dmeson:
+            self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
+        else:
+            self.fWeightEfficiency = self.LoadEfficiency(inputPath, dmeson, jetName, self.fEfficiency)
+
         for s in self.fSpectraConfigs:
             # skip spectra that do not have this D meson active
             if not dmeson in s["active_mesons"]: continue
 
             # configure efficiency
-            if "efficiency" in s and s["efficiency"] and not "MCTruth" in dmeson:
-                effWeight = DMesonJetProjectors.EfficiencyWeightCalculator("{0}/{1}".format(inputPath, s["efficiency"]["file_name"]), s["efficiency"]["list_name"], s["efficiency"]["object_name"])
+            if "efficiency" in s and not "MCTruth" in dmeson:
+                effWeight = self.LoadEfficiency(inputPath, dmeson, jetName, s["efficiency"])
             else:
-                effWeight = DMesonJetProjectors.SimpleWeight()
+                effWeight = self.LoadEfficiency(inputPath, dmeson, jetName, False)
             spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
+
             self.fSpectra[spectrum.fName] = spectrum
 
             # add bin counting axis
@@ -134,9 +152,6 @@ class BinSet:
                 for axis_name, axis_bins in s["axis"].iteritems():
                     bin_count_spectra.append(Axis.Axis(axis_name, axis_bins, "", (jtype != "Full")))
                 self.fBinCountSpectraAxis[s["name"]] = bin_count_spectra
-
-        if "MCTruth" in dmeson and not isinstance(self.fWeightEfficiency , DMesonJetProjectors.SimpleWeight):
-            self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
 
         limits = dict()
         self.AddBinsRecursive(self.fLimitSetList, limits)
