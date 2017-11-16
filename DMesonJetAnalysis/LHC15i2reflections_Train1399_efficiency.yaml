@@ -182,8 +182,8 @@ analysis:
   -
     name: DPtBins
     title: ""
-    active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
     efficiency:
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum
@@ -192,7 +192,7 @@ analysis:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
     cuts:
     -
-      object: jet
+      object: d
       variable: fEta
       min: -0.5
       max: 0.5
