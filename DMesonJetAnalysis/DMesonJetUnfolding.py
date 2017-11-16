@@ -41,6 +41,7 @@ class DMesonJetUnfoldingEngine:
         self.fRawYieldMethod = config["raw_yield_method"]
         self.fFullSpectrumName = "_".join([s for s in [self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         self.fUseMultiTrialInput = True
+        self.fFDConfig = config["FD"]
 
         # feed-down systematic uncertainty
         self.fFDErrorBand = fd_error_band
@@ -216,6 +217,7 @@ class DMesonJetUnfoldingEngine:
 
         wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName)
 
+        wrap.fFDConfig = self.fFDConfig
         wrap.fDataFile = self.fDataFile
         wrap.fDMeson = self.fDMeson
         wrap.fJetType = self.fJetType
