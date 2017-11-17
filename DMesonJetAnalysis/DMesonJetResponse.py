@@ -8,6 +8,7 @@ import ROOT
 
 import DetectorResponse
 import DMesonJetProjectors
+import DMesonJetCompare
 import DMesonJetUtils
 import Axis
 
@@ -102,6 +103,8 @@ class DMesonJetResponseEngine:
                 pad.SetRightMargin(0.05)
                 pad.SetTopMargin(0.08)
                 pad.SetBottomMargin(0.18)
+                pad.SetGridx()
+                pad.SetGridy()
                 h = s.fHistogram.DrawCopy()
                 h.GetYaxis().SetTitle("Probability density")
                 if resp.fStatistics.fAxis.fName == "jet_pt":
@@ -144,6 +147,8 @@ class DMesonJetResponseEngine:
             c.SetBottomMargin(0.12)
             c.SetTopMargin(0.08)
             c.SetRightMargin(0.08)
+            c.SetGridx()
+            c.SetGridy()
             h = resp.fResolution.DrawCopy("")
             h.GetXaxis().SetTitleFont(43)
             h.GetXaxis().SetTitleOffset(1.2)
@@ -157,7 +162,7 @@ class DMesonJetResponseEngine:
             h.GetYaxis().SetLabelFont(43)
             h.GetYaxis().SetLabelOffset(0.009)
             h.GetYaxis().SetLabelSize(18)
-            h.GetYaxis().SetRangeUser(0.04, 0.2)
+            # h.GetYaxis().SetRangeUser(0.04, 0.2)
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.8)
             h.SetMarkerColor(ROOT.kBlue + 2)
@@ -168,51 +173,30 @@ class DMesonJetResponseEngine:
 
     def PlotEnergyScaleShift(self, resp):
         if resp.fEnergyScaleShift:
-            c = ROOT.TCanvas("{0}_canvas".format(resp.fEnergyScaleShift.GetName()), resp.fEnergyScaleShift.GetTitle())
-            c.cd()
-            c.SetLeftMargin(0.18)
-            c.SetBottomMargin(0.12)
-            c.SetTopMargin(0.08)
-            c.SetRightMargin(0.08)
-            h = resp.fEnergyScaleShift.DrawCopy("")
-            h.GetYaxis().SetRangeUser(-0.1, 0.08)
-            h.GetYaxis().SetTitle(resp.fStatistics.fVariableName)
-            h.GetXaxis().SetTitleFont(43)
-            h.GetXaxis().SetTitleOffset(1.2)
-            h.GetXaxis().SetTitleSize(19)
-            h.GetXaxis().SetLabelFont(43)
-            h.GetXaxis().SetLabelOffset(0.009)
-            h.GetXaxis().SetLabelSize(18)
-            h.GetYaxis().SetTitleFont(43)
-            h.GetYaxis().SetTitleOffset(1.8)
-            h.GetYaxis().SetTitleSize(19)
-            h.GetYaxis().SetLabelFont(43)
-            h.GetYaxis().SetLabelOffset(0.009)
-            h.GetYaxis().SetLabelSize(18)
-            h.SetMarkerStyle(ROOT.kFullCircle)
-            h.SetMarkerSize(0.8)
-            h.SetMarkerColor(ROOT.kBlue + 2)
-            h.SetLineColor(ROOT.kBlue + 2)
-            globalList.append(h)
+            cname = "{0}_canvas".format(resp.fEnergyScaleShift.GetName())
+            comp = DMesonJetCompare.DMesonJetCompare(cname)
+            comp.fDoSpectraPlot = "lineary"
+            comp.fDoRatioPlot = False
+            comp.fColors = [ROOT.kBlue + 2, ROOT.kRed + 2]
+            comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare]
 
-            hMed = resp.fEnergyScaleShiftMedian.DrawCopy("same")
-            hMed.SetMarkerStyle(ROOT.kFullSquare)
-            hMed.SetMarkerSize(0.8)
-            hMed.SetMarkerColor(ROOT.kRed + 2)
-            hMed.SetLineColor(ROOT.kRed + 2)
+            hMean = resp.fEnergyScaleShift.Clone("{}_copy".format(resp.fEnergyScaleShift.GetName()))
+            globalList.append(hMean)
+            hMean.GetYaxis().SetTitle("Mean")
 
-            leg = ROOT.TLegend(0.8, 0.85, 0.9, 0.75)
-            leg.SetTextFont(43)
-            leg.SetTextSize(16)
-            leg.SetBorderSize(0)
-            leg.SetFillStyle(0)
-            leg.AddEntry(h, "Mean", "pe")
-            leg.AddEntry(hMed, "Median", "pe")
-            leg.Draw()
+            hMed = resp.fEnergyScaleShiftMedian.Clone("{}_copy".format(resp.fEnergyScaleShiftMedian.GetName()))
+            globalList.append(hMed)
+            hMed.GetYaxis().SetTitle("Median")
 
-            globalList.append(c)
-            globalList.append(leg)
-            self.fCanvases.append(c)
+            results = comp.CompareSpectra(hMean, [hMed])
+
+            comp.fCanvasSpectra.SetGridx()
+            comp.fCanvasSpectra.SetGridy()
+
+            for obj in results:
+                globalList.append(obj)
+
+            self.fCanvases.append(comp.fCanvasSpectra)
 
     def PlotResponseMatrix(self, resp):
         if len(resp.fAxis) == 1:
@@ -287,6 +271,8 @@ class DMesonJetResponseEngine:
             c.SetBottomMargin(0.12)
             c.SetTopMargin(0.08)
             c.SetRightMargin(0.08)
+            c.SetGridx()
+            c.SetGridy()
             h = resp.fEfficiency.Clone()
             h.SetMarkerStyle(ROOT.kFullCircle)
             h.SetMarkerSize(0.9)
@@ -308,6 +294,8 @@ class DMesonJetResponseEngine:
                 h.Draw("AP")
             else:
                 h.Draw()
+            c.Update()
+            if c.GetUymax() > 1.5: h.GetYaxis().SetRangeUser(c.GetUymin(), 1.5)
         elif len(resp.fAxis) == 2:
             c = ROOT.TCanvas("{0}_canvas".format(resp.fEfficiency.GetName()), resp.fEfficiency.GetTitle())
             c.SetRightMargin(0.17)
@@ -353,68 +341,33 @@ class DMesonJetResponseEngine:
 
     def PlotPartialMultiEfficiency(self, resp):
         self.PlotMultiHistogram(resp, "PartialEfficiency", "Efficiency", "fEfficiency1D")
-        self.PlotMultiHistogram(resp, "PartialEfficiencyRatios", "Ratio", "fEfficiency1DRatios")
 
     def PlotMultiHistogram(self, resp, name, yaxisTitle, listName):
         histList = getattr(resp, listName)
-        if not histList:
-            return
+        if not histList: return
+
         cname = "{0}_{1}".format(resp.fName, name)
-        c = ROOT.TCanvas(cname, cname)
-        c.SetLeftMargin(0.12)
-        c.SetBottomMargin(0.12)
-        c.SetTopMargin(0.08)
-        c.SetRightMargin(0.08)
-        c.cd()
-        globalList.append(c)
-        self.fCanvases.append(c)
-        blank = ROOT.TH1D("blankHist", "blankHist;{0};{1}".format(resp.fAxis[1].fTruthAxis.GetTitle(), yaxisTitle), 100, resp.fAxis[1].fTruthAxis.fBins[0], resp.fAxis[1].fTruthAxis.fBins[-1])
-        blank.GetXaxis().SetTitleFont(43)
-        blank.GetXaxis().SetTitleOffset(1.2)
-        blank.GetXaxis().SetTitleSize(19)
-        blank.GetXaxis().SetLabelFont(43)
-        blank.GetXaxis().SetLabelOffset(0.009)
-        blank.GetXaxis().SetLabelSize(18)
-        blank.GetYaxis().SetTitleFont(43)
-        blank.GetYaxis().SetTitleOffset(1.2)
-        blank.GetYaxis().SetTitleSize(19)
-        blank.GetYaxis().SetLabelFont(43)
-        blank.GetYaxis().SetLabelOffset(0.009)
-        blank.GetYaxis().SetLabelSize(18)
-        blank.Draw()
-        globalList.append(blank)
+        comp = DMesonJetCompare.DMesonJetCompare(cname)
+        comp.fDoSpectraPlot = "lineary"
+        comp.fDoRatioPlot = "lineary"
+
         colors = [ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kMagenta + 2, ROOT.kAzure + 2, ROOT.kPink + 2, ROOT.kBlack]
         markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross, ROOT.kOpenCircle]
-        max = 0;
-        leg = ROOT.TLegend(0.15, 0.90, 0.45, 0.65)
-        leg.SetFillStyle(0)
-        leg.SetBorderSize(0)
-        leg.SetTextFont(43)
-        leg.SetTextSize(16)
-        for color, marker, eff in zip(colors[:len(histList) - 1] + colors[-1:], markers[:len(histList) - 1] + markers[-1:], histList):
-            h = eff.Clone()
-            globalList.append(h)
-            h.SetMarkerStyle(marker)
-            h.SetMarkerSize(0.9)
-            h.SetMarkerColor(color)
-            h.SetLineColor(color)
-            leg.AddEntry(h, h.GetTitle(), "pe")
-            if isinstance(h, ROOT.TGraph):
-                h.Draw("P same")
-                for i in xrange(0, h.GetN()):
-                    y = h.GetY()[i]
-                    if y > max:
-                        max = y
-            else:
-                h.Draw("same")
-                for i in xrange(1, h.GetNbinsX() + 1):
-                    y = h.GetBinContent(i)
-                    if y > max:
-                        max = y
+        comp.fColors = colors[:len(histList) - 1] + colors[-1:]
+        comp.fMarkers = markers[:len(histList) - 1] + markers[-1:]
 
-        leg.Draw()
-        globalList.append(leg)
-        blank.SetMaximum(max * 1.5)
+        results = comp.CompareSpectra(histList[0], histList[1:])
+
+        comp.fCanvasSpectra.SetGridx()
+        comp.fCanvasSpectra.SetGridy()
+        comp.fCanvasRatio.SetGridx()
+        comp.fCanvasRatio.SetGridy()
+
+        for obj in results:
+            globalList.append(obj)
+
+        self.fCanvases.append(comp.fCanvasSpectra)
+        self.fCanvases.append(comp.fCanvasRatio)
 
 class DMesonJetResponse:
     def __init__(self, name):
