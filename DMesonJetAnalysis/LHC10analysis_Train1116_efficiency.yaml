@@ -26,9 +26,10 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     sigma_fits:
@@ -59,9 +60,10 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     cuts:
@@ -89,6 +91,7 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_5_15
       object_name: Efficiency
@@ -124,6 +127,7 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_15_30
       object_name: Efficiency
@@ -159,6 +163,7 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_5_15
       object_name: Efficiency
@@ -217,6 +222,7 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_15_30
       object_name: Efficiency
@@ -275,9 +281,11 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
+      # but NOT for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       d_pt: [2, 4, 6, 9, 15, 30]
     sigma_fits:
@@ -333,9 +341,11 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
+      # but NOT for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       d_pt: [3, 4, 6, 9, 15, 30]
     cuts:
@@ -388,6 +398,7 @@ analysis:
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     efficiency:
+      # Correcting for reconstruction efficiency
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum
       object_name: Efficiency
