@@ -363,16 +363,17 @@ class DetectorResponse:
         return hist
 
     def FillResolution(self, recoDmeson, truthDmeson, recoJet, truthJet, w):
-        if not self.fStatistics:
-            return
-
-        if (not (recoJet and truthJet)) or recoJet.fPt <= 0 or truthJet.fPt <= 0:
-            return
+        if not self.fStatistics: return
 
         if self.fStatistics.fAxis.fName == "jet_pt":
+            if (not (recoJet and truthJet)) or recoJet.fPt <= 0 or truthJet.fPt <= 0: return
             self.fStatistics.Fill(truthJet.fPt, (recoJet.fPt - truthJet.fPt) / truthJet.fPt, w)
         elif self.fStatistics.fAxis.fName == "d_z":
+            if (not (recoJet and truthJet)) or recoJet.fZ <= 0 or truthJet.fZ <= 0: return
             self.fStatistics.Fill(truthJet.fZ, (recoJet.fZ - truthJet.fZ) / truthJet.fZ, w)
+        elif self.fStatistics.fAxis.fName == "d_pt":
+            if (not (recoDmeson and truthDmeson)) or recoDmeson.fPt <= 0 or truthDmeson.fPt <= 0: return
+            self.fStatistics.Fill(truthDmeson.fPt, (recoDmeson.fPt - truthDmeson.fPt) / truthDmeson.fPt, w)
 
     def FillResponseMatrix(self, axis, resp, recoDmeson, truthDmeson, recoJet, truthJet, w):
         naxis = len(axis)
