@@ -483,14 +483,26 @@ class DetectorResponse:
         if not truthJet or truthJet.fPt > 0:
             self.FillSpectrum([a.fTruthAxis.fName for a in self.fAxis], self.fReconstructedTruth, truthDmeson, truthJet, w)
 
+        # The following code needs a bit of an explanation.
+        # The "partial efficiency" that is calculated by this piece of code is the
+        # efficiency of D-jet that are taken from a sub-sample in a certain range of a GENERATED variable.
+        # In this way one can verify whether, e.g. a different TRUE jet momentum affects the reconstruction
+        # efficiency of a D-jet as a function of D-meson momentum.
+        # The resulting "partial efficiencies" DO NOT take into account feed-in and feed-out of the considered range:
+        # it just refelcts the efficiency of a sub-sample, regardless of whether the object is reconstructed within that
+        # same considered range in the reconstructed variable counterpart (this would be achieved by using reconstructed
+        # variables in the following lines instead of generated variables). This is therefore different from setting
+        # this cuts in the "cuts" section of the YAML file. Actually this allows to disentangle between differences in the
+        # reconstruction efficiencies for different sub-samples (obtained from the code below) and differences in the reconstruction
+        # efficiency coming from feed-in and feed-out of the considered range.
         if self.fReconstructedTruth1D:
             self.FillSpectrum([self.fAxis[1].fTruthAxis.fName], self.fReconstructedTruth1D[self.fAxis[0].fCoarseResponseAxis.fTruthAxis.GetNbins() + 1], truthDmeson, truthJet, w)
             if self.fAxis[0].fDetectorAxis.fName == "jet_pt":
-                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoJet.fPt) + 1
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(truthJet.fPt) + 1
             elif self.fAxis[0].fDetectorAxis.fName == "d_pt":
-                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoDmeson.fPt) + 1
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(truthDmeson.fPt) + 1
             elif self.fAxis[0].fDetectorAxis.fName == "d_z":
-                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(recoJet.fZ) + 1
+                bin = self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.FindBin(truthJet.fZ) + 1
             else:
                 bin = 0
             if bin >= 1 and bin <= self.fAxis[0].fCoarseResponseAxis.fDetectorAxis.GetNbins():
