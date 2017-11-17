@@ -19,13 +19,14 @@ analysis:
     name: JetPtSpectrum_DPt_20
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30]
+        coarse: [5, 6, 8, 10, 15, 20, 30]
     cuts:
     -
       object: jet
@@ -40,13 +41,14 @@ analysis:
     name: JetPtSpectrum_DPt_30
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30]
+        coarse: [5, 6, 8, 10, 15, 20, 30]
     cuts:
     -
       object: jet
@@ -61,6 +63,7 @@ analysis:
     name: JetZSpectrum_DPt_20_JetPt_5_15
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_5_15
       object_name: Efficiency
@@ -87,6 +90,7 @@ analysis:
     name: JetZSpectrum_DPt_60_JetPt_15_30
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_15_30
       object_name: Efficiency
@@ -113,12 +117,14 @@ analysis:
     name: DPtSpectrum_JetPt_5_30
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
+      # but NOT for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_5_30
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 30]
         coarse: [0, 2, 4, 6, 9, 12, 15, 30]
     cuts:
     -
@@ -135,6 +141,7 @@ analysis:
     name: DPtSpectrum_JetPt_5_15
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_5_15
       object_name: Efficiency
@@ -157,13 +164,14 @@ analysis:
     name: DPtSpectrum_JetPt_15_30
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum_JetPt_15_30
       object_name: Efficiency
     bins:
       d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30]
-        coarse: [0, 6, 12, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 30]
+        coarse: [0, 2, 4, 6, 9, 12, 15, 30]
     cuts:
     -
       object: jet
@@ -179,13 +187,14 @@ analysis:
     name: DPtSpectrum
     active: yes
     efficiency:
+      # Correcting for reconstruction efficiency
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
       list_name: DPtSpectrum
       object_name: Efficiency
     bins:
       d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-        coarse: [0, 1, 3, 5, 8, 12, 16, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 30]
+        coarse: [0, 2, 4, 6, 9, 12, 15, 30]
     cuts:
     -
       object: d
@@ -195,16 +204,17 @@ analysis:
   -
     name: JetPtDPtSpectrum
     active: yes
+    # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
     efficiency:
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum
-      object_name: Efficiency
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
     bins:
       jet_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24, 30]
-        coarse: [5, 6, 8, 10, 14, 20, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30]
+        coarse: [5, 6, 8, 10, 15, 20, 30]
       d_pt:
-        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30]
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 30]
         coarse: [0, 2, 4, 6, 9, 12, 15, 30]
     cuts:
     -
@@ -212,3 +222,55 @@ analysis:
       variable: fEta
       min: -0.5
       max: 0.5
+  -
+    name: JetZDPtSpectrum_JetPt_5_15
+    active: yes
+    efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_5_15
+      object_name: Efficiency
+    bins:
+      d_z:
+        bins:  [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+        coarse:  [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15]
+        coarse: [0, 2, 4, 6, 9, 12, 15]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+  -
+    name: JetZDPtSpectrum_JetPt_15_30
+    active: yes
+    efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_15_30
+      object_name: Efficiency
+    bins:
+      d_z:
+        bins:  [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+        coarse:  [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      d_pt:
+        bins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 30]
+        coarse: [0, 2, 4, 6, 9, 12, 15, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
