@@ -41,7 +41,13 @@ class DMesonJetUnfoldingEngine:
         self.fRawYieldMethod = config["raw_yield_method"]
         self.fFullSpectrumName = "_".join([s for s in [self.fSpectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
         self.fUseMultiTrialInput = True
-        self.fFDConfig = config["FD"]
+        if "FD" in config:
+            self.fFDConfig = config["FD"]
+        else:
+            self.fFDConfig = None
+            if fd_error_band != 0:
+                print("Error: no FD configuration provided, but FD error band requested!")
+                exit(1)
 
         # feed-down systematic uncertainty
         self.fFDErrorBand = fd_error_band
@@ -217,6 +223,11 @@ class DMesonJetUnfoldingEngine:
 
         wrap = RawYieldSpectrumLoader.RawYieldSpectrumLoader(self.fInputPath, self.fDataTrain, self.fAnalysisName)
 
+        if self.fFDConfig:
+            useFD = True
+        else:
+            useFD = False
+
         wrap.fFDConfig = self.fFDConfig
         wrap.fDataFile = self.fDataFile
         wrap.fDMeson = self.fDMeson
@@ -238,10 +249,10 @@ class DMesonJetUnfoldingEngine:
 
         if self.fUseMultiTrialInput:
             print("Getting input spectrum from the multi-trial analysis, with method {0}".format(self.fRawYieldMethod))
-            inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(True, self.fFDErrorBand, self.fRYErrorBand)
+            inputSpectrum = wrap.GetDefaultSpectrumFromMultiTrial(useFD, self.fFDErrorBand, self.fRYErrorBand)
         else:
             print("Getting input spectrum from DMesonJetAnalysis, with method {0}".format(self.fRawYieldMethod))
-            inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(True, self.fFDErrorBand, self.fRYErrorBand)
+            inputSpectrum = wrap.GetDefaultSpectrumFromDMesonJetAnalysis(useFD, self.fFDErrorBand, self.fRYErrorBand)
 
         if not inputSpectrum:
             print("Could not find input spectrum!")
