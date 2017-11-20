@@ -117,7 +117,7 @@ analysis:
       name: JetZSpectrum_DPt_20_JetPt_5_15
       suffix: InvMassFit
       title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} > 15 GeV/#it{c}"
-      compare: [Method]
+      compare: [MethodLow]
       comp_titles: ["Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -153,7 +153,7 @@ analysis:
       name: JetZSpectrum_DPt_60_JetPt_15_30
       suffix: InvMassFit
       title: "Inv.Mass Fit, #it{p}_{T,D} > 6 GeV/#it{c}, 15 < #it{p}_{T,ch jet} > 30 GeV/#it{c}"
-      compare: [Method]
+      compare: [MethodHigh]
       comp_titles: ["Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
@@ -203,7 +203,7 @@ analysis:
       name: JetZSpectrum_DPt_20_JetPt_5_15
       suffix: SideBand
       title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-      compare: [Method]
+      compare: [MethodLow]
       comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -262,7 +262,7 @@ analysis:
       name: JetZSpectrum_DPt_60_JetPt_15_30
       suffix: SideBand
       title: "Side Band, #it{p}_{T,D} > 6 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-      compare: [Method]
+      compare: [MethodHigh]
       comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
