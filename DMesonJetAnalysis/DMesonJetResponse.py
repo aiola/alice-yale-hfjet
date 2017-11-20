@@ -324,8 +324,7 @@ class DMesonJetResponseEngine:
             h.GetZaxis().SetLabelFont(43)
             h.GetZaxis().SetLabelOffset(0.009)
             h.GetZaxis().SetLabelSize(19)
-            c.Update()
-            if h.GetZaxis().GetXmax() > 1.5: h.SetMaximum(1.5)
+            if DMesonJetUtils.FindMaximum(h) > 1.5: h.SetMaximum(1.5)
 
             self.PlotPartialMultiEfficiency(resp)
 
@@ -355,8 +354,8 @@ class DMesonJetResponseEngine:
         comp.fDoSpectraPlot = "lineary"
         comp.fDoRatioPlot = "lineary"
 
-        colors = [ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kMagenta + 2, ROOT.kAzure + 2, ROOT.kPink + 2, ROOT.kBlack]
-        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kFullCross, ROOT.kOpenCircle]
+        colors = [ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2, ROOT.kBlack]
+        markers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kFullCross, ROOT.kMultiply, ROOT.kPlus, ROOT.kOpenCircle]
         comp.fColors = colors[:len(histList) - 1] + colors[-1:]
         comp.fMarkers = markers[:len(histList) - 1] + markers[-1:]
 
