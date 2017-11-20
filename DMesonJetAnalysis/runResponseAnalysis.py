@@ -11,7 +11,8 @@ import ROOT
 
 globalList = []
 
-def main(config, maxEvents, suffix, format, doNotAsk):
+def main(config, maxEvents, suffix, format, doNotAsk, bg):
+    if bg: ROOT.gROOT.SetBatch(True)
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -52,13 +53,15 @@ if __name__ == '__main__':
                         default="pdf")
     parser.add_argument('-y', metavar='y', help='Does not stop before starting each analysis cycle',
                         action='store_const', default=False, const=True)
+    parser.add_argument('-b', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.suffix, args.format, args.y)
+    main(config, args.events, args.suffix, args.format, args.y, args.b)
 
     IPython.embed()
 
