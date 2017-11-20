@@ -16,7 +16,8 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
-def main(config, maxEvents, format, gen, proc, ts, stage, ask):
+def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
+    if bg: ROOT.gROOT.SetBatch(True)
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -93,12 +94,14 @@ if __name__ == '__main__':
                         default=-1, type=int)
     parser.add_argument('-a', metavar='a', help='Ask before starting each analysis cycle',
                         action='store_const', default=False, const=True)
+    parser.add_argument('-b', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.a)
+    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.a, args.b)
 
     IPython.embed()
