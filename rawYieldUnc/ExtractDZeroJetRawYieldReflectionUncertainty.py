@@ -143,6 +143,9 @@ def main(config, b, debug):
                 spectrum_name = "{}_{}".format(cuts, spectrum["name"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
                 if spectrum["type"] == "inv_mass_fit":
+                    if binlist_axis[0] != "jet_pt":
+                        print("For the invmassfit method the bin list axis must be jet_pt (it is {}, spectrum {})".format(binlist_axis[0], spectrum["name"]))
+                        exit(1)
                     method = ROOT.AliDJetRawYieldUncertainty.kEffScale
                     spectrum_axis = binlist_axis
                     if "efficiency" in binlist:
@@ -166,9 +169,9 @@ def main(config, b, debug):
                 else:
                     print("Method '{}' not known!".format(spectrum["type"]))
                     exit(1)
-                if binlist_axis[0] != "jet_pt":
+                if binlist_axis[0] == "jet_pt":
                     jetpt_bins = binlist_axis[1]
-                elif spectrum_axis[0] != "jet_pt":
+                elif spectrum_axis[0] == "jet_pt":
                     jetpt_bins = spectrum_axis[1]
                 else:
                     jetpt_bins = ExtractDZeroJetRawYieldUncertainty.GetLimits("jet", "fPt", binlist["cuts"])
@@ -179,6 +182,7 @@ def main(config, b, debug):
 
                 print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
                 print("D pt bins: {0}".format(", ".join([str(v) for v in dpt_bins])))
+                print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
                 for minPt, maxPt in zip(bins[:-1], bins[1:]):
                     interface = EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt)
                     rawYieldUnc.append(interface)
