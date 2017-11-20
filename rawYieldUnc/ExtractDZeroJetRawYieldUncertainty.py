@@ -293,9 +293,16 @@ def GetLimits(obj, var, cuts):
             if "min" in cut and "max" in cut:
                 result = [cut["min"], cut["max"]]
                 break
+            elif "min" in cut and not "max" in cut:
+                if var == "fPt":
+                    result = [cut["min"], 30]
+                    break
+                elif var == "fZ":
+                    result = [cut["min"], 1.0001]
+                    break
     if not result:
-        # fall back to a standard range
-        result = [2, 30]
+        print("GetLimits called with {}, {}, {}. Error.".format(obj, var, cuts))
+        exit(1)
 
     return result
 
@@ -341,6 +348,9 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                 spectrum_name = "{}_{}".format(cuts, spectrum["name"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
                 if spectrum["type"] == "inv_mass_fit":
+                    if binlist_axis[0] != "jet_pt":
+                        print("For the invmassfit method the bin list axis must be jet_pt (it is {}, spectrum {})".format(binlist_axis[0], spectrum["name"]))
+                        exit(1)
                     method = ROOT.AliDJetRawYieldUncertainty.kEffScale
                     spectrum_axis = binlist_axis
                     if "efficiency" in binlist:
@@ -364,9 +374,9 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                 else:
                     print("Method '{}' not known!".format(spectrum["type"]))
                     exit(1)
-                if binlist_axis[0] != "jet_pt":
+                if binlist_axis[0] == "jet_pt":
                     jetpt_bins = binlist_axis[1]
-                elif spectrum_axis[0] != "jet_pt":
+                elif spectrum_axis[0] == "jet_pt":
                     jetpt_bins = spectrum_axis[1]
                 else:
                     jetpt_bins = GetLimits("jet", "fPt", binlist["cuts"])
@@ -377,6 +387,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
 
                 print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
                 print("D pt bins: {0}".format(", ".join([str(v) for v in dpt_bins])))
+                print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
                 if not skip_binbybin and not reuse_binbybin:
                     for minPt, maxPt in zip(bins[:-1], bins[1:]):
                        interface = EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt, refl, single_trial)
