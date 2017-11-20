@@ -172,7 +172,7 @@ class RawYieldSpectrumLoader:
             exit(1)
         else:
             print("File {0} open successfully".format(fname))
-        hname = "f{var}SpectrSBDef".format(var=var)
+        hname = "f{var}SpectrSBDef".format(var=var.replace("Z", "z"))
         h = file.Get(hname)
         if not h:
             print("Could not find histogram {0} in file {1}".format(hname, fname))

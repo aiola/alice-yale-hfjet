@@ -286,7 +286,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
 
 def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
     var = var.replace("Z", "z")
-    spectrumName = "{}Spectrum".format(var)
+    spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
     inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
 
     fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_AfterDbinSum.root".format(input_path=input_path, train=train, ana=ana, var=var, spectrum_name=inputSpectrumName)
@@ -343,15 +343,15 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
 
 def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
     var = var.replace("Z", "z")
-    spectrumName = "{}Spectrum".format(var)
+    spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
     inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
 
     for ibin in range(0, 5):
         fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin, spectrum_name=inputSpectrumName)
+        if not os.path.isfile(fname): continue
         file = ROOT.TFile(fname)
         canvas = file.Get("cDistr_Dzero_SideBand_{0}".format(ibin))
         file.ls()
-        canvas.Dump()
         histos = []
         for obj in canvas.GetListOfPrimitives():
             if isinstance(obj, ROOT.TH1):
@@ -399,7 +399,7 @@ def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
 
 def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts):
     variable = variable.replace("Z", "z")
-    spectrumName = "{}Spectrum".format(variable)
+    spectrumName = "{}Spectrum".format(variable.replace("z", "Z"))
     inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
 
     reflVar = ["DoubleGaus_15", "DoubleGaus_5", "gaus", "pol3", "pol6"]
@@ -407,6 +407,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts):
         histos = []
         for variation in reflVar:
             fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_{variation}/{spectrum_name}_TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, variation=variation, spectrum_name=inputSpectrumName)
+            if not os.path.isfile(fname): continue
             file = ROOT.TFile(fname)
             hname = "hjet{0}".format(ibin)
             h = file.Get(hname)
@@ -423,6 +424,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts):
             file.Close()
             histos.append(h_copy)
         fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, spectrum_name=inputSpectrumName)
+        if not os.path.isfile(fname): continue
         file = ROOT.TFile(fname)
         hname = "hjet{0}".format(ibin)
         baseline = file.Get(hname)
