@@ -178,8 +178,9 @@ class DMesonJetResponseEngine:
             comp.fDoSpectraPlot = "lineary"
             comp.fDoRatioPlot = False
             comp.fColors = [ROOT.kBlue + 2, ROOT.kRed + 2]
-            comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare]
+            comp.fMarkers = [ROOT.kFullCircle, ROOT.kOpenSquare]
             comp.fMinimumLimit = float("-inf")
+            comp.fOptSpectrum = "e0"
 
             hMean = resp.fEnergyScaleShift.Clone("{}_copy".format(resp.fEnergyScaleShift.GetName()))
             globalList.append(hMean)
@@ -324,7 +325,7 @@ class DMesonJetResponseEngine:
             h.GetZaxis().SetLabelOffset(0.009)
             h.GetZaxis().SetLabelSize(19)
             c.Update()
-            if h.GetZaxis().GetXmax() > 1.5: h.GetXaxis().SetRangeUser(h.GetZaxis().GetXmin(), 1.5)
+            if h.GetZaxis().GetXmax() > 1.5: h.SetMaximum(1.5)
 
             self.PlotPartialMultiEfficiency(resp)
 
@@ -366,8 +367,11 @@ class DMesonJetResponseEngine:
         comp.fCanvasRatio.SetGridx()
         comp.fCanvasRatio.SetGridy()
 
-        if comp.fCanvasSpectra.GetUymax() > 1.5: comp.fMainHistogram.GetYaxis().SetRangeUser(comp.fCanvasSpectra.GetUymin(), 1.5)
-        if comp.fCanvasRatio.GetUymax() > 1.5: comp.fMainRatioHistogram.GetYaxis().SetRangeUser(comp.fCanvasRatio.GetUymin(), 1.5)
+        comp.fCanvasSpectra.Update()
+        comp.fCanvasRatio.Update()
+
+        if comp.fCanvasSpectra.GetUymax() > 1.5: comp.fMainHistogram.SetMaximum(1.5)
+        if comp.fCanvasRatio.GetUymax() > 1.5: comp.fMainRatioHistogram.SetMaximum(1.5)
 
         for obj in results:
             globalList.append(obj)
