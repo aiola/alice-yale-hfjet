@@ -59,6 +59,7 @@ class DMesonJetCompare:
         self.fDoSpectrumLegend = True
         self.fDoRatioLegend = True
         self.fUnits = ""
+        self.fMinimumLimit = 0
 
     def SetRatioRelativeUncertaintyFromHistogram(self, hist):
         self.fRatioRelativeUncertainty = hist.Clone("{0}_unc".format(hist.GetName()))
@@ -80,7 +81,7 @@ class DMesonJetCompare:
             print("Creating new canvas {0}".format(self.fName))
             self.fCanvasSpectra = ROOT.TCanvas(self.fName, self.fName)
 
-        if self.fDoSpectraPlot == "logy":
+        if self.fDoSpectraPlot == "logy" and self.fMinimumLimit >= 0:
             self.fCanvasSpectra.SetLogy()
 
         if self.fDoSpectrumLegend:
@@ -157,7 +158,7 @@ class DMesonJetCompare:
         if not self.fCanvasRatio:
             self.fCanvasRatio = ROOT.TCanvas(cname, cname)
         self.fCanvasRatio.cd()
-        if self.fDoRatioPlot == "logy":
+        if self.fDoRatioPlot == "logy" and self.fMinimumLimit >= 0:
             self.fCanvasRatio.SetLogy()
 
         n = len(self.fHistograms)
@@ -215,13 +216,13 @@ class DMesonJetCompare:
                     self.fMaxRatio = max(self.fMaxRatio, m)
 
     def PlotHistogram(self, color, marker, line, lwidth, h):
-        m = DMesonJetUtils.FindMinimum(h, 0., not "hist" in self.fOptSpectrum)
+        m = DMesonJetUtils.FindMinimum(h, self.fMinimumLimit, not "hist" in self.fOptSpectrum)
         if not m is None:
             if self.fMinSpectrum is None:
                 self.fMinSpectrum = m
             else:
                 self.fMinSpectrum = min(self.fMinSpectrum, m)
-        m = DMesonJetUtils.FindMaximum(h, 0., not "hist" in self.fOptSpectrum)
+        m = DMesonJetUtils.FindMaximum(h, self.fMinimumLimit, not "hist" in self.fOptSpectrum)
         if not m is None:
             if self.fMaxSpectrum is None:
                 self.fMaxSpectrum = m
@@ -305,13 +306,13 @@ class DMesonJetCompare:
         hRatio.Draw(self.fOptRatio)
         if not self.fMainRatioHistogram:
             self.fMainRatioHistogram = hRatio
-        m = DMesonJetUtils.FindMinimum(hRatio, 0., not "hist" in self.fOptRatio)
+        m = DMesonJetUtils.FindMinimum(hRatio, self.fMinimumLimit, not "hist" in self.fOptRatio)
         if not m is None:
             if self.fMinRatio is None:
                 self.fMinRatio = m
             else:
                 self.fMinRatio = min(self.fMinRatio, m)
-        m = DMesonJetUtils.FindMaximum(hRatio, 0., not "hist" in self.fOptRatio)
+        m = DMesonJetUtils.FindMaximum(hRatio, self.fMinimumLimit, not "hist" in self.fOptRatio)
         if not m is None:
             if self.fMaxRatio is None:
                 self.fMaxRatio = m
@@ -369,7 +370,7 @@ class DMesonJetCompare:
 
     def AdjustYLimits(self):
         if not self.fMaxRatio is None and not self.fMinRatio is None:
-            if self.fDoRatioPlot == "logy":
+            if self.fDoRatioPlot == "logy" and self.fMinimumLimit >= 0:
                 max = self.fMaxRatio * self.fLogUpperSpace
                 min = self.fMinRatio / self.fLogLowerSpace
             else:
@@ -382,7 +383,7 @@ class DMesonJetCompare:
             if self.fDoRatioLegend: self.fLegendRatio.Draw()
 
         if not self.fMaxSpectrum is None and not self.fMinSpectrum is None:
-            if self.fDoSpectraPlot == "logy":
+            if self.fDoSpectraPlot == "logy" and self.fMinimumLimit >= 0:
                 max = self.fMaxSpectrum * self.fLogUpperSpace
                 min = self.fMinSpectrum / self.fLogLowerSpace
             else:
