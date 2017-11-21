@@ -874,7 +874,14 @@ class DMesonJetAnalysisEngine:
 
         bin.fMassFitter.Draw("same");
 
-        chi2Text = bin.fMassFitter.GetChisquareString().Data()
+        w = bin.IsWeighted()
+
+        if w:
+            chi2Text = bin.fMassFitter.GetChisquareWString().Data()
+            signifText = bin.fMassFitter.GetSignificanceWString().Data()
+        else:
+            chi2Text = bin.fMassFitter.GetChisquareString().Data()
+            signifText = bin.fMassFitter.GetSignificanceString().Data()
 
         paveSig = ROOT.TPaveText(0.165, 0.795, 0.490, 0.92, "NB NDC")
         globalList.append(paveSig)
@@ -886,7 +893,7 @@ class DMesonJetAnalysisEngine:
         paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalString().Data(),
                                           bin.fMassFitter.GetBackgroundString().Data()))
         paveSig.AddText("{0}, {1}, {2}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(),
-                                          bin.fMassFitter.GetSignalOverSqrtSignalBackgroundString().Data(),
+                                          signifText,
                                           chi2Text))
         paveSig.Draw()
 

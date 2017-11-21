@@ -5,6 +5,7 @@ import array
 import copy
 import collections
 import numpy
+import math
 
 import ROOT
 
@@ -205,8 +206,16 @@ class BinLimits:
         self.fBinCountSpectra = None
         self.fCounts = 0
         self.fSumw2 = 0
+        self.fEntries = 0
+
+    def IsWeighted(self):
+        if math.fabs(self.fEntries - self.fCounts) < 1e-6:
+            return False
+        else:
+            return True
 
     def Fill(self, dmeson, jet, w):
+        self.fEntries += 1
         self.fCounts += w
         self.fSumw2 += w * w
         if self.fInvMassHisto:

@@ -254,10 +254,19 @@ Double_t MassFitter::GetSignalOverBackground() const
 }
 
 //____________________________________________________________________________________
-Double_t MassFitter::GetSignalOverSqrtSignalBackgorund() const
+Double_t MassFitter::GetSignificance() const
 {
   Double_t bkgSig = GetBackground(fDefaultNSigmas) + GetSignal();
   return bkgSig > fgkEpsilon ? fSignal/TMath::Sqrt(bkgSig) : 0;
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetSignificanceW() const
+{
+  Double_t bkg_err = GetBackgroundError(fDefaultNSigmas);
+  Double_t sig_err = GetSignalError();
+  Double_t bkg_sig_err = TMath::Sqrt(bkg_err*bkg_err + sig_err*sig_err);
+  return bkg_sig_err > fgkEpsilon ? fSignal/bkg_sig_err : 0;
 }
 
 //____________________________________________________________________________________
@@ -341,6 +350,26 @@ Double_t MassFitter::GetBackgroundError(Double_t sigmas) const
 }
 
 //____________________________________________________________________________________
+Double_t MassFitter::GetChisquare() const
+{
+  return fFunction->GetChisquare() / fFunction->GetNDF();
+}
+
+//____________________________________________________________________________________
+Double_t MassFitter::GetChisquareW() const
+{
+  Double_t chi2 = 0;
+  for (Int_t ibin = 1; ibin <= fHistogram->GetNbinsX(); ibin++) {
+    if (fHistogram->GetBinError(ibin) == 0 || fHistogram->GetBinContent(ibin) == 0) continue;
+    Double_t diff = fHistogram->GetBinContent(ibin) - fFunction->Eval(fHistogram->GetXaxis()->GetBinCenter(ibin));
+    chi2 += diff*diff / (fHistogram->GetBinError(ibin)*fHistogram->GetBinError(ibin));
+  }
+  Double_t red_chi2 = chi2 / fFunction->GetNDF();
+
+  return red_chi2;
+}
+
+//____________________________________________________________________________________
 TString MassFitter::GetSignalString() const
 {
   TString r = GetValueString(fSignal, fSignalError);
@@ -412,16 +441,32 @@ TString MassFitter::GetSignalOverBackgroundString() const
 }
 
 //____________________________________________________________________________________
-TString MassFitter::GetSignalOverSqrtSignalBackgroundString() const
+TString MassFitter::GetSignificanceString() const
 {
   TString r;
-  
-  Double_t v = GetSignalOverSqrtSignalBackgorund();
+
+  Double_t v = GetSignificance();
   Double_t vlog10 = v > 0 ? TMath::Log10(v) : 0;
   if (vlog10 > -1) vlog10 = -1;
 
   Int_t prec = TMath::CeilNint(-vlog10);
   r = Form("S/#sqrt{S+B}(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
+  r = Form(r.Data(), v);
+
+  return r;
+}
+
+//____________________________________________________________________________________
+TString MassFitter::GetSignificanceWString() const
+{
+  TString r;
+  
+  Double_t v = GetSignificanceW();
+  Double_t vlog10 = v > 0 ? TMath::Log10(v) : 0;
+  if (vlog10 > -1) vlog10 = -1;
+
+  Int_t prec = TMath::CeilNint(-vlog10);
+  r = Form("S/#sqrt{#DeltaS^{2}+#DeltaB^{2}}(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
   r = Form(r.Data(), v);
 
   return r;
@@ -554,7 +599,9 @@ TString MassFitter::GetBkgPar2String() const
 //____________________________________________________________________________________
 TString MassFitter::GetTotalEntriesString() const
 {
-  TString r = GetValueString(GetTotalEntries(), GetTotalEntriesError());
+  Double_t nentries = 0, err = 0;
+  nentries = GetTotalEntriesAndError(err);
+  TString r = GetValueString(nentries, err);
   r.Prepend("N=");
   return r;
 }
@@ -564,32 +611,31 @@ TString MassFitter::GetChisquareString() const
 {
   TString r;
   
-  Double_t v = fFunction->GetChisquare() / fFunction->GetNDF();
+  Double_t v = GetChisquare();
   r = Form("#chi^{2}/NdF=%.2f", v);
 
   return r;
 }
 
-
 //____________________________________________________________________________________
-Double_t MassFitter::GetTotalEntries() const
+TString MassFitter::GetChisquareWString() const
 {
-  if (!fHistogram) return 0;
+  TString r;
 
-  Double_t i = fHistogram->Integral(fHistogram->GetXaxis()->FindBin(fMinMass+fgkEpsilon), fHistogram->GetXaxis()->FindBin(fMaxMass-fgkEpsilon));
+  Double_t v = GetChisquareW();
+  r = Form("#chi^{2}_{w}/NdF=%.2f", v);
 
-  return i;
+  return r;
 }
 
 //____________________________________________________________________________________
-Double_t MassFitter::GetTotalEntriesError() const
+Double_t MassFitter::GetTotalEntriesAndError(Double_t& err) const
 {
   if (!fHistogram) return 0;
 
-  Double_t nentries = GetTotalEntries();
-  if (nentries <= 0.) return 0.;
+  Double_t i = fHistogram->IntegralAndError(fHistogram->GetXaxis()->FindBin(fMinMass+fgkEpsilon), fHistogram->GetXaxis()->FindBin(fMaxMass-fgkEpsilon), err);
 
-  return TMath::Sqrt(nentries);
+  return i;
 }
 
 //____________________________________________________________________________________

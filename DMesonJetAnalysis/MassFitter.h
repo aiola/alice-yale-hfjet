@@ -63,16 +63,20 @@ class MassFitter : public TNamed {
   Double_t GetBackgroundBinCount(Double_t minNSigmas,
       Double_t maxNSigmas)                           const { Double_t error = 0.; return GetBackgroundBinCountAndError(error, minNSigmas, maxNSigmas); }
   Double_t GetSignalOverBackground()                 const;
-  Double_t GetSignalOverSqrtSignalBackgorund()       const;
+  Double_t GetSignificance()                         const;
+  Double_t GetSignificanceW()                        const;
+  Double_t GetChisquare()                            const;
+  Double_t GetChisquareW()                           const;
 
-  Double_t GetTotalEntries()                         const;
-  Double_t GetTotalEntriesError()                    const;
+  Double_t GetTotalEntriesAndError(Double_t& err)    const;
 
   TString  GetSignalString()                         const;
   TString  GetBackgroundString()                     const;
   TString  GetSignalOverBackgroundString()           const;
-  TString  GetSignalOverSqrtSignalBackgroundString() const;
+  TString  GetSignificanceString()                   const;
+  TString  GetSignificanceWString()                  const;
   TString  GetChisquareString()                      const;
+  TString  GetChisquareWString()                     const;
   TString  GetSignalMeanString()                     const;
   TString  GetSignalWidthString()                    const;
   TString  GetBkgPar1String()                        const;
