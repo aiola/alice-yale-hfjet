@@ -400,6 +400,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                 print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
                 print("D pt bins: {0}".format(", ".join([str(v) for v in dpt_bins])))
                 print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
+
                 if not skip_binbybin and not reuse_binbybin:
                     for minPt, maxPt in zip(bins[:-1], bins[1:]):
                        interface = EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt, refl, single_trial)

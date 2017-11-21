@@ -20,9 +20,9 @@ globalList = []
 ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
-def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, debug=2):
+def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, debug=2):
     # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
-    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method, ptmin, ptmax)
+    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin, ptmax)
     interface.SetSaveInvMassFitCanvases(True)
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
@@ -70,8 +70,8 @@ def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, specie, method, debug=2):
-    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+def ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, debug=2):
+    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     interface.SetMaxNTrialsForSidebandMethod(0)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
 
@@ -139,6 +139,7 @@ def main(config, b, debug):
             if not "multitrial" in spectrum: continue
             for dmeson in spectrum["multitrial"]:
                 if not dmeson in ana["d_meson"]: continue
+                SBweigth = False
                 cuts = dmeson[3:]
                 spectrum_name = "{}_{}".format(cuts, spectrum["name"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
@@ -148,10 +149,10 @@ def main(config, b, debug):
                         exit(1)
                     method = ROOT.AliDJetRawYieldUncertainty.kEffScale
                     spectrum_axis = binlist_axis
+                    (dpt_bins, DMesonEff) = (ExtractDZeroJetRawYieldUncertainty.GetLimits("d", "fPt", binlist["cuts"]), None)
                     if "efficiency" in binlist:
-                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", None)
-                    else:
-                        (dpt_bins, DMesonEff) = (None, None)
+                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+
                 elif spectrum["type"] == "side_band":
                     if len(spectrum["axis"]) != 1:
                         print("Cannot process spectra with a number of axis different from 1 (found {}, spectrum name {}).".format(len(spectrum["axis"]), spectrum["name"]))
@@ -161,14 +162,23 @@ def main(config, b, debug):
                         exit(1)
                     method = ROOT.AliDJetRawYieldUncertainty.kSideband
                     spectrum_axis = spectrum["axis"].items()[0]
-                    dpt_bins = binlist_axis[1]
+                    (dpt_bins, DMesonEff) = (binlist_axis[1], None)
                     if "efficiency" in spectrum:
-                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
-                    else:
-                        (dpt_bins, DMesonEff) = (dpt_bins, None)
+                        (dpt_bins_eff, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+                        for dpt_1, dpt_2 in zip(dpt_bins, dpt_bins_eff):
+                            if math.fabs(dpt_1 - dpt_2) > 1e-6:
+                                print("Detected a mismatch between the efficiency pt bins and the spectrum pt bins")
+                                print(dpt_bins)
+                                print(dpt_bins_eff)
+                                exit(1)
+                    elif "efficiency" in binlist:
+                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+                        SBweigth = True
+
                 else:
                     print("Method '{}' not known!".format(spectrum["type"]))
                     exit(1)
+
                 if binlist_axis[0] == "jet_pt":
                     jetpt_bins = binlist_axis[1]
                 elif spectrum_axis[0] == "jet_pt":
@@ -183,10 +193,11 @@ def main(config, b, debug):
                 print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
                 print("D pt bins: {0}".format(", ".join([str(v) for v in dpt_bins])))
                 print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
+
                 for minPt, maxPt in zip(bins[:-1], bins[1:]):
-                    interface = EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt)
+                    interface = EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt)
                     rawYieldUnc.append(interface)
-                rawYieldUncSummary = ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method)
+                rawYieldUncSummary = ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method)
 
 if __name__ == '__main__':
 
