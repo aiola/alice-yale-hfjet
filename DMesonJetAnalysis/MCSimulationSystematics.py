@@ -180,8 +180,11 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name):
 def GenerateSystematicUncertainty(baseline, spectra):
     hname = baseline.GetName().replace("_copy", "")
     upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(hname), "{0}_UpperSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    upperLimitsHist.Sumw2()
     lowerLimitsHist = ROOT.TH1D("{0}_LowerSyst".format(hname), "{0}_LowerSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    lowerLimitsHist.Sumw2()
     symmetricLimitsHist = ROOT.TH1D("{0}_SymmSyst".format(hname), "{0}_SymmSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+    symmetricLimitsHist.Sumw2()
     relativeSystHist = ROOT.TH1D("{0}_RelSyst".format(hname), "{0}_RelSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     result = OrderedDict()
     result[upperLimitsHist.GetName()] = upperLimitsHist
@@ -190,15 +193,24 @@ def GenerateSystematicUncertainty(baseline, spectra):
     result[relativeSystHist.GetName()] = relativeSystHist
     for ibin in range(1, baseline.GetNbinsX() + 1):
         centralValue = baseline.GetBinContent(ibin)
+        centralValueErr2 = baseline.GetBinError(ibin) ** 2
         for var in spectra:
             diff = var.GetBinContent(ibin) - centralValue
+            diffErr = math.sqrt(var.GetBinError(ibin) ** 2 + centralValueErr2)
             if diff > upperLimitsHist.GetBinContent(ibin):
                 upperLimitsHist.SetBinContent(ibin, diff)
+                upperLimitsHist.SetBinError(ibin, diffErr)
                 print("Bin {0}, upper limit {1}".format(ibin, diff))
             if -diff > lowerLimitsHist.GetBinContent(ibin):
                 lowerLimitsHist.SetBinContent(ibin, -diff)
+                lowerLimitsHist.SetBinError(ibin, diffErr)
                 print("Bin {0}, lower limit {1}".format(ibin, -diff))
-        symmetricLimitsHist.SetBinContent(ibin, max(upperLimitsHist.GetBinContent(ibin), lowerLimitsHist.GetBinContent(ibin)))
+        if upperLimitsHist.GetBinContent(ibin) > lowerLimitsHist.GetBinContent(ibin):
+            symmetricLimitsHist.SetBinContent(ibin, upperLimitsHist.GetBinContent(ibin))
+            symmetricLimitsHist.SetBinError(ibin, upperLimitsHist.GetBinError(ibin))
+        else:
+            symmetricLimitsHist.SetBinContent(ibin, lowerLimitsHist.GetBinContent(ibin))
+            symmetricLimitsHist.SetBinError(ibin, lowerLimitsHist.GetBinError(ibin))
         if baseline.GetBinContent(ibin) != 0:
             relativeSystHist.SetBinContent(ibin, symmetricLimitsHist.GetBinContent(ibin) / baseline.GetBinContent(ibin))
     xArray = numpy.array([baseline.GetXaxis().GetBinCenter(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
