@@ -331,7 +331,7 @@ class RawYieldSpectrumLoader:
             print("Could not open file {0}".format(fname))
             file.ls()
             exit(1)
-        rySyst = file.Get("JetRawYieldUncert")
+        rySyst = file.Get("{}RawYieldUncert".format(var))
         if not rySyst:
             print("Could not find histogram {0} in file {1}".format("JetRawYieldUncert", fname))
             file.ls()
