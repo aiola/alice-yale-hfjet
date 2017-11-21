@@ -10,6 +10,7 @@ import numpy
 import os
 import shutil
 import glob
+import math
 
 import ROOT
 
@@ -18,12 +19,12 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
-def EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, refl=False, singleTrial=False, debug=2):
+def EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, refl=False, singleTrial=False, debug=2):
     # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     if singleTrial:
-        interface = GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method, ptmin, ptmax, refl)
+        interface = GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin, ptmax, refl)
     else:
-        interface = GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method, ptmin, ptmax, refl)
+        interface = GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin, ptmax, refl)
     if singleTrial: interface.SetSaveInvMassFitCanvases(True)
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
@@ -46,8 +47,8 @@ def EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_nam
     globalList.append(interface)
     return interface
 
-def ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, specie, method, single_trial, nTrials=100, allowRepet=False, debug=2):
-    interface = GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+def ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, single_trial, nTrials=100, allowRepet=False, debug=2):
+    interface = GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
     if single_trial: interface.SetMaxNTrialsForSidebandMethod(0)
@@ -69,6 +70,9 @@ def LoadEfficiency(config, eff_config, dmeson, jetName, dpt_bins):
     if not eff_config:
         print("No efficiency requested!")
         return (dpt_bins, None)
+
+    if dpt_bins:
+        print("LoadEfficiency: D pt range provided is {}".format(dpt_bins))
 
     # This is a temporary hack. The detector response analysis does not have an option for "no jet"
     if not jetName: jetName = "Jet_AKTChargedR040_pt_scheme"
@@ -99,29 +103,23 @@ def LoadEfficiency(config, eff_config, dmeson, jetName, dpt_bins):
     ibinDest = 0
     dpt_bins_dest = []
     for ibin in range(1, hist.GetNbinsX() + 1):
-        if dpt_bins and hist.GetXaxis().GetBinLowEdge(ibin) < dpt_bins[0]: continue
+        if dpt_bins:
+            if hist.GetXaxis().GetBinLowEdge(ibin) < dpt_bins[0]: continue
+            if hist.GetXaxis().GetBinLowEdge(ibin) >= dpt_bins[-1]: continue
         eff_values.append(hist.GetBinContent(ibin))
         dpt_bins_dest.append(hist.GetXaxis().GetBinLowEdge(ibin))
-        if dpt_bins:
-            print("Copying efficiency {0} from bin {1},{2} to bin {3}, {4}".format(hist.GetBinContent(ibin),
-                                                                                   hist.GetXaxis().GetBinLowEdge(ibin),
-                                                                                   hist.GetXaxis().GetBinUpEdge(ibin),
-                                                                                   dpt_bins[ibinDest],
-                                                                                   dpt_bins[ibinDest + 1]))
-        else:
-            print("Efficiency {0} for bin {1},{2}".format(hist.GetBinContent(ibin),
-                                                          hist.GetXaxis().GetBinLowEdge(ibin),
-                                                          hist.GetXaxis().GetBinUpEdge(ibin)))
+        print("Efficiency {0} for bin {1},{2}".format(hist.GetBinContent(ibin),
+                                                      hist.GetXaxis().GetBinLowEdge(ibin),
+                                                      hist.GetXaxis().GetBinUpEdge(ibin)))
         ibinDest += 1
-        if dpt_bins and ibinDest + 1 >= len(dpt_bins): break
     dpt_bins_dest.append(hist.GetXaxis().GetBinUpEdge(ibin))
     return (dpt_bins_dest, eff_values)
 
-def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
+def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
     # Dzero cfg
     ana = config["analysis"][0]
 
-    chi2cut = 3
+    chi2cut = 3000
     meansigmaVar = [True, True, True, True, True, True]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
     bkgVar = [True, True, True, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
     rebinStep = [1, 2]
@@ -173,6 +171,7 @@ def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name,
     if spectrum_axis[0] != "jet_pt" and binlist_axis[0] != "jet_pt":
         interface.SetJetPtBins(len(jetpt_bins) - 1, numpy.array(jetpt_bins, dtype=numpy.float64))
 
+    interface.SetDmesonPtBinsForEff(len(dpt_bins) - 1, numpy.array(dpt_bins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
     interface.SetUseBkgInBinEdges(False)
     interface.SetSigmaForSignalRegion(2)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
@@ -186,6 +185,7 @@ def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name,
     interface.SetMaxMassSteps(len(maxMassStep), numpy.array(maxMassStep, dtype=numpy.float64))
     interface.SetSigmaBinCounting(len(nSigmasBC), numpy.array(nSigmasBC, dtype=numpy.float64))
     interface.SetMaskOfVariations(len(mask), numpy.array(mask, dtype=bool))
+    interface.SetEfficiencyWeightSB(SBweigth)
 
     interface.SetDmesonSpecie(specie)
 
@@ -195,11 +195,11 @@ def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name,
         interface.SetFitReflections(False)
     return interface
 
-def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
+def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
     # Dzero cfg
     ana = config["analysis"][0]
 
-    chi2cut = 3
+    chi2cut = 3000
     meansigmaVar = [False, False, False, True, False, False]  # set mean/sigma variations: fixedS, fixedS+15%, fixedS+15%, freeS&M, freeS/fixedM, fixedS&M
     bkgVar = [True, False, False, False, False, False, False, False]  # set bgk variations: exp, lin, pol2, pol3, pol4, pol5, PowLaw, PowLaw*Exp
     rebinStep = [1]
@@ -246,6 +246,7 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, bi
     if spectrum_axis[0] != "jet_pt" and binlist_axis[0] != "jet_pt":
         interface.SetJetPtBins(len(jetpt_bins) - 1, numpy.array(jetpt_bins, dtype=numpy.float64))
 
+    interface.SetDmesonPtBinsForEff(len(dpt_bins) - 1, numpy.array(dpt_bins, dtype=numpy.float64))
     interface.SetDmesonEfficiency(numpy.array(DMesonEff))
     interface.SetUseBkgInBinEdges(False)
     interface.SetSigmaForSignalRegion(2.)  # only for SB method: sigma range of signal region (usually 3 sigma, also 2 is fine if low S/B)
@@ -261,6 +262,7 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, bi
     interface.SetMaskOfVariations(len(mask), numpy.array(mask, dtype=bool))
 
     interface.SetDmesonSpecie(specie)
+    interface.SetEfficiencyWeightSB(SBweigth)
 
     if refl and config["reflection_templates"]:  # ATTENTION: the histograms to be set are pT-dependent!!
         SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc)
@@ -344,6 +346,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
             if not "multitrial" in spectrum: continue
             for dmeson in spectrum["multitrial"]:
                 if not dmeson in ana["d_meson"]: continue
+                SBweigth = False
                 cuts = dmeson[3:]
                 spectrum_name = "{}_{}".format(cuts, spectrum["name"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
@@ -353,10 +356,10 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                         exit(1)
                     method = ROOT.AliDJetRawYieldUncertainty.kEffScale
                     spectrum_axis = binlist_axis
+                    (dpt_bins, DMesonEff) = (GetLimits("d", "fPt", binlist["cuts"]), None)
                     if "efficiency" in binlist:
-                        (dpt_bins, DMesonEff) = LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", None)
-                    else:
-                        (dpt_bins, DMesonEff) = (None, None)
+                        (dpt_bins, DMesonEff) = LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+
                 elif spectrum["type"] == "side_band":
                     if len(spectrum["axis"]) != 1:
                         print("Cannot process spectra with a number of axis different from 1 (found {}, spectrum name {}).".format(len(spectrum["axis"]), spectrum["name"]))
@@ -366,14 +369,23 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                         exit(1)
                     method = ROOT.AliDJetRawYieldUncertainty.kSideband
                     spectrum_axis = spectrum["axis"].items()[0]
-                    dpt_bins = binlist_axis[1]
+                    (dpt_bins, DMesonEff) = (binlist_axis[1], None)
                     if "efficiency" in spectrum:
-                        (dpt_bins, DMesonEff) = LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
-                    else:
-                        (dpt_bins, DMesonEff) = (dpt_bins, None)
+                        (dpt_bins_eff, DMesonEff) = LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+                        for dpt_1, dpt_2 in zip(dpt_bins, dpt_bins_eff):
+                            if math.fabs(dpt_1 - dpt_2) > 1e-6:
+                                print("Detected a mismatch between the efficiency pt bins and the spectrum pt bins")
+                                print(dpt_bins)
+                                print(dpt_bins_eff)
+                                exit(1)
+                    elif "efficiency" in binlist:
+                        (dpt_bins, DMesonEff) = LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+                        SBweigth = True
+
                 else:
                     print("Method '{}' not known!".format(spectrum["type"]))
                     exit(1)
+
                 if binlist_axis[0] == "jet_pt":
                     jetpt_bins = binlist_axis[1]
                 elif spectrum_axis[0] == "jet_pt":
@@ -390,9 +402,9 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                 print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
                 if not skip_binbybin and not reuse_binbybin:
                     for minPt, maxPt in zip(bins[:-1], bins[1:]):
-                       interface = EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt, refl, single_trial)
+                       interface = EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt, refl, single_trial)
                        rawYieldUnc.append(interface)
-                if not skip_combine: rawYieldUncSummary = ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, single_trial)
+                if not skip_combine: rawYieldUncSummary = ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, single_trial)
 
     if not do_not_move:
         MoveFiles(outputPath, "root")
