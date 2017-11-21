@@ -81,9 +81,6 @@ class DMesonJetCompare:
             print("Creating new canvas {0}".format(self.fName))
             self.fCanvasSpectra = ROOT.TCanvas(self.fName, self.fName)
 
-        if self.fDoSpectraPlot == "logy" and self.fMinimumLimit >= 0:
-            self.fCanvasSpectra.SetLogy()
-
         if self.fDoSpectrumLegend:
             if self.fDoSpectrumLegend == "stat": self.fLegLineHeight *= 2
             if self.fLegendSpectra:
@@ -140,13 +137,13 @@ class DMesonJetCompare:
             self.fMainHistogram = self.fBaselineHistogram
         self.fBaselineForRatio = self.fBaselineHistogram.Clone("{0}_copy".format(self.fBaselineHistogram.GetName()))
 
-        m = DMesonJetUtils.FindMinimum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrumBaseline)
+        m = DMesonJetUtils.FindMinimum(self.fBaselineHistogram, self.fMinimumLimit, not "hist" in self.fOptSpectrumBaseline)
         if not m is None:
             if self.fMinSpectrum is None:
                 self.fMinSpectrum = m
             else:
                 self.fMinSpectrum = min(self.fMinSpectrum, m)
-        m = DMesonJetUtils.FindMaximum(self.fBaselineHistogram, 0., not "hist" in self.fOptSpectrumBaseline)
+        m = DMesonJetUtils.FindMaximum(self.fBaselineHistogram, self.fMinimumLimit, not "hist" in self.fOptSpectrumBaseline)
         if not m is None:
             if self.fMaxSpectrum is None:
                 self.fMaxSpectrum = m
@@ -158,8 +155,6 @@ class DMesonJetCompare:
         if not self.fCanvasRatio:
             self.fCanvasRatio = ROOT.TCanvas(cname, cname)
         self.fCanvasRatio.cd()
-        if self.fDoRatioPlot == "logy" and self.fMinimumLimit >= 0:
-            self.fCanvasRatio.SetLogy()
 
         n = len(self.fHistograms)
         if self.fRatioRelativeUncertainty or self.fSeparateBaselineUncertainty: n += 1
@@ -202,13 +197,13 @@ class DMesonJetCompare:
                 self.fOptRatio += "same"
             if not self.fMainRatioHistogram:
                 self.fMainRatioHistogram = h
-            m = DMesonJetUtils.FindMinimum(h, 0., True)
+            m = DMesonJetUtils.FindMinimum(h, self.fMinimumLimit, True)
             if not m is None:
                 if self.fMinRatio is None:
                     self.fMinRatio = m
                 else:
                     self.fMinRatio = min(self.fMinRatio, m)
-            m = DMesonJetUtils.FindMaximum(h, 0., True)
+            m = DMesonJetUtils.FindMaximum(h, self.fMinimumLimit, True)
             if not m is None:
                 if self.fMaxRatio is None:
                     self.fMaxRatio = m
@@ -369,31 +364,41 @@ class DMesonJetCompare:
         if self.fRatioRelativeUncertainty: self.fResults.append(self.fRatioRelativeUncertainty)
 
     def AdjustYLimits(self):
-        if not self.fMaxRatio is None and not self.fMinRatio is None:
-            if self.fDoRatioPlot == "logy" and self.fMinimumLimit >= 0:
+        if not self.fMaxRatio is None and not self.fMinRatio is None and self.fDoRatioPlot:
+            if self.fMinRatio <= 0 and self.fDoRatioPlot == "logy":
+                print("{}: requested logy ratio, but minimum is <= 0. Switching to linear scale.".format(self.fName))
+                self.fDoRatioPlot = "lineary"
+            if self.fDoRatioPlot == "logy":
                 max = self.fMaxRatio * self.fLogUpperSpace
                 min = self.fMinRatio / self.fLogLowerSpace
+                self.fCanvasRatio.SetLogy()
             else:
                 max = self.fMaxRatio + (self.fMaxRatio - self.fMinRatio) * self.fLinUpperSpace
                 min = self.fMinRatio - (self.fMaxRatio - self.fMinRatio) * self.fLinLowerSpace
-            if min < 0 and self.fMinRatio >= 0: min = 0
+                if min < 0 and self.fMinRatio > 0: min = 0
             self.fMainRatioHistogram.SetMinimum(min)
             self.fMainRatioHistogram.SetMaximum(max)
-            self.fCanvasRatio.cd()
-            if self.fDoRatioLegend: self.fLegendRatio.Draw()
+            if self.fDoRatioLegend:
+                self.fCanvasRatio.cd()
+                self.fLegendRatio.Draw()
 
-        if not self.fMaxSpectrum is None and not self.fMinSpectrum is None:
-            if self.fDoSpectraPlot == "logy" and self.fMinimumLimit >= 0:
+        if not self.fMaxSpectrum is None and not self.fMinSpectrum is None and self.fDoSpectraPlot:
+            if self.fMinSpectrum <= 0 and self.fDoSpectraPlot == "logy":
+                print("{}: requested logy spectra, but minimum is <= 0. Switching to linear scale.".format(self.fName))
+                self.fDoSpectraPlot = "lineary"
+            if self.fDoSpectraPlot == "logy":
                 max = self.fMaxSpectrum * self.fLogUpperSpace
                 min = self.fMinSpectrum / self.fLogLowerSpace
+                self.fCanvasSpectra.SetLogy()
             else:
                 max = self.fMaxSpectrum + (self.fMaxSpectrum - self.fMinSpectrum) * self.fLinUpperSpace
                 min = self.fMinSpectrum - (self.fMaxSpectrum - self.fMinSpectrum) * self.fLinLowerSpace
-            if min < 0 and self.fMinSpectrum >= 0: min = 0
+                if min < 0 and self.fMinSpectrum > 0: min = 0
             self.fMainHistogram.SetMinimum(min)
             self.fMainHistogram.SetMaximum(max)
-            self.fCanvasSpectra.cd()
-            if self.fDoSpectrumLegend: self.fLegendSpectra.Draw()
+            if self.fDoSpectrumLegend:
+                self.fCanvasSpectra.cd()
+                self.fLegendSpectra.Draw()
 
     def CheckConsistency(self, h1, h2):
         if h1.GetNbinsX() != h2.GetNbinsX(): return False
