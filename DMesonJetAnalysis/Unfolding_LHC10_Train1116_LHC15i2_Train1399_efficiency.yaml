@@ -28,14 +28,14 @@ analysis:
   methods:
     Svd:
       default_reg:
-        ResponseTruth: 5
-        PowerLaw_3: 5
-        PowerLaw_7: 5
+        ResponseTruth: 6
+        PowerLaw_3: 6
+        PowerLaw_7: 6
     Bayes:
       default_reg:
-        ResponseTruth: 3
-        PowerLaw_3: 3
-        PowerLaw_7: 3
+        ResponseTruth: 4
+        PowerLaw_3: 4
+        PowerLaw_7: 4
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -57,19 +57,15 @@ analysis:
   d_meson_response: Prompt_D0_D0toKpiCuts_D0JetOptimLowJetPtv4
   spectrum_response: JetZSpectrum_DPt_20_JetPt_5_15
   default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  priors: [ResponseTruth]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 5
-        PowerLaw_3: 5
-        PowerLaw_7: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_3: 3
-        PowerLaw_7: 3
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -91,19 +87,15 @@ analysis:
   d_meson_response: Prompt_D0_D0toKpiCuts_D0JetOptimHighJetPtv4
   spectrum_response: JetZSpectrum_DPt_60_JetPt_15_30
   default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
+  priors: [ResponseTruth]
   default_method: Svd
   methods:
     Svd:
       default_reg:
         ResponseTruth: 5
-        PowerLaw_3: 5
-        PowerLaw_7: 5
     Bayes:
       default_reg:
         ResponseTruth: 3
-        PowerLaw_3: 3
-        PowerLaw_7: 3
       iter_min: 1
       iter_max: 6
       iter_step: 1
