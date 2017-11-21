@@ -686,7 +686,6 @@ class DMesonJetUnfoldingEngine:
         c = ROOT.TCanvas(cname, cname)
         self.fCanvases.append(c)
         c.cd()
-        c.SetLogy()
         globalList.append(c)
 
         leg = ROOT.TLegend(0.55, 0.70, 0.85, 0.87)
@@ -707,6 +706,7 @@ class DMesonJetUnfoldingEngine:
             truth.SetFillStyle(1001)
             truth.SetLineColor(ROOT.kOrange + 2)
             leg.AddEntry(truth, "Truth", "f")
+            if self.fTruthSpectrum.GetMinimum() > 0: c.SetLogy()
         else:
             truth = None
 
@@ -714,6 +714,7 @@ class DMesonJetUnfoldingEngine:
             meas = self.fInputSpectrum.DrawCopy("same")
         else:
             meas = self.fInputSpectrum.DrawCopy()
+            if self.fInputSpectrum.GetMinimum() > 0: c.SetLogy()
         globalList.append(meas)
         meas.SetName("{0}_{1}_{2}_{3}".format(meas, method, reg, prior))
         meas.SetMarkerStyle(ROOT.kFullCircle)
