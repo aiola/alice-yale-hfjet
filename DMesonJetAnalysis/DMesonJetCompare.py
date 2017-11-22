@@ -35,7 +35,6 @@ class DMesonJetCompare:
         self.fMinSpectrum = None
         self.fMaxRatio = None
         self.fMinRatio = None
-        self.fRatioRelativeUncertainty = None
         self.fResults = None
         self.fNColsLegRatio = 1
         self.fNColsLegSpectrum = 1
@@ -50,11 +49,14 @@ class DMesonJetCompare:
         self.fLinLowerSpace = 0.2  # this factor will be used to adjust the y axis in linear scale
         self.fLegTextSize = 20
         self.fLegLineHeight = 0.04
+
         self.fBaselineForRatio = None
         self.fSeparateBaselineUncertainty = False
         self.fNoErrorInBaseline = False
+        self.fRatioRelativeUncertainty = None
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
         self.fGridyRatio = False
+
         self.fFitFunction = "expo(0)+expo(2)"
         self.fDoSpectrumLegend = True
         self.fDoRatioLegend = True
@@ -315,7 +317,7 @@ class DMesonJetCompare:
                 self.fMaxRatio = max(self.fMaxRatio, m)
 
         if not "same" in self.fOptRatio:
-            self.fOptRatio += "same"
+            self.fOptRatio += " same"
 
     def CompareSpectra(self, baseline, histos):
         while len(histos) + 1 > len(self.fColors): self.fColors += random.sample(self.fColors[1:], len(self.fColors) - 1)
@@ -365,6 +367,7 @@ class DMesonJetCompare:
 
     def AdjustYLimits(self):
         if not self.fMaxRatio is None and not self.fMinRatio is None and self.fDoRatioPlot:
+            print("Adjusting y limits for Ratio")
             if self.fMinRatio <= 0 and self.fDoRatioPlot == "logy":
                 print("{}: requested logy ratio, but minimum is <= 0. Switching to linear scale.".format(self.fName))
                 self.fDoRatioPlot = "lineary"
@@ -376,6 +379,7 @@ class DMesonJetCompare:
                 max = self.fMaxRatio + (self.fMaxRatio - self.fMinRatio) * self.fLinUpperSpace
                 min = self.fMinRatio - (self.fMaxRatio - self.fMinRatio) * self.fLinLowerSpace
                 if min < 0 and self.fMinRatio > 0: min = 0
+            self.fMainRatioHistogram.GetYaxis().UnZoom()
             self.fMainRatioHistogram.SetMinimum(min)
             self.fMainRatioHistogram.SetMaximum(max)
             if self.fDoRatioLegend:
@@ -383,6 +387,7 @@ class DMesonJetCompare:
                 self.fLegendRatio.Draw()
 
         if not self.fMaxSpectrum is None and not self.fMinSpectrum is None and self.fDoSpectraPlot:
+            print("Adjusting y limits for Spectrum")
             if self.fMinSpectrum <= 0 and self.fDoSpectraPlot == "logy":
                 print("{}: requested logy spectra, but minimum is <= 0. Switching to linear scale.".format(self.fName))
                 self.fDoSpectraPlot = "lineary"
