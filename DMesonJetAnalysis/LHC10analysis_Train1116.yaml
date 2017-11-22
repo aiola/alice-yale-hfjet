@@ -84,7 +84,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency: no
     bins:
-      d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
     cuts:
     -
       object: jet
@@ -116,7 +116,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     efficiency: no
     bins:
-      d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
     cuts:
     -
       object: jet
@@ -189,7 +189,7 @@ analysis:
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
-        d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       side_band:
         min_sigmas: 4
         max_sigmas: 8
@@ -244,7 +244,7 @@ analysis:
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
       multitrial: [D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
       axis:
-        d_z: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       side_band:
         min_sigmas: 4
         max_sigmas: 8
