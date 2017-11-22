@@ -278,7 +278,7 @@ class DMesonJetCompare:
             print("Trying to fit histogram {0} with function {1}".format(h.GetName(), self.fFitFunction))
             hRatio = self.FitAndMakeConsistent(h, self.fBaselineForRatio)
             if not hRatio:
-                print("Fin unsuccessfull!")
+                print("Fit unsuccessfull!")
                 return
         hRatio.GetYaxis().SetTitle(self.fYaxisRatio)
         if not self.fBaselineRatio:
