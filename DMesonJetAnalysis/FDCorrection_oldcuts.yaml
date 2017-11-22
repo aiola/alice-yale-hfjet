@@ -1,4 +1,4 @@
-name: BFeedDown_1505317519_1399
+name: BFeedDown_1505317519_1399_oldcuts
 input_path: /Volumes/DATA/ALICE/JetResults
 generator: powheg+pythia6_beauty
 c_response:
@@ -11,34 +11,18 @@ spectra:
 -
   variable_name: DPt
   variable_title: "#it{p}_{T,D}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimLowJetPtv4"
+  d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: []
   jet_pt_cuts: [5, 30]
   d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 -
   variable_name: JetPt
   variable_title: "#it{p}_{T,ch jet}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimLowJetPtv4"
+  d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [2]
   jet_pt_cuts: []
   d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
   jet_pt_bins: [5, 6, 8, 10, 14, 20, 30]
--
-  variable_name: JetZ
-  variable_title: "#it{z}_{||,D}^{ch jet}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimLowJetPtv4"
-  d_pt_cuts: [2]
-  jet_pt_cuts: [5, 15]
-  d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-  d_z_bins: [0.2, 0.4, 0.6, 0.8, 1.0]
--
-  variable_name: JetZ
-  variable_title: "#it{z}_{||,D}^{ch jet}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimHighJetPtv4"
-  d_pt_cuts: [6]
-  jet_pt_cuts: [15, 30]
-  d_pt_bins: [6, 7, 8, 10, 12, 16, 30]
-  d_z_bins: [0.2, 0.4, 0.6, 0.8, 1.0]  
 variations:
 -
   name: default
