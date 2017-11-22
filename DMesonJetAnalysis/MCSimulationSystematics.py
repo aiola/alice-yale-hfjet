@@ -12,6 +12,7 @@ import DMesonJetUnfolding
 import DMesonJetUtils
 import DMesonJetCompare
 import copy
+import os
 from collections import OrderedDict
 
 globalList = []
@@ -55,17 +56,16 @@ def main(config, unfolding_debug):
         name = v["name"]
         suffix = "_".join([config["generator"], str(v["ts"])])
         input_file_name = "{0}/FastSim_{1}/FastSimAnalysis_Reduced_{1}.root".format(config["input_path"], suffix)
-        (FDhistogram_jetpt_orig, FDhistogram_jetz_l_orig, FDhistogram_jetz_h_orig, FDhistogram_dpt_orig) = LoadFDHistogram(input_file_name)
+        fd_histograms = LoadFDHistogram(input_file_name, config["spectra"])
         results[name] = OrderedDict()
-        results[name].update(PrepareFDhist_dpt(v["ts"], FDhistogram_dpt_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency))
-        results[name].update(PrepareFDhist_jetpt(v["ts"], FDhistogram_jetpt_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug))
-        results[name].update(PrepareFDhist_jetz_l(v["ts"], FDhistogram_jetz_l_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug))
-        results[name].update(PrepareFDhist_jetz_h(v["ts"], FDhistogram_jetz_h_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug))
+        for spectrum, hist_orig in zip(config["spectra"], fd_histograms):
+            results[name].update(PrepareFDhist(spectrum, v["ts"], hist_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug))
         robjects.append(GenerateRootList(results[name], name))
 
-    results["SystematicUncertainty"] = CompareVariations(config["variations"], results)
+    spectrum_names = GenerateSpectrumNames(config["spectra"])
+    results["SystematicUncertainty"] = CompareVariations(config["variations"], spectrum_names, results)
     robjects.append(GenerateRootList(results["SystematicUncertainty"], "SystematicUncertainty"))
-    PlotFSspectraAndSyst(results)
+    PlotFSspectraAndSyst(spectrum_names, results)
 
     output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
     outputFile = ROOT.TFile(output_file_name, "recreate")
@@ -80,30 +80,42 @@ def main(config, unfolding_debug):
 
     print("Done: {0}.".format(output_file_name))
 
-def PlotFSspectraAndSyst(results):
-    spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
-                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply",
-                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetPtSpectrum_DPt_20/GeneratorLevel_JetPtSpectrum",
-                     "JetPtSpectrum_DPt_20/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply",
-                     "JetPtSpectrum_DPt_20/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply",
-                     "JetPtSpectrum_DPt_20/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetPtSpectrum_DPt_20/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetPtSpectrum_DPt_20/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/GeneratorLevel_JetZSpectrum",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/DetectorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/Unfolded_c_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/GeneratorLevel_JetZSpectrum",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/DetectorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/Unfolded_c_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     ]
+def GenerateSpectrumNames(spectra):
+    no_unfolding = ["{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum",
+                    "{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum_bEfficiencyMultiply",
+                    "{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide"]
+    unfolding = ["{variable}Spectrum{kin_cuts}/DetectorLevel_{variable}Spectrum_bEfficiencyMultiply",
+                 "{variable}Spectrum{kin_cuts}/DetectorLevel_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide",
+                 "{variable}Spectrum{kin_cuts}/Unfolded_c_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide"]
+    spectra_names = []
+    for spectrum in spectra:
+        if len(spectrum["d_pt_cuts"]) > 1:
+            ptdmin = spectrum["d_pt_cuts"][0]
+            d_cuts = "_DPt_{}_{}".format(spectrum["d_pt_cuts"][0] * 10, spectrum["d_pt_cuts"][1] * 10)
+        elif len(spectrum["d_pt_cuts"]) == 1:
+            ptdmin = spectrum["d_pt_cuts"][0]
+            d_cuts = "_DPt_{}".format(int(ptdmin * 10))
+        else:
+            ptdmin = 0
+            d_cuts = ""
 
+        if len(spectrum["jet_pt_cuts"]) > 1:
+            jet_cuts = "_JetPt_{}_{}".format(spectrum["jet_pt_cuts"][0], spectrum["jet_pt_cuts"][1])
+        elif len(spectrum["jet_pt_cuts"]) == 1:
+            jet_cuts = "_JetPt_{}".format(spectrum["jet_pt_cuts"][0])
+        else:
+            jet_cuts = ""
+
+        kin_cuts = "{}{}".format(d_cuts, jet_cuts)
+
+        format_spectra_names = []
+        format_spectra_names.extend(no_unfolding)
+        if spectrum["variable_name"] != "DPt": format_spectra_names.extend(unfolding)
+        spectra_names.extend([sname.format(variable=spectrum["variable_name"], kin_cuts=kin_cuts) for sname in format_spectra_names])
+
+    return spectra_names
+
+def PlotFSspectraAndSyst(spectrumNames, results):
     for name in spectrumNames:
         stat = GetSpectrum(results["default"], name)
         if not stat: continue
@@ -236,7 +248,7 @@ def GenerateSystematicUncertainty(baseline, spectra):
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
     return result
 
-def CompareVariations(variations, results):
+def CompareVariations(variations, spectrumNames, results):
     comp_template = DMesonJetCompare.DMesonJetCompare("DMesonJetCompare")
     comp_template.fOptRatio = "hist"
     comp_template.fLogUpperSpace = 3
@@ -244,29 +256,6 @@ def CompareVariations(variations, results):
     comp_template.fX1LegRatio = 0.2
 
     result = OrderedDict()
-
-    spectrumNames = ["DPtSpectrum/GeneratorLevel_DPtSpectrum",
-                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply",
-                     "DPtSpectrum/GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetPtSpectrum_DPt_20/GeneratorLevel_JetPtSpectrum",
-                     "JetPtSpectrum_DPt_20/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply",
-                     "JetPtSpectrum_DPt_20/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply",
-                     "JetPtSpectrum_DPt_20/GeneratorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetPtSpectrum_DPt_20/DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetPtSpectrum_DPt_20/Unfolded_c_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/GeneratorLevel_JetZSpectrum",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/DetectorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_20_JetPt_5_15/Unfolded_c_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/GeneratorLevel_JetZSpectrum",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/DetectorLevel_JetZSpectrum_bEfficiencyMultiply",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/GeneratorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     "JetZSpectrum_DPt_60_JetPt_15_30/Unfolded_c_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide",
-                     ]
 
     for name in spectrumNames:
         if "JetZ" in name:
@@ -283,10 +272,13 @@ def CompareVariations(variations, results):
     return result
 
 def SaveCanvases(name, input_path):
+    path = "{}/{}".format(input_path, name)
+    if not os.path.exists(path):
+        os.makedirs(path)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             oname = obj.GetName().replace("/", "_")
-            obj.SaveAs("{0}/{1}_{2}.pdf".format(input_path, name, oname))
+            obj.SaveAs("{}/{}.pdf".format(path, oname))
 
 def GenerateRootList(pdict, name):
     rlist = ROOT.TList()
@@ -302,18 +294,38 @@ def GenerateRootList(pdict, name):
             print("Error: type of object {0} not recognized!".format(obj))
     return rlist
 
-def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency):
+def PrepareFDhist(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
+    if spectrum["variable_name"] == "DPt":
+        return PrepareFDhist_dpt(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency)
+    else:
+        return PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug)
+
+def PrepareFDhist_dpt(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency):
     print("Preparing D pt FD histograms")
+
+    if len(spectrum["jet_pt_cuts"]) > 1:
+        jet_cuts = "_JetPt_{}_{}".format(spectrum["jet_pt_cuts"][0], spectrum["jet_pt_cuts"][1])
+    elif len(spectrum["jet_pt_cuts"]) == 1:
+        jet_cuts = "_JetPt_{}".format(spectrum["jet_pt_cuts"][0])
+    else:
+        jet_cuts = ""
+
+    spectrum_name = "DPtSpectrum{}".format(jet_cuts)
+
+    dmeson = spectrum["d_meson"]
+    dmeson_prompt = "Prompt_{}".format(dmeson)
+    dmeson_nonprompt = "NonPrompt_{}".format(dmeson)
+
     result = OrderedDict()
 
     dpt = OrderedDict()
-    result["DPtSpectrum"] = dpt
+    result[spectrum_name] = dpt
 
     if bResponseFile or cResponseFile:
         responseList = OrderedDict()
         dpt["DetectorResponse"] = responseList
 
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    dptbins = spectrum["d_pt_bins"]
 
     print("Rebinning the FD original histogram")
     FDhistogram_orig = FDhistogram_old.Rebin(len(dptbins) - 1, FDhistogram_old.GetName(), array.array('d', dptbins))
@@ -322,7 +334,7 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
 
     if bResponseFile:
         print("Loading the response matrix b->D0")
-        temp, bEfficiency_dpt = LoadResponse(bResponseFile, "NonPrompt_D0_D0toKpiCuts_D0JetOptimLowJetPtv4", "DPtSpectrum_JetPt_5_30", "", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
+        temp, bEfficiency_dpt = LoadResponse(bResponseFile, dmeson_nonprompt, spectrum_name, "", "b", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
         bEfficiency_dpt.SetName("EfficiencyVsDPt_b")
         responseList[bEfficiency_dpt.GetName()] = bEfficiency_dpt
     else:
@@ -330,7 +342,7 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
 
     if cResponseFile:
         print("Loading the response matrix c->D0")
-        temp, cEfficiency_dpt = LoadResponse(cResponseFile, "Prompt_D0_D0toKpiCuts_D0JetOptimLowJetPtv4", "DPtSpectrum_JetPt_5_30", "", "c", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
+        temp, cEfficiency_dpt = LoadResponse(cResponseFile, dmeson_prompt, spectrum_name, "", "c", FDhistogram_orig.GetNbinsX(), FDhistogram_orig.GetXaxis().GetXbins().GetArray())
         cEfficiency_dpt.SetName("EfficiencyVsDPt_c")
         responseList[cEfficiency_dpt.GetName()] = cEfficiency_dpt
     else:
@@ -356,33 +368,45 @@ def PrepareFDhist_dpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bRespon
 
     return result
 
-def PrepareFDhist_jetpt(ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
-    jetptbins = [5, 6, 8, 10, 14, 20, 30]
-    return PrepareFDhist_jet("D0_D0toKpiCuts_D0JetOptimLowJetPtv4", "JetPt", jetptbins, 2, "", ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug)
-
-def PrepareFDhist_jetz_h(ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
-    jetzbins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-    return PrepareFDhist_jet("D0_D0toKpiCuts_D0JetOptimHighJetPtv4", "JetZ", jetzbins, 6, "_JetPt_15_30", ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug)
-
-def PrepareFDhist_jetz_l(ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
-    jetzbins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-    return PrepareFDhist_jet("D0_D0toKpiCuts_D0JetOptimLowJetPtv4", "JetZ", jetzbins, 2, "_JetPt_5_15", ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug)
-
-def PrepareFDhist_jet(dmeson, jet_var_name, jetxbins, ptdmin, jet_cuts, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
-    print("Preparing {} FD histograms".format(jet_var_name))
-    result = OrderedDict()
-
-    d_cuts = "_DPt_{}".format(int(ptdmin * 10))
-
+def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
+    dmeson = spectrum["d_meson"]
     dmeson_prompt = "Prompt_{}".format(dmeson)
     dmeson_nonprompt = "NonPrompt_{}".format(dmeson)
+    jet_var_name = spectrum["variable_name"]
+    if jet_var_name == "JetPt":
+        jetxbins = spectrum["jet_pt_bins"]
+    elif jet_var_name == "JetZ":
+        jetxbins = spectrum["d_z_bins"]
+    else:
+        print("Error: {} variable not known!".format(jet_var_name))
+        exit(1)
+
+    if len(spectrum["d_pt_cuts"]) > 1:
+        ptdmin = spectrum["d_pt_cuts"][0]
+        d_cuts = "_DPt_{}_{}".format(spectrum["d_pt_cuts"][0] * 10, spectrum["d_pt_cuts"][1] * 10)
+    elif len(spectrum["d_pt_cuts"]) == 1:
+        ptdmin = spectrum["d_pt_cuts"][0]
+        d_cuts = "_DPt_{}".format(int(ptdmin * 10))
+    else:
+        ptdmin = 0
+        d_cuts = ""
+
+    if len(spectrum["jet_pt_cuts"]) > 1:
+        jet_cuts = "_JetPt_{}_{}".format(spectrum["jet_pt_cuts"][0], spectrum["jet_pt_cuts"][1])
+    elif len(spectrum["jet_pt_cuts"]) == 1:
+        jet_cuts = "_JetPt_{}".format(spectrum["jet_pt_cuts"][0])
+    else:
+        jet_cuts = ""
+
+    dptbins = spectrum["d_pt_bins"]
+
+    print("Preparing {} FD histograms".format(jet_var_name))
+    result = OrderedDict()
 
     spectrum_2d_name = "{}DPtSpectrum".format(jet_var_name)
 
     jetxdpt = OrderedDict()
     result[spectrum_2d_name] = jetxdpt
-
-    dptbins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 
     if bResponseFile or cResponseFile:
         responseList = OrderedDict()
@@ -659,9 +683,17 @@ def LoadResponse(responseFile, dmeson, spectrumName, suffix_in, suffix_out, detA
     eff_coarse.Divide(truth_coarse)
     return resp_coarse, eff_coarse
 
-def LoadFDHistogram(file_name):
+def LoadFDHistogram(file_name, spectra):
     result = []
-    for jet_var_name, label, jet_cuts in zip(["JetPt", "JetZ", "JetZ", "DPt"], ["#it{p}_{T}", "#it{z}", "#it{z}", "#it{p}_{T}"], ["", "_JetPt_5_15", "_JetPt_15_30", "_JetPt_5_30"]):
+    for spectrum in spectra:
+        jet_var_name = spectrum["variable_name"]
+        if len(spectrum["jet_pt_cuts"]) > 1:
+            jet_cuts = "_JetPt_{}_{}".format(spectrum["jet_pt_cuts"][0], spectrum["jet_pt_cuts"][1])
+        elif len(spectrum["jet_pt_cuts"]) == 1:
+            jet_cuts = "_JetPt_{}".format(spectrum["jet_pt_cuts"][0])
+        else:
+            jet_cuts = ""
+        label = spectrum["variable_title"]
         if not jet_var_name == "DPt":
             spectrum_name = "{}DPtSpectrum{}".format(jet_var_name, jet_cuts)
         else:
@@ -685,7 +717,7 @@ def LoadFDHistogram(file_name):
             slist.Print()
             exit(1)
         jet_hist.GetZaxis().SetTitle("#frac{{d#sigma}}{{d{lab}}} #times #Delta{lab} (mb)".format(lab=label))
-        print("Histogram {} loaded".format(jet_hist))
+        print("Histogram {} loaded".format(jet_hist.GetName()))
         result.append(jet_hist)
 
     return result
