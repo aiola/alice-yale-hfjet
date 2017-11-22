@@ -22,18 +22,65 @@ def main(configs, name):
 
     CompareEfficiency_DMeson(configs, name)
     CompareEfficiency_Type(configs, name)
+    CompareEfficiency_Definitions(configs, name)
 
-def GetEfficiency(config, meson_name, jet_type, jet_radius):
+def GetEfficiency(config, meson_name, jet_type, jet_radius, spectrum="JetPtDPtSpectrum", suffix="_JetPt_500_3000"):
     fileName = "{0}/{1}/{2}.root".format(config["input_path"], config["train"], config["name"])
     file = ROOT.TFile(fileName)
     if not file or file.IsZombie():
         print("Could not open file '{}'".format(fileName))
         exit(1)
 
-    hname = "{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_JetPtDPtSpectrum/{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000".format(
-        meson_name=meson_name, jet_type=jet_type, jet_radius=jet_radius)
+    hname = "{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}/{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_{spectrum}_Efficiency{suffix}".format(
+        meson_name=meson_name, jet_type=jet_type, jet_radius=jet_radius, spectrum=spectrum, suffix=suffix)
     h = DMesonJetUtils.GetObject(file, hname)
     return h
+
+def CompareEfficiency_Definitions(configs, name):
+    print("CompareEfficiency_Definitions")
+    if not name: name = "Comparison_KineCuts"
+    input_path = configs[0]["input_path"]
+    efficiency_type = "Prompt"
+    print("Working on {}".format(efficiency_type))
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_30", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{ch jet} < 30 GeV/#it{c}"}]
+    for c in configs:
+        print("Working on {}".format(c["name"]))
+        if len(configs[0]["analysis"][0]["d_meson_cuts"]) < 2:
+            print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
+            continue
+        for jet in configs[0]["analysis"][0]["jets"]:
+            jet_type = jet["type"]
+            jet_radius = jet["radius"]
+            print("Working on jet {} {}".format(jet_type, jet_radius))
+            for meson_cuts in configs[0]["analysis"][0]["d_meson_cuts"]:
+                meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+                print("Working on D meson {}".format(meson_name))
+                histos = []
+                cname = "{}/{}/{}_{}_KinCuts".format(c["train"], c["name"], meson_cuts, name)
+                for definition in definitions:
+                    h = GetEfficiency(c, meson_name, jet_type, jet_radius, definition["spectrum"], definition["suffix"])
+                    if not h: continue
+                    h.SetTitle(definition["title"])
+                    globalList.append(h)
+                    histos.append(h)
+
+                if len(histos) < 2: continue
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                comp.fOptRatio = "hist"
+                comp.fX1LegRatio = 0.15
+                comp.fX1LegSpectrum = 0.25
+                comp.fLinUpperSpace = 0.4
+                comp.fGridyRatio = True
+                comp.fDoSpectraPlot = "lineary"
+                r = comp.CompareSpectra(histos[0], histos[1:])
+                for obj in r:
+                    if not obj in globalList:
+                        globalList.append(obj)
+
+                comp.fMainHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fMainRatioHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+                comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
 
 def CompareEfficiency_Type(configs, name):
     print("CompareEfficiency_DMeson")
