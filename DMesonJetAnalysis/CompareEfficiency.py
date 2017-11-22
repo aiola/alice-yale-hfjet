@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
+# python script to compare efficiencies
 
 import argparse
 import yaml
@@ -11,13 +11,17 @@ import DMesonJetUtils
 
 globalList = []
 
-
-def main(configs, meson_name, jet_type, jet_radius, raw, name):
+def main(configs, name):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    CompareEfficiency(configs, meson_name, jet_type, jet_radius, name)
+    print("{} configurations have been loaded".format(len(configs)))
+
+    if len(configs) > 1: CompareEfficiency_Trains(configs, name)
+
+    CompareEfficiency_DMeson(configs, name)
+    CompareEfficiency_Type(configs, name)
 
 def GetEfficiency(config, meson_name, jet_type, jet_radius):
     fileName = "{0}/{1}/{2}.root".format(config["input_path"], config["train"], config["name"])
@@ -26,59 +30,164 @@ def GetEfficiency(config, meson_name, jet_type, jet_radius):
         print("Could not open file '{}'".format(fileName))
         exit(1)
 
-    hname = "{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_JetPtDPtSpectrum_CoarseBins/{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_JetPtDPtSpectrum_CoarseBins_Efficiency_JetPt_500_3000".format(
+    hname = "{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_JetPtDPtSpectrum/{meson_name}_Jet_AKT{jet_type}{jet_radius}_pt_scheme_JetPtDPtSpectrum_Efficiency_JetPt_500_3000".format(
         meson_name=meson_name, jet_type=jet_type, jet_radius=jet_radius)
     h = DMesonJetUtils.GetObject(file, hname)
-    if not h:
-        print("Could not find histogram '{}'".format(hname))
-        exit(1)
     return h
 
-def CompareEfficiency(configs, meson_name, jet_type, jet_radius, name):
-    histos = []
+def CompareEfficiency_Type(configs, name):
+    print("CompareEfficiency_DMeson")
+    if not name: name = "Comparison"
+    input_path = configs[0]["input_path"]
+    efficiency_types = ["Prompt", "NonPrompt"]
+
     for c in configs:
-        input_path = c["input_path"]
-        h = GetEfficiency(c, meson_name, jet_type, jet_radius)
-        h.SetTitle(c["name"])
-        globalList.append(h)
-        histos.append(h)
+        print("Working on {}".format(c["name"]))
+        if len(configs[0]["analysis"][0]["d_meson_cuts"]) < 2:
+            print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
+            continue
+        for jet in configs[0]["analysis"][0]["jets"]:
+            jet_type = jet["type"]
+            jet_radius = jet["radius"]
+            print("Working on jet {} {}".format(jet_type, jet_radius))
+            cname = "{}/{}/{}_Prompt_NonPrompt".format(c["train"], c["name"], name)
+            comp = DMesonJetCompare.DMesonJetCompare(cname)
+            comp.fOptRatio = "hist"
+            comp.fX1LegRatio = 0.15
+            comp.fX1LegSpectrum = 0.25
+            comp.fLinUpperSpace = 0.45
+            comp.fGridyRatio = True
+            comp.fDoSpectraPlot = "lineary"
+            colors = [[ROOT.kOrange + 2, ROOT.kRed + 2], [ROOT.kGreen + 2, ROOT.kBlue + 2], [ROOT.kAzure + 2, ROOT.kCyan + 2]]
+            markers = [[ROOT.kOpenCircle, ROOT.kFullCircle], [ROOT.kOpenSquare, ROOT.kFullSquare], [ROOT.kOpenDiamond, ROOT.kFullDiamond]]
+            lines = [[2, 1], [9, 5], [7, 10]]
 
-    if name:
-        cname = name
-    else:
-        cname = "MyComparison"
+            for meson_cuts, cols, marks, lins in zip(configs[0]["analysis"][0]["d_meson_cuts"], colors, markers, lines):
+                histos = []
+                for efficiency_type in efficiency_types:
+                    print("Working on {}".format(efficiency_type))
+                    meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+                    print("Working on D meson {}".format(meson_name))
+                    h = GetEfficiency(c, meson_name, jet_type, jet_radius)
+                    if not h: continue
+                    h.SetBinContent(1, 0)
+                    h.SetBinContent(2, 0)
+                    h.SetTitle("{}, {}".format(meson_cuts, efficiency_type))
+                    globalList.append(h)
+                    histos.append(h)
 
-    comp = DMesonJetCompare.DMesonJetCompare(cname)
-    comp.fOptRatio = "hist"
-    comp.fX1LegRatio = 0.15
-    comp.fX1LegSpectrum = 0.25
-    comp.fLogUpperSpace = 5  # this factor will be used to adjust the y axis in log scale
-    comp.fLogLowerSpace = 1.5  # this factor will be used to adjust the y axis in log scale
-    comp.fLinUpperSpace = 0.45  # this factor will be used to adjust the y axis in linear scale
-    comp.fLinLowerSpace = 0.15  # this factor will be used to adjust the y axis in linear scale
-    comp.fGridyRatio = True
-    r = comp.CompareSpectra(histos[0], histos[1:])
-    for obj in r:
-        if not obj in globalList:
-            globalList.append(obj)
+                if len(histos) < 2: continue
+                comp.fColors = cols
+                comp.fMarkers = marks
+                comp.fLines = lins
+                r = comp.CompareSpectra(histos[0], histos[1:])
+                for obj in r:
+                    if not obj in globalList:
+                        globalList.append(obj)
+                if not "same" in comp.fOptSpectrumBaseline:
+                    comp.fOptSpectrumBaseline += " same"
 
-    if name:
-        comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
-        comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
+            comp.fMainHistogram.GetXaxis().SetRangeUser(2, 29.9)
+            comp.fMainRatioHistogram.GetXaxis().SetRangeUser(2, 29.9)
+            comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+            comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
+
+def CompareEfficiency_DMeson(configs, name):
+    print("CompareEfficiency_DMeson")
+    if not name: name = "Comparison"
+    input_path = configs[0]["input_path"]
+    efficiency_types = ["Prompt", "NonPrompt"]
+    for efficiency_type in efficiency_types:
+        print("Working on {}".format(efficiency_type))
+        for c in configs:
+            print("Working on {}".format(c["name"]))
+            if len(configs[0]["analysis"][0]["d_meson_cuts"]) < 2:
+                print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
+                continue
+            for jet in configs[0]["analysis"][0]["jets"]:
+                jet_type = jet["type"]
+                jet_radius = jet["radius"]
+                print("Working on jet {} {}".format(jet_type, jet_radius))
+                histos = []
+                cname = ""
+                for meson_cuts in configs[0]["analysis"][0]["d_meson_cuts"]:
+                    meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+                    print("Working on D meson {}".format(meson_name))
+                    h = GetEfficiency(c, meson_name, jet_type, jet_radius)
+                    if not h: continue
+                    h.SetTitle(meson_cuts)
+                    if cname: cname = "{}_{}".format(cname, meson_cuts)
+                    else: cname = meson_cuts
+                    globalList.append(h)
+                    histos.append(h)
+
+                if len(histos) < 2: continue
+                cname = "{}/{}/{}_{}_{}".format(c["train"], c["name"], name, efficiency_type, cname)
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                comp.fOptRatio = "hist"
+                comp.fX1LegRatio = 0.15
+                comp.fX1LegSpectrum = 0.25
+                comp.fLinUpperSpace = 0.4
+                comp.fGridyRatio = True
+                comp.fDoSpectraPlot = "lineary"
+                r = comp.CompareSpectra(histos[0], histos[1:])
+                for obj in r:
+                    if not obj in globalList:
+                        globalList.append(obj)
+
+                comp.fMainHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fMainRatioHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+                comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
+
+def CompareEfficiency_Trains(configs, name):
+    print("CompareEfficiency_Trains")
+    if not name: name = "Comparison"
+    input_path = configs[0]["input_path"]
+
+    efficiency_types = ["Prompt", "NonPrompt"]
+    for efficiency_type in efficiency_types:
+        for meson_cuts in configs[0]["analysis"][0]["d_meson_cuts"]:
+            meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+            for jet in configs[0]["analysis"][0]["jets"]:
+                jet_type = jet["type"]
+                jet_radius = jet["radius"]
+                histos = []
+                cname = ""
+                for c in configs:
+                    h = GetEfficiency(c, meson_name, jet_type, jet_radius)
+                    if not h: continue
+                    h.SetTitle(c["name"])
+                    if cname: cname = "{}_{}".format(cname, c["name"])
+                    else: cname = c["name"]
+                    globalList.append(h)
+                    histos.append(h)
+
+                if len(histos) < 2: continue
+                cname = "{}_{}_{}".format(name, efficiency_type, cname)
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                comp.fOptRatio = "hist"
+                comp.fX1LegRatio = 0.15
+                comp.fX1LegSpectrum = 0.25
+                comp.fLogUpperSpace = 5  # this factor will be used to adjust the y axis in log scale
+                comp.fLogLowerSpace = 1.5  # this factor will be used to adjust the y axis in log scale
+                comp.fLinUpperSpace = 0.45  # this factor will be used to adjust the y axis in linear scale
+                comp.fLinLowerSpace = 0.15  # this factor will be used to adjust the y axis in linear scale
+                comp.fGridyRatio = True
+                r = comp.CompareSpectra(histos[0], histos[1:])
+                for obj in r:
+                    if not obj in globalList:
+                        globalList.append(obj)
+
+                comp.fMainHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fMainRatioHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+                comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
+    parser = argparse.ArgumentParser(description='Compares efficiencies.')
     parser.add_argument('yaml', nargs='*',
                         help='List of YAML configuration files')
-    parser.add_argument('--meson', metavar='MESON',
-                        default="D0")
-    parser.add_argument('--jet-type', metavar='TYPE',
-                        default="Charged")
-    parser.add_argument('--jet-radius', metavar='RADIUS',
-                        default="R040")
-    parser.add_argument("--raw", action='store_const',
-                        default=False, const=True,
-                        help='Use raw yield (not unfolded).')
     parser.add_argument('--name', metavar='NAME',
                         default=None)
     args = parser.parse_args()
@@ -91,6 +200,6 @@ if __name__ == '__main__':
         f.close()
         configs.append(c)
 
-    main(configs, args.meson, args.jet_type, args.jet_radius, args.raw, args.name)
+    main(configs, args.name)
 
     IPython.embed()
