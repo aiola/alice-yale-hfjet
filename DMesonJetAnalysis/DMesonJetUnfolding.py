@@ -756,7 +756,7 @@ class DMesonJetUnfoldingEngine:
         cUOM.cd()
         globalList.append(cUOM)
         ratioUnfoldedOverMeas.Divide(meas)
-        ratioUnfoldedOverMeas.Draw()
+        ratioUnfoldedOverMeas.Draw("hist")
 
         # refolded/measured and unfolded/truth
         cnameROM = "{0}_UnfoldingSummary_{1}_RefoldedOverMeasured".format(self.fName, method)
