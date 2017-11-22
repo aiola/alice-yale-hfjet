@@ -1119,6 +1119,7 @@ class DMesonJetAnalysis:
         for spectrum_name in allSpectrumNames:
             logy = True
             spectraToCompare = []
+            uncToCompare = []
             for eng in self.fAnalysisEngine:
                 if "MCTruth" in eng.fDMeson: continue
                 for binList in binLists:
@@ -1144,17 +1145,49 @@ class DMesonJetAnalysis:
                         s_obj = binSet.fSpectra[sname]
                         if len(s_obj.fAxis) > 1: continue
                         if s_obj.fAxis[0].fName == "d_z": logy = False
+
                         h = s_obj.fNormHistogram
                         if not h: continue
                         h_copy = h.Clone("{0}_copy".format(h.GetName()))
                         h_copy.SetTitle(eng.fDMeson)
                         globalList.append(h_copy)
                         spectraToCompare.append(h_copy)
+
+                        h_unc = s_obj.fUncertainty
+                        if not h_unc: continue
+                        h_unc_copy = h_unc.Clone("{0}_copy".format(h_unc.GetName()))
+                        h_unc_copy.SetTitle(eng.fDMeson)
+                        globalList.append(h_unc_copy)
+                        uncToCompare.append(h_unc_copy)
             if len(spectraToCompare) > 1:
                 cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name[0], spectrum_name[1], "SpectraComparison"] if obj)
                 comp = DMesonJetCompare.DMesonJetCompare(cname)
                 if not logy: comp.fDoSpectraPlot = "lineary"
                 results = comp.CompareSpectra(spectraToCompare[0], spectraToCompare[1:])
+                for obj in results:
+                    if isinstance(obj, ROOT.TCanvas):
+                        self.fCanvases.append(obj)
+                        obj.cd()
+                        pave = ROOT.TPaveText(0.12, 0.70, 0.40, 0.85, "NB NDC")
+                        pave.SetTextAlign(11)
+                        pave.SetFillStyle(0)
+                        pave.SetBorderSize(0)
+                        pave.SetTextFont(43)
+                        pave.SetTextSize(15)
+                        pave.AddText(self.fCollision)
+                        if jetDef["title"]: pave.AddText(jetDef["title"])
+                        pave.Draw()
+                        globalList.append(pave)
+                    globalList.append(obj)
+
+            if len(uncToCompare) > 1:
+                cname = '_'.join(obj for obj in [jetDef["type"], jetDef["radius"], spectrum_name[0], spectrum_name[1], "SpectraUncertaintyComparison"] if obj)
+                comp = DMesonJetCompare.DMesonJetCompare(cname)
+                comp.fDoSpectraPlot = "lineary"
+                comp.fOptSpectrumBaseline = "hist"
+                comp.fOptSpectrum = "hist"
+                comp.fOptRatio = "hist"
+                results = comp.CompareSpectra(uncToCompare[0], uncToCompare[1:])
                 for obj in results:
                     if isinstance(obj, ROOT.TCanvas):
                         self.fCanvases.append(obj)
