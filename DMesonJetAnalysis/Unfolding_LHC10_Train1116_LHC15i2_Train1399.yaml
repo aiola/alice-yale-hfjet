@@ -24,7 +24,7 @@ analysis:
   spectrum_response: JetPtSpectrum_DPt_20
   default_prior: ResponseTruth
   priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
-  default_method: Svd
+  default_method: Bayes
   methods:
     Svd:
       default_reg:
@@ -58,7 +58,7 @@ analysis:
   spectrum_response: JetZSpectrum_DPt_20_JetPt_5_15
   default_prior: ResponseTruth
   priors: [ResponseTruth]
-  default_method: Svd
+  default_method: Bayes
   methods:
     Svd:
       default_reg:
@@ -88,7 +88,7 @@ analysis:
   spectrum_response: JetZSpectrum_DPt_60_JetPt_15_30
   default_prior: ResponseTruth
   priors: [ResponseTruth]
-  default_method: Svd
+  default_method: Bayes
   methods:
     Svd:
       default_reg:
