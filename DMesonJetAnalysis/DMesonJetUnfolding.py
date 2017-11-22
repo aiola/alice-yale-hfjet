@@ -378,7 +378,8 @@ class DMesonJetUnfoldingEngine:
         comp.fOptSpectrum = "hist"
         comp.fOptRatio = "hist"
         comp.fYaxisRatio = yaxisRatio
-        comp.fDoSpectraPlot = "logy"
+        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
+        else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "logy"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
@@ -673,7 +674,8 @@ class DMesonJetUnfoldingEngine:
             return
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingRegularization_{1}_Prior{2}".format(self.fName, method, prior))
         comp.fYaxisRatio = yaxisRatio
-        comp.fDoSpectraPlot = "logy"
+        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
+        else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
@@ -706,7 +708,7 @@ class DMesonJetUnfoldingEngine:
             truth.SetFillStyle(1001)
             truth.SetLineColor(ROOT.kOrange + 2)
             leg.AddEntry(truth, "Truth", "f")
-            if self.fTruthSpectrum.GetMinimum() > 0: c.SetLogy()
+            if self.fTruthSpectrum.GetMinimum() > 0 and self.fVariableName != "JetZ": c.SetLogy()
         else:
             truth = None
 
@@ -714,7 +716,7 @@ class DMesonJetUnfoldingEngine:
             meas = self.fInputSpectrum.DrawCopy("same")
         else:
             meas = self.fInputSpectrum.DrawCopy()
-            if self.fInputSpectrum.GetMinimum() > 0: c.SetLogy()
+            if self.fInputSpectrum.GetMinimum() > 0 and self.fVariableName != "JetZ": c.SetLogy()
         globalList.append(meas)
         meas.SetName("{0}_{1}_{2}_{3}".format(meas, method, reg, prior))
         meas.SetMarkerStyle(ROOT.kFullCircle)
@@ -811,7 +813,8 @@ class DMesonJetUnfoldingEngine:
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingMethod".format(self.fName))
         comp.fYaxisRatio = yaxisRatio
-        comp.fDoSpectraPlot = "logy"
+        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
+        else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
@@ -848,7 +851,8 @@ class DMesonJetUnfoldingEngine:
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingPrior_{1}".format(self.fName, method))
         comp.fYaxisRatio = yaxisRatio
-        comp.fDoSpectraPlot = "logy"
+        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
+        else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
