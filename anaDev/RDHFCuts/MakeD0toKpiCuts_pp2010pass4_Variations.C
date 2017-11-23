@@ -30,10 +30,12 @@ enum pp2010pass4_CutVariation {
   kD0JetOptimLowJetPtv2 = 22,
   kD0JetOptimLowJetPtv3 = 23,
   kD0JetOptimLowJetPtv4 = 24,
+  kD0JetOptimLowJetPtv4_no_topo = 25,
   kD0JetOptimHighJetPtv1 = 31,
   kD0JetOptimHighJetPtv2 = 32,
   kD0JetOptimHighJetPtv3 = 33,
-  kD0JetOptimHighJetPtv4 = 34
+  kD0JetOptimHighJetPtv4 = 34,
+  kD0JetOptimHighJetPtv4_no_topo = 35
 };
 
 void SetCutsLoosePointingLoosed0d0(AliRDHFCutsD0toKpi* RDHFD0toKpi);
@@ -46,8 +48,8 @@ void SetD0JetOptimLowJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetD0JetOptimHighJetPtv2(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetD0JetOptimLowJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi);
 void SetD0JetOptimHighJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi);
-void SetD0JetOptimLowJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi);
-void SetD0JetOptimHighJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi);
+void SetD0JetOptimLowJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi, Double_t topo=2.0);
+void SetD0JetOptimHighJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi, Double_t topo=2.0);
 
 AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_Variations(pp2010pass4_CutVariation cutIndex, Bool_t pidflag = kTRUE)
 {
@@ -123,6 +125,12 @@ AliRDHFCutsD0toKpi* MakeD0toKpiCuts_pp2010pass4_Variations(pp2010pass4_CutVariat
     break;
   case kD0JetOptimLowJetPtv4:
     SetD0JetOptimLowJetPtv4(RDHFD0toKpi);
+    break;
+  case kD0JetOptimHighJetPtv4_no_topo:
+    SetD0JetOptimHighJetPtv4(RDHFD0toKpi, 0);
+    break;
+  case kD0JetOptimLowJetPtv4_no_topo:
+    SetD0JetOptimLowJetPtv4(RDHFD0toKpi, 0);
     break;
   default:
     Printf("Error: cut index %d not defined!", cutIndex);
@@ -593,7 +601,7 @@ void SetD0JetOptimHighJetPtv3(AliRDHFCutsD0toKpi* RDHFD0toKpi)
 }
 
 // Fourth optmizations using MC to maximize significance and s/b
-void SetD0JetOptimLowJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi)
+void SetD0JetOptimLowJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi, Double_t topo)
 {
   const Int_t nvars = 11;
   const Int_t nptbins = 7;
@@ -622,8 +630,11 @@ void SetD0JetOptimLowJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi)
     }
   }
   //new cut
-  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2., 2.};
-  RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
+  if (topo != 0) {
+    Float_t cutvalTopo[nptbins] = {0};
+    for (int i = 0; i < nptbins; i++) cutvalTopo[i] = topo;
+    RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
+  }
   RDHFD0toKpi->SetCuts(nvars, nptbins, cutsMatrixTransposeStand);
 
   for (Int_t iv = 0; iv < nvars; iv++) delete [] cutsMatrixTransposeStand[iv];
@@ -631,7 +642,7 @@ void SetD0JetOptimLowJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi)
   cutsMatrixTransposeStand = nullptr;
 }
 
-void SetD0JetOptimHighJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi)
+void SetD0JetOptimHighJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi, Double_t topo)
 {
   const Int_t nvars = 11;
   const Int_t nptbins = 6;
@@ -659,8 +670,11 @@ void SetD0JetOptimHighJetPtv4(AliRDHFCutsD0toKpi* RDHFD0toKpi)
     }
   }
   //new cut
-  Float_t cutvalTopo[nptbins] = {2., 2., 2., 2., 2., 2.};
-  RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
+  if (topo != 0) {
+    Float_t cutvalTopo[nptbins] = {0};
+    for (int i = 0; i < nptbins; i++) cutvalTopo[i] = topo;
+    RDHFD0toKpi->Setd0MeasMinusExpCut(nptbins, cutvalTopo);
+  }
   RDHFD0toKpi->SetCuts(nvars, nptbins, cutsMatrixTransposeStand);
 
   for (Int_t iv = 0; iv < nvars; iv++) delete [] cutsMatrixTransposeStand[iv];

@@ -22,7 +22,8 @@ def MakeRDHFCuts(dmesons, period, recopass, cent):
                              "D0JetOptimLowJetPtv1", "D0JetOptimHighJetPtv1",
                              "D0JetOptimLowJetPtv2", "D0JetOptimHighJetPtv2",
                              "D0JetOptimLowJetPtv3", "D0JetOptimHighJetPtv3",
-                             "D0JetOptimLowJetPtv4", "D0JetOptimHighJetPtv4"]
+                             "D0JetOptimLowJetPtv4", "D0JetOptimHighJetPtv4",
+                             "D0JetOptimLowJetPtv4_no_topo", "D0JetOptimHighJetPtv4_no_topo"]
         else:
             cut_strenghts = ["standard"]
         for cut_strenght in cut_strenghts:
@@ -246,6 +247,10 @@ def MakeD0toKpiCuts_pp2010pass4(cut_strenght):
         cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimLowJetPtv4, True)
     elif cut_strenght == "D0JetOptimHighJetPtv4":
         cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimHighJetPtv4, True)
+    elif cut_strenght == "D0JetOptimLowJetPtv4_no_topo":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimLowJetPtv4_no_topo, True)
+    elif cut_strenght == "D0JetOptimHighJetPtv4_no_topo":
+        cuts = ROOT.MakeD0toKpiCuts_pp2010pass4_Variations(ROOT.kD0JetOptimHighJetPtv4_no_topo, True)
     else:
         print("Cut '{}' not known!".format(cut_strenght))
         cuts = None
