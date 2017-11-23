@@ -30,6 +30,7 @@ analysis:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     sigma_fits:
       D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
+      D0_D0toKpiCuts: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
     cuts:
     -
       object: jet
@@ -49,7 +50,7 @@ analysis:
       comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Inv.Mass Fit)", "Inv.Mass Fit (#it{p}_{T,D} > 2 GeV/#it{c})"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
@@ -151,6 +152,7 @@ analysis:
       d_pt: [2, 4, 6, 9, 15]
     sigma_fits:
       D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016]
+      D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016]
     cuts:
     -
       object: jet
@@ -183,11 +185,51 @@ analysis:
       name: JetZSpectrum_DPt_20_JetPt_5_15
       suffix: SideBand
       title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-      compare: [MethodLow]
-      comp_titles: ["Side Band"]
+      compare: [MethodLow, DPtBinWidth]
+      comp_titles: ["Side Band", "Wide #it{p}_{T,D} bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      axis:
+        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_5_15_FineBins
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c} (fine bins)"
+    active_mesons: [D0_D0toKpiCuts]
+    need_inv_mass: [D0_D0toKpiCuts]
+    efficiency: no
+    bins:
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
+    sigma_fits:
+      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    spectra:
+    -
+      name: JetZSpectrum_DPt_20_JetPt_5_15
+      suffix: SideBand_FineBins
+      title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      efficiency: no
+      compare: [DPtBinWidth]
+      comp_titles: ["Small #it{p}_{T,D} bins"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts]
+      multitrial: []
       axis:
         d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       side_band:
@@ -206,6 +248,7 @@ analysis:
       d_pt: [6, 12, 30]
     sigma_fits:
       D0_D0toKpiCuts_D0JetOptimHighJetPtv4: [0.015, 0.016]
+      D0_D0toKpiCuts: [0.015, 0.016]
     cuts:
     -
       object: jet
@@ -242,7 +285,7 @@ analysis:
       comp_titles: ["Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-      multitrial: [D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
       axis:
         d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       side_band:
@@ -261,6 +304,7 @@ analysis:
       d_pt: [2, 4, 6, 9, 15, 30]
     sigma_fits:
       D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
+      D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016, 0.017]
     cuts:
     -
       object: jet
@@ -293,11 +337,51 @@ analysis:
       name: JetPtSpectrum_DPt_20
       suffix: SideBand
       title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}"
-      compare: [DPtCutSideBand, MethodDPt2]
-      comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 2 GeV/#it{c})"]
+      compare: [DPtCutSideBand, MethodDPt2, DPtBinWidth]
+      comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 2 GeV/#it{c})", "Wide #it{p}_{T,D} bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      multitrial: [D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      axis:
+        jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins_JetPt_5_30_FineBins
+    title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (fine bins)"
+    active_mesons: [D0_D0toKpiCuts]
+    need_inv_mass: [D0_D0toKpiCuts]
+    efficiency: no
+    bins:
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30]
+    sigma_fits:
+      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016, 0.017, 0.018]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+    spectra:
+    -
+      name: JetPtSpectrum_DPt_20
+      suffix: SideBand_FineBins
+      title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}"
+      efficiency: no
+      compare: [DPtBinWidth]
+      comp_titles: ["Small #it{p}_{T,D} bins"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts]
+      multitrial: [D0_D0toKpiCuts]
       axis:
         jet_pt: [5, 6, 8, 10, 14, 20, 30]
       side_band:
