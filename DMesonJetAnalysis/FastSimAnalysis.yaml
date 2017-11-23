@@ -69,7 +69,7 @@ analysis:
       object: jet
       variable: fPt
       min: 5
-      max: 30
+      max: 15
     spectra:
     -
       name: JetZDPtSpectrum_JetPt_5_15
@@ -94,7 +94,7 @@ analysis:
     -
       object: jet
       variable: fPt
-      min: 5
+      min: 15
       max: 30
     spectra:
     -
@@ -119,8 +119,8 @@ analysis:
     -
       object: jet
       variable: fPt
-      min: 5.0
-      max: 30.0
+      min: 5
+      max: 30
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
@@ -193,11 +193,11 @@ analysis:
       object: jet
       variable: fPt
       min: 5
-      max: 30
+      max: 15
     -
       object: d
       variable: fPt
-      min: 3
+      min: 2.0
     spectra:
     -
       name: JetZSpectrum_DPt_20_JetPt_5_15
@@ -221,8 +221,12 @@ analysis:
     -
       object: jet
       variable: fPt
-      min: 30
-      max: 80
+      min: 15
+      max: 30
+    -
+      object: d
+      variable: fPt
+      min: 6.0
     spectra:
     -
       name: JetZSpectrum_DPt_6_JetPt_15_30
