@@ -11,7 +11,6 @@ class RawYieldSpectrumLoader:
         self.fInputPath = input_path
         self.fTrain = train
         self.fAnalysisName = ana_name
-        self.fDPtBins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
         self.fJetPtBins = [5, 6, 8, 10, 14, 20, 30]
         self.fUseReflections = True
         self.fReflectionFit = "DoubleGaus"
@@ -30,6 +29,26 @@ class RawYieldSpectrumLoader:
         self.fDataMesonList = None
         self.fFDConfig = None
         self.fTrigger = "AnyINT"
+
+    def LoadSpectrumConfig(self, spectrum):
+        iSpectrum = spectrum["name"].find("Spectrum") + 1
+        if iSpectrum < 1:
+            print("RawYieldSpectrumLoader.LoadSpectrumConfig: Failed to extract the variable name from spectrum name '{}'".format(spectrum["name"]))
+            return
+        self.fVariableName = spectrum["name"][0:iSpectrum - 1]
+
+        if spectrum["type"] == "inv_mass_fit":
+            self.fRawYieldMethod = "InvMassFit"
+        elif spectrum["type"] == "side_band":
+            self.fRawYieldMethod = "SideBand"
+        else:
+            print("RawYieldSpectrumLoader.LoadSpectrumConfig: Method '{}' for spectrum '{}' unknown".format(spectrum["type"], spectrum["name"]))
+            return
+
+        if len(spectrum["name"]) > iSpectrum + 8:  # check whether the length of the name is longer than 'var' + 'Spectrum'
+            self.fKinematicCuts = spectrum["name"][iSpectrum + 8:]
+        else:
+            self.fKinematicCuts = ""
 
     def LoadNumberOfEvents(self):
         if not self.fDataMesonList: self.LoadDataListFromDMesonJetAnalysis()
@@ -307,7 +326,7 @@ class RawYieldSpectrumLoader:
             fdHist.Add(fdSyst[error_band], error_band)
         return fdHist
 
-    def ApplyRawYieldSystFromMultiTrial(self, h, error_band):
+    def GetRawYieldSystFromMultiTrial(self):
         if self.fVariableName:
             var = self.fVariableName.replace("Z", "z")
         else:
@@ -316,10 +335,6 @@ class RawYieldSpectrumLoader:
         spectrumName = "{}Spectrum".format(var)
         inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
 
-        if error_band == 0:
-            print("No raw yield systematic to apply!")
-            return
-        print("Applying raw yield systematic with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
             if not self.fReflectionRoS == 0: self.fMultiTrialSubDir += "_{0}".format(self.fReflectionRoS)
@@ -336,5 +351,9 @@ class RawYieldSpectrumLoader:
             print("Could not find histogram {0} in file {1}".format("JetRawYieldUncert", fname))
             file.ls()
             exit(1)
+        return rySyst
 
+    def ApplyRawYieldSystFromMultiTrial(self, h, error_band):
+        print("Applying raw yield systematic with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
+        rySyst = self.GetRawYieldSystFromMultiTrial()
         h.Add(rySyst, error_band)
