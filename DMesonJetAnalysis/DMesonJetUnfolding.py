@@ -380,7 +380,7 @@ class DMesonJetUnfoldingEngine:
         comp.fYaxisRatio = yaxisRatio
         if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
         else: comp.fDoSpectraPlot = "logy"
-        comp.fDoRatioPlot = "logy"
+        comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
             globalList.append(obj)
