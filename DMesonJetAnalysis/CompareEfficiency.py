@@ -39,21 +39,21 @@ def GetEfficiency(config, meson_name, jet_type, jet_radius, spectrum="JetPtDPtSp
 def CompareEfficiency_Definitions(configs, name):
     print("CompareEfficiency_Definitions")
     if not name: name = "Comparison_KineCuts"
-    input_path = configs[0]["input_path"]
     efficiency_type = "Prompt"
     print("Working on {}".format(efficiency_type))
     definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_30", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{ch jet} < 30 GeV/#it{c}"}]
     for c in configs:
+        input_path = c["input_path"]
         print("Working on {}".format(c["name"]))
-        if len(configs[0]["analysis"][0]["d_meson_cuts"]) < 2:
+        if len(c["analysis"][0]["d_meson_cuts"]) < 2:
             print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
             continue
-        for jet in configs[0]["analysis"][0]["jets"]:
+        for jet in c["analysis"][0]["jets"]:
             jet_type = jet["type"]
             jet_radius = jet["radius"]
             print("Working on jet {} {}".format(jet_type, jet_radius))
-            for meson_cuts in configs[0]["analysis"][0]["d_meson_cuts"]:
-                meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+            for meson_cuts in c["analysis"][0]["d_meson_cuts"]:
+                meson_name = "{}_{}_{}".format(efficiency_type, c["analysis"][0]["d_meson"][0], meson_cuts)
                 print("Working on D meson {}".format(meson_name))
                 histos = []
                 cname = "{}/{}/{}_{}_KinCuts".format(c["train"], c["name"], meson_cuts, name)
@@ -85,15 +85,15 @@ def CompareEfficiency_Definitions(configs, name):
 def CompareEfficiency_Type(configs, name):
     print("CompareEfficiency_DMeson")
     if not name: name = "Comparison"
-    input_path = configs[0]["input_path"]
     efficiency_types = ["Prompt", "NonPrompt"]
 
     for c in configs:
+        input_path = c["input_path"]
         print("Working on {}".format(c["name"]))
-        if len(configs[0]["analysis"][0]["d_meson_cuts"]) < 2:
+        if len(c["analysis"][0]["d_meson_cuts"]) < 2:
             print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
             continue
-        for jet in configs[0]["analysis"][0]["jets"]:
+        for jet in c["analysis"][0]["jets"]:
             jet_type = jet["type"]
             jet_radius = jet["radius"]
             print("Working on jet {} {}".format(jet_type, jet_radius))
@@ -109,11 +109,11 @@ def CompareEfficiency_Type(configs, name):
             markers = [[ROOT.kOpenCircle, ROOT.kFullCircle], [ROOT.kOpenSquare, ROOT.kFullSquare], [ROOT.kOpenDiamond, ROOT.kFullDiamond]]
             lines = [[2, 1], [9, 5], [7, 10]]
 
-            for meson_cuts, cols, marks, lins in zip(configs[0]["analysis"][0]["d_meson_cuts"], colors, markers, lines):
+            for meson_cuts, cols, marks, lins in zip(c["analysis"][0]["d_meson_cuts"], colors, markers, lines):
                 histos = []
                 for efficiency_type in efficiency_types:
                     print("Working on {}".format(efficiency_type))
-                    meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+                    meson_name = "{}_{}_{}".format(efficiency_type, c["analysis"][0]["d_meson"][0], meson_cuts)
                     print("Working on D meson {}".format(meson_name))
                     h = GetEfficiency(c, meson_name, jet_type, jet_radius)
                     if not h: continue
@@ -142,23 +142,23 @@ def CompareEfficiency_Type(configs, name):
 def CompareEfficiency_DMeson(configs, name):
     print("CompareEfficiency_DMeson")
     if not name: name = "Comparison"
-    input_path = configs[0]["input_path"]
     efficiency_types = ["Prompt", "NonPrompt"]
     for efficiency_type in efficiency_types:
         print("Working on {}".format(efficiency_type))
         for c in configs:
+            input_path = c["input_path"]
             print("Working on {}".format(c["name"]))
-            if len(configs[0]["analysis"][0]["d_meson_cuts"]) < 2:
+            if len(c["analysis"][0]["d_meson_cuts"]) < 2:
                 print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
                 continue
-            for jet in configs[0]["analysis"][0]["jets"]:
+            for jet in c["analysis"][0]["jets"]:
                 jet_type = jet["type"]
                 jet_radius = jet["radius"]
                 print("Working on jet {} {}".format(jet_type, jet_radius))
                 histos = []
                 cname = ""
-                for meson_cuts in configs[0]["analysis"][0]["d_meson_cuts"]:
-                    meson_name = "{}_{}_{}".format(efficiency_type, configs[0]["analysis"][0]["d_meson"][0], meson_cuts)
+                for meson_cuts in c["analysis"][0]["d_meson_cuts"]:
+                    meson_name = "{}_{}_{}".format(efficiency_type, c["analysis"][0]["d_meson"][0], meson_cuts)
                     print("Working on D meson {}".format(meson_name))
                     h = GetEfficiency(c, meson_name, jet_type, jet_radius)
                     if not h: continue
