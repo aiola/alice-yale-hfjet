@@ -151,11 +151,11 @@ class RawYieldSpectrumLoader:
 
     def GetDefaultSpectrumSideBandFromMultiTrial(self):
         if self.fVariableName:
-            var = self.fVariableName.replace("z", "Z")
+            var = self.fVariableName.replace("Z", "z")
         else:
             print("No variable name provided!")
             exit(1)
-        spectrumName = "{}Spectrum".format(var)
+        spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
         inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
 
         if self.fUseReflections:
@@ -172,7 +172,7 @@ class RawYieldSpectrumLoader:
             exit(1)
         else:
             print("File {0} open successfully".format(fname))
-        hname = "f{var}SpectrSBDef".format(var=var.replace("Z", "z"))
+        hname = "f{var}SpectrSBDef".format(var=var)
         h = file.Get(hname)
         if not h:
             print("Could not find histogram {0} in file {1}".format(hname, fname))
