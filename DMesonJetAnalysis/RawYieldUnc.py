@@ -124,7 +124,7 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
     SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
 
-    outputPath = "{}/{}/{}/RawYieldUnc_{}_{}_pdf".format(config["input_path"], config["train"], config["name"], var, kincuts)
+    outputPath = "{}/{}/{}/RawYieldUnc_{}_{}_pdf/{}".format(config["input_path"], config["train"], config["name"], var, kincuts, meson_name)
     if not os.path.isdir(outputPath): os.makedirs(outputPath)
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
