@@ -188,9 +188,12 @@ def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name,
     interface.SetEfficiencyWeightSB(SBweigth)
 
     interface.SetDmesonSpecie(specie)
-
+    if sum(DMesonEff) < len(DMesonEff) and (SBweigth or ROOT.AliDJetRawYieldUncertainty.kEffScale):
+        is_eff_corrected = "_efficiency"
+    else:
+        is_eff_corrected = ""
     if refl and config["reflection_templates"]:  # ATTENTION: the histograms to be set are pT-dependent!!
-        SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc)
+        SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc, is_eff_corrected)
     else:
         interface.SetFitReflections(False)
     return interface
@@ -264,13 +267,18 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, bi
     interface.SetDmesonSpecie(specie)
     interface.SetEfficiencyWeightSB(SBweigth)
 
+    if sum(DMesonEff) < len(DMesonEff) and (SBweigth or method == ROOT.AliDJetRawYieldUncertainty.kEffScale):
+        is_eff_corrected = "_efficiency"
+    else:
+        is_eff_corrected = ""
+
     if refl and config["reflection_templates"]:  # ATTENTION: the histograms to be set are pT-dependent!!
-        SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc)
+        SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc, is_eff_corrected)
     else:
         interface.SetFitReflections(False)
     return interface
 
-def SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc):
+def SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc, is_eff_corrected):
     iBin = binlist_axis[1].index(ptmin)
     if binlist_axis[0] == "d_pt":
         varname = "DPt"
@@ -278,9 +286,10 @@ def SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, p
         varname = "JetPt"
     jet = config["analysis"][0]["jets"][0]
     jet_def = "{}_{}".format(jet["type"], jet["radius"])
-    reflFileName = "reflTemp/{refl_name}_{cuts}_{var}_{jet_def}_{binlist_name}_fitted_{fit}.root".format(refl_name=config["reflection_templates"],
+    reflFileName = "reflTemp/{refl_name}{is_eff_corrected}_{cuts}_{var}_{jet_def}_{binlist_name}_fitted_{fit}.root".format(refl_name=config["reflection_templates"],
                                                                                                          cuts=cuts, jet_def=jet_def, binlist_name=binlist_name,
-                                                                                                         var=varname, fit=reflFitFunc)
+                                                                                                         var=varname, fit=reflFitFunc,
+                                                                                                         is_eff_corrected=is_eff_corrected)
     interface.SetReflFilename(reflFileName)  # file with refl template histo
     interface.SetMCSigFilename(reflFileName)  # file with MC signal histo
     interface.SetReflHistoname("histRflFitted{fit}_ptBin{bin}".format(fit=reflFitFunc, bin=iBin))  # name of template histo
@@ -336,6 +345,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
 
     ana = config["analysis"][0]
     for binlist in ana["binLists"]:
+        if not "spectra" in binlist: continue
         if len(binlist["bins"]) != 1:
             print("Cannot process bin lists with a number of axis different from 1 (found {}, bin list name {}).".format(len(binlist["bins"]), binlist["name"]))
             continue
@@ -346,10 +356,10 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
             if not "multitrial" in spectrum: continue
             for dmeson in spectrum["multitrial"]:
                 if not dmeson in ana["d_meson"]: continue
-                SBweigth = False
                 cuts = dmeson[3:]
-                spectrum_name = "{}_{}".format(cuts, spectrum["name"])
+                spectrum_name = "{}_{}_{}".format(cuts, spectrum["name"], spectrum["suffix"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
+                SBweigth = False
                 if spectrum["type"] == "inv_mass_fit":
                     if binlist_axis[0] != "jet_pt":
                         print("For the invmassfit method the bin list axis must be jet_pt (it is {}, spectrum {})".format(binlist_axis[0], spectrum["name"]))

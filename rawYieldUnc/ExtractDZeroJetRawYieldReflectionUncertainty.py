@@ -129,6 +129,7 @@ def main(config, b, debug):
 
     ana = config["analysis"][0]
     for binlist in ana["binLists"]:
+        if not "spectra" in binlist: continue
         if len(binlist["bins"]) != 1:
             print("Cannot process bin lists with a number of axis different from 1 (found {}, bin list name {}).".format(len(binlist["bins"]), binlist["name"]))
             continue
