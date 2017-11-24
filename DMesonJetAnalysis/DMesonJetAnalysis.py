@@ -84,6 +84,7 @@ class DMesonJetAnalysisEngine:
     def CompareSpectraForJetDef(self, binMultiSet, group):
         spectraToCompare = []
         histToCompare = []
+        uncToCompare = []
         for binSet in binMultiSet.fBinSets.itervalues():
             for s in binSet.fSpectra.itervalues():
                 if s.fComparisonDone: continue
@@ -99,20 +100,35 @@ class DMesonJetAnalysisEngine:
                         continue
                 else:
                     cname = '_'.join(obj for obj in [self.fTrigger, self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, group, s.fAxis[0].fName, str(int(s.fAxis[0].fBins[0] * 10)), str(int(s.fAxis[0].fBins[-1] * 10)), "SpectraComparison"] if obj)
-                h = s.fNormHistogram.Clone("{0}_{1}_copy".format(s.fNormHistogram.GetName(), cname))
+                spectraToCompare.append(s)
                 title = s.fComparisonTitles[s.fCompare.index(group)]
+
+                h = s.fNormHistogram.Clone("{0}_{1}_copy".format(s.fNormHistogram.GetName(), cname))
                 h.SetTitle(title)
                 globalList.append(h)
                 histToCompare.append(h)
-                spectraToCompare.append(s)
+
+                unc = s.fUncertainty.Clone("{0}_{1}_copy".format(s.fUncertainty.GetName(), cname))
+                unc.SetTitle(title)
+                globalList.append(unc)
+                uncToCompare.append(unc)
+
                 s.fComparisonDone = True
         if len(spectraToCompare) < 2: return len(spectraToCompare)
 
-        comp = DMesonJetCompare.DMesonJetCompare(cname)
-        comp.fOptRatio = "hist"
-        if spectraToCompare[0].fAxis[0].fName == "d_z": comp.fDoSpectraPlot = "lineary"
-        results = comp.CompareSpectra(histToCompare[0], histToCompare[1:])
-        for obj in results:
+        compH = DMesonJetCompare.DMesonJetCompare(cname)
+        compH.fOptRatio = "hist"
+        if spectraToCompare[0].fAxis[0].fName == "d_z": compH.fDoSpectraPlot = "lineary"
+        resultsH = compH.CompareSpectra(histToCompare[0], histToCompare[1:])
+
+        compU = DMesonJetCompare.DMesonJetCompare("{}_Uncertainty".format(cname))
+        compU.fDoRatioPlot = False
+        compU.fOptSpectrumBaseline = "hist"
+        compU.fOptSpectrum = "hist"
+        compU.fDoSpectraPlot = "lineary"
+        resultsU = compU.CompareSpectra(uncToCompare[0], uncToCompare[1:])
+
+        for obj in resultsH + resultsU:
             if obj and isinstance(obj, ROOT.TCanvas):
                 self.fCanvases.append(obj)
                 obj.cd()
