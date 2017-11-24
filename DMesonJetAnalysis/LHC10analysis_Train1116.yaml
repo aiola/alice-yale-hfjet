@@ -421,6 +421,9 @@ analysis:
     efficiency: no
     bins:
       d_pt: [3, 4, 6, 9, 15, 30]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
+      D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016, 0.017]
     cuts:
     -
       object: jet
@@ -457,6 +460,7 @@ analysis:
       comp_titles: ["#it{p}_{T,D} > 3 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 3 GeV/#it{c})"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
         jet_pt: [5, 6, 8, 10, 14, 20, 30]
       side_band:
