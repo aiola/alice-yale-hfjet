@@ -142,7 +142,7 @@ def main(config, b, debug):
                 if not dmeson in ana["d_meson"]: continue
                 SBweigth = False
                 cuts = dmeson[3:]
-                spectrum_name = "{}_{}".format(cuts, spectrum["name"])
+                spectrum_name = "{}_{}_{}".format(cuts, spectrum["name"], spectrum["suffix"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
                 if spectrum["type"] == "inv_mass_fit":
                     if binlist_axis[0] != "jet_pt":

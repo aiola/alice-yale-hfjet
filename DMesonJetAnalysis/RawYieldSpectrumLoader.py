@@ -29,6 +29,7 @@ class RawYieldSpectrumLoader:
         self.fDataMesonList = None
         self.fFDConfig = None
         self.fTrigger = "AnyINT"
+        self.fSuffix = ""
 
     def LoadSpectrumConfig(self, spectrum):
         iSpectrum = spectrum["name"].find("Spectrum") + 1
@@ -49,6 +50,9 @@ class RawYieldSpectrumLoader:
             self.fKinematicCuts = spectrum["name"][iSpectrum + 8:]
         else:
             self.fKinematicCuts = ""
+
+        self.fSuffix = spectrum["name"].replace(self.fRawYieldMethod, "")
+        if self.fSuffix[0] == "_": self.fSuffix = self.fSuffix[1:]
 
     def LoadNumberOfEvents(self):
         if not self.fDataMesonList: self.LoadDataListFromDMesonJetAnalysis()
@@ -137,7 +141,7 @@ class RawYieldSpectrumLoader:
         else:
             var = self.fVariableName
         spectrumName = "{}Spectrum".format(var)
-        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts, self.fSuffix] if s])
 
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
@@ -175,7 +179,7 @@ class RawYieldSpectrumLoader:
             print("No variable name provided!")
             exit(1)
         spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
-        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts, self.fSuffix] if s])
 
         if self.fUseReflections:
             self.fMultiTrialSubDir = "RawYieldUnc_refl_{0}".format(self.fReflectionFit)
@@ -223,7 +227,7 @@ class RawYieldSpectrumLoader:
             print("No variable name provided!")
             exit(1)
         spectrumName = "{}Spectrum".format(var)
-        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts] if s])
+        inputSpectrumName = "_".join([s for s in [self.fDMeson[3:], spectrumName, self.fKinematicCuts, self.fSuffix] if s])
 
         if self.fRawYieldMethod == "InvMassFit" and not var == "JetPt":
             print("Fatal error: multi-trial available only for jet pt. Requested for: {}".format(self.fVariableName))
