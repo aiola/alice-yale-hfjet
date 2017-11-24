@@ -106,9 +106,9 @@ class BinSet:
         if eff:
             dmeson = dmeson.replace("_kSignalOnly", "")
             dmeson = dmeson.replace("_WrongPID", "")
-            eff_file_name = "{0}/{1}".format(inputPath, self.fEfficiency["file_name"])
-            eff_list_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, self.fEfficiency["list_name"]] if obj])
-            eff_obj_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, self.fEfficiency["list_name"], self.fEfficiency["object_name"]] if obj])
+            eff_file_name = "{0}/{1}".format(inputPath, eff["file_name"])
+            eff_list_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, eff["list_name"]] if obj])
+            eff_obj_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, eff["list_name"], eff["object_name"]] if obj])
             weightEfficiency = DMesonJetProjectors.EfficiencyWeightCalculator(eff_file_name, eff_list_name, eff_obj_name)
         else:
             weightEfficiency = DMesonJetProjectors.SimpleWeight()
