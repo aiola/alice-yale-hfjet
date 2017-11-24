@@ -5,7 +5,7 @@ import math
 import os
 import collections
 import array
-
+import numpy
 import ROOT
 
 import DMesonJetUtils
@@ -48,6 +48,11 @@ class DMesonJetUnfoldingEngine:
             if fd_error_band != 0:
                 print("Error: no FD configuration provided, but FD error band requested!")
                 exit(1)
+
+        if "rebin_input" in config:
+            self.fRebinInput = config["rebin_input"]
+        else:
+            self.fRebinInput = False
 
         # feed-down systematic uncertainty
         self.fFDErrorBand = fd_error_band
@@ -257,7 +262,11 @@ class DMesonJetUnfoldingEngine:
         if not inputSpectrum:
             print("Could not find input spectrum!")
             exit(1)
-        self.fInputSpectrum = inputSpectrum.Clone("{0}_InputSpectrum".format(self.fName))
+
+        if self.fRebinInput:
+            self.fInputSpectrum = DMesonJetUtils.Rebin1D_fromBins(inputSpectrum, "{0}_InputSpectrum".format(self.fName), len(self.fRebinInput) - 1, numpy.array(self.fRebinInput, dtype=numpy.float32))
+        else:
+            self.fInputSpectrum = inputSpectrum.Clone("{0}_InputSpectrum".format(self.fName))
         self.fInputSpectrum.SetTitle("{0} Input Spectrum".format(self.fName))
 
         return True
@@ -578,7 +587,7 @@ class DMesonJetUnfoldingEngine:
 
         cname = "{0}_Pearson_{1}_Prior{2}".format(self.fName, method, prior)
         rows = int(math.floor(math.sqrt(len(pearsons))))
-        cols = int(math.ceil(len(pearsons) / rows))
+        cols = int(math.ceil(float(len(pearsons)) / rows))
         c = ROOT.TCanvas(cname, cname, 360 * cols, 350 * rows)
         self.fCanvases.append(c)
         globalList.append(c)
