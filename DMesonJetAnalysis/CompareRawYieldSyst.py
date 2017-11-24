@@ -41,7 +41,7 @@ def GetSystematicUncertainty(config, meson_name, jet_type, jet_radius, spectrum)
     return h_syst
 
 def CompareSystematic_ByGroup(configs, name, spectrum_name, group_name):
-    if not name: name = "ComparisonSystematic_{}".format(group_name)
+    if not name: name = "ComparisonSystematic_{}_{}".format(spectrum_name, group_name)
     print(name)
     for c in configs:
         input_path = c["input_path"]
