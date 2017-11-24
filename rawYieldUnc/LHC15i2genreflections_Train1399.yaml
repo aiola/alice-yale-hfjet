@@ -37,6 +37,16 @@ analysis:
     bins: [2, 4, 6, 9, 15, 30]
   -
     variable: DPt
+    jet_label: Charged_R040
+    bin_list: DPtBins_JetPt_5_15_FineBins
+    bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
+  -
+    variable: DPt
+    jet_label: Charged_R040
+    bin_list: DPtBins_JetPt_5_30_FineBins
+    bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30]
+  -
+    variable: DPt
     jet_label: null
     bin_list: DPtBins
     bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
