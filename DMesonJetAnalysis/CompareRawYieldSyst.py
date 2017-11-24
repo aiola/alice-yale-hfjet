@@ -20,6 +20,12 @@ def main(configs, name):
     print("{} configurations have been loaded".format(len(configs)))
 
     CompareSystematic_DMeson(configs, name)
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "DPtCutSideBand")
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "DPtBinWidth")
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "MethodDPt2")
+    CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_20_JetPt_5_15", "DPtBinWidth")
+    CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_20_JetPt_5_15", "MethodLow")
+    CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_60_JetPt_15_30", "MethodHigh")
 
 def GetSystematicUncertainty(config, meson_name, jet_type, jet_radius, spectrum):
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config["input_path"], config["train"], config["name"])
@@ -34,9 +40,60 @@ def GetSystematicUncertainty(config, meson_name, jet_type, jet_radius, spectrum)
     h_syst.GetYaxis().SetTitle("rel. syst. unc.")
     return h_syst
 
+def CompareSystematic_ByGroup(configs, name, spectrum_name, group_name):
+    if not name: name = "ComparisonSystematic_{}".format(group_name)
+    print(name)
+    for c in configs:
+        input_path = c["input_path"]
+        print("Working on {}".format(c["name"]))
+        if len(c["analysis"][0]["d_meson"]) < 2:
+            print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
+            continue
+        for jet in c["analysis"][0]["jets"]:
+            jet_type = jet["type"]
+            jet_radius = jet["radius"]
+            print("Working on jet {} {}".format(jet_type, jet_radius))
+            for meson_name in c["analysis"][0]["d_meson"]:
+                print("Working on D meson {}".format(meson_name))
+                histos = []
+                cname = "{}/{}/{}_{}".format(c["train"], c["name"], meson_name, name)
+                for bin_list in c["analysis"][0]["binLists"]:
+                    if not "spectra" in bin_list: continue
+                    if not meson_name in bin_list["active_mesons"]: continue
+                    for spectrum in bin_list["spectra"]:
+                        if not meson_name in spectrum["active_mesons"]: continue
+                        if not "multitrial" in spectrum: continue
+                        if not meson_name in spectrum["multitrial"]: continue
+                        if spectrum["name"] != spectrum_name: continue
+                        if not "compare" in spectrum: continue
+                        if not group_name in spectrum["compare"]: continue
+                        h = GetSystematicUncertainty(c, meson_name, jet_type, jet_radius, spectrum)
+                        if not h: continue
+                        h.SetTitle(spectrum["comp_titles"][spectrum["compare"].index(group_name)])
+                        globalList.append(h)
+                        histos.append(h)
+
+                    if len(histos) < 2: continue
+
+                    comp = DMesonJetCompare.DMesonJetCompare(cname)
+                    comp.fOptSpectrumBaseline = "hist"
+                    comp.fOptSpectrum = "hist"
+                    comp.fX1LegRatio = 0.15
+                    comp.fX1LegSpectrum = 0.25
+                    comp.fLinUpperSpace = 0.4
+                    comp.fGridyRatio = True
+                    comp.fDoSpectraPlot = "lineary"
+                    comp.fDoRatioPlot = False
+                    r = comp.CompareSpectra(histos[0], histos[1:])
+                    for obj in r:
+                        if not obj in globalList:
+                            globalList.append(obj)
+                    comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+
+
 def CompareSystematic_DMeson(configs, name):
-    print("CompareEfficiency_DMeson")
     if not name: name = "ComparisonSystematic_DMesonCuts"
+    print(name)
     for c in configs:
         input_path = c["input_path"]
         print("Working on {}".format(c["name"]))
@@ -48,6 +105,7 @@ def CompareSystematic_DMeson(configs, name):
             jet_radius = jet["radius"]
             print("Working on jet {} {}".format(jet_type, jet_radius))
             for bin_list in c["analysis"][0]["binLists"]:
+                if not "spectra" in bin_list: continue
                 for spectrum in bin_list["spectra"]:
                     if not "multitrial" in spectrum: continue
                     histos = []
