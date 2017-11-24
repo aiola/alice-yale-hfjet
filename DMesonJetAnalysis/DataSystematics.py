@@ -424,14 +424,23 @@ def PlotSpectrumStatAndSyst(name, results):
     stat = results["Variations"]["default"]
     syst = results["Uncertainties"]["central_syst_unc"]
     canvas = ROOT.TCanvas(name, name)
-    canvas.SetLogy()
     canvas.SetLeftMargin(0.13)
     canvas.cd()
     h = stat.DrawCopy("axis")
     h.GetYaxis().SetTitleOffset(1.5)
-    h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-    h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-    h.GetYaxis().SetRangeUser(2.5e-5, 4e-2)
+
+    if "JetPtSpectrum" in name:
+        h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+        h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+        h.GetYaxis().SetRangeUser(1.5e-5, 4e-2)
+        canvas.SetLogy()
+    elif "JetZSpectrum" in name:
+        h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)")
+        h.GetXaxis().SetTitle("#it{z}_{||,D}^{ch jet}")
+        if "JetPt_15_30" in name:
+            h.GetYaxis().SetRangeUser(0, 0.008)
+        else:
+            h.GetYaxis().SetRangeUser(0, 0.2)
 
     syst_copy = syst.Clone("central_syst_unc_copy")
     syst_copy.Draw("e2")
