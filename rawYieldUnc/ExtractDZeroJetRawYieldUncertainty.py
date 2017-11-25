@@ -19,6 +19,7 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
+
 def EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, refl=False, singleTrial=False, debug=2):
     # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     if singleTrial:
@@ -47,6 +48,7 @@ def EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_nam
     globalList.append(interface)
     return interface
 
+
 def ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, single_trial, nTrials=100, allowRepet=False, debug=2):
     interface = GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
@@ -65,6 +67,7 @@ def ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_n
     interface.ClearObjects()
     globalList.append(interface)
     return interface
+
 
 def LoadEfficiency(config, eff_config, dmeson, jetName, dpt_bins):
     if not eff_config:
@@ -114,6 +117,7 @@ def LoadEfficiency(config, eff_config, dmeson, jetName, dpt_bins):
         ibinDest += 1
     dpt_bins_dest.append(hist.GetXaxis().GetBinUpEdge(ibin))
     return (dpt_bins_dest, eff_values)
+
 
 def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
     # Dzero cfg
@@ -188,7 +192,7 @@ def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name,
     interface.SetEfficiencyWeightSB(SBweigth)
 
     interface.SetDmesonSpecie(specie)
-    if sum(DMesonEff) < len(DMesonEff) and (SBweigth or ROOT.AliDJetRawYieldUncertainty.kEffScale):
+    if sum(DMesonEff) < len(DMesonEff) and (SBweigth or method == ROOT.AliDJetRawYieldUncertainty.kEffScale):
         is_eff_corrected = "_efficiency"
     else:
         is_eff_corrected = ""
@@ -197,6 +201,7 @@ def GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name,
     else:
         interface.SetFitReflections(False)
     return interface
+
 
 def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin=-1, ptmax=-1, refl=False, reflFitFunc="DoubleGaus"):
     # Dzero cfg
@@ -278,6 +283,7 @@ def GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, bi
         interface.SetFitReflections(False)
     return interface
 
+
 def SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc, is_eff_corrected):
     iBin = binlist_axis[1].index(ptmin)
     if binlist_axis[0] == "d_pt":
@@ -296,6 +302,7 @@ def SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, p
     interface.SetMCSigHistoname("histSgn_{0}".format(iBin))  # name of template histo
     interface.SetValueOfReflOverSignal(-1, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
     interface.SetFitReflections(True)
+
 
 def GetLimits(obj, var, cuts):
     result = None
@@ -316,6 +323,7 @@ def GetLimits(obj, var, cuts):
         exit(1)
 
     return result
+
 
 def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl, no_refl, bg, do_not_move, debug):
     if bg: ROOT.gROOT.SetBatch(True)
@@ -421,6 +429,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
         MoveFiles(outputPath, "root")
         MoveFiles(outputPath, "pdf")
 
+
 def MoveFiles(outputPath, filetype="root"):
     print("Results will be moved to {0}".format(outputPath))
     if not os.path.isdir(outputPath):
@@ -430,11 +439,13 @@ def MoveFiles(outputPath, filetype="root"):
         shutil.copy(file, outputPath)
         os.remove(file)
 
+
 def CopyFilesBack(outputPath, filetype="root"):
     print("Results will be copied from {0}".format(outputPath))
     for file in glob.glob("{0}/*.{1}".format(outputPath, filetype)):
         print("Copying file {0}".format(file))
         shutil.copy(file, "./")
+
 
 if __name__ == '__main__':
 
