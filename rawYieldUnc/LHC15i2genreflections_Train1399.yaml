@@ -38,6 +38,11 @@ analysis:
   -
     variable: DPt
     jet_label: Charged_R040
+    bin_list: DPtBins_JetPt_5_30_DPt_3
+    bins: [3, 4, 6, 9, 15, 30]
+  -
+    variable: DPt
+    jet_label: Charged_R040
     bin_list: DPtBins_JetPt_5_15_FineBins
     bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
   -
@@ -88,6 +93,11 @@ analysis:
     jet_label: Charged_R040
     bin_list: DPtBins_JetPt_5_30
     bins: [2, 4, 6, 9, 15, 30]
+  -
+    variable: DPt
+    jet_label: Charged_R040
+    bin_list: DPtBins_JetPt_5_30_DPt_3
+    bins: [3, 4, 6, 9, 15, 30]
   -
     variable: DPt
     jet_label: null

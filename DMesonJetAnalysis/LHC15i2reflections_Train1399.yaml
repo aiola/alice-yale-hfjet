@@ -75,6 +75,25 @@ analysis:
       min: 5
       max: 30
   -
+    name: DPtBins_JetPt_5_30_DPt_3
+    title: ""
+    active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    need_inv_mass: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    efficiency: no
+    bins:
+      d_pt: [3, 4, 6, 9, 15, 30]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 30
+  -
     name: DPtBins_JetPt_5_30_FineBins
     title: ""
     active_mesons: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4]
