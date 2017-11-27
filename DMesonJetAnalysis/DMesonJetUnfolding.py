@@ -660,6 +660,7 @@ class DMesonJetUnfoldingEngine:
             ratioTruthOverMeas.SetFillColor(ROOT.kRed - 10)
             ratioTruthOverMeas.SetFillStyle(1001)
             ratioTruthOverMeas.SetLineColor(ROOT.kRed + 2)
+            ratioTruthOverMeas.SetLineWidth(2)
             ratioTruthOverMeas.SetMarkerColor(ROOT.kRed + 2)
             ratioTruthOverMeas.SetMarkerStyle(ROOT.kFullCircle)
             ratioTruthOverMeas.SetMarkerSize(0.9)
@@ -692,6 +693,7 @@ class DMesonJetUnfoldingEngine:
             return
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingRegularization_{1}_Prior{2}".format(self.fName, method, prior))
         comp.fYaxisRatio = yaxisRatio
+        comp.fOptRatio = "hist"
         if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
         else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
@@ -774,6 +776,7 @@ class DMesonJetUnfoldingEngine:
         cUOM.cd()
         globalList.append(cUOM)
         ratioUnfoldedOverMeas.Divide(meas)
+        ratioUnfoldedOverMeas.SetLineWidth(2)
         ratioUnfoldedOverMeas.Draw("hist")
 
         # refolded/measured and unfolded/truth
@@ -785,6 +788,7 @@ class DMesonJetUnfoldingEngine:
         ratioRefoldedOverMeas = refolded.Clone("{0}_RefoldedOverMeasured".format(meas.GetName()))
         globalList.append(ratioRefoldedOverMeas)
         ratioRefoldedOverMeas.Divide(meas)
+        ratioRefoldedOverMeas.SetLineWidth(2)
         ratioRefoldedOverMeas.Draw("hist")
         if truth:
             ratioRefoldedOverMeas.GetYaxis().SetTitle("ratio")
@@ -831,6 +835,7 @@ class DMesonJetUnfoldingEngine:
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingMethod".format(self.fName))
         comp.fYaxisRatio = yaxisRatio
+        comp.fOptRatio = "hist"
         if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
         else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
@@ -869,6 +874,7 @@ class DMesonJetUnfoldingEngine:
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingPrior_{1}".format(self.fName, method))
         comp.fYaxisRatio = yaxisRatio
+        comp.fOptRatio = "hist"
         if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
         else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
