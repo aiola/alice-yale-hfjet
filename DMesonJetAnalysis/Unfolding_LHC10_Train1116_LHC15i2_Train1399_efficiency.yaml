@@ -126,7 +126,7 @@ analysis:
   methods:
     Svd:
       default_reg:
-        ResponseTruth: 5
+        ResponseTruth: 6
     Bayes:
       default_reg:
         ResponseTruth: 3
