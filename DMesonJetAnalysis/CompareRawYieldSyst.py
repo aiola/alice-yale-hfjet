@@ -12,6 +12,7 @@ import RawYieldSpectrumLoader
 
 globalList = []
 
+
 def main(configs, name):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -20,12 +21,11 @@ def main(configs, name):
     print("{} configurations have been loaded".format(len(configs)))
 
     CompareSystematic_DMeson(configs, name)
-    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "DPtCutSideBand")
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum", "DPtCutSideBand")
     CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "DPtBinWidth")
     CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "MethodDPt2")
     CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_20_JetPt_5_15", "DPtBinWidth")
-    CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_20_JetPt_5_15", "MethodLow")
-    CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_60_JetPt_15_30", "MethodHigh")
+
 
 def GetSystematicUncertainty(config, meson_name, jet_type, jet_radius, spectrum):
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(config["input_path"], config["train"], config["name"])
@@ -39,6 +39,7 @@ def GetSystematicUncertainty(config, meson_name, jet_type, jet_radius, spectrum)
     h_syst.GetXaxis().SetTitle(h_yield.GetXaxis().GetTitle())
     h_syst.GetYaxis().SetTitle("rel. syst. unc.")
     return h_syst
+
 
 def CompareSystematic_ByGroup(configs, name, spectrum_name, group_name):
     if not name: name = "ComparisonSystematic_{}_{}".format(spectrum_name, group_name)
@@ -64,7 +65,7 @@ def CompareSystematic_ByGroup(configs, name, spectrum_name, group_name):
                         if not meson_name in spectrum["active_mesons"]: continue
                         if not "multitrial" in spectrum: continue
                         if not meson_name in spectrum["multitrial"]: continue
-                        if spectrum["name"] != spectrum_name: continue
+                        if not spectrum_name in spectrum["name"]: continue
                         if not "compare" in spectrum: continue
                         if not group_name in spectrum["compare"]: continue
                         h = GetSystematicUncertainty(c, meson_name, jet_type, jet_radius, spectrum)
@@ -137,6 +138,7 @@ def CompareSystematic_DMeson(configs, name):
                         if not obj in globalList:
                             globalList.append(obj)
                     comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compares efficiencies.')
