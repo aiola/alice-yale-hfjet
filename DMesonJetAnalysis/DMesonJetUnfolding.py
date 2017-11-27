@@ -15,7 +15,9 @@ import RawYieldSpectrumLoader
 
 globalList = []
 
+
 class DMesonJetUnfoldingEngine:
+
     def __init__(self, input_path, dataTrain, analysisName, config, fd_error_band=0, ry_error_band=0):
         # input path
         self.fInputPath = input_path
@@ -110,6 +112,13 @@ class DMesonJetUnfoldingEngine:
     def SavePlots(self, path, format):
         for c in self.fCanvases:
             c.SaveAs("{0}/{1}.{2}".format(path, c.GetName(), format))
+            if "Ratio" in c.GetName() and ("UnfoldingRegularization" in c.GetName() or "UnfoldingMethod" in c.GetName() or "UnfoldingPrior" in c.GetName()):
+                if c.GetUymax() > 2:
+                    for obj in c.GetListOfPrimitives():
+                        if isinstance(obj, ROOT.TH1):
+                            obj.SetMaximum(2)
+                            c.SaveAs("{0}/{1}_zoom.{2}".format(path, c.GetName(), format))
+                            break
 
     def GenerateRootList(self):
         rlist = ROOT.TList()
@@ -1162,7 +1171,9 @@ class DMesonJetUnfoldingEngine:
                 resp.SetBinError(xbin, ybin, binErr)
         return resp
 
+
 class DMesonJetUnfolding:
+
     def __init__(self, name, input_path, dataTrain, data, responseTrain, response, mt, refl, refl_fit, refl_ros):
         self.fName = name
         if mt: self.fName += "_mt"

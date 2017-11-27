@@ -6,7 +6,9 @@ import math
 import DMesonJetUtils
 import random
 
+
 class DMesonJetCompare:
+
     def __init__(self, name):
         self.fName = name
         self.fBaselineHistogram = None
@@ -55,7 +57,7 @@ class DMesonJetCompare:
         self.fNoErrorInBaseline = False
         self.fRatioRelativeUncertainty = None
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
-        self.fGridyRatio = False
+        self.fGridyRatio = True
 
         self.fFitFunction = "expo(0)+expo(2)"
         self.fDoSpectrumLegend = True
