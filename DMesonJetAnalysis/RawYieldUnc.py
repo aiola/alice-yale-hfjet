@@ -18,6 +18,7 @@ xaxisTitle = ""
 yaxisTitle = ""
 do_spectra_plot = "logy"
 
+
 def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     global do_spectra_plot
 
@@ -120,9 +121,9 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
         comp.fNoErrorInBaseline = True
         reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
 
-    SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
-    SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
-    SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts)
+    SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts, "SideBand")
+    SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts, "SideBand")
+    SideBandFinalRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts, "SideBand")
 
     outputPath = "{}/{}/{}/RawYieldUnc_{}_{}_pdf/{}".format(config["input_path"], config["train"], config["name"], var, kincuts, meson_name)
     if not os.path.isdir(outputPath): os.makedirs(outputPath)
@@ -131,6 +132,7 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
             print("Saving '{}'".format(obj.GetName()))
             obj.SaveAs(fname)
+
 
 def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
@@ -160,6 +162,7 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
+
 def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
@@ -187,6 +190,7 @@ def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_ra
         if not obj in globalList:
             globalList.append(obj)
 
+
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
@@ -211,6 +215,7 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
+
 
 def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
@@ -284,10 +289,11 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
         if not obj in globalList:
             globalList.append(obj)
 
-def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
+
+def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suffix):
     var = var.replace("Z", "z")
     spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
-    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
+    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts, suffix] if s])
 
     fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_AfterDbinSum.root".format(input_path=input_path, train=train, ana=ana, var=var, spectrum_name=inputSpectrumName)
     file = ROOT.TFile(fname)
@@ -341,10 +347,11 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
         if not obj in globalList:
             globalList.append(obj)
 
-def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
+
+def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suffix):
     var = var.replace("Z", "z")
     spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
-    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
+    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts, suffix] if s])
 
     for ibin in range(0, 5):
         fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin, spectrum_name=inputSpectrumName)
@@ -397,10 +404,11 @@ def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts):
             if not obj in globalList:
                 globalList.append(obj)
 
-def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts):
+
+def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts, suffix):
     variable = variable.replace("Z", "z")
     spectrumName = "{}Spectrum".format(variable.replace("z", "Z"))
-    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts] if s])
+    inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts, suffix] if s])
 
     reflVar = ["DoubleGaus_15", "DoubleGaus_5", "gaus", "pol3", "pol6"]
     for ibin in range(0, 5):
@@ -452,6 +460,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts):
         for obj in r:
             if not obj in globalList:
                 globalList.append(obj)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
