@@ -6,8 +6,10 @@ import ROOT
 import math
 import array
 
+
 def binom(n, k):
     return math.factorial(n) / math.factorial(n - k) / math.factorial(k)
+
 
 def GenerateMultiCanvas(cname, n):
     rows = int(math.floor(math.sqrt(n)))
@@ -16,7 +18,9 @@ def GenerateMultiCanvas(cname, n):
     c.Divide(cols, rows)
     return c
 
+
 class StatisticSet:
+
     def __init__(self, n=6, hname="nohist", htitle="nohist"):
         self.fRawMoments = [0.] * (n + 1)
         self.fSumOfWeights = 0.
@@ -35,7 +39,10 @@ class StatisticSet:
             self.fRawMoments[i] += w * y ** i
         self.fSumOfWeights += w
         self.fSumOfWeights2 += w ** 2
-        self.fEffectiveEntries = self.fSumOfWeights ** 2 / self.fSumOfWeights2
+        if self.fSumOfWeights > 0:
+            self.fEffectiveEntries = self.fSumOfWeights ** 2 / self.fSumOfWeights2
+        else:
+            self.fEffectiveEntries
         if self.fHistogram:
             self.fHistogram.Fill(y, w)
         # print("effective entries are {0}".format(self.fEffectiveEntries))
@@ -135,7 +142,9 @@ class StatisticSet:
         self.RecalculateMedian()
         if self.fMedian: print("The median is {0} +/- {1}".format(self.GetMedian(), self.GetMedianError()))
 
+
 class StatisticMultiSet:
+
     def __init__(self, name, axis, variableName, n=6):
         self.fName = name
         self.fStatisticSets = []

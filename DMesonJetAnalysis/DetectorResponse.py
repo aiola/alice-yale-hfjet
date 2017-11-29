@@ -11,10 +11,12 @@ import DMesonJetCuts
 import StatisticSet
 import BinSet
 
+
 class DetectorResponse:
-    def __init__(self, name, jetName, axis, cuts, weightEff, applyEffToTruth):
+
+    def __init__(self, name, jetName, axis, cuts, weightEff, truthWeight):
         self.fWeightEfficiency = weightEff
-        self.fApplyEfficiencyToTruth = applyEffToTruth
+        self.fTruthWeight = truthWeight
         self.fAxis = axis
         self.fCuts = DMesonJetCuts.DMesonJetCuts(cuts)
         self.fJetInfo = False
@@ -520,11 +522,9 @@ class DetectorResponse:
         dMesonTruth = dmeson.DmesonJet.fGenerated
         dMesonMeasured = dmeson.DmesonJet.fReconstructed
 
-        if self.fApplyEfficiencyToTruth:
-            w *= self.fWeightEfficiency.GetEfficiencyWeight(dMesonTruth, jetTruth)
-            weff = 1
-        else:
-            weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
+        if self.fTruthWeight: w *= self.fTruthWeight.GetEfficiencyWeight(dMesonTruth, jetTruth)
+
+        weff = self.fWeightEfficiency.GetEfficiencyWeight(dMesonMeasured, jetMeasured)
 
         if dMesonTruth.fPt <= 0: return
         if not self.fCuts.ApplyCutsGeneratorOnly(dMesonTruth, jetTruth): return
@@ -538,7 +538,9 @@ class DetectorResponse:
         if self.fCuts.ApplyCuts(dMesonTruth, jetTruth):
             self.FillTruth(dMesonTruth, jetTruth, w)
 
+
 class ResponseAxis:
+
     def __init__(self, detector, truth):
         self.fDetectorAxis = detector
         self.fTruthAxis = truth
