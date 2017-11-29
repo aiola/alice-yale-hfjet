@@ -11,14 +11,14 @@ spectra:
 -
   variable_name: DPt
   variable_title: "#it{p}_{T,D}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimLowJetPtv4"
+  d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: []
   jet_pt_cuts: [5, 30]
   d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 -
   variable_name: JetPt
   variable_title: "#it{p}_{T,ch jet}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimLowJetPtv4"
+  d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [2]
   jet_pt_cuts: []
   d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
@@ -26,7 +26,7 @@ spectra:
 -
   variable_name: JetZ
   variable_title: "#it{z}_{||,D}^{ch jet}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimLowJetPtv4"
+  d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [2]
   jet_pt_cuts: [5, 15]
   d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
@@ -34,7 +34,7 @@ spectra:
 -
   variable_name: JetZ
   variable_title: "#it{z}_{||,D}^{ch jet}"
-  d_meson: "D0_D0toKpiCuts_D0JetOptimHighJetPtv4"
+  d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [6]
   jet_pt_cuts: [15, 30]
   d_pt_bins: [6, 7, 8, 10, 12, 16, 30]

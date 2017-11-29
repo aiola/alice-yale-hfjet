@@ -9,7 +9,7 @@ analysis:
 - 
   trigger: ["Prompt", "NonPrompt"]
   d_meson: [D0]
-  d_meson_cuts: ["D0toKpiCuts", "D0toKpiCuts_D0JetOptimLowJetPtv4", "D0toKpiCuts_D0JetOptimHighJetPtv4"]
+  d_meson_cuts: ["D0toKpiCuts"]
   jets:
   -
     type: Charged
