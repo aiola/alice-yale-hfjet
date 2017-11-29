@@ -14,21 +14,18 @@ import Axis
 
 globalList = []
 
+
 class DMesonJetResponseContainer:
+
     def __init__(self, trigger, DMesonDef, jetDefinitions, respDefinitions):
         self.fResponseObjects = dict()
         for jetDef in jetDefinitions:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
-            for axisName, (axisDef, efficiency, applyEffTruth, cuts) in respDefinitions.iteritems():
+            for axisName, (axisDef, efficiency, truthWeight, cuts) in respDefinitions.iteritems():
                 respName = "_".join([obj for obj in [trigger, DMesonDef, jetName, axisName] if obj])
-                if efficiency:
-                    eff_file_name = efficiency["file_name"]
-                    eff_list_name = "_".join([obj for obj in [trigger, DMesonDef, jetName, efficiency["list_name"]] if obj])
-                    eff_obj_name = "_".join([obj for obj in [trigger, DMesonDef, jetName, efficiency["list_name"], efficiency["object_name"]] if obj])
-                    effWeight = DMesonJetProjectors.EfficiencyWeightCalculator(eff_file_name, eff_list_name, eff_obj_name)
-                else:
-                    effWeight = DMesonJetProjectors.SimpleWeight()
-                resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, effWeight, applyEffTruth)
+                effWeightObj = DMesonJetProjectors.GetWeightObject(efficiency, trigger, DMesonDef, jetName)
+                truthWeightObj = DMesonJetProjectors.GetWeightObject(truthWeight, trigger, DMesonDef, jetName)
+                resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, effWeightObj, truthWeightObj)
                 resp.GenerateHistograms()
                 self.fResponseObjects[respName] = resp
 
@@ -36,7 +33,9 @@ class DMesonJetResponseContainer:
         for r in self.fResponseObjects.itervalues():
             r.Fill(event, eventWeight)
 
+
 class DMesonJetResponseEngine:
+
     def __init__(self, trigger, dmeson, d_meson_cuts, jets, axis, projector):
         self.fDMeson = dmeson
         self.fDMesonCuts = d_meson_cuts
@@ -378,7 +377,9 @@ class DMesonJetResponseEngine:
         self.fCanvases.append(comp.fCanvasSpectra)
         self.fCanvases.append(comp.fCanvasRatio)
 
+
 class DMesonJetResponse:
+
     def __init__(self, name):
         self.fName = name
         self.fResponseEngine = []
@@ -392,13 +393,15 @@ class DMesonJetResponse:
             if not resp["active"]:
                 continue
             if "efficiency" in resp and resp["efficiency"]:
-                resp["efficiency"]["file_name"] = "{}/{}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"])
+                if "file_name" in resp["efficiency"]: resp["efficiency"]["file_name"] = "{}/{}".format(self.fProjector.fInputPath, resp["efficiency"]["file_name"])
             else:
                 resp["efficiency"] = False
-            if resp["efficiency"] and "apply_to_truth" in resp["efficiency"]:
-                apply_to_truth = resp["efficiency"]["apply_to_truth"]
+
+            if "truth_weight" in resp and resp["truth_weight"]:
+                if "file_name" in resp["truth_weight"]: resp["truth_weight"]["file_name"] = "{}/{}".format(self.fProjector.fInputPath, resp["truth_weight"]["file_name"])
             else:
-                apply_to_truth = False
+                resp["truth_weight"] = False
+
             axis_list = []
             for axis_name, bins in resp["bins"].iteritems():
                 if "bins" in bins:
@@ -417,7 +420,7 @@ class DMesonJetResponse:
             else:
                 cut_list = []
 
-            axis[resp["name"]] = axis_list, resp["efficiency"], apply_to_truth, cut_list
+            axis[resp["name"]] = axis_list, resp["efficiency"], resp["truth_weight"], cut_list
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:

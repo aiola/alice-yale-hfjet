@@ -15,7 +15,9 @@ import Axis
 import Spectrum
 from DMesonJetBase import AnalysisType
 
+
 class BinMultiSet:
+
     def __init__(self):
         self.fBinSets = collections.OrderedDict()
 
@@ -76,7 +78,9 @@ class BinMultiSet:
                 if s.fCompare: groups.update(s.fCompare)
         return groups
 
+
 class BinSet:
+
     def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, efficiency, fitOptions):
         self.fBinSetName = name
         self.fTitle = title
@@ -103,15 +107,10 @@ class BinSet:
         return False
 
     def LoadEfficiency(self, inputPath, dmeson, jetName, eff):
-        if eff:
-            dmeson = dmeson.replace("_kSignalOnly", "")
-            dmeson = dmeson.replace("_WrongPID", "")
-            eff_file_name = "{0}/{1}".format(inputPath, eff["file_name"])
-            eff_list_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, eff["list_name"]] if obj])
-            eff_obj_name = "_".join([obj for obj in ["Prompt", dmeson, jetName, eff["list_name"], eff["object_name"]] if obj])
-            weightEfficiency = DMesonJetProjectors.EfficiencyWeightCalculator(eff_file_name, eff_list_name, eff_obj_name)
-        else:
-            weightEfficiency = DMesonJetProjectors.SimpleWeight()
+        dmeson = dmeson.replace("_kSignalOnly", "")
+        dmeson = dmeson.replace("_WrongPID", "")
+        if eff and "file_name" in eff: eff["file_name"] = "{0}/{1}".format(inputPath, eff["file_name"])
+        weightEfficiency = DMesonJetProjectors.GetWeightObject(eff, "Prompt", dmeson, jetName)
         return weightEfficiency
 
     def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
@@ -198,7 +197,9 @@ class BinSet:
             if bin.IsInBinLimits(dmeson, jet):
                 yield bin, w
 
+
 class BinLimits:
+
     def __init__(self, limits=dict()):
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
