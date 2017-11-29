@@ -9,7 +9,7 @@ collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   trigger: [""]
-  d_meson: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
+  d_meson: [D0_kSignalOnly_D0toKpiCuts, D0_WrongPID_D0toKpiCuts] #, D0_kSignalOnly_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_kSignalOnly_D0toKpiCuts_D0JetOptimHighJetPtv4, D0_WrongPID_D0toKpiCuts_D0JetOptimHighJetPtv4]
   n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015

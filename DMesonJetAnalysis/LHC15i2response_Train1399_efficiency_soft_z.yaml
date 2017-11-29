@@ -1,5 +1,5 @@
 # Response c,b->D0
-name: LHC15i2_Train1399_response_efficiency_hard_z
+name: LHC15i2_Train1399_response_efficiency_soft_z
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_1399_1400_1401_1402
 file_name: AnalysisResults.root
