@@ -35,7 +35,7 @@ analysis:
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 30]
-        coarse: [5, 15, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
@@ -48,7 +48,7 @@ analysis:
       min: 2.0
   -
     name: JetPtSpectrum_DPt_30
-    active: no
+    active: yes
     efficiency:
       # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -67,7 +67,7 @@ analysis:
     bins:
       jet_pt:
         bins: [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 30]
-        coarse: [5, 15, 30]
+        coarse: [5, 6, 8, 10, 14, 20, 30]
     cuts:
     -
       object: jet
