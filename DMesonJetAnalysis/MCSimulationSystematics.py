@@ -17,6 +17,7 @@ from collections import OrderedDict
 
 globalList = []
 
+
 def main(config, unfolding_debug):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -49,6 +50,11 @@ def main(config, unfolding_debug):
         cResponseFile = None
         cResponseFile_efficiency = None
 
+    if bResponseFile_efficiency and cResponseFile_efficiency:
+        do_unfolding = True
+    else:
+        do_unfolding = False
+
     results = OrderedDict()
     robjects = []
     for v in config["variations"]:
@@ -62,7 +68,7 @@ def main(config, unfolding_debug):
             results[name].update(PrepareFDhist(spectrum, v["ts"], hist_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug))
         robjects.append(GenerateRootList(results[name], name))
 
-    spectrum_names = GenerateSpectrumNames(config["spectra"])
+    spectrum_names = GenerateSpectrumNames(config["spectra"], do_unfolding)
     results["SystematicUncertainty"] = CompareVariations(config["variations"], spectrum_names, results)
     robjects.append(GenerateRootList(results["SystematicUncertainty"], "SystematicUncertainty"))
     PlotFSspectraAndSyst(spectrum_names, results)
@@ -80,10 +86,12 @@ def main(config, unfolding_debug):
 
     print("Done: {0}.".format(output_file_name))
 
-def GenerateSpectrumNames(spectra):
-    no_unfolding = ["{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum",
-                    "{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum_bEfficiencyMultiply",
-                    "{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide"]
+
+def GenerateSpectrumNames(spectra, do_unfolding):
+    no_unfolding = ["{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum"]
+    if do_unfolding:
+        no_unfolding.extend(["{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum_bEfficiencyMultiply",
+                             "{variable}Spectrum{kin_cuts}/GeneratorLevel_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide"])
     unfolding = ["{variable}Spectrum{kin_cuts}/DetectorLevel_{variable}Spectrum_bEfficiencyMultiply",
                  "{variable}Spectrum{kin_cuts}/DetectorLevel_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide",
                  "{variable}Spectrum{kin_cuts}/Unfolded_c_{variable}Spectrum_bEfficiencyMultiply_cEfficiencyDivide"]
@@ -110,10 +118,11 @@ def GenerateSpectrumNames(spectra):
 
         format_spectra_names = []
         format_spectra_names.extend(no_unfolding)
-        if spectrum["variable_name"] != "DPt": format_spectra_names.extend(unfolding)
+        if do_unfolding and spectrum["variable_name"] != "DPt": format_spectra_names.extend(unfolding)
         spectra_names.extend([sname.format(variable=spectrum["variable_name"], kin_cuts=kin_cuts) for sname in format_spectra_names])
 
     return spectra_names
+
 
 def PlotFSspectraAndSyst(spectrumNames, results):
     for name in spectrumNames:
@@ -153,6 +162,7 @@ def PlotFSspectraAndSyst(spectrumNames, results):
         globalList.append(leg)
         globalList.append(canvas)
 
+
 def GetSpectrum(results, name):
     subdirs = name.split("/")
     if len(subdirs) < 1:
@@ -167,6 +177,7 @@ def GetSpectrum(results, name):
             return None
         results = results[subdir]
     return results
+
 
 def CompareVariationsForSpectrum(comp_template, variations, results, name):
     h = GetSpectrum(results["default"], name)
@@ -188,6 +199,7 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name):
     globalList.extend(spectra)
     globalList.extend(comp.fResults)
     return GenerateSystematicUncertainty(baseline, spectra)
+
 
 def GenerateSystematicUncertainty(baseline, spectra):
     hname = baseline.GetName().replace("_copy", "")
@@ -248,6 +260,7 @@ def GenerateSystematicUncertainty(baseline, spectra):
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
     return result
 
+
 def CompareVariations(variations, spectrumNames, results):
     comp_template = DMesonJetCompare.DMesonJetCompare("DMesonJetCompare")
     comp_template.fOptRatio = "hist"
@@ -271,6 +284,7 @@ def CompareVariations(variations, spectrumNames, results):
 
     return result
 
+
 def SaveCanvases(name, input_path):
     path = "{}/{}".format(input_path, name)
     if not os.path.exists(path):
@@ -279,6 +293,7 @@ def SaveCanvases(name, input_path):
         if isinstance(obj, ROOT.TCanvas):
             oname = obj.GetName().replace("/", "_")
             obj.SaveAs("{}/{}.pdf".format(path, oname))
+
 
 def GenerateRootList(pdict, name):
     rlist = ROOT.TList()
@@ -294,11 +309,13 @@ def GenerateRootList(pdict, name):
             print("Error: type of object {0} not recognized!".format(obj))
     return rlist
 
+
 def PrepareFDhist(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
     if spectrum["variable_name"] == "DPt":
         return PrepareFDhist_dpt(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency)
     else:
         return PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug)
+
 
 def PrepareFDhist_dpt(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency):
     print("Preparing D pt FD histograms")
@@ -367,6 +384,7 @@ def PrepareFDhist_dpt(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
         FDhistogram_efficiency_dpt = None
 
     return result
+
 
 def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug):
     dmeson = spectrum["d_meson"]
@@ -568,6 +586,7 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
 
     return result
 
+
 def GenerateUnfoldingEngine(name, responseFile, prior, spectrumName, nbins, dmeson):
     analysis = dict()
     analysis["name"] = name
@@ -603,6 +622,7 @@ def GenerateUnfoldingEngine(name, responseFile, prior, spectrumName, nbins, dmes
     unf.LoadResponse(False)
     return unf
 
+
 def GetUnfoldedSpectrum(name, histogram, responseFile, prior, spectrumName, dmeson, unfolding_debug):
     unf = GenerateUnfoldingEngine(name, responseFile, prior, spectrumName, histogram.GetXaxis().GetNbins(), dmeson)
     unf.fInputSpectrum = histogram
@@ -612,6 +632,7 @@ def GetUnfoldedSpectrum(name, histogram, responseFile, prior, spectrumName, dmes
     default_unfolded = unf.fUnfoldedSpectra[unf.fDefaultMethod, default_reg, unf.fDefaultPrior]
     default_unfolded.SetName(histogram.GetName().replace("_detector", "_unfolded"))
     return default_unfolded
+
 
 def ApplyEfficiency(hist, efficiency, reverse):
     print("Applying efficiency {0} to histogram {1}".format(efficiency.GetName(), hist.GetName()))
@@ -625,6 +646,7 @@ def ApplyEfficiency(hist, efficiency, reverse):
         for xbin in range(0, hist.GetNbinsX() + 2):
             hist.SetBinContent(xbin, ybin, hist.GetBinContent(xbin, ybin) * eff)
             hist.SetBinError(xbin, ybin, hist.GetBinError(xbin, ybin) * eff)
+
 
 def ApplyResponse(truth, responseFile, prior, spectrumName, dmeson):
     unf = GenerateUnfoldingEngine(truth.GetName(), responseFile, prior, spectrumName, truth.GetXaxis().GetNbins(), dmeson)
@@ -647,6 +669,7 @@ def ApplyResponse(truth, responseFile, prior, spectrumName, dmeson):
     result.GetYaxis().SetTitle(truth.GetYaxis().GetTitle())
     return result
 
+
 def OpenResponseFile(input_path, response, efficiency):
     if efficiency:
         file_name = "{0}/{1}/{2}_efficiency.root".format(input_path, response["train"], response["name"])
@@ -658,6 +681,7 @@ def OpenResponseFile(input_path, response, efficiency):
         print("Could not open input file {0}".format(file_name))
         exit(1)
     return file
+
 
 def LoadResponse(responseFile, dmeson, spectrumName, suffix_in, suffix_out, detAxisNbins, detAxisBin):
     rlistName = "{}_Jet_AKTChargedR040_pt_scheme_{}".format(dmeson, spectrumName)
@@ -682,6 +706,7 @@ def LoadResponse(responseFile, dmeson, spectrumName, suffix_in, suffix_out, detA
     eff_coarse = resp_coarse.ProjectionY(truth_coarse.GetName().replace("Truth", "Efficiency"))
     eff_coarse.Divide(truth_coarse)
     return resp_coarse, eff_coarse
+
 
 def LoadFDHistogram(file_name, spectra):
     result = []
@@ -722,7 +747,9 @@ def LoadFDHistogram(file_name, spectra):
 
     return result
 
+
 if __name__ == '__main__':
+
 
     parser = argparse.ArgumentParser(description='Prepare B feed-down correction file.')
     parser.add_argument('yaml', metavar='conf.yaml')
