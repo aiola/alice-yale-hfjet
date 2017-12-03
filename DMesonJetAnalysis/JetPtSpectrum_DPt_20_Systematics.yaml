@@ -33,13 +33,13 @@ fixed_uncertainties:
 sources:
 -
   name: tracking_efficiency
-  active: no
+  active: yes
   title: "Tracking Eff. (Jet Energy Scale)"
   symmetrize: yes
   combine_strategy: sum_in_quadrature
   variations:
   -
-    input_name: LHC10_Train1116_LHC15i2_TrainXXXX_efficiency_mt_refl_DoubleGaus
+    input_name: LHC10_Train1116_LHC15i2_Train1416_efficiency_mt_refl_DoubleGaus
     histogram_name: JetPt_SideBand_DPt_20/Bayes/JetPt_SideBand_DPt_20_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
     histogram_title: "0.95 #epsilon_{tracking}" 
 -
