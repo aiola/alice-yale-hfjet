@@ -91,15 +91,21 @@ analysis:
   d_meson_response: Prompt_D0_D0toKpiCuts
   spectrum_response: JetZSpectrum_DPt_20_JetPt_5_15
   default_prior: ResponseTruth
-  priors: [ResponseTruth]
+  priors: [ResponseTruth, "ResponseTruth_multiply_pol(3, -6.5, 3.75)", "ResponseTruth_multiply_pol(0.25, -1, 3.75)", Flat]
   default_method: Bayes
   methods:
     Svd:
       default_reg:
         ResponseTruth: 6
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 6
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 6
+        Flat: 6
     Bayes:
       default_reg:
         ResponseTruth: 3
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 4
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 4
+        Flat: 4
       iter_min: 1
       iter_max: 6
       iter_step: 1
@@ -121,23 +127,29 @@ analysis:
   d_meson_response: Prompt_D0_D0toKpiCuts
   spectrum_response: JetZSpectrum_DPt_60_JetPt_15_30
   default_prior: ResponseTruth
-  priors: [ResponseTruth]
+  priors: [ResponseTruth, "ResponseTruth_multiply_pol(3, -6.5, 3.75)", "ResponseTruth_multiply_pol(0.25, -1, 3.75)", Flat]
   default_method: Bayes
   methods:
     Svd:
       default_reg:
         ResponseTruth: 6
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 6
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 6
+        Flat: 6
     Bayes:
       default_reg:
-        ResponseTruth: 3
+        ResponseTruth: 5
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 5
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 5
+        Flat: 4
       iter_min: 1
-      iter_max: 6
+      iter_max: 8
       iter_step: 1
     BinByBin:
       default_reg: null
 -
   name: JetZ_SideBand_DPt_60_JetPt_15_30_JetZ_04
-  active: yes
+  active: no
   jet_type: Charged
   jet_radius: R040
   d_meson: D0_D0toKpiCuts
@@ -152,15 +164,21 @@ analysis:
   d_meson_response: Prompt_D0_D0toKpiCuts
   spectrum_response: JetZSpectrum_DPt_60_JetPt_15_30
   default_prior: ResponseTruth
-  priors: [ResponseTruth]
+  priors: [ResponseTruth, "ResponseTruth_multiply_pol(3, -6.5, 3.75)", "ResponseTruth_multiply_pol(0.25, -1, 3.75)", Flat]
   default_method: Bayes
   methods:
     Svd:
       default_reg:
         ResponseTruth: 5
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 5
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 5
+        Flat: 5
     Bayes:
       default_reg:
-        ResponseTruth: 3
+        ResponseTruth: 5
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 5
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 5
+        Flat: 5
       iter_min: 1
       iter_max: 6
       iter_step: 1
