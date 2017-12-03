@@ -1093,33 +1093,60 @@ class DMesonJetUnfoldingEngine:
     def ComputePrior(self, prior, scale_bin_width=True):
         if "_multiply_" in prior:
             priorHistos = [self.ComputePrior(prior_mult, False) for prior_mult in prior.split("_multiply_")]
-            priorHist = priorHistos[0].Clone("myprior")
-            for h in priorHistos[1:]: priorHist.Multiply(h)
+            priorHist = priorHistos[0][0].Clone("myprior")
+            axisCompare = priorHistos[0][1]
+            for h, a in priorHistos[1:]:
+                priorHist.Multiply(h)
+                if a != 0:
+                    if axisCompare == 0:
+                        axisCompare = a
+                    elif axisCompare != a:
+                        print("ComputePrior, Error in binning while computing prior '{}'".format(prior))
+                        exit(1)
             if scale_bin_width and not "ResponseTruth" in prior:
                 for ibin in range(0, priorHist.GetNbinsX() + 2):
                     priorHist.SetBinContent(ibin, priorHist.GetBinContent(ibin) * priorHist.GetXaxis().GetBinWidth(ibin))
         elif prior == "ResponseTruth":
             priorHist = self.fDetectorTrainTruth
+            axisCompare = 0
         elif prior == "Flat":
             priorHist = self.GenerateFlatPrior(scale_bin_width)
+            axisCompare = 0
         elif "PowerLaw" in prior:
             priorHist = self.GeneratePowerLawPrior(-int(prior.replace("PowerLaw_", "")), 3, scale_bin_width)
+            axisCompare = 0
         elif "pol" in prior:
             pars_string = prior.replace("pol(", "")
             pars_string = pars_string.replace(")", "")
             pars = [float(v) for v in pars_string.split(",")]
             priorHist = self.GeneratePolinomialPrior(pars, scale_bin_width)
+            axisCompare = 0
         else:
-            print("Prior '{}' not recognized!".format(prior))
-            exit(1)
-        return priorHist
+            priorHist = self.GetCustomPrior(prior)
+            axisCompare = DMesonJetUtils.CompareAxis(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
+
+        return priorHist, axisCompare
 
     def NormalizeResponseMatrix(self, prior):
         if prior == "ResponseTruth": return self.fDetectorResponse, self.fDetectorTrainTruth
 
-        priorHist = self.ComputePrior(prior)
-        detectorResponse = self.fDetectorResponse
-        detectorTrainTruth = self.fDetectorTrainTruth
+        priorHist, axisCompare = self.ComputePrior(prior)
+        if axisCompare < 0:
+            print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the response matrix, hopefully things will go well (and you know what you are doing!)".format(prior))
+            print("Prior axis: {}".format(list(priorHist.GetXaxis().GetXbins())))
+            print("Response matrix axis: {}".format(list(self.fDetectorResponse.GetYaxis().GetXbins())))
+            detectorResponse = DMesonJetUtils.Rebin2D(self.fDetectorResponse, self.fDetectorResponse.GetXaxis(), priorHist.GetXaxis(), False)
+            detectorTrainTruth = DMesonJetUtils.Rebin1D(self.fDetectorTrainTruth, priorHist.GetXaxis())
+        elif axisCompare > 0:
+            print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the custom prior, hopefully things will go well (and you know what you are doing!)".format(prior))
+            print("Prior axis: {}".format(list(priorHist.GetXaxis().GetXbins())))
+            print("Response matrix axis: {}".format(list(self.fDetectorResponse.GetYaxis().GetXbins())))
+            priorHist = DMesonJetUtils.Rebin1D(priorHist, self.fDetectorTrainTruth.GetXaxis())
+            detectorResponse = self.fDetectorResponse
+            detectorTrainTruth = self.fDetectorTrainTruth
+        else:
+            detectorResponse = self.fDetectorResponse
+            detectorTrainTruth = self.fDetectorTrainTruth
 
         priorHist_Integral = priorHist.Integral()
         if priorHist_Integral != 0:
