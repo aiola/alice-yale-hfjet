@@ -39,7 +39,7 @@ sources:
   combine_strategy: sum_in_quadrature
   variations:
   -
-    input_name: LHC10_Train1116_LHC15i2_Train1416_efficiency_mt_refl_DoubleGaus
+    input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1416_efficiency_mt_refl_DoubleGaus
     histogram_name: JetZ_SideBand_DPt_20_JetPt_5_15/Bayes/JetZ_SideBand_DPt_20_JetPt_5_15_UnfoldedSpectrum_Bayes_Reg4_PriorResponseTruth
     histogram_title: "0.95 #epsilon_{tracking}" 
 -
