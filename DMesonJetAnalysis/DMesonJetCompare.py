@@ -41,6 +41,7 @@ class DMesonJetCompare:
         self.fNColsLegRatio = 1
         self.fNColsLegSpectrum = 1
         self.fX1LegRatio = 0.55
+        self.fX2LegRatio = 0.90
         self.fY1LegRatio = 0.87
         self.fX1LegSpectrum = 0.55
         self.fX2LegSpectrum = 0.90
@@ -171,7 +172,7 @@ class DMesonJetCompare:
             else:
                 y1 = self.fY1LegRatio - self.fLegLineHeight * n / self.fNColsLegRatio
                 if y1 < 0.2: y1 = 0.2
-                self.fLegendRatio = ROOT.TLegend(self.fX1LegRatio, y1, 0.9, self.fY1LegRatio)
+                self.fLegendRatio = ROOT.TLegend(self.fX1LegRatio, y1, self.fX2LegRatio, self.fY1LegRatio)
                 self.fLegendRatio.SetName("{0}_legend".format(self.fCanvasRatio.GetName()))
                 self.fLegendRatio.SetNColumns(self.fNColsLegRatio)
                 self.fLegendRatio.SetFillStyle(0)
