@@ -16,6 +16,7 @@ from collections import OrderedDict
 
 globalList = []
 
+
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -39,6 +40,7 @@ def main(config):
 
     SaveCanvases(config["input_path"])
 
+
 def Start(config):
     histograms = LoadHistograms(config)
     results = dict()
@@ -46,6 +48,7 @@ def Start(config):
     results["Uncertainties"] = GenerateUncertainties(config, histograms)
     results["FinalSpectrum"] = PlotSpectrumStatAndSyst(config["name"], results)
     return results
+
 
 def LoadHistograms(config):
     crossSection = 62.2  # mb CINT1
@@ -79,6 +82,7 @@ def LoadHistograms(config):
                     histograms[s["name"]][v_type].append(h_copy)
     return histograms
 
+
 def LoadEvents(files, config):
     events = dict()
     for name, f in files.iteritems():
@@ -88,6 +92,7 @@ def LoadEvents(files, config):
         hevents = DMesonJetUtils.GetObject(files[name], heventsName)
         events[name] = hevents.GetBinContent(1)
     return events
+
 
 def OpenFiles(config):
     files = dict()
@@ -112,6 +117,7 @@ def OpenFiles(config):
                 files[input_name] = f
     return files
 
+
 def LoadInputNames(s):
     input_names = []
     v_types = ["variations", "up_variations", "low_variations"]
@@ -120,14 +126,20 @@ def LoadInputNames(s):
             for v in s[v_type]: input_names.append(v["input_name"])
     return input_names
 
+
 def CompareVariations(config, histograms):
     result = dict()
     variations = []
     h = histograms["default"]
     baseline = h.Clone("default")
     baseline.SetTitle(config["default"]["title"])
-    baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-    baseline.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+
+    if "JetZSpectrum" in config["name"]:
+        baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)")
+        baseline.GetXaxis().SetTitle("#it{z}_{||,D}^{ch jet}")
+    elif "JetPtSpectrum" in config["name"]:
+        baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
+        baseline.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
     result[baseline.GetName()] = baseline
     v_types = ["variations", "up_variations", "low_variations"]
     for s in config["sources"]:
@@ -142,15 +154,25 @@ def CompareVariations(config, histograms):
     globalList.append(baseline)
     comp = DMesonJetCompare.DMesonJetCompare("CompareVariations_{0}".format(config["name"]))
     comp.fOptRatio = "hist"
-    comp.fX1LegRatio = 0.45
+    comp.fX1LegRatio = 0.15
     comp.fX1LegSpectrum = 0.45
     comp.fLegLineHeight = 0.05
     comp.fGridyRatio = True
-    comp.fLogUpperSpace = 3
+    if "JetPtSpectrum" in config["name"]:
+        comp.fDoSpectraPlot = "logy"
+        comp.fLogUpperSpace = 5
+    elif "JetZSpectrum" in config["name"]:
+        comp.fDoSpectraPlot = "lineary"
+        comp.fLinUpperSpace = 1.1
     r = comp.CompareSpectra(baseline, variations)
+    if "JetPtSpectrum" in config["name"]:
+        comp.fMainHistogram.SetMinimum(5e-6)
+    elif "JetZSpectrum_JetPt_15_30" in config["name"]:
+        comp.fMainHistogram.SetMinimum(2e-4)
     for obj in r:
         globalList.append(obj)
     return result
+
 
 def CalculateFixSystematicUncertainty(config):
     fixed_unc2 = 0
@@ -163,6 +185,7 @@ def CalculateFixSystematicUncertainty(config):
     print("\\hline")
     print("{0} & {1:.1f}".format("Total", fixed_unc * 100))
     return fixed_unc
+
 
 def GenerateUncertainties(config, histograms):
     baseline = histograms["default"]
@@ -319,7 +342,6 @@ def GenerateUncertainties(config, histograms):
         xerrup.append(baseline.GetXaxis().GetBinWidth(ibin) / 2)
         xerrlow.append(baseline.GetXaxis().GetBinWidth(ibin) / 2)
 
-
     centralSystUnc = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(),
                                             numpy.array(x, dtype=float), numpy.array(y, dtype=float),
                                             numpy.array(xerrlow, dtype=float), numpy.array(xerrup, dtype=float),
@@ -334,6 +356,7 @@ def GenerateUncertainties(config, histograms):
               statUnc.GetName() : statUnc, totUncUp.GetName() : totUncUp, totUncLow.GetName() : totUncLow,
               centralSystUnc.GetName() : centralSystUnc}
     return result
+
 
 def PlotSystematicUncertaintySummary(name, results):
     sourcesUp = []
@@ -403,8 +426,10 @@ def PlotSystematicUncertaintySummary(name, results):
     comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
-    comp.fX1LegSpectrum = 0.45
+    comp.fX1LegSpectrum = 0.15
+    comp.fX2LegSpectrum = 0.55
     comp.fLegLineHeight = 0.05
+    comp.fLinUpperSpace = 1.5
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = False
     comp.fColors = colorsUp
@@ -420,6 +445,7 @@ def PlotSystematicUncertaintySummary(name, results):
     for obj in r:
         globalList.append(obj)
 
+
 def PlotSpectrumStatAndSyst(name, results):
     stat = results["Variations"]["default"]
     syst = results["Uncertainties"]["central_syst_unc"]
@@ -432,7 +458,7 @@ def PlotSpectrumStatAndSyst(name, results):
     if "JetPtSpectrum" in name:
         h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
         h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-        h.GetYaxis().SetRangeUser(1.5e-5, 4e-2)
+        h.GetYaxis().SetRangeUser(1e-5, 4e-2)
         canvas.SetLogy()
     elif "JetZSpectrum" in name:
         h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)")
@@ -474,11 +500,13 @@ def PlotSpectrumStatAndSyst(name, results):
     result["FinalSpectrumCanvas"] = canvas
     return result
 
+
 def SaveCanvases(input_path):
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             oname = obj.GetName().replace("/", "_")
             obj.SaveAs("{0}/{1}.pdf".format(input_path, oname))
+
 
 def GenerateRootList(pdict, name):
     rlist = ROOT.TList()
@@ -498,6 +526,7 @@ def GenerateRootList(pdict, name):
         else:
             print("Error: type of object {0} not recognized!".format(obj))
     return rlist
+
 
 if __name__ == '__main__':
 
