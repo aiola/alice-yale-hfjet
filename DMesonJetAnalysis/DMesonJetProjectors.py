@@ -213,6 +213,11 @@ class DMesonJetProjector:
         trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
         if not trials or not xsection:
+            print("Falling back to secondary method for x-section and trials...")
+            xsection = hlist.FindObject("fHistXsectionAfterSel")
+            trials = hlist.FindObject("fHistTrialsAfterSel")
+
+        if not trials or not xsection:
             print("Could not find trial and x-section information (not necessarily a bad thing)!")
             hlist.Print()
             self.fWeight = 1
