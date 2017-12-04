@@ -261,45 +261,11 @@ class RawYieldSpectrumLoader:
         fdHist = self.GetFDCorrection(-error_band)
         h.Add(fdHist, -1)
 
-    def GenerateFDConfig(self):
-        if self.fVariableName:
-            var = self.fVariableName.replace("z", "Z")
-        else:
-            print("No variable name provided!")
-            exit(1)
-        self.fFDConfig = dict()
-        self.fFDConfig["file_name"] = "BFeedDown.root"
-        self.fFDConfig["central_points"] = "default"
-        if self.fVariableName == "JetPt":
-            if "efficiency" in self.fAnalysisName:
-                self.fFDConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
-                print("Using FD correction with efficiency")
-            else:
-                self.fFDConfig["spectrum"] = "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply"
-                print("Using FD correction without efficiency")
-        elif self.fVariableName == "DPt":
-            if "efficiency" in self.fAnalysisName:
-                self.fFDConfig["spectrum"] = "GeneratorLevel_DPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
-                print("Using FD correction with efficiency")
-            else:
-                self.fFDConfig["spectrum"] = "DetectorLevel_DPtSpectrum_bEfficiencyMultiply"
-                print("Using FD correction without efficiency")
-        elif self.fVariableName == "JetZ":
-            if "efficiency" in self.fAnalysisName:
-                self.fFDConfig["spectrum"] = "GeneratorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide"
-                print("Using FD correction with efficiency")
-            else:
-                self.fFDConfig["spectrum"] = "DetectorLevel_JetZSpectrum_bEfficiencyMultiply"
-                print("Using FD correction without efficiency")
-        else:
-            print("ApplyFDCorrection: Variable {} not know".format(self.fVariableName))
-            exit(1)
-
     def GetFDCorrection(self, error_band=0):
         if not self.fFDConfig:
-            print("WARNING!!!!!!!!!")
-            print("The FD correction configuration was not provided. It will be generated automatically. This can lead to wrong or misleading results. It is safer to provide a FD correction configuration!")
-            self.GenerateFDConfig()
+            print("ERROR!!!!!!!!!")
+            print("The FD correction configuration was not provided.")
+            exit(1)
 
         if self.fVariableName:
             var = self.fVariableName.replace("z", "Z")
