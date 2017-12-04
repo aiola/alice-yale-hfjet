@@ -10,8 +10,9 @@ globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
 
+
 def GetMeasuredCrossSection():
-    fname = "{0}/DataSystematics_LHC10.root".format(input_path)
+    fname = "{0}/JetPtSpectrum_DPt_30_Systematics.root".format(input_path)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
@@ -26,8 +27,9 @@ def GetMeasuredCrossSection():
         exit(1)
     return hStat, hSyst
 
+
 def GetTheoryCrossSection():
-    fname = "{0}/PromptDJetsPrediction.root".format(input_path)
+    fname = "{0}/PromptDJetsPrediction_1505317519.root".format(input_path)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
@@ -61,8 +63,9 @@ def GetTheoryCrossSection():
 
     return hStat, hSystUp, hSystLow, hSyst
 
+
 def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLow, theorySyst):
-    cname = "FinalSpectrum_QM17"
+    cname = "D0JetCrossSection_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 700)
     globalList.append(canvas)
     canvas.Divide(1, 2)
@@ -104,7 +107,6 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     theoryStat_copy.SetMarkerColor(ROOT.kBlue + 2)
     theoryStat_copy.SetMarkerStyle(ROOT.kOpenCircle)
     theoryStat_copy.SetMarkerSize(1.2)
-
 
     theorySyst_copy = theorySyst.Clone("theorySyst_copy")
     globalList.append(theorySyst_copy)
@@ -194,7 +196,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(22)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Preliminary")
+    # paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
@@ -206,6 +208,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
 
     return canvas
 
+
 def main():
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -214,8 +217,9 @@ def main():
     dataStat, dataSyst = GetMeasuredCrossSection()
     theoryStat, theorySystUp, theorySystDown, theorySyst = GetTheoryCrossSection()
     canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
-    canvas.SaveAs("{0}/D0JetCrossSection_pp7TeV.pdf".format(input_path))
-    canvas.SaveAs("{0}/D0JetCrossSection_pp7TeV.C".format(input_path))
+    canvas.SaveAs("{0}/D0JetCrossSection_Paper.pdf".format(input_path))
+    canvas.SaveAs("{0}/D0JetCrossSection_Paper.C".format(input_path))
+
 
 if __name__ == '__main__':
     main()

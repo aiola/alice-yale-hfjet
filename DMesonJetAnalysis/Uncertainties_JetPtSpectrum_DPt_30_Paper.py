@@ -10,6 +10,7 @@ import DMesonJetCompare
 
 globalList = []
 
+
 def PlotUncertainties(results):
     asymm = False  # whether there is any asymmetric uncertainty
 
@@ -146,7 +147,8 @@ def PlotUncertainties(results):
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(12)
-    paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
+    # paveALICE.AddText("ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5 with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.Draw()
 
@@ -180,6 +182,7 @@ def PlotUncertainties(results):
 
     return canvas
 
+
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -190,11 +193,13 @@ def main(config):
     results["Variations"] = DataSystematics.CompareVariations(config, histograms)
     results["Uncertainties"] = DataSystematics.GenerateUncertainties(config, histograms)
     canvas = PlotUncertainties(results)
-    canvas.SaveAs("{0}/Uncertainties_QM17.pdf".format(config["input_path"]))
+    canvas.SaveAs("{0}/Uncertainties_JetPtSpectrum_DPt_30_Paper.pdf".format(config["input_path"]))
+    canvas.SaveAs("{0}/Uncertainties_JetPtSpectrum_DPt_30_Paper.C".format(config["input_path"]))
+
 
 if __name__ == '__main__':
 
-    f = open("DataSystematics_LHC10.yaml", 'r')
+    f = open("JetPtSpectrum_DPt_30_Systematics.yaml", 'r')
     config = yaml.load(f)
     f.close()
 
