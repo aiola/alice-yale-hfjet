@@ -29,7 +29,8 @@ def GetMeasuredCrossSection():
 
 
 def GetTheoryCrossSection():
-    fname = "{0}/PromptDJetsPrediction_1505317519.root".format(input_path)
+    # fname = "{0}/PromptDJetsPrediction_1505317519.root".format(input_path)
+    fname = "{0}/PromptDJetsPrediction_1483386026.root".format(input_path)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
