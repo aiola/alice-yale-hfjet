@@ -47,76 +47,53 @@ variations:
   active: yes
   title: "Central Values"
   ts: 1508972431
-  stage: 1
 -
   name: mass_low
   active: no
   title: "#it{m}_{c} = 1.3 GeV/#it{c}^{2}"
   ts: 1484078952
-  stage: 1
 -
   name: mass_high
   active: no
   title: "#it{m}_{c} = 1.7 GeV/#it{c}^{2}"
   ts: 1484079666
-  stage: 1
 -
   name: PDF_CT10
   active: no
   title: "PDF = CT10 (10800)" 
   ts: 1484149098
-  stage: 1
 -
   name: PDF_MSTW2008nlo68cl
   active: no
   title: "PDF = MSTW2008nlo68cl (21200)" 
   ts: 1484231826
-  stage: 1
--
-  name: PDF_cteq6l1
-  active: no # do not use
-  title: "PDF = cteq6l1 (10042)" 
-  ts: 999
-  stage: 1
 -
   name: facscfact2_renscfact2
   active: no
   title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
   ts: 1483403348
-  stage: 1
 -
   name: facscfact05_renscfact05
   active: no
   title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
   ts: 1483403545
-  stage: 1
--
-  name: facscfact10_renscfact10
-  active: no
-  title: "#mu_{F} = 1.0, #mu_{R} = 1.0"
-  ts: 1483403444
-  stage: 1
 -
   name: facscfact1_renscfact05
   active: no
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
   ts: 1483619159
-  stage: 1
 -
   name: facscfact05_renscfact1
   active: no
   title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
   ts: 1483623504
-  stage: 1
 -
   name: facscfact2_renscfact1
   active: no
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
   ts: 1483623768
-  stage: 1
 -
   name: facscfact1_renscfact2
   active: no
   title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
   ts: 1483629804
-  stage: 1
