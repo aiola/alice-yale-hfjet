@@ -166,7 +166,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     leg1.Draw()
 
     padMain.cd()
-    paveALICE = ROOT.TPaveText(0.16, 0.64, 0.55, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.16, 0.54, 0.55, 0.90, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -175,8 +175,9 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     paveALICE.SetTextAlign(13)
     # paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5,")
+    paveALICE.AddText("5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}")
+    paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}")
     paveALICE.Draw()
 
     padRatio.RedrawAxis("g")
