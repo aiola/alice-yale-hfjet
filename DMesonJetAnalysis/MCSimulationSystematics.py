@@ -61,7 +61,7 @@ def main(config, unfolding_debug):
         if not v["active"]: continue
         name = v["name"]
         suffix = "_".join([config["generator"], str(v["ts"])])
-        input_file_name = "{0}/FastSim_{1}/FastSimAnalysis_Reduced_{1}.root".format(config["input_path"], suffix)
+        input_file_name = "{0}/FastSim_{1}/{2}_{1}.root".format(config["input_path"], suffix, config["analysis_name"])
         fd_histograms = LoadFDHistogram(input_file_name, config["spectra"])
         results[name] = OrderedDict()
         for spectrum, hist_orig in zip(config["spectra"], fd_histograms):

@@ -1,6 +1,7 @@
 name: PromptDJetsPrediction_1483386026
+analysis_name: FastSimAnalysis
 input_path: /Volumes/DATA/ALICE/JetResults
-generator: powheg
+generator: powheg_charm
 spectra:
 -
   variable_name: DPt

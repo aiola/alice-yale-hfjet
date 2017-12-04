@@ -1,4 +1,5 @@
 name: BFeedDown_1505317519_1399_newcuts
+analysis_name: FastSimAnalysis_FDonly
 input_path: /Volumes/DATA/ALICE/JetResults
 generator: powheg+pythia6_beauty
 c_response:
