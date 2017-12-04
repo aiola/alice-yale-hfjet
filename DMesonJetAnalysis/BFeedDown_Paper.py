@@ -11,14 +11,18 @@ globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
 
+
 def GetBFeedDownSpectra():
-    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_823_824_825_826", "LHC10_Train823_efficiency")
-    loader.fDMeson = "D0"
+    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")
+    loader.fDMeson = "D0_D0toKpiCuts"
     loader.fJetType = "Charged"
     loader.fJetRadius = "R040"
     loader.fVariableName = "JetPt"
     loader.fKinematicCuts = "DPt_30"
     loader.fRawYieldMethod = "SideBand"
+    loader.fFDConfig = { "file_name": "BFeedDown_1505317519_1399.root",
+                        "central_points": "default",
+                        "spectrum": "DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide"}
     h = loader.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     hFDsub = loader.GetDefaultSpectrumFromMultiTrial(True, 0, 0)
     hFD = loader.GetFDCorrection()
@@ -26,6 +30,7 @@ def GetBFeedDownSpectra():
     hFD_down = loader.GetFDCorrection(-1)
     hFDsyst = loader.GetFDCorrection("graph")
     return h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst
+
 
 def PlotBFeedDown():
     h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst = GetBFeedDownSpectra()
@@ -134,7 +139,7 @@ def PlotBFeedDown():
     leg1.AddEntry(ratio_down, "Systematic Uncertainty", "l")
     leg1.Draw()
 
-    canvas2 = ROOT.TCanvas("BFeedDown_QM17", "BFeedDown_QM17")
+    canvas2 = ROOT.TCanvas("BFeedDown_Paper", "BFeedDown_Paper")
     globalList.append(canvas2)
     canvas2.SetTicks(1, 1)
     canvas2.SetLeftMargin(0.13)
@@ -159,15 +164,7 @@ def PlotBFeedDown():
     ratio2.GetYaxis().SetLabelFont(43)
     ratio2.GetYaxis().SetLabelSize(22)
     ratio2.GetYaxis().SetTitleOffset(0.9)
-    ratio2.GetYaxis().SetRangeUser(0, 0.69)
-
-#     ratio2_up = hFD_up_copy.DrawCopy("same hist l")
-#     globalList.append(ratio2_up)
-#     ratio2_up.Divide(h_copy)
-#
-#     ratio2_down = hFD_down_copy.DrawCopy("same hist l")
-#     globalList.append(ratio2_down)
-#     ratio2_down.Divide(h_copy)
+    ratio2.GetYaxis().SetRangeUser(0, 1.3)
 
     ratio2Syst = hFDsyst.Clone("ratio2Syst")
     globalList.append(ratio2Syst)
@@ -188,7 +185,7 @@ def PlotBFeedDown():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Preliminary")
+    # paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj., #it{p}_{T,D} > 3 GeV/#it{c}")
@@ -211,6 +208,7 @@ def PlotBFeedDown():
 
     return canvas1, canvas2
 
+
 def main():
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -218,7 +216,9 @@ def main():
 
     canvas1, canvas2 = PlotBFeedDown()
     canvas1.SaveAs("{0}/BFeedDown_InternalPlot.pdf".format(input_path))
-    canvas2.SaveAs("{0}/BFeedDown_QM17.pdf".format(input_path))
+    canvas2.SaveAs("{0}/BFeedDown_Paper.pdf".format(input_path))
+    canvas2.SaveAs("{0}/BFeedDown_Paper.C".format(input_path))
+
 
 if __name__ == '__main__':
     main()
