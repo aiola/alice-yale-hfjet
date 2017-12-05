@@ -59,10 +59,18 @@ def main(config, unfolding_debug):
     robjects = []
     for v in config["variations"]:
         if not v["active"]: continue
+        if "scaling" in v:
+            scaling_factor = v["scaling"]
+        else:
+            scaling_factor = 1
         name = v["name"]
-        suffix = "_".join([config["generator"], str(v["ts"])])
+        if "generator" in v:
+            suffix = "_".join([v["generator"], str(v["ts"])])
+        else:
+            suffix = "_".join([config["generator"], str(v["ts"])])
+
         input_file_name = "{0}/FastSim_{1}/{2}_{1}.root".format(config["input_path"], suffix, config["analysis_name"])
-        fd_histograms = LoadFDHistogram(input_file_name, config["spectra"])
+        fd_histograms = LoadFDHistogram(input_file_name, config["spectra"], scaling_factor)
         results[name] = OrderedDict()
         for spectrum, hist_orig in zip(config["spectra"], fd_histograms):
             results[name].update(PrepareFDhist(spectrum, v["ts"], hist_orig, bResponseFile, cResponseFile, bResponseFile_efficiency, cResponseFile_efficiency, unfolding_debug))
@@ -708,7 +716,7 @@ def LoadResponse(responseFile, dmeson, spectrumName, suffix_in, suffix_out, detA
     return resp_coarse, eff_coarse
 
 
-def LoadFDHistogram(file_name, spectra):
+def LoadFDHistogram(file_name, spectra, scaling_factor):
     result = []
     for spectrum in spectra:
         jet_var_name = spectrum["variable_name"]
@@ -741,6 +749,7 @@ def LoadFDHistogram(file_name, spectra):
             print("Could not find FD histogram '{}' ({})!".format(spectrum_name, jet_var_name))
             slist.Print()
             exit(1)
+        jet_hist.Scale(scaling_factor)
         jet_hist.GetZaxis().SetTitle("#frac{{d#sigma}}{{d{lab}}} #times #Delta{lab} (mb)".format(lab=label))
         print("Histogram {} loaded".format(jet_hist.GetName()))
         result.append(jet_hist)

@@ -56,37 +56,37 @@ variations:
   ts: 1505317519
 -
   name: mass_low
-  active: no
+  active: yes
   title: "#it{m}_{b} = 4.5 GeV/#it{c}^{2}"
   ts: 1505317954
 -
   name: mass_high
-  active: no
+  active: yes
   title: "#it{m}_{b} = 5.0 GeV/#it{c}^{2}"
   ts: 1505318474
 -
   name: PDF_MSTW2008nlo68cl
-  active: no
+  active: yes
   title: "PDF = MSTW2008nlo68cl (21200)" 
   ts: 1505395218
 -
   name: facscfact2_renscfact2
-  active: no
+  active: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
   ts: 1505506137
 -
   name: facscfact05_renscfact05
-  active: no
+  active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
   ts: 1505744361
 -
   name: facscfact1_renscfact05
-  active: no
+  active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
   ts: 1505760169
 -
   name: facscfact05_renscfact1
-  active: no
+  active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
   ts: 1505760774
 -
@@ -99,3 +99,10 @@ variations:
   active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
   ts: 1505764272
+-
+  name: EvtGen
+  active: yes
+  title: "EvtGen"
+  ts: 1512404613
+  scaling: 0.11965e-7 # 0.2393 / 2e7
+  generator: powheg+pythia6+evtgen_beauty
