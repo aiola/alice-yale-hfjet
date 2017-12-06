@@ -10,7 +10,10 @@ import ROOT
 
 globalList = []
 
-def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format):
+
+def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format, bg):
+    if bg: ROOT.gROOT.SetBatch(True)
+
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
 
@@ -31,6 +34,7 @@ def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format):
 
     ana.SaveRootFile()
     ana.SavePlots(format)
+
 
 if __name__ == '__main__':
 
@@ -57,12 +61,14 @@ if __name__ == '__main__':
     parser.add_argument("--ry-syst", action='store_const',
                         default=False, const=True,
                         help='Do raw-yield systematics.')
+    parser.add_argument('-b', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config, args.no_mt, args.no_refl, args.refl_fit, args.refl_ros, args.fd_syst, args.ry_syst, args.format)
+    main(config, args.no_mt, args.no_refl, args.refl_fit, args.refl_ros, args.fd_syst, args.ry_syst, args.format, args.b)
 
     IPython.embed()
