@@ -11,7 +11,7 @@ import DMesonJetCompare
 globalList = []
 
 
-def PlotUncertainties(results):
+def PlotUncertainties(results, name):
     asymm = False  # whether there is any asymmetric uncertainty
 
     sourcesUp = []
@@ -84,7 +84,7 @@ def PlotUncertainties(results):
         print(" & ".join(["Total Uncertainty"] + ["{0:.1f}".format(tot_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\")
     globalList.extend(sourcesUp)
     globalList.extend(sourcesLow)
-    comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
+    comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(name))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
     comp.fX1LegSpectrum = 0.16
@@ -183,26 +183,25 @@ def PlotUncertainties(results):
     return canvas
 
 
-def main(config):
+def main():
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
-
-    histograms = DataSystematics.LoadHistograms(config)
-    results = dict()
-    results["Variations"] = DataSystematics.CompareVariations(config, histograms)
-    results["Uncertainties"] = DataSystematics.GenerateUncertainties(config, histograms)
-    canvas = PlotUncertainties(results)
-    canvas.SaveAs("{0}/Uncertainties_JetPtSpectrum_DPt_30_Paper.pdf".format(config["input_path"]))
-    canvas.SaveAs("{0}/Uncertainties_JetPtSpectrum_DPt_30_Paper.C".format(config["input_path"]))
-
-
-if __name__ == '__main__':
 
     f = open("JetPtSpectrum_DPt_30_Systematics.yaml", 'r')
     config = yaml.load(f)
     f.close()
 
-    main(config)
+    histograms = DataSystematics.LoadHistograms(config)
+    results = dict()
+    results["Variations"] = DataSystematics.CompareVariations(config, histograms)
+    results["Uncertainties"] = DataSystematics.GenerateUncertainties(config, histograms)
+    canvas = PlotUncertainties(results, config["name"])
+    canvas.SaveAs("{0}/Uncertainties_JetPtSpectrum_DPt_30_Paper.pdf".format(config["input_path"]))
+    canvas.SaveAs("{0}/Uncertainties_JetPtSpectrum_DPt_30_Paper.C".format(config["input_path"]))
+
+
+if __name__ == '__main__':
+    main()
 
     IPython.embed()
