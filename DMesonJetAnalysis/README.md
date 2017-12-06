@@ -62,18 +62,24 @@ Then execute:
 
 ` ./MCSimulationSystematics.py FDCorrection.yaml `
 
+`./MCSimulationSystematics.py FDCorrection_1416.yaml`
+
 ## Unfolding
 
-`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml`
+`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml -b`
 
-`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399.yaml`
+### Full Systematics
 
-To run full systematics:
+##### Tracking Efficiency
 
-`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1416_efficiency.yaml`
+ `./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1416_efficiency.yaml -b`
 
-`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml --fd-syst --ry-syst`
+##### B Feed-Down and Raw Yield
 
-`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml --refl-ros 5`
+ `./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml --fd-syst --ry-syst -b`
 
-`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml --refl-ros 15`
+##### Reflections
+
+`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml --refl-ros 5 -b`
+
+`./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml --refl-ros 15 -b`
