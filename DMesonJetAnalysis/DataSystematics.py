@@ -166,7 +166,7 @@ def CompareVariations(config, histograms):
         comp.fLinUpperSpace = 1.1
     r = comp.CompareSpectra(baseline, variations)
     if "JetPtSpectrum" in config["name"]:
-        comp.fMainHistogram.SetMinimum(5e-6)
+        comp.fMainHistogram.SetMinimum(1e-6)
     elif "JetZSpectrum_JetPt_15_30" in config["name"]:
         comp.fMainHistogram.SetMinimum(2e-4)
     for obj in r:
@@ -369,7 +369,10 @@ def PlotSystematicUncertaintySummary(name, results):
     colorsUp.append(ROOT.kBlack)
 
     print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(tot_unc_up.GetNbinsX()))
-    print(" & ".join(["\\ptchjet\\ (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
+    if "JetZSpectrum" in name:
+        print(" & ".join(["\\zpar\\"] + ["{0:.1f} - {1:.1f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
+    elif "JetPtSpectrum" in name:
+        print(" & ".join(["\\ptchjet\\ (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
 
     h = results["Uncertainties"]["tot_unc_low"]
     tot_unc_low = h.Clone("{0}_copy".format(h.GetName()))
@@ -411,7 +414,7 @@ def PlotSystematicUncertaintySummary(name, results):
         cont += 1
 
     print("\\hline")
-    print("\\Normalization & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
+    print("Normalization & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
     print("\\hline")
     print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
     print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")
@@ -423,7 +426,7 @@ def PlotSystematicUncertaintySummary(name, results):
 
     globalList.extend(sourcesUp)
     globalList.extend(sourcesLow)
-    comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(config["name"]))
+    comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(name))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
     comp.fX1LegSpectrum = 0.15
@@ -458,7 +461,7 @@ def PlotSpectrumStatAndSyst(name, results):
     if "JetPtSpectrum" in name:
         h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
         h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
-        h.GetYaxis().SetRangeUser(1e-5, 4e-2)
+        h.GetYaxis().SetRangeUser(5e-6, 4e-2)
         canvas.SetLogy()
     elif "JetZSpectrum" in name:
         h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)")
@@ -536,9 +539,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
-    config = yaml.load(f)
+    __my_config__ = yaml.load(f)
     f.close()
 
-    main(config)
+    main(__my_config__)
 
     IPython.embed()
