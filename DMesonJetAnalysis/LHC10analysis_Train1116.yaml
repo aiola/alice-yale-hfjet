@@ -409,7 +409,7 @@ analysis:
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency: no
     bins:
-      d_pt: [2, 3, 4, 6, 9, 15, 30]
+      d_pt: [2, 4, 6, 9, 15, 30]
     sigma_fits:
       D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
       D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016, 0.017]
