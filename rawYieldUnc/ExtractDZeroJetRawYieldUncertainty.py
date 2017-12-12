@@ -11,6 +11,7 @@ import os
 import shutil
 import glob
 import math
+import copy
 
 import ROOT
 
@@ -357,10 +358,8 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
         if len(binlist["bins"]) != 1:
             print("Cannot process bin lists with a number of axis different from 1 (found {}, bin list name {}).".format(len(binlist["bins"]), binlist["name"]))
             continue
-        binlist_axis = binlist["bins"].items()[0]
-        axis_name = binlist_axis[0]
-        bins = binlist_axis[1]
         for spectrum in binlist["spectra"]:
+            binlist_axis = copy.deepcopy(binlist["bins"].items()[0])
             if not "multitrial" in spectrum: continue
             for dmeson in spectrum["multitrial"]:
                 if not dmeson in ana["d_meson"]: continue
@@ -385,6 +384,16 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                     if binlist_axis[0] != "d_pt":
                         print("For the sideband method the bin list axis must be d_pt (it is {}, spectrum {})".format(binlist_axis[0], spectrum["name"]))
                         exit(1)
+                    if "skip_bins" in spectrum["side_band"]:
+                        ibin_prev = -1
+                        for ibin in spectrum["side_band"]["skip_bins"]:
+                            if ibin != ibin_prev + 1:
+                                print("Can only skip the first x bins!")
+                                print(spectrum_name)
+                                exit(1)
+                            print("Skipping bin {}, {}".format(binlist_axis[1][0], binlist_axis[1][1]))
+                            binlist_axis[1].pop(0)
+                            ibin_prev = ibin
                     method = ROOT.AliDJetRawYieldUncertainty.kSideband
                     spectrum_axis = spectrum["axis"].items()[0]
                     (dpt_bins, DMesonEff) = (binlist_axis[1], None)
@@ -420,7 +429,7 @@ def main(config, reuse_binbybin, skip_binbybin, skip_combine, single_trial, refl
                 print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
 
                 if not skip_binbybin and not reuse_binbybin:
-                    for minPt, maxPt in zip(bins[:-1], bins[1:]):
+                    for minPt, maxPt in zip(binlist_axis[1][:-1], binlist_axis[1][1:]):
                        interface = EvaluateBinPerBinUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt, refl, single_trial)
                        rawYieldUnc.append(interface)
                 if not skip_combine: rawYieldUncSummary = ExtractDJetRawYieldUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, single_trial)
