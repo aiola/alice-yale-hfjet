@@ -10,7 +10,7 @@ monte_carlo: no
 analysis:
 - 
   trigger: ["AnyINT"]
-  d_meson: [D0_D0toKpiCuts] # , D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+  d_meson: [D0_D0toKpiCuts] #, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
   n_mass_bins: 50
   min_mass: 1.715
   max_mass: 2.015
@@ -21,20 +21,15 @@ analysis:
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
   binLists:
   -
-    name: JetPtBins_DPt_20
-    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
-    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-    efficiency:
-      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
-      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: JetPtDPtSpectrum
-      object_name: Efficiency_JetPt_500_3000
+    name: DPtBins_JetPt_5_30
+    title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+    active_mesons: [D0_D0toKpiCuts]
+    need_inv_mass: [D0_D0toKpiCuts]
+    efficiency: no
     bins:
-      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
-      D0_D0toKpiCuts: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
+      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016, 0.017, 0.018]
     cuts:
     -
       object: jet
@@ -42,19 +37,203 @@ analysis:
       min: -0.5
       max: 0.5
     -
-      object: d
+      object: jet
       variable: fPt
-      min: 2.0
+      min: 5
+      max: 30
     spectra:
     -
+      name: JetPtSpectrum_DPt_30
+      suffix: SideBand
+      title: "Side Band, #it{p}_{T,D} > 3 GeV/#it{c}"
+      efficiency:
+        # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
+        # but NOT for the kinematic efficiency due to the jet pt cut
+        file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+        list_name: JetPtDPtSpectrum
+        object_name: Efficiency_JetPt_500_3000
+      compare: [DPtBinWidthDPt3, DPtCutSideBand, MethodDPt3]
+      comp_titles: ["Small #it{p}_{T,D} bins", "#it{p}_{T,D} > 3 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 3 GeV/#it{c})"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts]
+      multitrial: [D0_D0toKpiCuts]
+      axis:
+        jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      side_band:
+        skip_bins: [0]
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
       name: JetPtSpectrum_DPt_20
+      suffix: SideBand
+      title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}"
+      efficiency:
+        # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
+        # but NOT for the kinematic efficiency due to the jet pt cut
+        file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+        list_name: JetPtDPtSpectrum
+        object_name: Efficiency_JetPt_500_3000
+      compare: [DPtBinWidthDPt2, DPtCutSideBand, MethodDPt2]
+      comp_titles: ["Small #it{p}_{T,D} bins", "#it{p}_{T,D} > 2 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 2 GeV/#it{c})"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts]
+      multitrial: [D0_D0toKpiCuts]
+      axis:
+        jet_pt: [5, 6, 8, 10, 14, 20, 30]
+      side_band:
+        skip_bins: []
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: DPtSpectrum_JetPt_5_30
       suffix: InvMassFit
-      title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}"
-      compare: [DPtCutInvMassFit, MethodDPt2]
-      comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Inv.Mass Fit)", "Inv.Mass Fit (#it{p}_{T,D} > 2 GeV/#it{c})"]
+      title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [JetPtCut]
+      comp_titles: ["5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (Inv.Mass Fit)"]
       type: inv_mass_fit
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      multitrial: [] # [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      active_mesons: [] # Deactivated because efficiency correction not implemented (?) for inv. mass fit method, AFTER the fit
+  -
+    name: DPtBins_JetPt_5_15
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c} (fine bins)"
+    active_mesons: [D0_D0toKpiCuts]
+    need_inv_mass: [D0_D0toKpiCuts]
+    efficiency: no
+    bins:
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
+    sigma_fits:
+      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 5
+      max: 15
+    spectra:
+    -
+      name: JetZSpectrum_DPt_20_JetPt_5_15
+      suffix: SideBand
+      title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      efficiency:
+        # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
+        file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+        list_name: DPtSpectrum_JetPt_5_15
+        object_name: Efficiency
+      compare: [DPtBinWidth, MethodLow]
+      comp_titles: ["Small #it{p}_{T,D} bins", "Side Band"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts]
+      multitrial: [D0_D0toKpiCuts]
+      axis:
+        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: DPtSpectrum_JetPt_5_15
+      suffix: InvMassFit
+      title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
+      compare: [JetPtCut]
+      comp_titles: ["5 < #it{p}_{T,ch jet} < 15 GeV/#it{c} (Inv.Mass Fit)"]
+      type: inv_mass_fit
+      active_mesons: [] # Deactivated because efficiency correction not implemented (?) for inv. mass fit method, AFTER the fit
+  -
+    name: DPtBins_JetPt_15_30
+    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    efficiency:
+      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: DPtSpectrum_JetPt_15_30
+      object_name: Efficiency
+    bins:
+      d_pt: [6, 12, 30]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimHighJetPtv4: [0.015, 0.016]
+      D0_D0toKpiCuts: [0.015, 0.016]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: jet
+      variable: fPt
+      min: 15
+      max: 30
+    spectra:
+    -
+      name: JetZSpectrum_DPt_60_JetPt_15_30
+      suffix: SideBand
+      title: "Side Band, #it{p}_{T,D} > 6 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [MethodHigh]
+      comp_titles: ["Side Band"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+      axis:
+        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+    -
+      name: DPtSpectrum_JetPt_15_30
+      suffix: SideBand
+      title: "Side Band, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+      compare: [JetPtCut]
+      comp_titles: ["15 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (Side Band)"]
+      type: side_band
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+      axis:
+        d_pt: [6, 7, 8, 10, 12, 15, 30]
+      side_band:
+        min_sigmas: 4
+        max_sigmas: 8
+        max_signal_sigmas: 2
+        backup_mean: 1.86484
+        backup_sigma: 0.015
+  -
+    name: DPtBins
+    title: "|#eta_{D}| < 0.5"
+    active_mesons: [] # Deactivated because efficiency correction not implemented (?) for inv. mass fit method, AFTER the fit
+    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    efficiency: no
+    bins:
+      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
+    cuts:
+    -
+      object: d
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    spectra:
+    -
+      name: DPtSpectrum
+      suffix: InvMassFit
+      title: "Inv.Mass Fit"
+      compare: []
+      comp_titles: []
+      type: inv_mass_fit
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+  # The following are optional comparisons
   -
     name: JetPtBins_DPt_30
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
@@ -162,8 +341,44 @@ analysis:
       comp_titles: ["Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+      
   -
-    name: DPtBins_JetPt_5_15
+    name: JetPtBins_DPt_20
+    title: "#it{p}_{T,D} > 2 GeV/#it{c}"
+    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    efficiency:
+      # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
+      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
+      list_name: JetPtDPtSpectrum
+      object_name: Efficiency_JetPt_500_3000
+    bins:
+      jet_pt: [5, 6, 8, 10, 14, 20, 30]
+    sigma_fits:
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
+      D0_D0toKpiCuts: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
+    cuts:
+    -
+      object: jet
+      variable: fEta
+      min: -0.5
+      max: 0.5
+    -
+      object: d
+      variable: fPt
+      min: 2.0
+    spectra:
+    -
+      name: JetPtSpectrum_DPt_20
+      suffix: InvMassFit
+      title: "Inv.Mass Fit, #it{p}_{T,D} > 2 GeV/#it{c}"
+      compare: [DPtCutInvMassFit, MethodDPt2]
+      comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Inv.Mass Fit)", "Inv.Mass Fit (#it{p}_{T,D} > 2 GeV/#it{c})"]
+      type: inv_mass_fit
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+  -
+    name: DPtBins_JetPt_5_15_CoarseBins
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -190,27 +405,11 @@ analysis:
       max: 15
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_15
-      suffix: SideBand
-      title: "Side Band, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-      compare: []
-      comp_titles: []
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      axis:
-        d_pt: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-    -
       name: JetZSpectrum_DPt_20_JetPt_5_15
-      suffix: SideBand
+      suffix: SideBand_CoarseBins
       title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-      compare: [MethodLow, DPtBinWidth]
-      comp_titles: ["Side Band", "Wide #it{p}_{T,D} bins"]
+      compare: [DPtBinWidth]
+      comp_titles: ["Wide #it{p}_{T,D} bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -223,112 +422,8 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_15_FineBins
-    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c} (fine bins)"
-    active_mesons: [D0_D0toKpiCuts]
-    need_inv_mass: [D0_D0toKpiCuts]
-    efficiency: no
-    bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
-    sigma_fits:
-      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: jet
-      variable: fPt
-      min: 5
-      max: 15
-    spectra:
-    -
-      name: JetZSpectrum_DPt_20_JetPt_5_15
-      suffix: SideBand_FineBins
-      title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}, 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-      efficiency:
-        # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
-        file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-        list_name: DPtSpectrum_JetPt_5_15
-        object_name: Efficiency
-      compare: [DPtBinWidth]
-      comp_titles: ["Small #it{p}_{T,D} bins"]
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts]
-      multitrial: [D0_D0toKpiCuts]
-      axis:
-        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-  -
-    name: DPtBins_JetPt_15_30
-    title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-    efficiency:
-      # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
-      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum_JetPt_15_30
-      object_name: Efficiency
-    bins:
-      d_pt: [6, 12, 30]
-    sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimHighJetPtv4: [0.015, 0.016]
-      D0_D0toKpiCuts: [0.015, 0.016]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: jet
-      variable: fPt
-      min: 15
-      max: 30
-    spectra:
-    -
-      name: DPtSpectrum_JetPt_15_30
-      suffix: SideBand
-      title: "Side Band, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-      compare: []
-      comp_titles: []
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-      axis:
-        d_pt: [6, 7, 8, 9, 10, 12, 15, 20, 30]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-    -
-      name: JetZSpectrum_DPt_60_JetPt_15_30
-      suffix: SideBand
-      title: "Side Band, #it{p}_{T,D} > 6 GeV/#it{c}, 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-      compare: [MethodHigh]
-      comp_titles: ["Side Band"]
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-      axis:
-        d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-  -
-    name: DPtBins_JetPt_5_30
-    title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
+    name: DPtBins_JetPt_5_30_DPt_2_CoarseBins
+    title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (coarse bins)"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency:
@@ -338,7 +433,7 @@ analysis:
       list_name: JetPtDPtSpectrum
       object_name: Efficiency_JetPt_500_3000
     bins:
-      d_pt: [2, 4, 6, 9, 15, 30]
+      d_pt: [2, 3, 4, 6, 9, 15, 30]
     sigma_fits:
       D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
       D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016, 0.017]
@@ -355,27 +450,11 @@ analysis:
       max: 30
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_30
-      suffix: SideBand
-      title: "Side Band, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-      compare: []
-      comp_titles: []
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      axis:
-        d_pt: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-    -
       name: JetPtSpectrum_DPt_20
-      suffix: SideBand
+      suffix: SideBand_CoarseBins
       title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}"
-      compare: [DPtCutSideBand, MethodDPt2, DPtBinWidth]
-      comp_titles: ["#it{p}_{T,D} > 2 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 2 GeV/#it{c})", "Wide #it{p}_{T,D} bins"]
+      compare: [DPtBinWidthDPt2]
+      comp_titles: ["Wide #it{p}_{T,D} bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -388,52 +467,7 @@ analysis:
         backup_mean: 1.86484
         backup_sigma: 0.015
   -
-    name: DPtBins_JetPt_5_30_FineBins
-    title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (fine bins)"
-    active_mesons: [D0_D0toKpiCuts]
-    need_inv_mass: [D0_D0toKpiCuts]
-    efficiency: no
-    bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30]
-    sigma_fits:
-      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016, 0.017, 0.018]
-    cuts:
-    -
-      object: jet
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    -
-      object: jet
-      variable: fPt
-      min: 5
-      max: 30
-    spectra:
-    -
-      name: JetPtSpectrum_DPt_20
-      suffix: SideBand_FineBins
-      title: "Side Band, #it{p}_{T,D} > 2 GeV/#it{c}"
-      efficiency:
-        # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
-        # but NOT for the kinematic efficiency due to the jet pt cut
-        file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-        list_name: JetPtDPtSpectrum
-        object_name: Efficiency_JetPt_500_3000
-      compare: [DPtBinWidth]
-      comp_titles: ["Small #it{p}_{T,D} bins"]
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts]
-      multitrial: [D0_D0toKpiCuts]
-      axis:
-        jet_pt: [5, 6, 8, 10, 14, 20, 30]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-  -
-    name: DPtBins_JetPt_5_30_DPt_3
+    name: DPtBins_JetPt_5_30_DPt_3_CoarseBins
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -461,27 +495,11 @@ analysis:
       max: 30
     spectra:
     -
-      name: DPtSpectrum_JetPt_5_30_DPt_30
-      suffix: SideBand
-      title: "Side Band, 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-      compare: []
-      comp_titles: []
-      type: side_band
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
-      axis:
-        d_pt: [3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30]
-      side_band:
-        min_sigmas: 4
-        max_sigmas: 8
-        max_signal_sigmas: 2
-        backup_mean: 1.86484
-        backup_sigma: 0.015
-    -
       name: JetPtSpectrum_DPt_30
-      suffix: SideBand
+      suffix: SideBand_CoarseBins
       title: "Side Band, #it{p}_{T,D} > 3 GeV/#it{c}"
-      compare: [DPtCutSideBand, MethodDPt3]
-      comp_titles: ["#it{p}_{T,D} > 3 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 3 GeV/#it{c})"]
+      compare: [DPtBinWidthDPt3]
+      comp_titles: ["Wide #it{p}_{T,D} bins"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -493,30 +511,3 @@ analysis:
         max_signal_sigmas: 2
         backup_mean: 1.86484
         backup_sigma: 0.015
-  -
-    name: DPtBins
-    title: "|#eta_{D}| < 0.5"
-    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
-    efficiency:
-      # Correcting for reconstruction efficiency
-      file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
-      list_name: DPtSpectrum
-      object_name: Efficiency
-    bins:
-      d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
-    cuts:
-    -
-      object: d
-      variable: fEta
-      min: -0.5
-      max: 0.5
-    spectra:
-    -
-      name: DPtSpectrum
-      suffix: InvMassFit
-      title: "Inv.Mass Fit"
-      compare: []
-      comp_titles: []
-      type: inv_mass_fit
-      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
