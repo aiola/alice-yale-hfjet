@@ -13,6 +13,7 @@ sys.path.append("../DMesonJetAnalysis")
 import DMesonJetUtils
 sys.path.remove("../DMesonJetAnalysis")
 
+
 def main(config):
     ROOT.gInterpreter.AddIncludePath("$ALICE_ROOT/include");
     ROOT.gInterpreter.AddIncludePath("$ALICE_PHYSICS/include");
@@ -40,12 +41,14 @@ def main(config):
     if not os.path.isdir(path): os.makedirs(path)
 
     for templ_config in config["analysis"]:
+        if not templ_config["active"]: continue
         GenerateReflTemp(fileIn, path, config["name"], templ_config)
 
     dest_dir = "./reflTemp"
     for file in glob.glob("{}/*.root".format(path)):
         print("Copying file '{}' to '{}'".format(file, dest_dir))
         shutil.copy(file, dest_dir)
+
 
 def GenerateReflTemp(fileIn, path, name, templ_config):
     for templ in templ_config["templates"]:
@@ -83,6 +86,7 @@ def GenerateReflTemp(fileIn, path, name, templ_config):
         ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "gaus");
         ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "pol3");
         ROOT.AliDJetRawYieldUncertainty.FitReflDistr(len(templ["bins"]) - 1, fname, "pol6");
+
 
 if __name__ == '__main__':
 

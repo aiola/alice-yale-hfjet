@@ -9,6 +9,7 @@ collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
   d_meson_cuts: D0toKpiCuts
+  active: yes
   templates:
   -
     variable: JetPt
@@ -23,28 +24,23 @@ analysis:
   -
     variable: DPt
     jet_label: Charged_R040
-    bin_list: DPtBins_JetPt_5_15
-    bins: [2, 4, 6, 9, 15]
-  -
-    variable: DPt
-    jet_label: Charged_R040
     bin_list: DPtBins_JetPt_15_30
     bins: [6, 12, 30]
   -
     variable: DPt
     jet_label: Charged_R040
-    bin_list: DPtBins_JetPt_5_30
+    bin_list: DPtBins_JetPt_5_15_CoarseBins
+    bins: [2, 4, 6, 9, 15]
+  -
+    variable: DPt
+    jet_label: Charged_R040
+    bin_list: DPtBins_JetPt_5_30_DPt_2_CoarseBins
     bins: [2, 4, 6, 9, 15, 30]
   -
     variable: DPt
     jet_label: Charged_R040
-    bin_list: DPtBins_JetPt_5_30_DPt_3
+    bin_list: DPtBins_JetPt_5_30_DPt_3_CoarseBins
     bins: [3, 4, 6, 9, 15, 30]
-  -
-    variable: DPt
-    jet_label: null
-    bin_list: DPtBins
-    bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
   -
     variable: JetZ
     jet_label: Charged_R040
@@ -57,6 +53,7 @@ analysis:
     bins: [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
 - 
   d_meson_cuts: D0toKpiCuts_D0JetOptimLowJetPtv4
+  active: no
   templates:
   -
     variable: JetPt
@@ -76,25 +73,21 @@ analysis:
   -
     variable: DPt
     jet_label: Charged_R040
-    bin_list: DPtBins_JetPt_5_15
+    bin_list: DPtBins_JetPt_5_15_CoarseBins
     bins: [2, 4, 6, 9, 15]
   -
     variable: DPt
     jet_label: Charged_R040
-    bin_list: DPtBins_JetPt_5_30
+    bin_list: DPtBins_JetPt_5_30_DPt_2_CoarseBins
     bins: [2, 4, 6, 9, 15, 30]
   -
     variable: DPt
     jet_label: Charged_R040
-    bin_list: DPtBins_JetPt_5_30_DPt_3
+    bin_list: DPtBins_JetPt_5_30_DPt_3_CoarseBins
     bins: [3, 4, 6, 9, 15, 30]
-  -
-    variable: DPt
-    jet_label: null
-    bin_list: DPtBins
-    bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 - 
   d_meson_cuts: D0toKpiCuts_D0JetOptimHighJetPtv4
+  active: no
   templates:
   -
     variable: JetZ
@@ -106,9 +99,4 @@ analysis:
     jet_label: Charged_R040
     bin_list: DPtBins_JetPt_15_30
     bins: [6, 12, 30]
-  -
-    variable: DPt
-    jet_label: null
-    bin_list: DPtBins
-    bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
   
