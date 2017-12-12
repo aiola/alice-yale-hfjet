@@ -17,7 +17,9 @@ import Axis
 
 globalList = []
 
+
 class DMesonJetContainer:
+
     def __init__(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass,):
         self.fBinMultiSets = binMultiSets
         self.fNMassBins = nMassBins
@@ -48,7 +50,9 @@ class DMesonJetContainer:
             spectra = binMultiSet.FindSpectra(dmeson, jet)
             for spectrum, weight in spectra: spectrum.Fill(dmeson, jet, weight * eventWeight)
 
+
 class DMesonJetAnalysisEngine:
+
     def __init__(self, collision, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, projector):
         self.fCollision = collision
         self.fTrigger = trigger
@@ -96,10 +100,10 @@ class DMesonJetAnalysisEngine:
                 if len(spectraToCompare) > 0:
                     if s.fAxis[0].fName != spectraToCompare[0].fAxis[0].fName:
                         continue
-                    if s.fAxis[0].fBins[0] != spectraToCompare[0].fAxis[0].fBins[0] or s.fAxis[0].fBins[-1] != spectraToCompare[0].fAxis[0].fBins[-1]:
-                        continue
+                    # if s.fAxis[0].fBins[0] != spectraToCompare[0].fAxis[0].fBins[0] or s.fAxis[0].fBins[-1] != spectraToCompare[0].fAxis[0].fBins[-1]:
+                    # continue
                 else:
-                    cname = '_'.join(obj for obj in [self.fTrigger, self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, group, s.fAxis[0].fName, str(int(s.fAxis[0].fBins[0] * 10)), str(int(s.fAxis[0].fBins[-1] * 10)), "SpectraComparison"] if obj)
+                    cname = '_'.join(obj for obj in ["Comparison", self.fTrigger, self.fDMeson, binMultiSet.fJetType, binMultiSet.fJetRadius, group, s.fAxis[0].fName, str(int(s.fAxis[0].fBins[0] * 10)), str(int(s.fAxis[0].fBins[-1] * 10)), "SpectraComparison"] if obj)
                 spectraToCompare.append(s)
                 title = s.fComparisonTitles[s.fCompare.index(group)]
 
@@ -627,7 +631,6 @@ class DMesonJetAnalysisEngine:
                 s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
                 s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
 
-
     def GenerateInvMassWidonws(self, invMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2):
         print("Generating invariant mass windows for {0}".format(invMassHisto.GetName()))
         sideBandWindowInvMassHisto = invMassHisto.Clone(invMassHisto.GetName().replace("InvMass", "InvMassSBWindow"))
@@ -1053,7 +1056,9 @@ class DMesonJetAnalysisEngine:
                 self.PlotInvMassLikeSign(LS_bins[i])
             icanvas += 1
 
+
 class DMesonJetAnalysis:
+
     def __init__(self, name):
         self.fName = name
         self.fAnalysisEngine = []
