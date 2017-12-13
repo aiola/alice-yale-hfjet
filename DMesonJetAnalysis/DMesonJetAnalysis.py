@@ -8,7 +8,6 @@ import os
 
 import ROOT
 
-import DMesonJetProjectors
 import DMesonJetCompare
 import DMesonJetUtils
 from DMesonJetBase import AnalysisType

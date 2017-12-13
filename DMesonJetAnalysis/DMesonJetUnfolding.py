@@ -1123,7 +1123,7 @@ class DMesonJetUnfoldingEngine:
             axisCompare = 0
         else:
             priorHist = self.GetCustomPrior(prior)
-            axisCompare = DMesonJetUtils.CompareAxis(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
+            axisCompare = DMesonJetUtils.AxisCompare.CheckConsistency(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
 
         return priorHist, axisCompare
 
@@ -1131,22 +1131,33 @@ class DMesonJetUnfoldingEngine:
         if prior == "ResponseTruth": return self.fDetectorResponse, self.fDetectorTrainTruth
 
         priorHist, axisCompare = self.ComputePrior(prior)
-        if axisCompare < 0:
+
+        if axisCompare == DMesonJetUtils.AxisCompare.Identical:
+            detectorResponse = self.fDetectorResponse
+            detectorTrainTruth = self.fDetectorTrainTruth
+
+        elif axisCompare == DMesonJetUtils.AxisCompare.IsContainedSameBinning or \
+        axisCompare == DMesonJetUtils.AxisCompare.IsContained or \
+        (axisCompare == DMesonJetUtils.AxisCompare.SameLimits and priorHist.GetXaxis().GetNbins() <= self.fDetectorTrainTruth.GetNbins()):
             print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the response matrix, hopefully things will go well (and you know what you are doing!)".format(prior))
             print("Prior axis: {}".format(list(priorHist.GetXaxis().GetXbins())))
             print("Response matrix axis: {}".format(list(self.fDetectorResponse.GetYaxis().GetXbins())))
             detectorResponse = DMesonJetUtils.Rebin2D(self.fDetectorResponse, self.fDetectorResponse.GetXaxis(), priorHist.GetXaxis(), False)
             detectorTrainTruth = DMesonJetUtils.Rebin1D(self.fDetectorTrainTruth, priorHist.GetXaxis())
-        elif axisCompare > 0:
+
+        elif axisCompare == DMesonJetUtils.AxisCompare.ContainsSameBinning or \
+        axisCompare == DMesonJetUtils.AxisCompare.Contains or \
+        (axisCompare == DMesonJetUtils.AxisCompare.SameLimits and priorHist.GetXaxis().GetNbins() > self.fDetectorTrainTruth.GetNbins()):
             print("The custom prior {0} has a different binning compared to the response matrix. Trying to rebin the custom prior, hopefully things will go well (and you know what you are doing!)".format(prior))
             print("Prior axis: {}".format(list(priorHist.GetXaxis().GetXbins())))
             print("Response matrix axis: {}".format(list(self.fDetectorResponse.GetYaxis().GetXbins())))
             priorHist = DMesonJetUtils.Rebin1D(priorHist, self.fDetectorTrainTruth.GetXaxis())
             detectorResponse = self.fDetectorResponse
             detectorTrainTruth = self.fDetectorTrainTruth
+
         else:
-            detectorResponse = self.fDetectorResponse
-            detectorTrainTruth = self.fDetectorTrainTruth
+            print("DMesonJetUnfolding, NormalizeResponseMatrix: this case not implemented. Aborting.")
+            exit(1)
 
         priorHist_Integral = priorHist.Integral()
         if priorHist_Integral != 0:

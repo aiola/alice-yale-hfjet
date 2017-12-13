@@ -11,6 +11,7 @@ import os
 import shutil
 import glob
 import math
+import copy
 
 import ExtractDZeroJetRawYieldUncertainty
 
@@ -142,17 +143,15 @@ def main(config, b, debug):
         if len(binlist["bins"]) != 1:
             print("Cannot process bin lists with a number of axis different from 1 (found {}, bin list name {}).".format(len(binlist["bins"]), binlist["name"]))
             continue
-        binlist_axis = binlist["bins"].items()[0]
-        axis_name = binlist_axis[0]
-        bins = binlist_axis[1]
         for spectrum in binlist["spectra"]:
+            binlist_axis = copy.deepcopy(binlist["bins"].items()[0])
             if not "multitrial" in spectrum: continue
             for dmeson in spectrum["multitrial"]:
                 if not dmeson in ana["d_meson"]: continue
-                SBweigth = False
                 cuts = dmeson[3:]
                 spectrum_name = "{}_{}_{}".format(cuts, spectrum["name"], spectrum["suffix"])
                 sigmafixed = binlist["sigma_fits"][dmeson]
+                SBweigth = False
                 if spectrum["type"] == "inv_mass_fit":
                     if binlist_axis[0] != "jet_pt":
                         print("For the invmassfit method the bin list axis must be jet_pt (it is {}, spectrum {})".format(binlist_axis[0], spectrum["name"]))
@@ -161,7 +160,7 @@ def main(config, b, debug):
                     spectrum_axis = binlist_axis
                     (dpt_bins, DMesonEff) = (ExtractDZeroJetRawYieldUncertainty.GetLimits("d", "fPt", binlist["cuts"]), None)
                     if "efficiency" in binlist:
-                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+                        (dpt_bins_for_eff, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins, True)
 
                 elif spectrum["type"] == "side_band":
                     if len(spectrum["axis"]) != 1:
@@ -170,19 +169,30 @@ def main(config, b, debug):
                     if binlist_axis[0] != "d_pt":
                         print("For the sideband method the bin list axis must be d_pt (it is {}, spectrum {})".format(binlist_axis[0], spectrum["name"]))
                         exit(1)
+                    if "skip_bins" in spectrum["side_band"]:
+                        ibin_prev = -1
+                        for ibin in spectrum["side_band"]["skip_bins"]:
+                            if ibin != ibin_prev + 1:
+                                print("Can only skip the first x bins!")
+                                print(spectrum_name)
+                                exit(1)
+                            print("Skipping bin {}, {}".format(binlist_axis[1][0], binlist_axis[1][1]))
+                            binlist_axis[1].pop(0)
+                            sigmafixed.pop(0)
+                            ibin_prev = ibin
                     method = ROOT.AliDJetRawYieldUncertainty.kSideband
                     spectrum_axis = spectrum["axis"].items()[0]
                     (dpt_bins, DMesonEff) = (binlist_axis[1], None)
                     if "efficiency" in spectrum:
-                        (dpt_bins_eff, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
-                        for dpt_1, dpt_2 in zip(dpt_bins, dpt_bins_eff):
+                        (dpt_bins_for_eff, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, spectrum["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins, False)
+                        for dpt_1, dpt_2 in zip(dpt_bins, dpt_bins_for_eff):
                             if math.fabs(dpt_1 - dpt_2) > 1e-6:
                                 print("Detected a mismatch between the efficiency pt bins and the spectrum pt bins")
                                 print(dpt_bins)
-                                print(dpt_bins_eff)
+                                print(dpt_bins_for_eff)
                                 exit(1)
                     elif "efficiency" in binlist:
-                        (dpt_bins, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins)
+                        (dpt_bins_for_eff, DMesonEff) = ExtractDZeroJetRawYieldUncertainty.LoadEfficiency(config, binlist["efficiency"], dmeson, "Jet_AKTChargedR040_pt_scheme", dpt_bins, True)
                         SBweigth = True
 
                 else:
@@ -201,10 +211,11 @@ def main(config, b, debug):
                     DMesonEff = [1.0] * (len(dpt_bins) - 1)
 
                 print("Efficiency: {0}".format(", ".join([str(v) for v in DMesonEff])))
+                print("D pt bins for efficiency: {0}".format(", ".join([str(v) for v in dpt_bins_for_eff])))
                 print("D pt bins: {0}".format(", ".join([str(v) for v in dpt_bins])))
                 print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
 
-                for minPt, maxPt in zip(bins[:-1], bins[1:]):
+                for minPt, maxPt in zip(binlist_axis[1][:-1], binlist_axis[1][1:]):
                     interface = EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt)
                     rawYieldUnc.append(interface)
                 rawYieldUncSummary = ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method)

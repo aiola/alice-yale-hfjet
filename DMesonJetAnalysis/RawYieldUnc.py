@@ -466,7 +466,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
     parser.add_argument('yaml', metavar='config.yaml')
     parser.add_argument('--meson', metavar='MESON',
-                        default="D0_D0toKpiCuts_D0JetOptimLowJetPtv4")
+                        default="D0_D0toKpiCuts")
     parser.add_argument('--jet-type', metavar='TYPE',
                         default="Charged")
     parser.add_argument('--jet-radius', metavar='RADIUS',
@@ -474,7 +474,7 @@ if __name__ == '__main__':
     parser.add_argument('--variable', metavar='VAR',
                         default="JetPt")
     parser.add_argument('--kincuts', metavar='KINCUTS',
-                        default="DPt_20")
+                        default="DPt_30")
 
     args = parser.parse_args()
 

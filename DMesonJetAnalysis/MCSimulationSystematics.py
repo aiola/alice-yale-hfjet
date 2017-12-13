@@ -11,6 +11,7 @@ import yaml
 import DMesonJetUnfolding
 import DMesonJetUtils
 import DMesonJetCompare
+import DetectorResponseLoader
 import copy
 import os
 from collections import OrderedDict
@@ -692,27 +693,11 @@ def OpenResponseFile(input_path, response, efficiency):
 
 
 def LoadResponse(responseFile, dmeson, spectrumName, suffix_in, suffix_out, detAxisNbins, detAxisBin):
-    rlistName = "{}_Jet_AKTChargedR040_pt_scheme_{}".format(dmeson, spectrumName)
-    rlist = responseFile.Get(rlistName)
-    if not rlist:
-        print("Could not get list {0} from file {1}".format(rlistName, responseFile.GetName()))
-        exit(1)
-    truthName = "{}_Jet_AKTChargedR040_pt_scheme_{}_Truth{}".format(dmeson, spectrumName, suffix_in)
-    truth = rlist.FindObject(truthName)
-    if not truth:
-        print("Could not get histogram {0}".format(truthName))
-        exit(1)
-    truth.SetName("{0}_{1}".format(truthName, suffix_out))
-    truth_coarse = truth.Rebin(detAxisNbins, "{0}_coarse_{1}".format(truthName, suffix_out), detAxisBin)
-    respName = "{}_Jet_AKTChargedR040_pt_scheme_{}_DetectorResponse{}".format(dmeson, spectrumName, suffix_in)
-    resp = rlist.FindObject(respName)
-    if not resp:
-        print("Could not get histogram {0}".format(respName))
-        exit(1)
-    resp.SetName("{0}_{1}".format(respName, suffix_out))
-    resp_coarse = DMesonJetUtils.Rebin2D_fromBins(resp, "{0}_coarse_{1}".format(respName, suffix_out), detAxisNbins, detAxisBin, detAxisNbins, detAxisBin)
-    eff_coarse = resp_coarse.ProjectionY(truth_coarse.GetName().replace("Truth", "Efficiency"))
-    eff_coarse.Divide(truth_coarse)
+    loader = DetectorResponseLoader.DetectorResponseLoader(responseFile, dmeson, "Jet_AKTChargedR040_pt_scheme", spectrumName, suffix_in, detAxisNbins, detAxisBin)
+    resp_coarse = loader.GetResponseMatrixObject()
+    resp_coarse.SetName("{}_coarse_{}".format(resp_coarse.GetName(), suffix_out))
+    eff_coarse = loader.GetEfficiencyObject()
+    eff_coarse.SetName("{}_coarse_{}".format(eff_coarse.GetName(), suffix_out))
     return resp_coarse, eff_coarse
 
 
