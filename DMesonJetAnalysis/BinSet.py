@@ -9,7 +9,7 @@ import math
 
 import ROOT
 
-import DMesonJetProjectors
+import DetectorResponseLoader
 import DMesonJetCuts
 import Axis
 import Spectrum
@@ -106,11 +106,15 @@ class BinSet:
             if cut["object"] == "jet": return True
         return False
 
-    def LoadEfficiency(self, inputPath, dmeson, jetName, eff):
+    def LoadEfficiency(self, inputPath, dmeson, jetName, eff, axis):
         dmeson = dmeson.replace("_kSignalOnly", "")
         dmeson = dmeson.replace("_WrongPID", "")
-        if eff and "file_name" in eff: eff["file_name"] = "{0}/{1}".format(inputPath, eff["file_name"])
-        weightEfficiency = DMesonJetProjectors.GetWeightObject(eff, "Prompt", dmeson, jetName)
+        if eff and "file_name" in eff:
+            eff["file_name"] = "{0}/{1}".format(inputPath, eff["file_name"])
+        if axis:
+            weightEfficiency = DetectorResponseLoader.DMesonJetEfficiency.fromConfigAdvanced(eff, "Prompt", dmeson, jetName, axis.GetNbins(), axis.GetBinsArray())
+        else:
+            weightEfficiency = DetectorResponseLoader.DMesonJetEfficiency.fromConfig(eff, "Prompt", dmeson, jetName)
         return weightEfficiency
 
     def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
@@ -132,22 +136,13 @@ class BinSet:
             jetName = "Jet_AKTChargedR040_pt_scheme"
 
         if "MCTruth" in dmeson:
-            self.fWeightEfficiency = DMesonJetProjectors.SimpleWeight()
+            self.fWeightEfficiency = DetectorResponseLoader.DMesonJetEfficiency(None)
         else:
-            self.fWeightEfficiency = self.LoadEfficiency(inputPath, dmeson, jetName, self.fEfficiency)
+            self.fWeightEfficiency = self.LoadEfficiency(inputPath, dmeson, jetName, self.fEfficiency, None)
 
         for s in self.fSpectraConfigs:
             # skip spectra that do not have this D meson active
             if not dmeson in s["active_mesons"]: continue
-
-            # configure efficiency
-            if "efficiency" in s and not "MCTruth" in dmeson:
-                effWeight = self.LoadEfficiency(inputPath, dmeson, jetName, s["efficiency"])
-            else:
-                effWeight = self.LoadEfficiency(inputPath, dmeson, jetName, False)
-            spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
-
-            self.fSpectra[spectrum.fName] = spectrum
 
             # add bin counting axis
             if "axis" in s:
@@ -155,9 +150,21 @@ class BinSet:
                     print("Error: cannot do bin counting spectra (e.g. side band) with more than 2 axis. Spectrum {}".format(s["name"]))
                     exit(1)
                 bin_count_spectra = []
-                for axis_name, axis_bins in s["axis"].iteritems():
-                    bin_count_spectra.append(Axis.Axis(axis_name, axis_bins, "", (jtype != "Full")))
+                axis_name = s["axis"].keys()[0]
+                axis_bins = s["axis"].values()[0]
+                bcaxis = Axis.Axis(axis_name, axis_bins, "", (jtype != "Full"))
+                bin_count_spectra.append(bcaxis)
                 self.fBinCountSpectraAxis[s["name"]] = bin_count_spectra
+
+            # configure efficiency
+            if "efficiency" in s and not "MCTruth" in dmeson:
+                effWeight = self.LoadEfficiency(inputPath, dmeson, jetName, s["efficiency"], self.fAxis[0])
+            else:
+                effWeight = DetectorResponseLoader.DMesonJetEfficiency(None)
+
+            spectrum = Spectrum.Spectrum(s, dmeson, jtype, jradius, jtitle, self, effWeight)
+
+            self.fSpectra[spectrum.fName] = spectrum
 
         limits = dict()
         self.AddBinsRecursive(self.fLimitSetList, limits)

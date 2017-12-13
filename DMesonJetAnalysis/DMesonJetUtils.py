@@ -6,6 +6,76 @@ import ROOT
 import math
 import array
 from collections import OrderedDict
+from enum import Enum
+
+
+class AxisCompare(Enum):
+    Identical = 0
+    SameLimits = 1
+    IsContainedSameBinning = 2
+    ContainsSameBinning = 3
+    OverlapsSameBinning = 4
+    IsContained = 5
+    Contains = 6
+    Overlaps = 7
+    NoOverlap = 8
+
+    @classmethod
+    def CheckConsistency(cls, axis1, axis2):
+        isContained = False
+        contains = False
+        overlaps = False
+        if axis1.GetBinLowEdge(1) <= axis2.GetBinLowEdge(1):
+            if axis1.GetBinUpEdge(axis1.GetNbins()) >= axis2.GetBinUpEdge(axis2.GetNbins()):
+                contains = True
+            else:
+                overlaps = True
+        if axis2.GetBinLowEdge(1) <= axis1.GetBinLowEdge(1):
+            if axis2.GetBinUpEdge(axis2.GetNbins()) >= axis1.GetBinUpEdge(axis1.GetNbins()):
+                isContained = True
+            else:
+                overlaps = True
+
+        if not contains and not isContained and not overlaps:
+            return cls.NoOverlap
+
+        sameBinning = True
+        for ibin1 in range(1, axis1.GetNbins() + 1):
+            if axis1.GetBinLowEdge(ibin1) >= axis2.GetBinLowEdge(1): break
+            ibin1 += 1
+
+        for ibin2 in range(1, axis2.GetNbins() + 1):
+            if axis2.GetBinLowEdge(ibin2) >= axis1.GetBinLowEdge(1): break
+            ibin2 += 1
+
+        while(ibin1 <= axis1.GetNbins() and ibin2 <= axis2.GetNbins()):
+            if axis1.GetBinLowEdge(ibin1) != axis2.GetBinLowEdge(ibin2):
+                sameBinning = False
+                break
+            ibin1 += 1
+            ibin2 += 1
+
+        if contains and isContained:
+            if sameBinning:
+                return cls.Identical
+            else:
+                return cls.SameLimits
+        elif contains:
+            if sameBinning:
+                return cls.ContainsSameBinning
+            else:
+                return cls.Contains
+        elif isContained:
+            if sameBinning:
+                return cls.IsContainedSameBinning
+            else:
+                return cls.IsContained
+        else:
+            if sameBinning:
+                return cls.OverlapsSameBinning
+            else:
+                return cls.Overlaps
+
 
 def soft_clone(origin, name, title=None, yaxisTitle=None):
     if not title: title = name
@@ -15,6 +85,7 @@ def soft_clone(origin, name, title=None, yaxisTitle=None):
     h.GetYaxis().SetTitle(yaxisTitle)
     return h
 
+
 def GetRelativeUncertaintyHistogram(h):
     h_unc = soft_clone(h, "{0}_unc".format(h.GetName()), "{0} Rel. Unc.".format(h.GetTitle()), "rel. unc.")
     for ibin in xrange(0, h.GetNbinsX() + 2):
@@ -22,14 +93,17 @@ def GetRelativeUncertaintyHistogram(h):
         h_unc.SetBinContent(ibin, h.GetBinError(ibin) / h.GetBinContent(ibin))
     return h_unc
 
+
 def ConvertDMesonName(dmeson):
     if "D0" in dmeson:
         return "D^{0} #rightarrow K^{-}#pi^{+} and c.c."
     else:
         return dmeson
 
+
 def binom(n, k):
     return math.factorial(n) / math.factorial(n - k) / math.factorial(k)
+
 
 def GetObject(obj, name):
     slash = 0
@@ -70,6 +144,7 @@ def GetObject(obj, name):
     else:
         return res
 
+
 def GetObjectAndMerge(fileList, name):
     res = None
     for f in fileList:
@@ -80,6 +155,7 @@ def GetObjectAndMerge(fileList, name):
             res = obj.Clone()
     return res
 
+
 def GenerateMultiCanvas(cname, n):
     rows = int(math.floor(math.sqrt(n)))
     cols = int(math.ceil(float(n) / rows))
@@ -87,11 +163,13 @@ def GenerateMultiCanvas(cname, n):
     c.Divide(cols, rows)
     return c
 
+
 def find_file(path, file_name):
     for root, dirs, files in os.walk(path):
         for file in files:
             if file == file_name:
                 yield os.path.join(root, file)
+
 
 def FindMinimum(histogram, limit=0., errors=True):
     m = None
@@ -114,6 +192,7 @@ def FindMinimum(histogram, limit=0., errors=True):
                 if m is None or cont < m: m = cont
     return m
 
+
 def FindMaximum(histogram, limit=0., errors=True):
     m = None
     if histogram.GetDimension() == 1:
@@ -135,6 +214,7 @@ def FindMaximum(histogram, limit=0., errors=True):
                 if m is None or cont > m: m = cont
     return m
 
+
 def DivideNoErrors(ratio, den):
     if not ratio.GetNbinsX() == den.GetNbinsX():
         print("DMesonJetUtils.DivideNoErrors: histograms have different number of bins!")
@@ -148,11 +228,13 @@ def DivideNoErrors(ratio, den):
 
     return True
 
+
 def V2TH1(vect):
     result = ROOT.TH1D("vect", "vect", len(vect) - 2, 1, len(vect) - 2)
     for ibin in xrange(0, result.GetNbinsX() + 2):
         result.SetBinContent(ibin, vect[ibin])
     return result
+
 
 def BuildHistogram(axis, name, yaxis):
     if len(axis) == 1:
@@ -174,18 +256,17 @@ def BuildHistogram(axis, name, yaxis):
         hist.Sumw2()
     return hist
 
-def CompareAxis(axis1, axis2):
-    if axis1.GetNbins() < axis2.GetNbins(): return -1
-    elif axis1.GetNbins() > axis2.GetNbins(): return 1
-    for ibin in xrange(0, axis1.GetNbins() + 2):
-        if axis1.GetBinLowEdge(ibin) > axis2.GetBinLowEdge(ibin): return -1
-        elif axis1.GetBinLowEdge(ibin) < axis2.GetBinLowEdge(ibin): return 1
-    return 0
 
 def Rebin1D(hist, xaxis, warnings=False):
     return Rebin1D_fromBins(hist, hist.GetName(), xaxis.GetNbins(), xaxis.GetXbins().GetArray(), warnings)
 
+
 def Rebin1D_fromBins(hist, name, nbinsX, binsX, warnings=False):
+    axis = ROOT.TAxis(nbinsX, binsX)
+    compareAxis = AxisCompare.CheckConsistency(hist.GetXaxis(), axis)
+    if compareAxis == AxisCompare.Identical:
+        r = hist.Clone(name)
+        return r
     r = ROOT.TH1D(name, name, nbinsX, binsX)
     r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
     r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
@@ -202,10 +283,19 @@ def Rebin1D_fromBins(hist, name, nbinsX, binsX, warnings=False):
                 print("Bin ({0}) has rel stat err = {1}. This is VERY dangerous!".format(xbin, relErr))
     return r
 
+
 def Rebin2D(hist, xaxis, yaxis, warnings=False):
     return Rebin2D_fromBins(hist, hist.GetName(), xaxis.GetNbins(), xaxis.GetXbins().GetArray(), yaxis.GetNbins(), yaxis.GetXbins().GetArray(), warnings)
 
+
 def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
+    xaxis = ROOT.TAxis(nbinsX, binsX)
+    xcompareAxis = AxisCompare.CheckConsistency(hist.GetXaxis(), xaxis)
+    yaxis = ROOT.TAxis(nbinsY, binsY)
+    ycompareAxis = AxisCompare.CheckConsistency(hist.GetYaxis(), yaxis)
+    if xcompareAxis == AxisCompare.Identical and ycompareAxis == AxisCompare.Identical:
+        r = hist.Clone(name)
+        return r
     r = ROOT.TH2D(name, name, nbinsX, binsX, nbinsY, binsY)
     r.GetXaxis().SetTitle(hist.GetXaxis().GetTitle())
     r.GetYaxis().SetTitle(hist.GetYaxis().GetTitle())
@@ -253,6 +343,7 @@ def Rebin2D_fromBins(hist, name, nbinsX, binsX, nbinsY, binsY, warnings=False):
                     if relErr > 0.9:
                         print("Bin ({0},{1}) has rel stat err = {2}. This is VERY dangerous!".format(xbin, ybin, relErr))
     return r
+
 
 def frange(start, stop, step, closed=False):
     i = start

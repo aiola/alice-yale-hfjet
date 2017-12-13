@@ -10,73 +10,6 @@ from enum import Enum
 
 class DMesonJetCompare:
 
-    class HistBinCompare(Enum):
-        Identical = 0
-        SameLimits = 1
-        IsContainedSameBinning = 2
-        ContainsSameBinning = 3
-        OverlapsSameBinning = 4
-        IsContained = 5
-        Contains = 6
-        Overlaps = 7
-        NoOverlap = 8
-
-        @classmethod
-        def CheckConsistency(cls, h1, h2):
-            isContained = False
-            contains = False
-            overlaps = False
-            if h1.GetXaxis().GetBinLowEdge(1) <= h2.GetXaxis().GetBinLowEdge(1):
-                if h1.GetXaxis().GetBinUpEdge(h1.GetNbinsX()) >= h2.GetXaxis().GetBinUpEdge(h2.GetNbinsX()):
-                    contains = True
-                else:
-                    overlaps = True
-            if h2.GetXaxis().GetBinLowEdge(1) <= h1.GetXaxis().GetBinLowEdge(1):
-                if h2.GetXaxis().GetBinUpEdge(h2.GetNbinsX()) >= h1.GetXaxis().GetBinUpEdge(h1.GetNbinsX()):
-                    isContained = True
-                else:
-                    overlaps = True
-
-            if not contains and not isContained and not overlaps:
-                return cls.NoOverlap
-
-            sameBinning = True
-            for ibin1 in range(1, h1.GetNbinsX() + 1):
-                if h1.GetXaxis().GetBinLowEdge(ibin1) >= h2.GetXaxis().GetBinLowEdge(1): break
-                ibin1 += 1
-
-            for ibin2 in range(1, h2.GetNbinsX() + 1):
-                if h2.GetXaxis().GetBinLowEdge(ibin2) >= h1.GetXaxis().GetBinLowEdge(1): break
-                ibin2 += 1
-
-            while(ibin1 <= h1.GetNbinsX() and ibin2 <= h2.GetNbinsX()):
-                if h1.GetXaxis().GetBinLowEdge(ibin1) != h2.GetXaxis().GetBinLowEdge(ibin2):
-                    sameBinning = False
-                    break
-                ibin1 += 1
-                ibin2 += 1
-
-            if contains and isContained:
-                if sameBinning:
-                    return cls.Identical
-                else:
-                    return cls.SameLimits
-            elif contains:
-                if sameBinning:
-                    return cls.ContainsSameBinning
-                else:
-                    return cls.Contains
-            elif isContained:
-                if sameBinning:
-                    return cls.IsContainedSameBinning
-                else:
-                    return cls.IsContained
-            else:
-                if sameBinning:
-                    return cls.OverlapsSameBinning
-                else:
-                    return cls.Overlaps
-
     def __init__(self, name):
         self.fName = name
         self.fBaselineHistogram = None
@@ -348,23 +281,23 @@ class DMesonJetCompare:
         return DMesonJetUtils.Rebin1D(h, templateH.GetXaxis())
 
     def PlotRatio(self, color, marker, line, lwidth, h):
-        compBinning = self.HistBinCompare.CheckConsistency(h, self.fBaselineForRatio)
-        print("Result of the binning comparison between {} and {} is: {}".format(h, self.fBaselineForRatio, compBinning))
-        if compBinning == self.HistBinCompare.Identical:
+        compBinning = DMesonJetUtils.AxisCompare.CheckConsistency(h.GetXaxis(), self.fBaselineForRatio.GetXaxis())
+        print("Result of the binning comparison between {} and {} is: {}".format(h.GetName(), self.fBaselineForRatio.GetName(), compBinning))
+        if compBinning == DMesonJetUtils.AxisCompare.Identical:
             hRatio = h.Clone("{0}_Ratio".format(h.GetName()))
-        elif compBinning == self.HistBinCompare.ContainsSameBinning or compBinning == self.HistBinCompare.IsContainedSameBinning or compBinning == self.HistBinCompare.OverlapsSameBinning:
+        elif compBinning == DMesonJetUtils.AxisCompare.ContainsSameBinning or compBinning == DMesonJetUtils.AxisCompare.IsContainedSameBinning or compBinning == DMesonJetUtils.AxisCompare.OverlapsSameBinning:
             print("Trying to rebin histogram {0}".format(h.GetName()))
             hRatio = self.RebinAndMakeConsistent(h, self.fBaselineForRatio)
             if not hRatio:
                 print("Rebin unsuccessfull!")
                 return
-        elif compBinning == self.HistBinCompare.Contains or compBinning == self.HistBinCompare.IsContained or compBinning == self.HistBinCompare.Overlaps:
+        elif compBinning == DMesonJetUtils.AxisCompare.Contains or compBinning == DMesonJetUtils.AxisCompare.IsContained or compBinning == DMesonJetUtils.AxisCompare.Overlaps:
             print("Trying to fit histogram {0} with function {1}".format(h.GetName(), self.fFitFunction))
             hRatio = self.FitAndMakeConsistent(h, self.fBaselineForRatio)
             if not hRatio:
                 print("Fit unsuccessfull!")
                 return
-        elif compBinning == self.HistBinCompare.NoOverlap:
+        elif compBinning == DMesonJetUtils.AxisCompare.NoOverlap:
             print("The two histograms {}, {} have no overlap. Unable to generate a ratio.".format(h.GetName(), self.fBaselineForRatio.GetName()))
             return
         else:

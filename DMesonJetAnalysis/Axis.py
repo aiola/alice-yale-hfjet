@@ -12,7 +12,9 @@ from enum import Enum
 import collections
 import sys
 
+
 class Axis:
+
     def __init__(self, name, bins, label="", charged_jet=True):
         self.fName = name
         self.fBins = bins
@@ -35,6 +37,9 @@ class Axis:
 
     def GetNbins(self):
         return len(self.fBins) - 1
+
+    def GetBinsArray(self):
+        return numpy.array(self.fBins, dtype=numpy.float64)
 
     def GetTitle(self, label=""):
         varName = self.GetVariableName(label)

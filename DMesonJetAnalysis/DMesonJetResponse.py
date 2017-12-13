@@ -7,7 +7,7 @@ import os
 import ROOT
 
 import DetectorResponse
-import DMesonJetProjectors
+import DMesonJetEfficiency
 import DMesonJetCompare
 import DMesonJetUtils
 import Axis
@@ -23,8 +23,8 @@ class DMesonJetResponseContainer:
             jetName = "Jet_AKT{0}{1}_pt_scheme".format(jetDef["type"], jetDef["radius"])
             for axisName, (axisDef, efficiency, truthWeight, cuts) in respDefinitions.iteritems():
                 respName = "_".join([obj for obj in [trigger, DMesonDef, jetName, axisName] if obj])
-                effWeightObj = DMesonJetProjectors.GetWeightObject(efficiency, trigger, DMesonDef, jetName)
-                truthWeightObj = DMesonJetProjectors.GetWeightObject(truthWeight, trigger, DMesonDef, jetName)
+                effWeightObj = DetectorResponseLoader.DMesonJetEfficiency.fromConfig(efficiency, trigger, DMesonDef, jetName)
+                truthWeightObj = DetectorResponseLoader.DMesonJetEfficiency.fromConfig(truthWeight, trigger, DMesonDef, jetName)
                 resp = DetectorResponse.DetectorResponse(respName, jetName, axisDef, cuts, effWeightObj, truthWeightObj)
                 resp.GenerateHistograms()
                 self.fResponseObjects[respName] = resp
