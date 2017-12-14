@@ -22,8 +22,8 @@ def main(configs, name):
 
     CompareSystematic_DMeson(configs, name)
     CompareSystematic_ByGroup(configs, name, "JetPtSpectrum", "DPtCutSideBand")
-    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "DPtBinWidth")
-    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_20", "MethodDPt2")
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_30", "DPtBinWidth")
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_30", "MethodDPt3")
     CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_20_JetPt_5_15", "DPtBinWidth")
 
 
@@ -47,9 +47,6 @@ def CompareSystematic_ByGroup(configs, name, spectrum_name, group_name):
     for c in configs:
         input_path = c["input_path"]
         print("Working on {}".format(c["name"]))
-        if len(c["analysis"][0]["d_meson"]) < 2:
-            print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
-            continue
         for jet in c["analysis"][0]["jets"]:
             jet_type = jet["type"]
             jet_radius = jet["radius"]

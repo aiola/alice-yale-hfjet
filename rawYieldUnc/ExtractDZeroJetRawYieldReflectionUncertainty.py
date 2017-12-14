@@ -23,9 +23,9 @@ ptDbins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 ptJetbins = [5, 6, 8, 10, 14, 20, 30]  # used for eff.scale approach, but also in sideband approach to define the bins of the output jet spectrum
 
 
-def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, debug=2):
+def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins_for_eff, dpt_bins, jetpt_bins, binlist_name, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, ptmin, ptmax, debug=2):
     # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
-    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin, ptmax)
+    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUncSingleTrial(config, cuts, dpt_bins_for_eff, dpt_bins, jetpt_bins, binlist_name, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method, ptmin, ptmax)
     interface.SetSaveInvMassFitCanvases(True)
     interface.SetYieldMethod(method)
     print("Min pt = {0}, max pt = {1}".format(ptmin, ptmax))
@@ -44,9 +44,29 @@ def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist
     else:
         is_eff_corrected = ""
 
+    if method == ROOT.AliDJetRawYieldUncertainty.kSideband:
+        interface.SetSigmaToFixDPtBins(numpy.array(sigmafixed, dtype=numpy.float64))
+        # For the reflection templates
+        try:
+            iBin = dpt_bins.index(ptmin)
+        except:
+            iBin = -1
+        varname = "DPt"
+    elif method == ROOT.AliDJetRawYieldUncertainty.kEffScale and spectrum_axis[0] == "jet_pt":
+        interface.SetSigmaToFixJetPtBins(numpy.array(sigmafixed, dtype=numpy.float64))
+        # For the reflection templates
+        try:
+            iBin = jetpt_bins.index(ptmin)
+        except:
+            iBin = -1
+        varname = "JetPt"
+    else:
+        print("EvaluateBinPerBinReflUncertainty: Method {} with spectrum axis '{}' not implemented!".format(method, spectrum_axis[0]))
+        exit(1)
+
     reflFitFuncs = ["gaus", "pol3", "pol6"]
     for reflFitFunc in reflFitFuncs:
-        ExtractDZeroJetRawYieldUncertainty.SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc, is_eff_corrected)
+        ExtractDZeroJetRawYieldUncertainty.SetReflections(interface, config, cuts, binlist_name, iBin, varname, reflFitFunc, is_eff_corrected)
 
         multitrial = interface.RunMultiTrial(spectrum_name)
         if not multitrial or not interface.Success():
@@ -61,7 +81,7 @@ def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist
     reflFitFunc = "DoubleGaus"
     rovers_factors = [0.5, 1.5]
     for rovers_factor in rovers_factors:
-        ExtractDZeroJetRawYieldUncertainty.SetReflections(interface, config, cuts, binlist_name, binlist_axis, ptmin, ptmax, reflFitFunc, is_eff_corrected)
+        ExtractDZeroJetRawYieldUncertainty.SetReflections(interface, config, cuts, binlist_name, iBin, varname, reflFitFunc, is_eff_corrected)
         interface.SetValueOfReflOverSignal(-rovers_factor, 1.715, 2.015)  # 1st: ratio of refl/MCsignal (set by hand). If <0: 2nd and 3rd are the range for its evaluation from histo ratios
 
         multitrial = interface.RunMultiTrial(spectrum_name)
@@ -79,8 +99,8 @@ def EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist
     return interface
 
 
-def ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, debug=2):
-    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins, jetpt_bins, binlist_name, binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
+def ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins_for_eff, dpt_bins, jetpt_bins, binlist_name, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, specie, method, debug=2):
+    interface = ExtractDZeroJetRawYieldUncertainty.GeneratDzeroJetRawYieldUnc(config, cuts, dpt_bins_for_eff, dpt_bins, jetpt_bins, binlist_name, sigmafixed, DMesonEff, SBweigth, spectrum_axis, specie, method)  # here most of the configuration is dummy (not used in the evaluation), you need just the files and some bin ranges
     interface.SetYieldMethod(method)
     interface.SetMaxNTrialsForSidebandMethod(0)  # only for SB method: number of random trials for each pT(D) bin to build pT(jet) spectrum variations
 
@@ -216,9 +236,9 @@ def main(config, b, debug):
                 print("Jet pt bins: {0}".format(", ".join([str(v) for v in jetpt_bins])))
 
                 for minPt, maxPt in zip(binlist_axis[1][:-1], binlist_axis[1][1:]):
-                    interface = EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt)
+                    interface = EvaluateBinPerBinReflUncertainty(config, cuts, dpt_bins_for_eff, dpt_bins, jetpt_bins, binlist["name"], sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method, minPt, maxPt)
                     rawYieldUnc.append(interface)
-                rawYieldUncSummary = ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins, jetpt_bins, binlist["name"], binlist_axis, sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method)
+                rawYieldUncSummary = ExtractDJetRawYieldReflUncertainty(config, cuts, dpt_bins_for_eff, dpt_bins, jetpt_bins, binlist["name"], sigmafixed, DMesonEff, SBweigth, spectrum_name, spectrum_axis, ROOT.AliDJetRawYieldUncertainty.kD0toKpi, method)
 
 
 if __name__ == '__main__':
