@@ -97,6 +97,7 @@ def LoadEfficiency(config, eff_config, dmeson, jetName, dpt_bins, use_only_dpt_l
     eff_values = []
     ibinDest = 0
     dpt_bins_dest = []
+    print("Efficiency from object '{}'".format(hist.GetName()))
     for ibin in range(1, hist.GetNbinsX() + 1):
         if dpt_bins:
             if hist.GetXaxis().GetBinLowEdge(ibin) < dpt_bins[0]: continue

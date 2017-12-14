@@ -1097,10 +1097,10 @@ class DMesonJetUnfoldingEngine:
             axisCompare = priorHistos[0][1]
             for h, a in priorHistos[1:]:
                 priorHist.Multiply(h)
-                if a != 0:
-                    if axisCompare == 0:
+                if a != DMesonJetUtils.AxisCompare.Identical:
+                    if axisCompare == DMesonJetUtils.AxisCompare.Identical:
                         axisCompare = a
-                    elif axisCompare != a:
+                    elif axisCompare != DMesonJetUtils.AxisCompare.Identical:
                         print("ComputePrior, Error in binning while computing prior '{}'".format(prior))
                         exit(1)
             if scale_bin_width and not "ResponseTruth" in prior:
@@ -1108,19 +1108,19 @@ class DMesonJetUnfoldingEngine:
                     priorHist.SetBinContent(ibin, priorHist.GetBinContent(ibin) * priorHist.GetXaxis().GetBinWidth(ibin))
         elif prior == "ResponseTruth":
             priorHist = self.fDetectorTrainTruth
-            axisCompare = 0
+            axisCompare = DMesonJetUtils.AxisCompare.Identical
         elif prior == "Flat":
             priorHist = self.GenerateFlatPrior(scale_bin_width)
-            axisCompare = 0
+            axisCompare = DMesonJetUtils.AxisCompare.Identical
         elif "PowerLaw" in prior:
             priorHist = self.GeneratePowerLawPrior(-int(prior.replace("PowerLaw_", "")), 3, scale_bin_width)
-            axisCompare = 0
+            axisCompare = DMesonJetUtils.AxisCompare.Identical
         elif "pol" in prior:
             pars_string = prior.replace("pol(", "")
             pars_string = pars_string.replace(")", "")
             pars = [float(v) for v in pars_string.split(",")]
             priorHist = self.GeneratePolinomialPrior(pars, scale_bin_width)
-            axisCompare = 0
+            axisCompare = DMesonJetUtils.AxisCompare.Identical
         else:
             priorHist = self.GetCustomPrior(prior)
             axisCompare = DMesonJetUtils.AxisCompare.CheckConsistency(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
