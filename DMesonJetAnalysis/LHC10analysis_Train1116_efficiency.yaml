@@ -100,7 +100,7 @@ analysis:
       active_mesons: [] # Deactivated because efficiency correction not implemented (?) for inv. mass fit method, AFTER the fit
   -
     name: DPtBins_JetPt_5_15
-    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c} (fine bins)"
+    title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts]
     need_inv_mass: [D0_D0toKpiCuts]
     efficiency: no

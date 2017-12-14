@@ -414,7 +414,7 @@ def PlotSystematicUncertaintySummary(name, results):
         cont += 1
 
     print("\\hline")
-    print("Normalization & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
+    print("Normalization (BR \& lumi) & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
     print("\\hline")
     print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
     print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")

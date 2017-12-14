@@ -8,40 +8,6 @@ efficiency: no  # apply efficiency correction?
 use_overflow: yes # use overflow bins?
 analysis:
 -
-  name: JetPt_SideBand_DPt_20
-  active: no
-  jet_type: Charged
-  jet_radius: R040
-  d_meson: D0_D0toKpiCuts
-  variable: JetPt
-  raw_yield_method: SideBand
-  kinematic_cuts: DPt_20
-  FD:
-    file_name: BFeedDown_1505317519_1416.root
-    central_points: default
-    spectrum: DetectorLevel_JetPtSpectrum_bEfficiencyMultiply_cEfficiencyDivide
-  d_meson_response: Prompt_D0_D0toKpiCuts
-  spectrum_response: JetPtSpectrum_DPt_20
-  default_prior: ResponseTruth
-  priors: [ResponseTruth, PowerLaw_3, PowerLaw_7]
-  default_method: Bayes
-  methods:
-    Svd:
-      default_reg:
-        ResponseTruth: 6
-        PowerLaw_3: 6
-        PowerLaw_7: 6
-    Bayes:
-      default_reg:
-        ResponseTruth: 4
-        PowerLaw_3: 4
-        PowerLaw_7: 4
-      iter_min: 1
-      iter_max: 6
-      iter_step: 1
-    BinByBin:
-      default_reg: null
--
   name: JetPt_SideBand_DPt_30
   active: yes
   jet_type: Charged
@@ -63,15 +29,15 @@ analysis:
     Svd:
       default_reg:
         ResponseTruth: 6
-        PowerLaw_3: 6
+        PowerLaw_3: 4
         PowerLaw_7: 6
     Bayes:
       default_reg:
-        ResponseTruth: 4
-        PowerLaw_3: 4
-        PowerLaw_7: 4
+        ResponseTruth: 3
+        PowerLaw_3: 3
+        PowerLaw_7: 3
       iter_min: 1
-      iter_max: 6
+      iter_max: 8
       iter_step: 1
     BinByBin:
       default_reg: null
@@ -102,12 +68,12 @@ analysis:
         Flat: 6
     Bayes:
       default_reg:
-        ResponseTruth: 3
-        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 4
-        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 4
-        Flat: 4
+        ResponseTruth: 2
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 3
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 3
+        Flat: 3
       iter_min: 1
-      iter_max: 6
+      iter_max: 8
       iter_step: 1
     BinByBin:
       default_reg: null
@@ -138,49 +104,12 @@ analysis:
         Flat: 6
     Bayes:
       default_reg:
-        ResponseTruth: 5
-        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 5
-        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 5
-        Flat: 4
+        ResponseTruth: 3
+        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 3
+        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 3
+        Flat: 3
       iter_min: 1
       iter_max: 8
-      iter_step: 1
-    BinByBin:
-      default_reg: null
--
-  name: JetZ_SideBand_DPt_60_JetPt_15_30_JetZ_04
-  active: no
-  jet_type: Charged
-  jet_radius: R040
-  d_meson: D0_D0toKpiCuts
-  variable: JetZ
-  raw_yield_method: SideBand
-  kinematic_cuts: DPt_60_JetPt_15_30
-  rebin_input: [0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
-  FD:
-    file_name: BFeedDown_1505317519_1416.root
-    central_points: default
-    spectrum: DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide
-  d_meson_response: Prompt_D0_D0toKpiCuts
-  spectrum_response: JetZSpectrum_DPt_60_JetPt_15_30
-  default_prior: ResponseTruth
-  priors: [ResponseTruth, "ResponseTruth_multiply_pol(3, -6.5, 3.75)", "ResponseTruth_multiply_pol(0.25, -1, 3.75)", Flat]
-  default_method: Bayes
-  methods:
-    Svd:
-      default_reg:
-        ResponseTruth: 5
-        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 5
-        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 5
-        Flat: 5
-    Bayes:
-      default_reg:
-        ResponseTruth: 5
-        "ResponseTruth_multiply_pol(3, -6.5, 3.75)": 5
-        "ResponseTruth_multiply_pol(0.25, -1, 3.75)": 5
-        Flat: 5
-      iter_min: 1
-      iter_max: 6
       iter_step: 1
     BinByBin:
       default_reg: null
