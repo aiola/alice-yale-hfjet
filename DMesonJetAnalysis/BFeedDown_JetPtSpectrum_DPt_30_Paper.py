@@ -35,7 +35,7 @@ def GetBFeedDownSpectra():
 def PlotBFeedDown():
     h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst = GetBFeedDownSpectra()
 
-    cname = "BFeedDown_Internal"
+    cname = "BFeedDown_JetPtSpectrum_DPt_30_InternalPlot"
     canvas1 = ROOT.TCanvas(cname, cname, 700, 700)
     globalList.append(canvas1)
     canvas1.Divide(1, 2)
@@ -139,7 +139,7 @@ def PlotBFeedDown():
     leg1.AddEntry(ratio_down, "Systematic Uncertainty", "l")
     leg1.Draw()
 
-    canvas2 = ROOT.TCanvas("BFeedDown_Paper", "BFeedDown_Paper")
+    canvas2 = ROOT.TCanvas("BFeedDown_JetPtSpectrum_DPt_30_Paper", "BFeedDown_JetPtSpectrum_DPt_30_Paper")
     globalList.append(canvas2)
     canvas2.SetTicks(1, 1)
     canvas2.SetLeftMargin(0.13)
@@ -215,9 +215,9 @@ def main():
     ROOT.gStyle.SetOptStat(0)
 
     canvas1, canvas2 = PlotBFeedDown()
-    canvas1.SaveAs("{0}/BFeedDown_InternalPlot.pdf".format(input_path))
-    canvas2.SaveAs("{0}/BFeedDown_Paper.pdf".format(input_path))
-    canvas2.SaveAs("{0}/BFeedDown_Paper.C".format(input_path))
+    canvas1.SaveAs("{0}/BFeedDown_JetPtSpectrum_DPt_30_InternalPlot.pdf".format(input_path))
+    canvas2.SaveAs("{0}/BFeedDown_JetPtSpectrum_DPt_30_Paper.pdf".format(input_path))
+    canvas2.SaveAs("{0}/BFeedDown_JetPtSpectrum_DPt_30_Paper.C".format(input_path))
 
 
 if __name__ == '__main__':

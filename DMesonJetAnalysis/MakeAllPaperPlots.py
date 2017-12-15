@@ -2,7 +2,9 @@
 # python script to do extract B feed down correction factors
 
 import IPython
-import BFeedDown_Paper
+import BFeedDown_JetZSpectrum_JetPt_5_15_Paper
+import BFeedDown_JetZSpectrum_JetPt_15_30_Paper
+import BFeedDown_JetPtSpectrum_DPt_30_Paper
 import Efficiency_Paper
 import JetPtSpectrum_Paper
 import JetZSpectrum_JetPt_5_15_Paper
@@ -11,7 +13,9 @@ import Uncertainties_JetPtSpectrum_Paper
 
 
 def main():
-    BFeedDown_Paper.main()
+    BFeedDown_JetZSpectrum_JetPt_5_15_Paper.main()
+    BFeedDown_JetZSpectrum_JetPt_15_30_Paper.main()
+    BFeedDown_JetPtSpectrum_DPt_30_Paper.main()
     Efficiency_Paper.main()
     JetPtSpectrum_Paper.main()
     JetZSpectrum_JetPt_5_15_Paper.main()
