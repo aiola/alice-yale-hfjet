@@ -1,4 +1,4 @@
-# Response c,b->D0
+# Response c,b->D0 with reduced tracking efficiency
 name: LHC15i2_Train1416_response_efficiency
 input_path: /Volumes/DATA/ALICE/JetResults
 train: Jets_EMC_pp_MC_1416_1417_1418_1419
