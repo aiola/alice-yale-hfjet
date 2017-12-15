@@ -23,13 +23,14 @@ analysis:
   -
     name: DPtBins_JetPt_5_30
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
-    active_mesons: [D0_D0toKpiCuts]
-    need_inv_mass: [D0_D0toKpiCuts]
+    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
     sigma_fits:
-      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016, 0.017, 0.018]
+      D0_D0toKpiCuts: [0.0096, 0.0111, 0.0119, 0.0135, 0.0143, 0.0156, 0.0181, 0.019, 0.021, 0.021]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0096, 0.0111, 0.0119, 0.0135, 0.0143, 0.0156, 0.0181, 0.019, 0.021, 0.021]
     cuts:
     -
       object: jet
@@ -50,8 +51,8 @@ analysis:
       compare: [DPtBinWidthDPt3, DPtCutSideBand, MethodDPt3]
       comp_titles: ["Small #it{p}_{T,D} bins", "#it{p}_{T,D} > 3 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 3 GeV/#it{c})"]
       type: side_band
-      active_mesons: [D0_D0toKpiCuts]
-      multitrial: [D0_D0toKpiCuts]
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
         jet_pt: [5, 6, 8, 10, 14, 20, 30]
       side_band:
@@ -69,8 +70,8 @@ analysis:
       compare: [DPtBinWidthDPt2, DPtCutSideBand, MethodDPt2]
       comp_titles: ["Small #it{p}_{T,D} bins", "#it{p}_{T,D} > 2 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 2 GeV/#it{c})"]
       type: side_band
-      active_mesons: [D0_D0toKpiCuts]
-      multitrial: [D0_D0toKpiCuts]
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
         jet_pt: [5, 6, 8, 10, 14, 20, 30]
       side_band:
@@ -87,17 +88,18 @@ analysis:
       compare: [JetPtCut]
       comp_titles: ["5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (Inv.Mass Fit)"]
       type: inv_mass_fit
-      active_mesons: [D0_D0toKpiCuts]
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
   -
     name: DPtBins_JetPt_5_15
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
-    active_mesons: [D0_D0toKpiCuts]
-    need_inv_mass: [D0_D0toKpiCuts]
+    active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
     sigma_fits:
-      D0_D0toKpiCuts: [0.012, 0.012, 0.014, 0.014, 0.015, 0.015, 0.016, 0.016, 0.016]
+      D0_D0toKpiCuts: [0.0096, 0.0110, 0.0119, 0.0136, 0.0143, 0.0156, 0.0181, 0.019, 0.019]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0096, 0.0110, 0.0119, 0.0136, 0.0143, 0.0156, 0.0181, 0.019, 0.019]
     cuts:
     -
       object: jet
@@ -118,8 +120,8 @@ analysis:
       compare: [DPtBinWidth, MethodLow]
       comp_titles: ["Small #it{p}_{T,D} bins", "Side Band"]
       type: side_band
-      active_mesons: [D0_D0toKpiCuts]
-      multitrial: [D0_D0toKpiCuts]
+      active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+      multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       axis:
         d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
       side_band:
@@ -145,8 +147,8 @@ analysis:
     bins:
       d_pt: [6, 12, 30]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimHighJetPtv4: [0.015, 0.016]
-      D0_D0toKpiCuts: [0.015, 0.016]
+      D0_D0toKpiCuts: [0.017, 0.021]
+      D0_D0toKpiCuts_D0JetOptimHighJetPtv4: [0.017, 0.021]
     cuts:
     -
       object: jet
@@ -225,8 +227,8 @@ analysis:
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
-      D0_D0toKpiCuts: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
+      D0_D0toKpiCuts: [0.0125, 0.01351, 0.0151, 0.0163, 0.0186, 0.021]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0125, 0.01351, 0.0151, 0.0163, 0.0186, 0.021]
     cuts:
     -
       object: jet
@@ -321,8 +323,8 @@ analysis:
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
-      D0_D0toKpiCuts: [0.014, 0.014, 0.014, 0.014, 0.014, 0.014]
+      D0_D0toKpiCuts: [0.0123, 0.01341, 0.015, 0.0163, 0.0186, 0.021]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0123, 0.01341, 0.015, 0.0163, 0.0186, 0.021]
     cuts:
     -
       object: jet
@@ -352,8 +354,8 @@ analysis:
     bins:
       d_pt: [2, 4, 6, 9, 15]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016]
-      D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016]
+      D0_D0toKpiCuts: [0.0107, 0.0129, 0.0159, 0.0183]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0107, 0.0129, 0.0159, 0.0183]
     cuts:
     -
       object: jet
@@ -411,8 +413,8 @@ analysis:
     bins:
       d_pt: [2, 4, 6, 9, 15, 30]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
-      D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016, 0.017]
+      D0_D0toKpiCuts: [0.0108, 0.01294, 0.0158, 0.019, 0.021]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0108, 0.01294, 0.0158, 0.019, 0.021]
     cuts:
     -
       object: jet
@@ -451,8 +453,8 @@ analysis:
     bins:
       d_pt: [3, 4, 6, 9, 15, 30]
     sigma_fits:
-      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.012, 0.014, 0.015, 0.016, 0.017]
-      D0_D0toKpiCuts: [0.012, 0.014, 0.015, 0.016, 0.017]
+      D0_D0toKpiCuts: [0.0111, 0.01294, 0.0158, 0.019, 0.021]
+      D0_D0toKpiCuts_D0JetOptimLowJetPtv4: [0.0111, 0.01294, 0.0158, 0.019, 0.021]
     cuts:
     -
       object: jet
