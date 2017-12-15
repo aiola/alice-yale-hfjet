@@ -1090,7 +1090,7 @@ class DMesonJetAnalysis:
 
             if not "efficiency" in binLists: binLists["efficiency"] = False
 
-            if binLists["efficiency"] or self.fProjector.fMergingType == "simple_sum":
+            if binLists["efficiency"] or self.fProjector.fMergingType != "simple_sum":
                 fitOptions = "0 WL S"
             else:
                 fitOptions = "0 L S"
