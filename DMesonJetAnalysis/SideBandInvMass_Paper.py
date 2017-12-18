@@ -12,13 +12,19 @@ globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
 
-def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg2=False):
+
+def PlotSBInvMass(pad, dmeson, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg2=False):
     pad.SetTicks(1, 1)
     pad.SetLeftMargin(0.22)
     pad.SetRightMargin(0.02)
     pad.SetTopMargin(0.04)
     pad.SetBottomMargin(0.13)
-    sbHist = sbList.FindObject("InvMassSBWindow_AnyINT_D0_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+    objname = "InvMassSBWindow_AnyINT_{}_DPt_{:.0f}_{:.0f}".format(dmeson, ptmin * 100, ptmax * 100)
+    sbHist = sbList.FindObject(objname)
+    if not sbHist:
+        print("Could not find object '{}' in list '{}'".format(objname, sbList.GetName()))
+        sbList.ls()
+        exit(1)
     h = sbHist.DrawCopy("axis")
 
     minbin_l = 0
@@ -51,7 +57,12 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg
     sbHist_copy_r.SetLineColor(ROOT.kGreen - 6)
     sbHist_copy_r.GetXaxis().SetRange(minbin_r, maxbin_r)
 
-    sigHist = sbList.FindObject("InvMassSigWindow_AnyINT_D0_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+    objname = "InvMassSigWindow_AnyINT_{}_DPt_{:.0f}_{:.0f}".format(dmeson, ptmin * 100, ptmax * 100)
+    sigHist = sbList.FindObject(objname)
+    if not sigHist:
+        print("Could not find object '{}' in list '{}'".format(objname, sbList.GetName()))
+        sbList.ls()
+        exit(1)
     minbin_s = 0
     maxbin_s = 0
     for ibin in range(1, sigHist.GetNbinsX() + 1):
@@ -67,7 +78,12 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg
     sigHist_copy.SetLineColor(ROOT.kRed - 6)
     sigHist_copy.GetXaxis().SetRange(minbin_s, maxbin_s)
 
-    invMassHist = dptbinList.FindObject("InvMass_AnyINT_D0_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+    objname = "InvMass_AnyINT_{}_DPt_{:.0f}_{:.0f}".format(dmeson, ptmin * 100, ptmax * 100)
+    invMassHist = dptbinList.FindObject(objname)
+    if not invMassHist:
+        print("Could not find object '{}' in list '{}'".format(objname, sbList.GetName()))
+        sbList.ls()
+        exit(1)
     invMassHist_copy = invMassHist.DrawCopy("p0 x0 same")
     globalList.append(invMassHist_copy)
     invMassHist_copy.SetLineColor(ROOT.kBlue + 3)
@@ -75,7 +91,12 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg
     invMassHist_copy.SetMarkerStyle(ROOT.kFullCircle)
     invMassHist_copy.SetMarkerSize(1.0)
 
-    fitter = dptbinList.FindObject("InvMass_AnyINT_D0_DPt_{0:.0f}_{1:.0f}_fitter".format(ptmin * 100, ptmax * 100))
+    objname = "InvMass_AnyINT_{}_DPt_{:.0f}_{:.0f}_fitter".format(dmeson, ptmin * 100, ptmax * 100)
+    fitter = dptbinList.FindObject(objname)
+    if not fitter:
+        print("Could not find object '{}' in list '{}'".format(objname, sbList.GetName()))
+        sbList.ls()
+        exit(1)
     globalList.append(fitter)
     fitter.Draw("same")
 
@@ -148,7 +169,8 @@ def PlotSBInvMass(pad, ptmin, ptmax, sbList, dptbinList, plotleg1=False, plotleg
         leg.AddEntry(sbHist_copy_l, "Side Bands", "f")
         leg.Draw()
 
-def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
+
+def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, plotleg=False):
     pad.SetTicks(1, 1)
     # pad.SetLogy()
     pad.SetLeftMargin(0.22)
@@ -156,7 +178,7 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     pad.SetTopMargin(0.04)
     pad.SetBottomMargin(0.13)
 
-    sbHist = sbList.FindObject("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_SideBandWindow_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+    sbHist = sbList.FindObject("{}_Charged_R040_JetPtSpectrum_DPt_30_SideBand_SideBandWindow_DPt_{:.0f}_{:.0f}".format(dmeson, ptmin * 100, ptmax * 100))
     h = sbHist.DrawCopy("axis")
     globalList.append(h)
 
@@ -167,7 +189,7 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     sbHist_copy.SetMarkerStyle(ROOT.kOpenCircle)
     sbHist_copy.SetMarkerSize(1.3)
 
-    sigHist = sbList.FindObject("D0_Charged_R040_JetPtSpectrum_DPt_30_SideBand_SignalWindow_DPt_{0:.0f}_{1:.0f}".format(ptmin * 100, ptmax * 100))
+    sigHist = sbList.FindObject("{}_Charged_R040_JetPtSpectrum_DPt_30_SideBand_SignalWindow_DPt_{:.0f}_{:.0f}".format(dmeson, ptmin * 100, ptmax * 100))
 
     sigHist_copy = sigHist.DrawCopy("p0 same")
     globalList.append(sigHist_copy)
@@ -221,29 +243,30 @@ def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
         leg.AddEntry(subHist_copy, "Signal - SB", "p")
         leg.Draw()
 
+
 def SideBandPlot():
-    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_823_824_825_826", "LHC10_Train823_efficiency")
-    loader.fDMeson = "D0"
+    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")
+    loader.fDMeson = "D0_D0toKpiCuts"
     loader.fJetType = "Charged"
     loader.fJetRadius = "R040"
     loader.fVariableName = "JetPt"
     loader.fKinematicCuts = "DPt_30"
     loader.fRawYieldMethod = "SideBand"
     loader.LoadDataListFromDMesonJetAnalysis()
-    dptbinList = loader.fDataJetList.FindObject("D0_Charged_R040_DPtBins_JetPt_5_30")
+    dptbinList = loader.fDataJetList.FindObject("{}_Charged_R040_DPtBins_JetPt_5_30".format(loader.fDMeson))
     spectrumList = loader.fDataSpectrumList
     sbList = spectrumList.FindObject("SideBandAnalysis")
 
-    cname = "SideBandInvMass_QM17"
+    cname = "SideBandInvMass_Paper"
     canvas = ROOT.TCanvas(cname, cname, 1200, 800)
     globalList.append(canvas)
     canvas.Divide(3, 2)
-    PlotSBInvMass(canvas.cd(1), 4, 5, sbList, dptbinList, True, False)
-    PlotSBInvMass(canvas.cd(2), 6, 7, sbList, dptbinList, False, True)
-    PlotSBInvMass(canvas.cd(3), 10, 12, sbList, dptbinList, False, False)
-    PlotSBSpectra(canvas.cd(4), 4, 5, sbList)
-    PlotSBSpectra(canvas.cd(5), 6, 7, sbList)
-    PlotSBSpectra(canvas.cd(6), 10, 12, sbList, True)
+    PlotSBInvMass(canvas.cd(1), loader.fDMeson, 4, 5, sbList, dptbinList, True, False)
+    PlotSBInvMass(canvas.cd(2), loader.fDMeson, 6, 7, sbList, dptbinList, False, True)
+    PlotSBInvMass(canvas.cd(3), loader.fDMeson, 10, 12, sbList, dptbinList, False, False)
+    PlotSBSpectra(canvas.cd(4), loader.fDMeson, 4, 5, sbList)
+    PlotSBSpectra(canvas.cd(5), loader.fDMeson, 6, 7, sbList)
+    PlotSBSpectra(canvas.cd(6), loader.fDMeson, 10, 12, sbList, True)
 
     canvas.cd(5)
     htitle = ROOT.TPaveText(0.44, 0.53, 0.92, 0.90, "NB NDC")
@@ -269,9 +292,10 @@ def SideBandPlot():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Preliminary")
+    # paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
+
 
 def main():
     ROOT.TH1.AddDirectory(False)
@@ -286,6 +310,7 @@ def main():
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             obj.SaveAs("{0}/{1}.pdf".format(input_path, obj.GetName()))
+
 
 if __name__ == '__main__':
     main()
