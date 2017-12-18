@@ -10,6 +10,7 @@ import JetPtSpectrum_Paper
 import JetZSpectrum_JetPt_5_15_Paper
 import JetZSpectrum_JetPt_15_30_Paper
 import Uncertainties_JetPtSpectrum_Paper
+import SideBandInvMass_Paper
 
 
 def main():
@@ -21,6 +22,7 @@ def main():
     JetZSpectrum_JetPt_5_15_Paper.main()
     JetZSpectrum_JetPt_15_30_Paper.main()
     Uncertainties_JetPtSpectrum_Paper.main()
+    SideBandInvMass_Paper.main()
 
 
 if __name__ == '__main__':
