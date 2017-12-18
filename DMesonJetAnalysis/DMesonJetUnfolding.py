@@ -393,6 +393,9 @@ class DMesonJetUnfoldingEngine:
         if len(spectra) < 1:
             return
         comp = DMesonJetCompare.DMesonJetCompare("{0}_Priors".format(self.fName))
+        if self.fName.startswith("JetZ"):
+            comp.fX1LegRatio = 0.15
+            comp.fX2LegRatio = 0.50
         comp.fOptSpectrum = "hist"
         comp.fOptRatio = "hist"
         comp.fYaxisRatio = yaxisRatio
@@ -873,8 +876,14 @@ class DMesonJetUnfoldingEngine:
             globalList.append(h)
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingPrior_{1}".format(self.fName, method))
+        if self.fName.startswith("JetZ"):
+            comp.fX1LegRatio = 0.15
+            comp.fX2LegRatio = 0.50
         comp.fYaxisRatio = yaxisRatio
         comp.fOptRatio = "hist"
+        comp.fColors = comp.fColors[1:]
+        comp.fLines = comp.fLines[1:]
+        comp.fMarkers = comp.fMarkers[1:]
         if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
         else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
@@ -1061,11 +1070,12 @@ class DMesonJetUnfoldingEngine:
             detRespForRooUnfold = detResp.Clone()
             if self.fUseOverflow:
                 # if using overflow bins, need to reset the content of the measured axis overflow bins (not measured)
+                # not to be done in detResp, since there the overflow bins are needed to calculate the kinematic efficiency
                 for ybin in range(0, detRespForRooUnfold.GetNbinsY() + 2):
                     detRespForRooUnfold.SetBinContent(0, ybin, 0)
                     detRespForRooUnfold.SetBinError(0, ybin, 0)
-                    detRespForRooUnfold.SetBinContent(self.fDetectorResponse.GetNbinsX() + 1, ybin, 0)
-                    detRespForRooUnfold.SetBinError(self.fDetectorResponse.GetNbinsX() + 1, ybin, 0)
+                    detRespForRooUnfold.SetBinContent(detRespForRooUnfold.GetNbinsX() + 1, ybin, 0)
+                    detRespForRooUnfold.SetBinError(detRespForRooUnfold.GetNbinsX() + 1, ybin, 0)
             rooUnfoldResp = ROOT.RooUnfoldResponse(ROOT.nullptr, trainTruth, detRespForRooUnfold)
             rooUnfoldResp.UseOverflow(self.fUseOverflow)
             detRespNorm = self.Normalize2D(detResp, self.GenerateFlatPrior(False))
@@ -1159,6 +1169,14 @@ class DMesonJetUnfoldingEngine:
             print("DMesonJetUnfolding, NormalizeResponseMatrix: this case not implemented. Aborting.")
             exit(1)
 
+        # will zero entries in the prior corresponding to y slices of the response matrix that have less than 1% of the total integral
+        totint = detectorResponse.Integral(0, detectorResponse.GetXaxis().GetNbins() + 1, 0, detectorResponse.GetYaxis().GetNbins() + 1)
+        for ybin in range(0, detectorResponse.GetYaxis().GetNbins() + 2):
+            inty = detectorResponse.Integral(0, detectorResponse.GetXaxis().GetNbins() + 1, ybin, ybin)
+            if inty < totint * 1e-2:
+                priorHist.SetBinContent(ybin, 0)
+                priorHist.SetBinError(ybin, 0)
+
         priorHist_Integral = priorHist.Integral()
         if priorHist_Integral != 0:
             priorHist.Scale(detectorTrainTruth.Integral() / priorHist_Integral)
@@ -1213,11 +1231,11 @@ class DMesonJetUnfoldingEngine:
     def GenerateFlatPrior(self, scale_bin_width):
         priorHist = self.fDetectorTrainTruth.Clone("myprior")
         for ibin in range(0, priorHist.GetNbinsX() + 2):
+            priorHist.SetBinError(ibin, 0)
             if scale_bin_width:
                 priorHist.SetBinContent(ibin, priorHist.GetXaxis().GetBinWidth(ibin))
             else:
                 priorHist.SetBinContent(ibin, 1)
-            priorHist.SetBinError(ibin, 0)
         return priorHist
 
     def Normalize2D(self, hist, norm):
