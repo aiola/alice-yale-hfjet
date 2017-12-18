@@ -22,7 +22,7 @@ def main(configs, name):
 
     CompareSystematic_DMeson(configs, name)
     CompareSystematic_ByGroup(configs, name, "JetPtSpectrum", "DPtCutSideBand")
-    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_30", "DPtBinWidth")
+    CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_30", "DPtBinWidthDPt3")
     CompareSystematic_ByGroup(configs, name, "JetPtSpectrum_DPt_30", "MethodDPt3")
     CompareSystematic_ByGroup(configs, name, "JetZSpectrum_DPt_20_JetPt_5_15", "DPtBinWidth")
 
