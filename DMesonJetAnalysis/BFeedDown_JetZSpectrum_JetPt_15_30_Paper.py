@@ -55,7 +55,7 @@ def PlotBFeedDown():
     h_axis = h.DrawCopy("axis")
     globalList.append(h_axis)
     h_axis.GetYaxis().SetTitle("yield (counts #times efficiency)")
-    h_axis.GetYaxis().SetRangeUser(0.5, 12000)
+    h_axis.GetYaxis().SetRangeUser(0.5, 500)
     h_axis.GetYaxis().SetTitleFont(43)
     h_axis.GetYaxis().SetTitleSize(26)
     h_axis.GetYaxis().SetLabelFont(43)
