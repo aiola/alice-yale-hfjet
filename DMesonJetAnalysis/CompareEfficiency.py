@@ -29,11 +29,17 @@ def main(configs, name):
     CompareEfficiency_Type(configs, name)
 
     definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_30", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{ch jet} < 30 GeV/#it{c}"}]
-    CompareEfficiency_Definitions(configs, name, definitions)
+    CompareEfficiency_Definitions(configs, "Comparison_KineCuts_JetPt_5_30", definitions, 3, 29.9)
+
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_1500", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_15", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{ch jet} < 15 GeV/#it{c}"}]
+    CompareEfficiency_Definitions(configs, "Comparison_KineCuts_JetPt_5_15", definitions, 2, 14.9)
+
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_1500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_15_30", "suffix" : "", "title" : "Eff. w/ corr. 15 < #it{p}_{ch jet} < 30 GeV/#it{c}"}]
+    CompareEfficiency_Definitions(configs, "Comparison_KineCuts_JetPt_15_30", definitions, 6, 29.9)
 
 
 def GetEfficiency(config, meson_name, jet_type, jet_radius, spectrum="JetPtDPtSpectrum", suffix="_JetPt_500_3000"):
-    return GetHisto("Efficiency", config, meson_name, jet_type, jet_radius, spectrum="JetPtDPtSpectrum", suffix="_JetPt_500_3000")
+    return GetHisto("Efficiency", config, meson_name, jet_type, jet_radius, spectrum, suffix)
 
 
 def GetHisto(histo_name, config, meson_name, jet_type, jet_radius, spectrum="JetPtDPtSpectrum", suffix="_JetPt_500_3000"):
@@ -49,7 +55,7 @@ def GetHisto(histo_name, config, meson_name, jet_type, jet_radius, spectrum="Jet
     return h
 
 
-def CompareEfficiency_Definitions(configs, name, definitions):
+def CompareEfficiency_Definitions(configs, name, definitions, minpt, maxpt):
     print("CompareEfficiency_Definitions")
     if not name: name = "Comparison_KineCuts"
     efficiency_type = "Prompt"
@@ -67,6 +73,7 @@ def CompareEfficiency_Definitions(configs, name, definitions):
                 histos = []
                 cname = "{}/{}/{}_{}_KinCuts".format(c["train"], c["name"], meson_cuts, name)
                 for definition in definitions:
+                    print("Definition '{}'".format(definition["title"]))
                     h = GetEfficiency(c, meson_name, jet_type, jet_radius, definition["spectrum"], definition["suffix"])
                     if not h: continue
                     h.SetTitle(definition["title"])
@@ -86,8 +93,8 @@ def CompareEfficiency_Definitions(configs, name, definitions):
                     if not obj in globalList:
                         globalList.append(obj)
 
-                comp.fMainHistogram.GetXaxis().SetRangeUser(2, 29.9)
-                comp.fMainRatioHistogram.GetXaxis().SetRangeUser(2, 29.9)
+                comp.fMainHistogram.GetXaxis().SetRangeUser(minpt, maxpt)
+                comp.fMainRatioHistogram.GetXaxis().SetRangeUser(minpt, maxpt)
                 comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
                 comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
 
