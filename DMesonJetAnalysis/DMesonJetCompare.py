@@ -61,6 +61,8 @@ class DMesonJetCompare:
         self.fRatioRelativeUncertaintyTitle = "Rel. Unc."
         self.fGridyRatio = True
 
+        self.fGridySpectrum = False
+
         self.fFitFunction = "expo(0)+expo(2)"
         self.fDoSpectrumLegend = True
         self.fDoRatioLegend = True
@@ -103,6 +105,8 @@ class DMesonJetCompare:
                 self.fLegendSpectra.SetBorderSize(0)
                 self.fLegendSpectra.SetTextFont(43)
                 self.fLegendSpectra.SetTextSize(self.fLegTextSize)
+
+        if self.fGridySpectrum: self.fCanvasSpectra.SetGridy()
 
         if "hist" in self.fOptSpectrumBaseline:
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
