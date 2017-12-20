@@ -12,6 +12,7 @@ globalList = []
 
 InvMassRange = [1.72, 2.014]
 
+
 def PlotReflections(config, var, reflFit):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
@@ -21,13 +22,11 @@ def PlotReflections(config, var, reflFit):
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
-        exit(1)
+        return
 
     signHist = dict()
     reflHist = dict()
     reflFitHist = dict()
-
-    file.ls()
 
     for k in file.GetListOfKeys():
         h = file.Get(k.GetName())
@@ -153,6 +152,7 @@ def PlotReflections(config, var, reflFit):
     leg.AddEntry(hRefFit_copy, "Histogram from fit", "pe")
     leg.Draw()
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot reflections.')
     parser.add_argument('yaml', metavar='config.yaml',
@@ -163,9 +163,8 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    PlotReflections(config, "DPt", "DoubleGaus")
-    PlotReflections(config, "DPt_NoJet", "DoubleGaus")
-    PlotReflections(config, "JetPt", "DoubleGaus")
+    PlotReflections(config, "D0toKpiCuts_DPt_Charged_R040_DPtBins_JetPt_5_30", "DoubleGaus")
+    PlotReflections(config, "D0toKpiCuts_JetPt_Charged_R040_JetPtBins_DPt_30", "DoubleGaus")
 
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
