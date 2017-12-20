@@ -28,14 +28,17 @@ def main(configs, name):
     CompareEfficiency_DMeson(configs, name)
     CompareEfficiency_Type(configs, name)
 
-    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_30", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{ch jet} < 30 GeV/#it{c}"}]
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_30", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"}]
     CompareEfficiency_Definitions(configs, "Comparison_KineCuts_JetPt_5_30", definitions, 3, 29.9)
 
-    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_1500", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_15", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{ch jet} < 15 GeV/#it{c}"}]
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_1500", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_5_15", "suffix" : "", "title" : "Eff. w/ corr. 5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"}]
     CompareEfficiency_Definitions(configs, "Comparison_KineCuts_JetPt_5_15", definitions, 2, 14.9)
 
-    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_1500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_15_30", "suffix" : "", "title" : "Eff. w/ corr. 15 < #it{p}_{ch jet} < 30 GeV/#it{c}"}]
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_1500_3000", "title" : "Only efficiency"}, {"spectrum" : "DPtSpectrum_JetPt_15_30", "suffix" : "", "title" : "Eff. w/ corr. 15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"}]
     CompareEfficiency_Definitions(configs, "Comparison_KineCuts_JetPt_15_30", definitions, 6, 29.9)
+
+    definitions = [{"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_500_1500", "title" : "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"}, {"spectrum" : "JetPtDPtSpectrum", "suffix" : "_JetPt_1500_3000", "title" : "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"}]
+    CompareEfficiency_Definitions(configs, "Comparison_JetPtRanges", definitions, 2, 14.9, "")
 
 
 def GetEfficiency(config, meson_name, jet_type, jet_radius, spectrum="JetPtDPtSpectrum", suffix="_JetPt_500_3000"):
@@ -55,7 +58,7 @@ def GetHisto(histo_name, config, meson_name, jet_type, jet_radius, spectrum="Jet
     return h
 
 
-def CompareEfficiency_Definitions(configs, name, definitions, minpt, maxpt):
+def CompareEfficiency_Definitions(configs, name, definitions, minpt, maxpt, optratio="hist"):
     print("CompareEfficiency_Definitions")
     if not name: name = "Comparison_KineCuts"
     efficiency_type = "Prompt"
@@ -71,7 +74,7 @@ def CompareEfficiency_Definitions(configs, name, definitions, minpt, maxpt):
                 meson_name = "{}_{}_{}".format(efficiency_type, c["analysis"][0]["d_meson"][0], meson_cuts)
                 print("Working on D meson {}".format(meson_name))
                 histos = []
-                cname = "{}/{}/{}_{}_KinCuts".format(c["train"], c["name"], meson_cuts, name)
+                cname = "{}/{}/{}_{}".format(c["train"], c["name"], meson_cuts, name)
                 for definition in definitions:
                     print("Definition '{}'".format(definition["title"]))
                     h = GetEfficiency(c, meson_name, jet_type, jet_radius, definition["spectrum"], definition["suffix"])
@@ -82,7 +85,7 @@ def CompareEfficiency_Definitions(configs, name, definitions, minpt, maxpt):
 
                 if len(histos) < 2: continue
                 comp = DMesonJetCompare.DMesonJetCompare(cname)
-                comp.fOptRatio = "hist"
+                comp.fOptRatio = optratio
                 comp.fX1LegRatio = 0.15
                 comp.fX1LegSpectrum = 0.25
                 comp.fLinUpperSpace = 0.4
