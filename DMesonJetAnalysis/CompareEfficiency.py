@@ -103,7 +103,7 @@ def CompareEfficiency_Definitions(configs, name, definitions, minpt, maxpt, optr
 
 
 def CompareEfficiency_Type(configs, name):
-    print("CompareEfficiency_DMeson")
+    print("CompareEfficiency_Type")
     if not name: name = "Comparison"
     efficiency_types = ["Prompt", "NonPrompt"]
 
@@ -111,8 +111,9 @@ def CompareEfficiency_Type(configs, name):
         input_path = c["input_path"]
         print("Working on {}".format(c["name"]))
         if len(c["analysis"][0]["d_meson_cuts"]) < 2:
-            print("Skipping {}, since there aren't enough different D meson cuts".format(c["name"]))
-            continue
+            need_dmeson_cut_label = False
+        else:
+            need_dmeson_cut_label = True
         for jet in c["analysis"][0]["jets"]:
             jet_type = jet["type"]
             jet_radius = jet["radius"]
@@ -137,9 +138,10 @@ def CompareEfficiency_Type(configs, name):
                     print("Working on D meson {}".format(meson_name))
                     h = GetEfficiency(c, meson_name, jet_type, jet_radius)
                     if not h: continue
-                    h.SetBinContent(1, 0)
-                    h.SetBinContent(2, 0)
-                    h.SetTitle("{}, {}".format(meson_cuts, efficiency_type))
+                    if need_dmeson_cut_label:
+                        h.SetTitle("{}, {}".format(meson_cuts, efficiency_type))
+                    else:
+                        h.SetTitle(efficiency_type)
                     globalList.append(h)
                     histos.append(h)
 
