@@ -68,6 +68,8 @@ Then execute:
 
 `./runDataUnfolding.py Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency.yaml -b`
 
+Note: no need to run the above if you run the full systematics
+
 ### Full Systematics
 
 ##### Tracking Efficiency
