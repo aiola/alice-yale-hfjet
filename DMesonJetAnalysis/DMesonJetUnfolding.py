@@ -1170,12 +1170,13 @@ class DMesonJetUnfoldingEngine:
             exit(1)
 
         # will zero entries in the prior corresponding to y slices of the response matrix that have less than 1% of the total integral
-        totint = detectorResponse.Integral(0, detectorResponse.GetXaxis().GetNbins() + 1, 0, detectorResponse.GetYaxis().GetNbins() + 1)
-        for ybin in range(0, detectorResponse.GetYaxis().GetNbins() + 2):
-            inty = detectorResponse.Integral(0, detectorResponse.GetXaxis().GetNbins() + 1, ybin, ybin)
-            if inty < totint * 1e-2:
-                priorHist.SetBinContent(ybin, 0)
-                priorHist.SetBinError(ybin, 0)
+        # commenting this out .... not sure why I did this!
+#         totint = detectorResponse.Integral(0, detectorResponse.GetXaxis().GetNbins() + 1, 0, detectorResponse.GetYaxis().GetNbins() + 1)
+#         for ybin in range(0, detectorResponse.GetYaxis().GetNbins() + 2):
+#             inty = detectorResponse.Integral(0, detectorResponse.GetXaxis().GetNbins() + 1, ybin, ybin)
+#             if inty < totint * 1e-2:
+#                 priorHist.SetBinContent(ybin, 0)
+#                 priorHist.SetBinError(ybin, 0)
 
         priorHist_Integral = priorHist.Integral()
         if priorHist_Integral != 0:
@@ -1207,25 +1208,27 @@ class DMesonJetUnfoldingEngine:
         # this is a modified power law, where at low pT an exponential dumps the function to zero, to avoid infinities
         # other protections are added via the [2] parameter to avoid intermediate infinities in the function evaluation
         # the resulting modified power law has a local maximum, which is set to 3 GeV/c by default
-        f = ROOT.TF1("f", "(x>[2])*TMath::Max([2],x)^[0]*TMath::Exp([1]/TMath::Max([2],x))", 0, priorHist.GetXaxis().GetXmax() * 2)
+        f = ROOT.TF1("f", "(x>[2])*TMath::Max([2],x)^[0]*TMath::Exp([1]/TMath::Max([2],x))", priorHist.GetXaxis().GetBinLowEdge(0), priorHist.GetXaxis().GetBinUpEdge(priorHist.GetXaxis().GetNbins() + 1))
         f.SetParameter(0, a)
         f.SetParameter(1, a * peak)
         f.SetParameter(2, 1e-6)
-        priorHist.Add(f, 1, "i")
-        if scale_bin_width:
-            for ibin in range(0, priorHist.GetNbinsX() + 2):
-                priorHist.SetBinContent(ibin, priorHist.GetBinContent(ibin) * priorHist.GetXaxis().GetBinWidth(ibin))
+        for ibin in range(0, priorHist.GetNbinsX() + 2):
+            if scale_bin_width:
+                priorHist.SetBinContent(ibin, f.Eval(priorHist.GetXaxis().GetBinCenter(ibin)) * priorHist.GetXaxis().GetBinWidth(ibin))
+            else:
+                priorHist.SetBinContent(ibin, f.Eval(priorHist.GetXaxis().GetBinCenter(ibin)))
         return priorHist
 
     def GeneratePolinomialPrior(self, pars, scale_bin_width):
         priorHist = self.fDetectorTrainTruth.Clone("myprior")
         priorHist.Reset()
-        f = ROOT.TF1("f", "pol{}".format(len(pars)), 0, priorHist.GetXaxis().GetXmax() * 2)
+        f = ROOT.TF1("f", "pol{}".format(len(pars)), priorHist.GetXaxis().GetBinLowEdge(0), priorHist.GetXaxis().GetBinUpEdge(priorHist.GetXaxis().GetNbins() + 1))
         for i, p in enumerate(pars): f.SetParameter(i, p)
-        priorHist.Add(f, 1, "i")
-        if scale_bin_width:
-            for ibin in range(0, priorHist.GetNbinsX() + 2):
-                priorHist.SetBinContent(ibin, priorHist.GetBinContent(ibin) * priorHist.GetXaxis().GetBinWidth(ibin))
+        for ibin in range(0, priorHist.GetNbinsX() + 2):
+            if scale_bin_width:
+                priorHist.SetBinContent(ibin, f.Eval(priorHist.GetXaxis().GetBinCenter(ibin)) * priorHist.GetXaxis().GetBinWidth(ibin))
+            else:
+                priorHist.SetBinContent(ibin, f.Eval(priorHist.GetXaxis().GetBinCenter(ibin)))
         return priorHist
 
     def GenerateFlatPrior(self, scale_bin_width):
