@@ -16,12 +16,38 @@ from collections import OrderedDict
 
 globalList = []
 
+xaxis_title = ""
+yaxis_title = ""
+
 
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
 
+    global xaxis_title
+    global yaxis_title
+
+    if "JetZSpectrum" in config["name"]:
+        xaxis_title = "#it{z}_{||,D}^{ch jet}"
+        if config["normalization"] == "cross_section":
+            yaxis_title = "#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)"
+        elif config["normalization"] == "distribution":
+            yaxis_title = "probability density"
+        else:
+            print("Normalization option '{}' invalid".format(config["normalization"]))
+            exit(1)
+    elif "JetPtSpectrum" in config["name"]:
+        xaxis_title = "#it{p}_{T,ch jet} (GeV/#it{c})"
+        if config["normalization"] == "cross_section":
+            yaxis_title = "#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]"
+        elif config["normalization"] == "distribution":
+            yaxis_title = "probability density (GeV/#it{c})^{-1}"
+        else:
+            print("Normalization option '{}' invalid".format(config["normalization"]))
+            exit(1)
+
+    print(xaxis_title, yaxis_title)
     results = Start(config)
 
     PlotSystematicUncertaintySummary(config["name"], results)
@@ -61,7 +87,16 @@ def LoadHistograms(config):
     histograms = dict()
 
     h = DMesonJetUtils.GetObject(files[config["default"]["input_name"]], config["default"]["histogram_name"])
-    h.Scale(crossSection / (events[config["default"]["input_name"]] * branchingRatio * antiPartNorm), "width")
+    print(xaxis_title, yaxis_title)
+    h.GetXaxis().SetTitle(xaxis_title)
+    h.GetYaxis().SetTitle(yaxis_title)
+    if config["normalization"] == "cross_section":
+        h.Scale(crossSection / (events[config["default"]["input_name"]] * branchingRatio * antiPartNorm), "width")
+    elif config["normalization"] == "distribution":
+        h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "width")
+    else:
+        print("Unknown normalization option '{}'".format(config["normalization"]))
+        exit(1)
     if not h: exit(1)
     histograms["default"] = h
     v_types = ["variations", "up_variations", "low_variations"]
@@ -75,10 +110,17 @@ def LoadHistograms(config):
                     h = DMesonJetUtils.GetObject(files[v["input_name"]], v["histogram_name"])
                     if not h: exit(1)
                     h_copy = h.Clone("{0}_copy".format(v["histogram_name"]))
-                    h_copy.Scale(crossSection / (events[v["input_name"]] * branchingRatio * antiPartNorm), "width")
+                    if config["normalization"] == "cross_section":
+                        h_copy.Scale(crossSection / (events[v["input_name"]] * branchingRatio * antiPartNorm), "width")
+                    elif config["normalization"] == "distribution":
+                        h_copy.Scale(1.0 / h_copy.Integral(1, h_copy.GetNbinsX()), "width")
+                    else:
+                        print("Unknown normalization option '{}'".format(config["normalization"]))
+                        exit(1)
                     h_copy.SetTitle(v["histogram_title"])
-                    h_copy.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-                    h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+                    print(xaxis_title, yaxis_title)
+                    h_copy.GetXaxis().SetTitle(xaxis_title)
+                    h_copy.GetYaxis().SetTitle(yaxis_title)
                     histograms[s["name"]][v_type].append(h_copy)
     return histograms
 
@@ -134,12 +176,9 @@ def CompareVariations(config, histograms):
     baseline = h.Clone("default")
     baseline.SetTitle(config["default"]["title"])
 
-    if "JetZSpectrum" in config["name"]:
-        baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)")
-        baseline.GetXaxis().SetTitle("#it{z}_{||,D}^{ch jet}")
-    elif "JetPtSpectrum" in config["name"]:
-        baseline.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-        baseline.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    print(xaxis_title, yaxis_title)
+    baseline.GetXaxis().SetTitle(xaxis_title)
+    baseline.GetYaxis().SetTitle(yaxis_title)
     result[baseline.GetName()] = baseline
     v_types = ["variations", "up_variations", "low_variations"]
     for s in config["sources"]:
@@ -348,8 +387,9 @@ def GenerateUncertainties(config, histograms):
                                             numpy.array(yerrlow, dtype=float), numpy.array(yerrup, dtype=float))
     centralSystUnc.SetName("central_syst_unc")
     centralSystUnc.SetTitle("{0} Systematics".format(baseline.GetTitle()))
-    centralSystUnc.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-    centralSystUnc.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    print(xaxis_title, yaxis_title)
+    centralSystUnc.GetXaxis().SetTitle(xaxis_title)
+    centralSystUnc.GetYaxis().SetTitle(yaxis_title)
     result = {"PartialSystematicUncertaintiesUp" : partialRelSystUncUp_smooth, "PartialSystematicUncertaintiesLow" : partialRelSystUncLow_smooth,
               "fixed_syst_unc" : fixed_syst_unc,
               totRelSystUncUp.GetName() : totRelSystUncUp, totRelSystUncLow.GetName() : totRelSystUncLow,
@@ -458,18 +498,22 @@ def PlotSpectrumStatAndSyst(name, results):
     h = stat.DrawCopy("axis")
     h.GetYaxis().SetTitleOffset(1.5)
 
+    print(xaxis_title, yaxis_title)
+    h.GetXaxis().SetTitle(xaxis_title)
+    h.GetYaxis().SetTitle(yaxis_title)
+
     if "JetPtSpectrum" in name:
-        h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-        h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
         h.GetYaxis().SetRangeUser(5e-6, 4e-2)
         canvas.SetLogy()
     elif "JetZSpectrum" in name:
-        h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{z}_{||}d#eta} (mb)")
-        h.GetXaxis().SetTitle("#it{z}_{||,D}^{ch jet}")
         if "JetPt_15_30" in name:
-            h.GetYaxis().SetRangeUser(0, 0.008)
+            # h.GetYaxis().SetRangeUser(0, 0.008)
+            h.GetYaxis().SetRangeUser(0, 5.0)
+            h.GetXaxis().SetRangeUser(0.4, 1.0)
         else:
-            h.GetYaxis().SetRangeUser(0, 0.2)
+            # h.GetYaxis().SetRangeUser(0, 0.2)
+            h.GetYaxis().SetRangeUser(0, 3.5)
+            h.GetXaxis().SetRangeUser(0.2, 1.0)
 
     syst_copy = syst.Clone("central_syst_unc_copy")
     syst_copy.Draw("e2")
