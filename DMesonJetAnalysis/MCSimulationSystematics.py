@@ -527,6 +527,15 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
     else:
         FDhistogram_fineBins_jetx = None
 
+    # TODO: FIXME
+    if spectrum["normalization"] == "distribution":
+        jet_hist.Scale(1.0 / jet_hist.Integral(1, jet_hist.GetNbinsX()))
+    elif spectrum["normalization"] == "cross_section":
+        jet_hist.Scale(scaling_factor)
+    else:
+        print("Normalization '{}' not valid".format(spectrum["normalization"]))
+        exit(1)
+
     if bResponseFile:
         print("Applying the jet b response matrix")
         FDhistogram_jetx_detector = ApplyResponse(FDhistogram_jetx, bResponseFile, FDhistogram_fineBins_jetx, fullSpectrumName, dmeson_nonprompt)

@@ -2,6 +2,7 @@ name: BFeedDown_1505317519_1416
 analysis_name: FastSimAnalysis_FDonly
 input_path: /Volumes/DATA/ALICE/JetResults
 generator: powheg+pythia6_beauty
+normalization: cross_section
 c_response:
   train: Jets_EMC_pp_MC_1416_1417_1418_1419
   name: LHC15i2_Train1416_response
@@ -11,6 +12,7 @@ b_response:
 spectra:
 -
   variable_name: DPt
+  normalization: cross_section
   variable_title: "#it{p}_{T,D}"
   d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: []
@@ -18,6 +20,7 @@ spectra:
   d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 -
   variable_name: JetPt
+  normalization: cross_section
   variable_title: "#it{p}_{T,ch jet}"
   d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [2]
@@ -26,6 +29,7 @@ spectra:
   jet_pt_bins: [5, 6, 8, 10, 14, 20, 30]
 -
   variable_name: JetPt
+  normalization: cross_section
   variable_title: "#it{p}_{T,ch jet}"
   d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [3]
@@ -34,6 +38,7 @@ spectra:
   jet_pt_bins: [5, 6, 8, 10, 14, 20, 30]
 -
   variable_name: JetZ
+  normalization: cross_section
   variable_title: "#it{z}_{||,D}^{ch jet}"
   d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [2]
@@ -42,6 +47,7 @@ spectra:
   d_z_bins: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
 -
   variable_name: JetZ
+  normalization: cross_section
   variable_title: "#it{z}_{||,D}^{ch jet}"
   d_meson: "D0_D0toKpiCuts"
   d_pt_cuts: [6]
