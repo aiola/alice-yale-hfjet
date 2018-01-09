@@ -353,7 +353,7 @@ def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suffix):
     spectrumName = "{}Spectrum".format(var.replace("z", "Z"))
     inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts, suffix] if s])
 
-    for ibin in range(0, 5):
+    for ibin in range(0, 10):
         fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_DoubleGaus/{spectrum_name}_DistributionOfFinalYields_SBApproach_{var}_Dzero_Bin{ibin}.root".format(input_path=input_path, train=train, ana=ana, var=var, ibin=ibin, spectrum_name=inputSpectrumName)
         if not os.path.isfile(fname): continue
         file = ROOT.TFile(fname)
@@ -411,7 +411,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts, 
     inputSpectrumName = "_".join([s for s in [dmeson[3:], spectrumName, kin_cuts, suffix] if s])
 
     reflVar = ["DoubleGaus_15", "DoubleGaus_5", "gaus", "pol3", "pol6"]
-    for ibin in range(0, 5):
+    for ibin in range(0, 10):
         histos = []
         for variation in reflVar:
             fname = "{input_path}/{train}/{ana}/RawYieldUnc_refl_{variation}/{spectrum_name}_TrialExpoFreeS_{variable}_Dzero_SideBand_{ibin}.root".format(input_path=input_path, train=train, ana=ana, variable=variable, ibin=ibin, variation=variation, spectrum_name=inputSpectrumName)
