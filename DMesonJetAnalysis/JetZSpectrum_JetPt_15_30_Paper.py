@@ -52,15 +52,15 @@ def GetTheoryCrossSection():
         print("Cannot get theory cross section lower systematic uncertainty!")
         exit(1)
 
-    # scale for the bin width and the antiparticle factor
-    hStat.Scale(0.5, "width")
-    hSystUp.Scale(0.5, "width")
-    hSystLow.Scale(0.5, "width")
+    # no need to scale for antiparticle factor since it is a probability density
+    hStat.Scale(1.0, "width")
+    hSystUp.Scale(1.0, "width")
+    hSystLow.Scale(1.0, "width")
 
-    # scale for antiparticle factor
-    for i in range(0, hSyst.GetN()):
-        hSyst.SetPoint(i, hSyst.GetX()[i], hSyst.GetY()[i] / 2)
-        hSyst.SetPointError(i, hSyst.GetErrorXlow(i), hSyst.GetErrorXhigh(i), hSyst.GetErrorYlow(i) / 2, hSyst.GetErrorYhigh(i) / 2)
+    # no need to scale for antiparticle factor since it is a probability density
+    # for i in range(0, hSyst.GetN()):
+    #    hSyst.SetPoint(i, hSyst.GetX()[i], hSyst.GetY()[i] / 2)
+    #    hSyst.SetPointError(i, hSyst.GetErrorXlow(i), hSyst.GetErrorXhigh(i), hSyst.GetErrorYlow(i) / 2, hSyst.GetErrorYhigh(i) / 2)
 
     return hStat, hSystUp, hSystLow, hSyst
 
@@ -85,7 +85,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
 
     padMain.cd()
     h = dataStat.DrawCopy("axis")
-    h.GetYaxis().SetRangeUser(0.00001, 0.015)
+    h.GetYaxis().SetRangeUser(0.0001, 7.0)
     h.GetXaxis().SetRangeUser(0.4, 1.0)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
