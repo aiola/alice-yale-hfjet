@@ -128,13 +128,13 @@ def GenerateSpectrumNames(spectra, do_unfolding):
         format_spectra_names = []
         format_spectra_names.extend(no_unfolding)
         if do_unfolding and spectrum["variable_name"] != "DPt": format_spectra_names.extend(unfolding)
-        spectra_names.extend([sname.format(variable=spectrum["variable_name"], kin_cuts=kin_cuts) for sname in format_spectra_names])
+        spectra_names.extend([(sname.format(variable=spectrum["variable_name"], kin_cuts=kin_cuts), spectrum["normalization"]) for sname in format_spectra_names])
 
     return spectra_names
 
 
-def PlotFSspectraAndSyst(spectrumNames, results):
-    for name in spectrumNames:
+def PlotFSspectraAndSyst(spectra, results):
+    for name, normalization in spectra:
         stat = GetSpectrum(results["default"], name)
         if not stat: continue
         hname = name[name.rfind("/") + 1:]
@@ -188,7 +188,7 @@ def GetSpectrum(results, name):
     return results
 
 
-def CompareVariationsForSpectrum(comp_template, variations, results, name):
+def CompareVariationsForSpectrum(comp_template, variations, results, name, normalization):
     h = GetSpectrum(results["default"], name)
     if not h: return None
     comp = copy.deepcopy(comp_template)
@@ -207,10 +207,10 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name):
     globalList.append(baseline)
     globalList.extend(spectra)
     globalList.extend(comp.fResults)
-    return GenerateSystematicUncertainty(baseline, spectra)
+    return GenerateSystematicUncertainty(baseline, spectra, normalization)
 
 
-def GenerateSystematicUncertainty(baseline, spectra):
+def GenerateSystematicUncertainty(baseline, spectra, normalization):
     hname = baseline.GetName().replace("_copy", "")
     upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(hname), "{0}_UpperSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     upperLimitsHist.Sumw2()
@@ -259,18 +259,26 @@ def GenerateSystematicUncertainty(baseline, spectra):
     asymmetricUncGraph.SetName("{0}_CentralAsymmSyst".format(hname))
     asymmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
     if "it{p}" in baseline.GetXaxis().GetTitle():
-        symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-        asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
+        if normalization == "cross_section":
+            symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
+            asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
+        elif normalization == "distribution":
+            symmetricUncGraph.GetYaxis().SetTitle("probability density (GeV/#it{c})^{-1}")
+            asymmetricUncGraph.GetYaxis().SetTitle("probability density (GeV/#it{c})^{-1}")
     elif "it{z}" in baseline.GetXaxis().GetTitle():
-        symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
-        asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
+        if normalization == "cross_section":
+            symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
+            asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
+        elif normalization == "distribution":
+            symmetricUncGraph.GetYaxis().SetTitle("probability density")
+            asymmetricUncGraph.GetYaxis().SetTitle("probability density")
 
     result[symmetricUncGraph.GetName()] = symmetricUncGraph
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
     return result
 
 
-def CompareVariations(variations, spectrumNames, results):
+def CompareVariations(variations, spectra, results):
     comp_template = DMesonJetCompare.DMesonJetCompare("DMesonJetCompare")
     comp_template.fOptRatio = "hist"
     comp_template.fLogUpperSpace = 3
@@ -279,7 +287,7 @@ def CompareVariations(variations, spectrumNames, results):
 
     result = OrderedDict()
 
-    for name in spectrumNames:
+    for name, normalization in spectra:
         if "JetZ" in name:
             comp_template.fDoSpectraPlot = "lineary"
             comp_template.fX1LegSpectrum = 0.15
@@ -288,7 +296,7 @@ def CompareVariations(variations, spectrumNames, results):
             comp_template.fDoSpectraPlot = "logy"
             comp_template.fX1LegSpectrum = 0.55
             comp_template.fX2LegSpectrum = 0.90
-        r = CompareVariationsForSpectrum(comp_template, variations, results, name)
+        r = CompareVariationsForSpectrum(comp_template, variations, results, name, normalization)
         if r: result[name] = r
 
     return result
@@ -353,10 +361,21 @@ def PrepareFDhist_dpt(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
 
     dptbins = spectrum["d_pt_bins"]
 
+    def Normalize(h):
+        if spectrum["normalization"] == "distribution":
+            h.Scale(1.0 / h.Integral(1, h.GetNbinsX()))
+            h.GetYaxis().SetTitle("probability")
+        elif spectrum["normalization"] == "cross_section":
+            pass
+        else:
+            print("Normalization '{}' not valid".format(spectrum["normalization"]))
+            exit(1)
+
     print("Rebinning the FD original histogram")
     FDhistogram_orig = FDhistogram_old.Rebin(len(dptbins) - 1, FDhistogram_old.GetName(), array.array('d', dptbins))
     FDhistogram_orig.SetName("GeneratorLevel_DPtSpectrum")
     dpt[FDhistogram_orig.GetName()] = FDhistogram_orig
+    Normalize(FDhistogram_orig)
 
     if bResponseFile:
         print("Loading the response matrix b->D0")
@@ -503,11 +522,22 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
     ptdList = OrderedDict()
     result[fullSpectrumName] = ptdList
 
+    def Normalize(h):
+        if spectrum["normalization"] == "distribution":
+            h.Scale(1.0 / h.Integral(1, h.GetNbinsX()))
+            h.GetYaxis().SetTitle("probability")
+        elif spectrum["normalization"] == "cross_section":
+            pass
+        else:
+            print("Normalization '{}' not valid".format(spectrum["normalization"]))
+            exit(1)
+
     print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o b or c efficiency)".format(ptdmin))
     FDhistogram_jetx_orig = FDhistogram_orig.ProjectionX("{}_{}_DPt_{}".format(FDhistogram_orig.GetName(), jet_var_name, ptdmin * 10), FDhistogram_orig.GetYaxis().FindBin(ptdmin), FDhistogram_orig.GetNbinsY() + 1)
     FDhistogram_jetx_orig.SetName("GeneratorLevel_{}".format(spectrumName))
     FDhistogram_jetx_orig.GetYaxis().SetTitle(FDhistogram_orig.GetZaxis().GetTitle())
     ptdList[FDhistogram_jetx_orig.GetName()] = FDhistogram_jetx_orig
+    Normalize(FDhistogram_jetx_orig)
 
     if FDhistogram:
         print("Projecting FD histogram into the jet pt axis for D pt > {0} GeV/c (w/o efficiency)".format(ptdmin))
@@ -515,6 +545,7 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
         FDhistogram_jetx.SetName("GeneratorLevel_{}_bEfficiencyMultiply".format(spectrumName))
         FDhistogram_jetx.GetYaxis().SetTitle(FDhistogram.GetZaxis().GetTitle())
         ptdList[FDhistogram_jetx.GetName()] = FDhistogram_jetx
+        Normalize(FDhistogram_jetx)
     else:
         FDhistogram_jetx = None
 
@@ -524,17 +555,9 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
         FDhistogram_fineBins_jetx.SetName("GeneratorLevel_{}_FineBins_bEfficiencyMultiply".format(spectrumName))
         FDhistogram_fineBins_jetx.GetYaxis().SetTitle(FDhistogram_fineBins.GetZaxis().GetTitle())
         ptdList[FDhistogram_fineBins_jetx.GetName()] = FDhistogram_fineBins_jetx
+        Normalize(FDhistogram_fineBins_jetx)
     else:
         FDhistogram_fineBins_jetx = None
-
-    # TODO: FIXME
-    if spectrum["normalization"] == "distribution":
-        jet_hist.Scale(1.0 / jet_hist.Integral(1, jet_hist.GetNbinsX()))
-    elif spectrum["normalization"] == "cross_section":
-        jet_hist.Scale(scaling_factor)
-    else:
-        print("Normalization '{}' not valid".format(spectrum["normalization"]))
-        exit(1)
 
     if bResponseFile:
         print("Applying the jet b response matrix")
@@ -566,6 +589,7 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
         FDhistogram_efficiency_jetx.SetName("GeneratorLevel_{}_bEfficiencyMultiply_cEfficiencyDivide".format(spectrumName))
         FDhistogram_efficiency_jetx.GetYaxis().SetTitle(FDhistogram_efficiency.GetZaxis().GetTitle())
         ptdList[FDhistogram_efficiency_jetx.GetName()] = FDhistogram_efficiency_jetx
+        Normalize(FDhistogram_efficiency_jetx)
     else:
         FDhistogram_efficiency_jetx = None
 
@@ -575,6 +599,7 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
         FDhistogram_fineBins_efficiency_jetx.SetName("GeneratorLevel_{}_FineBins_bEfficiencyMultiply_cEfficiencyDivide".format(spectrumName))
         FDhistogram_fineBins_efficiency_jetx.GetYaxis().SetTitle(FDhistogram_fineBins_efficiency.GetZaxis().GetTitle())
         ptdList[FDhistogram_fineBins_efficiency_jetx.GetName()] = FDhistogram_fineBins_efficiency_jetx
+        Normalize(FDhistogram_fineBins_efficiency_jetx)
     else:
         FDhistogram_fineBins_efficiency_jetx = None
 
@@ -601,6 +626,8 @@ def PrepareFDhist_jet(spectrum, ts, FDhistogram_old, bResponseFile, cResponseFil
         ptdList[FDhistogram_efficiency_jetx_unfolded_b.GetName()] = FDhistogram_efficiency_jetx_unfolded_b
     else:
         FDhistogram_efficiency_jetx_unfolded_b = None
+
+    # TODO: FIXME
 
     return result
 
