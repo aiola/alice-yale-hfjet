@@ -21,16 +21,16 @@ fixed_uncertainties:
   title: "Tracking Eff. (D-Meson)"
   uncertainty: 0.04
   plot: yes
--
-  name: branching_ratio
-  title: "Branching Ratio"
-  uncertainty: 0.01
-  plot: no
--
-  name: luminosity
-  title: "Luminosity"
-  uncertainty: 0.035
-  plot: no
+#-
+#  name: branching_ratio
+#  title: "Branching Ratio"
+#  uncertainty: 0.01
+#  plot: no
+#-
+#  name: luminosity
+#  title: "Luminosity"
+#  uncertainty: 0.035
+#  plot: no
 sources:
 -
   name: tracking_efficiency
