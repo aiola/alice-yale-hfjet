@@ -24,7 +24,7 @@ def PlotUncertainties(results, name):
     colorsUp.append(ROOT.kBlue + 2)
 
     print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(tot_unc_up.GetNbinsX()))
-    print(" & ".join(["\\ptchjet\\ (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
+    print(" & ".join(["\\zpar\\"] + ["{0:.1f} - {1:.1f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
 
     h = results["Uncertainties"]["tot_unc_low"]
     tot_unc_low = h.Clone("{0}_copy".format(h.GetName()))
