@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
+from scipy import stats
 import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
+import math
 
 globalList = []
 
@@ -65,7 +67,49 @@ def GetTheoryCrossSection():
     return hStat, hSystUp, hSystLow, hSyst
 
 
+def CalculateMean(stat, syst):
+    weighted_sum = 0
+    sum_of_weights = 0
+    mean = 0
+    sum_of_deviations_squared_error_weighted = 0
+    mean_error = 0
+
+    for ibin in range(1, stat.GetNbinsX() + 1):
+        weighted_sum += stat.GetBinContent(ibin) * stat.GetXaxis().GetBinCenter(ibin)
+        sum_of_weights += stat.GetBinContent(ibin)
+
+    mean = weighted_sum / sum_of_weights
+
+    for ibin in range(1, stat.GetNbinsX() + 1):
+        err2 = stat.GetBinError(ibin) ** 2 + syst.GetErrorY(ibin - 1) ** 2
+        dev2 = (stat.GetXaxis().GetBinCenter(ibin) - mean) ** 2
+        sum_of_deviations_squared_error_weighted += err2 * dev2
+
+    mean_error = math.sqrt(sum_of_deviations_squared_error_weighted) / sum_of_weights
+
+    return mean, mean_error
+
+
+def CalculateChi2(stat1, syst1, stat2, syst2):
+    chi2 = 0
+    for ibin in range(1, stat1.GetNbinsX() + 1):
+        tot_err2 = stat1.GetBinError(ibin) ** 2 + syst1.GetErrorY(ibin - 1) ** 2 + stat2.GetBinError(ibin) ** 2 + syst2.GetErrorY(ibin - 1) ** 2
+        diff2 = (stat1.GetBinContent(ibin) - stat2.GetBinContent(ibin)) ** 2
+        chi2 += diff2 / tot_err2
+    p = 1 - stats.chi2.cdf(chi2, stat1.GetNbinsX())
+
+    return chi2, stat1.GetNbinsX(), p
+
+
 def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLow, theorySyst):
+    mean_z_data, mean_z_err_data = CalculateMean(dataStat, dataSyst)
+    mean_z_theory, mean_z_err_theory = CalculateMean(theoryStat, theorySyst)
+    print("The mean of the data distribution is {} +/- {}".format(mean_z_data, mean_z_err_data))
+    print("The mean of the theory distribution is {} +/- {}".format(mean_z_theory, mean_z_err_theory))
+
+    chi2, ndf, p = CalculateChi2(dataStat, dataSyst, theoryStat, theorySyst)
+    print("The chi2 is {}, the ndf = {} and the p-value is {}".format(chi2, ndf, p))
+
     cname = "JetZSpectrum_JetPt_5_15_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 700)
     globalList.append(canvas)
