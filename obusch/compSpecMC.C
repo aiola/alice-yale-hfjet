@@ -139,7 +139,7 @@ TGraphErrors* histoToGraphSys(TH1* hist, TGraphErrors* grSysTot, Bool_t doRatioG
   TGraphErrors* gr = new TGraphErrors(nBins);
   
   for(Int_t bin=1; bin<=nBins; bin++){ 
-	
+
     Double_t center     = hist->GetBinCenter(bin);
     Double_t width      = hist->GetBinWidth(bin);
     Double_t cont       = hist->GetBinContent(bin);
@@ -280,11 +280,11 @@ void compSpecMC(Bool_t doUESub = kFALSE){
   //TString fname = "../unfoldSpec_lego141_MinBPtHMC/outData_spec_Bayes_combPtH.root";
   //if(doUESub) fname = "../unfoldSpec_lego141_MinBPtHMC/outData_spec_Bayes_UESub_combPtH.root";
 
-  TString fname = "../unfoldSpec_lego182_MinBPtHMC/outData_spec_Bayes_combPtH.root";
+  TString fname = "outData_spec_Bayes_combPtH.root";
   if(doUESub) fname = "../unfoldSpec_lego182_MinBPtHMC/outData_spec_Bayes_UESub_combPtH.root";
 
   
-  TString fnameSys = "../outSys_varyResp_spec/outSys_tot.root";
+  TString fnameSys = "outSys_tot_spec.root";
   
   // read data spectra
 
@@ -332,11 +332,11 @@ void compSpecMC(Bool_t doUESub = kFALSE){
   grXSecSys->SetName("grRatioData");
 
   // read MC 
-  TGraphErrors* grXSecP2011  = readMC("Perugia2011",doUESub);
-  TGraphErrors* grXSecMonash = readMC("Monash",doUESub);
+  //TGraphErrors* grXSecP2011  = readMC("Perugia2011",doUESub);
+  //TGraphErrors* grXSecMonash = readMC("Monash",doUESub);
 
-  TGraphErrors* grRatioP2011  = ratioDataMC(grXSec,grXSecP2011);
-  TGraphErrors* grRatioMonash = ratioDataMC(grXSec,grXSecMonash);
+  //TGraphErrors* grRatioP2011  = ratioDataMC(grXSec,grXSecP2011);
+  //TGraphErrors* grRatioMonash = ratioDataMC(grXSec,grXSecMonash);
   
   // -------  
   // plot
@@ -419,11 +419,11 @@ void compSpecMC(Bool_t doUESub = kFALSE){
     Double_t checkRelErrSys  = checkErrSys/checkCont;
     Double_t checkRelErrStat = checkErrStat/checkCont;
     cout<<" pt "<<checkCent<<" sigma "<<checkCont<<" err stat "<<checkErrStat<<" sys "<<checkErrSys
-	<<" relErrStat "<<checkRelErrStat<<" sys "<<checkRelErrSys<<endl;
+  <<" relErrStat "<<checkRelErrStat<<" sys "<<checkRelErrSys<<endl;
   }
   
   
-
+  /*
   grXSecP2011->SetMarkerColor(P11Color);
   grXSecP2011->SetLineColor(P11Color);
   grXSecP2011->SetMarkerStyle(P11Style);
@@ -436,7 +436,7 @@ void compSpecMC(Bool_t doUESub = kFALSE){
   grXSecMonash->SetMarkerStyle(MonashStyle);
   grXSecMonash->SetMarkerSize(MonashSize);
   grXSecMonash->Draw("P");
-
+*/
   
   TLegend *leg = new TLegend(0.46,0.62,0.95,0.9,NULL,"brNDC");
   leg->SetBorderSize(0);
@@ -559,7 +559,7 @@ void compSpecMC(Bool_t doUESub = kFALSE){
   line->SetLineStyle(2);
   line->SetLineWidth(2);
   line->Draw();
-
+/*
   grRatioP2011->SetMarkerColor(P11Color);
   grRatioP2011->SetLineColor(P11Color);
   grRatioP2011->SetMarkerStyle(P11Style);
@@ -572,7 +572,7 @@ void compSpecMC(Bool_t doUESub = kFALSE){
   grRatioMonash->SetMarkerStyle(MonashStyle);
   grRatioMonash->SetMarkerSize(MonashSize);
   grRatioMonash->Draw("P");
-
+*/
   gPad->RedrawAxis();
   
   
