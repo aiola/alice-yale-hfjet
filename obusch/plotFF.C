@@ -269,9 +269,9 @@ void plotFF(){
    
   // read unfolded spectra
 
-  TString fname       = "/Users/obusch1/work/FFprep/miniJets/unfold/FF/outFF_lego141/outData_FFZ.root";
-  TString fnameSys = "../outSys_varyResp/outSys_tot.root"; 
-  TString fnameMC     = "/Users/obusch1/work/FFprep/miniJets/PythiaFastJet/tunes/PythiaFastJet_tunes_minB_20161206.root";
+  TString fname       = "outData_FFZ.root";
+  TString fnameSys = "outSys_tot_FF.root";
+  //TString fnameMC     = "/Users/obusch1/work/FFprep/miniJets/PythiaFastJet/tunes/PythiaFastJet_tunes_minB_20161206.root";
 
   
   TGraphErrors* grFF[nBinsJetPt];
@@ -279,7 +279,7 @@ void plotFF(){
   TGraphErrors* grRatioData[nBinsJetPt];
 
   TGraphErrors* grSysTot[nBinsJetPt];
-
+/*
   TGraphErrors* grFFP0[nBinsJetPt]; 
   TGraphErrors* grFFP2011[nBinsJetPt]; 
   TGraphErrors* grFFPNoCR[nBinsJetPt]; 
@@ -289,7 +289,7 @@ void plotFF(){
   TGraphErrors* grRatioP2011[nBinsJetPt]; 
   TGraphErrors* grRatioPNoCR[nBinsJetPt]; 
   TGraphErrors* grRatioMonash[nBinsJetPt]; 
-  
+  */
   // read sys errors
   
   TFile g(fnameSys,"READ");
@@ -329,7 +329,7 @@ void plotFF(){
   for(int i=0; i<nBinsJetPt; i++){
 
     TString strName(Form("dNdzUnfolded_iter4_%02d_%02d",(Int_t)jetPtLim[i],(Int_t)jetPtLim[i+1]));
-
+/*
     grFFP0[i]    = readMC("Perugia0Gen",fnameMC,jetPtLim[i],(Int_t)jetPtLim[i+1]);
     grFFP2011[i] = readMC("Perugia2011Gen",fnameMC,jetPtLim[i],(Int_t)jetPtLim[i+1]);
     grFFPNoCR[i] = readMC("PerugiaNoCRGen",fnameMC,jetPtLim[i],(Int_t)jetPtLim[i+1]);
@@ -339,6 +339,7 @@ void plotFF(){
     grRatioP2011[i]  = ratioDataMC(grFF[i],grFFP2011[i]);
     grRatioPNoCR[i]  = ratioDataMC(grFF[i],grFFPNoCR[i]);
     grRatioMonash[i] = ratioDataMC(grFF[i],grFFMonash[i]);
+    */
   }
 
   
@@ -534,7 +535,7 @@ void plotFF(){
     TLine *line = new TLine(0,1,1.0,1);
     line->SetLineStyle(2);
     line->Draw();
-
+/*
     grRatioPNoCR[bin]->SetMarkerColor(P0Color);
     grRatioPNoCR[bin]->SetLineColor(P0Color);
     grRatioPNoCR[bin]->SetMarkerStyle(P0Style);
@@ -552,7 +553,7 @@ void plotFF(){
     grRatioMonash[bin]->SetMarkerStyle(MonashStyle);
     grRatioMonash[bin]->SetMarkerSize(MonashSize);
     grRatioMonash[bin]->Draw("P");
-
+*/
 
     // jet pt bins
     TString strTitleTLR(Form("#it{p}_{T}^{ch jet} %d - %d GeV/#it{c}",(Int_t)jetPtLim[bin],(Int_t)jetPtLim[bin+1]));
@@ -592,11 +593,11 @@ void plotFF(){
   leg2->SetLineWidth(1);
   leg2->SetFillColor(0);
   leg2->SetFillStyle(0);
-    
+    /*
   leg2->AddEntry(grRatioP2011[0],"PYTHIA6 Perugia 2011","P");
   leg2->AddEntry(grRatioPNoCR[0],"PYTHIA6 Perugia NoCR","P");
   leg2->AddEntry(grRatioMonash[0],"PYTHIA8 Monash ","P");
-
+*/
   leg2->Draw();
 
   
