@@ -7,6 +7,6 @@ As a first step, the analysis will be carried out for a single differential yiel
 
 The analysis progress is documented in a [JIRA ticket](https://alice.its.cern.ch/jira/browse/PWGHF-108).
 
-The analysis note and the paper draft are available in this [repository](https://github.com/aiola/PaperD0JetsPP2010).
+The analysis note and the paper draft are available in this [repository](https://gitlab.cern.ch/saiola/PaperD0JetsPP2010).
 
 The analysis note record in aliceinfo is available at this [link](https://aliceinfo.cern.ch/Notes/node/587).
