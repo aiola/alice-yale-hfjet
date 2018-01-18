@@ -409,7 +409,7 @@ def PlotSystematicUncertaintySummary(name, results):
     colorsUp.append(ROOT.kBlack)
 
     print("Source & \\multicolumn{{{0}}}{{c}}{{Uncertainty (\\%)}} \\\\ \\hline".format(tot_unc_up.GetNbinsX()))
-    if "JetZSpectrum" in name:
+    if "JetZSpectrum" in name or "JetZCrossSection" in name:
         print(" & ".join(["\\zpar\\"] + ["{0:.1f} - {1:.1f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
     elif "JetPtSpectrum" in name:
         print(" & ".join(["\\ptchjet\\ (\\GeVc)"] + ["{0:.0f} - {1:.0f}".format(tot_unc_up.GetXaxis().GetBinLowEdge(ibin), tot_unc_up.GetXaxis().GetBinUpEdge(ibin)) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\ \hline")
