@@ -8,6 +8,7 @@ import math
 
 globalList = []
 
+
 def TestMassFitter():
     ROOT.TH1.AddDirectory(False)
     ROOT.gRandom = ROOT.TRandom3(0)
@@ -57,7 +58,7 @@ def TestMassFitter():
 
     fitter.Draw("same")
 
-    bkg = fitter.GetBackground()
+    bkg = fitter.GetBackground(3)
     sig = fitter.GetSignal()
 
     print("bkg = {0:.3f}, sig = {1:.3f}".format(bkg, sig))
@@ -65,6 +66,7 @@ def TestMassFitter():
     globalList.append(invMassHist)
     globalList.append(c)
     globalList.append(fitter)
+
 
 def GetMassHistogram():
     file = ROOT.TFile("MassFitterTest.root")
@@ -79,6 +81,7 @@ def GetMassHistogram():
     h_copy = h.Clone()
     file.Close()
     return h_copy
+
 
 if __name__ == '__main__':
     TestMassFitter()

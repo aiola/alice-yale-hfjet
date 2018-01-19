@@ -16,6 +16,7 @@ MassFitter::MassFitter() :
   TNamed("MassFitter", "MassFitter"),
   fMassFitTypeSig(kGaus),
   fMassFitTypeBkg(kExpo),
+  fReflectionTempl(0),
   fMean(0.),
   fMeanError(0.),
   fWidth(0.),
@@ -25,6 +26,7 @@ MassFitter::MassFitter() :
   fBackground(0.),
   fBackgroundError(0.),
   fDisableBkg(kFALSE),
+  fDisableRefl(kFALSE),
   fDisableSig(kFALSE),
   fNParSig(0),
   fNParBkg(0),
@@ -33,6 +35,7 @@ MassFitter::MassFitter() :
   fMinFitRange(0.),
   fMaxFitRange(0.),
   fFunction(0),
+  fFunctionBkgNoRefl(0),
   fFunctionBkg(0),
   fHistogram(0),
   fFitSuccessfull(kFALSE),
@@ -52,6 +55,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   TNamed(name, name),
   fMassFitTypeSig(kGaus),
   fMassFitTypeBkg(kExpo),
+  fReflectionTempl(0),
   fMean(0.),
   fMeanError(0.),
   fWidth(0.),
@@ -61,6 +65,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fBackground(0.),
   fBackgroundError(0.),
   fDisableBkg(kFALSE),
+  fDisableRefl(kFALSE),
   fDisableSig(kFALSE),
   fNParSig(0),
   fNParBkg(0),
@@ -69,6 +74,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fMinFitRange(minMass),
   fMaxFitRange(maxMass),
   fFunction(0),
+  fFunctionBkgNoRefl(0),
   fFunctionBkg(0),
   fHistogram(0),
   fFitSuccessfull(kFALSE),
@@ -164,17 +170,25 @@ void MassFitter::Reset(TH1* histo)
   
   delete fFunction;
   delete fFunctionBkg;
+  delete fFunctionBkgNoRefl;
 
   TString fname(Form("%s_fit", GetName()));
   fFunction = new TF1(fname, this, &MassFitter::FunctionSigBkg, fMinMass, fMaxMass, fNParSig+fNParBkg);
   fFunction->SetLineColor(kBlue+1);
   fFunction->SetLineWidth(2);
-    
+  fFunction->SetLineStyle(1);
+
   TString fnameBkg(Form("%sBkg_fit", GetName()));
   fFunctionBkg = new TF1(fnameBkg, this, &MassFitter::FunctionBkg, fMinMass, fMaxMass, fNParBkg);
   fFunctionBkg->SetLineColor(kRed+1);
   fFunctionBkg->SetLineWidth(2);
   fFunctionBkg->SetLineStyle(2);
+
+  TString fnameBkgNoRefl(Form("%sBkgNoRefl_fit", GetName()));
+  fFunctionBkgNoRefl = new TF1(fnameBkgNoRefl, this, &MassFitter::FunctionBkgNoRefl, fMinMass, fMaxMass, fNParBkg);
+  fFunctionBkgNoRefl->SetLineColor(kMagenta+1);
+  fFunctionBkgNoRefl->SetLineWidth(2);
+  fFunctionBkgNoRefl->SetLineStyle(9);
 }
 
 //____________________________________________________________________________________
@@ -226,6 +240,10 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     fBackground = fFunction->GetParameter(0) / fHistogram->GetXaxis()->GetBinWidth(0);
     fBackgroundError = fFunction->GetParError(0) / fHistogram->GetXaxis()->GetBinWidth(0);
 
+    if (fReflectionTempl && !fDisableRefl) {
+      fBackground += fReflectionTempl->Integral(1,fReflectionTempl->GetNbinsX(), "width") / fHistogram->GetXaxis()->GetBinWidth(0);
+    }
+
     for (Int_t i = 0; i < fNParBkg; i++) {
       fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
       fFunctionBkg->SetParError(i, fFunction->GetParError(i));
@@ -269,6 +287,7 @@ Double_t MassFitter::GetSignificanceW() const
   return bkg_sig_err > fgkEpsilon ? fSignal/bkg_sig_err : 0;
 }
 
+/*
 //____________________________________________________________________________________
 Double_t MassFitter::GetBackgroundBinCountAndError(Double_t& error, Double_t minNSigmas, Double_t maxNSigmas) const
 {
@@ -284,6 +303,7 @@ Double_t MassFitter::GetBackgroundBinCountAndError(Double_t& error, Double_t min
   error = TMath::Sqrt(sideBandError1*sideBandError1 + sideBandError2*sideBandError2);
   return sideBand1 + sideBand2;
 }
+*/
 
 //____________________________________________________________________________________
 Double_t MassFitter::GetBackgroundAndErrorFullRange(Double_t& bkgErr) const
@@ -311,12 +331,12 @@ Double_t MassFitter::GetBackgroundAndError(Double_t& bkgErr, Double_t minMass, D
     return 0.;
   }
 
+  Double_t bkg = fFunctionBkg->Integral(minMass, maxMass) / fHistogram->GetXaxis()->GetBinWidth(0);
+
   // Assume that the relative error is the same as the full mass range
   Double_t bkgErrFullRange = 0;
   Double_t bkgFullRange = GetBackgroundAndErrorFullRange(bkgErrFullRange);
   Double_t relBkgErr = bkgErrFullRange / bkgFullRange;
-
-  Double_t bkg = fFunctionBkg->Integral(minMass, maxMass) / fHistogram->GetXaxis()->GetBinWidth(0);
   bkgErr = relBkgErr * bkg;
 
   return bkg;
@@ -665,7 +685,7 @@ double MassFitter::FunctionSig(double *x, double *p)
 }
 
 //____________________________________________________________________________________
-double MassFitter::FunctionBkg(double *x, double *p)
+double MassFitter::FunctionBkgNoRefl(double *x, double *p)
 {
   Double_t r = 0.;
   
@@ -700,6 +720,30 @@ double MassFitter::FunctionBkg(double *x, double *p)
   }
 
   return r;
+}
+
+//____________________________________________________________________________________
+double MassFitter::FunctionBkg(double *x, double *p)
+{
+  Double_t r = FunctionBkgNoRefl(x, p);
+
+  Double_t refl = 0;
+  if (!fDisableRefl && fReflectionTempl) {
+    refl = FunctionRefl(x, p);
+  }
+
+  return r + refl;
+}
+
+//____________________________________________________________________________________
+double MassFitter::FunctionRefl(double *x, double*)
+{
+  if (fReflectionTempl) {
+    return fReflectionTempl->GetBinContent(fReflectionTempl->GetXaxis()->FindBin(x[0]));
+  }
+  else {
+    return 0.;
+  }
 }
 
 //____________________________________________________________________________________
@@ -742,7 +786,13 @@ void MassFitter::Draw(Option_t* opt)
     fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
   }
   
-  fFunctionBkg->Draw(opt);
+  if (fReflectionTempl && !fDisableRefl) {
+    fFunctionBkgNoRefl->Draw(opt);
+    fFunctionBkg->Draw(optAndSame);
+  }
+  else {
+    fFunctionBkg->Draw(opt);
+  }
   fFunction->Draw(optAndSame);
 }
 

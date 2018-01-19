@@ -33,12 +33,14 @@ class MassFitter : public TNamed {
   void SetMassFitTypeSig(EMassFitTypeSig ts)                       { fMassFitTypeSig = ts                      ; Reset(); }
   void SetMassFitTypeBkg(EMassFitTypeBkg tb)                       { fMassFitTypeBkg = tb                      ; Reset(); }
   void SetMassFitTypes(EMassFitTypeSig ts, EMassFitTypeBkg tb)     { fMassFitTypeSig = ts; fMassFitTypeBkg = tb; Reset(); }
+  void SetReflectionTemplate(TH1* refl)                            { fReflectionTempl = refl                   ; Reset(); }
   
   void Reset(TH1* histo=0);
   TFitResultPtr Fit(TH1* histo, Option_t* opt="");
   TFitResultPtr Fit(Option_t* opt="");
 
   void DisableBkg(Bool_t d = kTRUE);
+  void DisableRefl(Bool_t d = kTRUE);
   void DisableSig(Bool_t d = kTRUE);
   void SetMassRange(Double_t min, Double_t max);
   void SetFitRange(Double_t min, Double_t max);
@@ -58,10 +60,10 @@ class MassFitter : public TNamed {
   Double_t GetBackgroundAndError(Double_t& bkgErr,
       Double_t minMass, Double_t maxMass)            const;
   Double_t GetBackgroundAndErrorFullRange(Double_t& bkgErr) const;
-  Double_t GetBackgroundBinCountAndError(Double_t& error,
-      Double_t minNSigmas, Double_t maxNSigmas)      const;
-  Double_t GetBackgroundBinCount(Double_t minNSigmas,
-      Double_t maxNSigmas)                           const { Double_t error = 0.; return GetBackgroundBinCountAndError(error, minNSigmas, maxNSigmas); }
+  //Double_t GetBackgroundBinCountAndError(Double_t& error,
+  //    Double_t minNSigmas, Double_t maxNSigmas)      const;
+  //Double_t GetBackgroundBinCount(Double_t minNSigmas,
+  //    Double_t maxNSigmas)                           const { Double_t error = 0.; return GetBackgroundBinCountAndError(error, minNSigmas, maxNSigmas); }
   Double_t GetSignalOverBackground()                 const;
   Double_t GetSignificance()                         const;
   Double_t GetSignificanceW()                        const;
@@ -83,24 +85,28 @@ class MassFitter : public TNamed {
   TString  GetBkgPar2String()                        const;
   TString  GetTotalEntriesString()                   const;
   
-  TF1*     GetFitFunction()                          const { return fFunction     ; }
-  TF1*     GetBkgFunction()                          const { return fFunctionBkg  ; }
-  TH1*     GetFitHistogram()                         const { return fHistogram    ; }
+  TF1*     GetFitFunction()                          const { return fFunction           ; }
+  TF1*     GetBkgFunction()                          const { return fFunctionBkg        ; }
+  TF1*     GetBkgFunctionNoRefl()                    const { return fFunctionBkgNoRefl  ; }
+  TH1*     GetFitHistogram()                         const { return fHistogram          ; }
 
-  TFitResultPtr GetFitStatus()                       const { return fFitResult    ; }
-  Bool_t        FitSuccessfull()                     const { return fFitSuccessfull; }
+  TFitResultPtr GetFitStatus()                       const { return fFitResult          ; }
+  Bool_t        FitSuccessfull()                     const { return fFitSuccessfull     ; }
 
   void     Draw(Option_t* opt = "");
   
   double   FunctionSig(double *x, double *p);
   double   FunctionBkg(double *x, double *p);
+  double   FunctionBkgNoRefl(double *x, double *p);
   double   FunctionSigBkg(double *x, double *p);
+  double   FunctionRefl(double *x, double*);
 
   static TString GetValueString(Double_t value, Double_t err);
 
  protected:
   EMassFitTypeSig   fMassFitTypeSig    ;//  Mass fit type for the signal
   EMassFitTypeBkg   fMassFitTypeBkg    ;//  Mass fit type for the background
+  TH1*              fReflectionTempl   ;//  MC reflection template for the D0
   Double_t          fMean              ;//  Signal mean extracted from the fit
   Double_t          fMeanError         ;//  Signal mean error extracted from the fit
   Double_t          fWidth             ;//  Signal width extracted from the fit
@@ -110,6 +116,7 @@ class MassFitter : public TNamed {
   Double_t          fBackground        ;//  Background extracted from the fit in the full mass range
   Double_t          fBackgroundError   ;//  Background error extracted from the fit in the full mass range
   Bool_t            fDisableBkg        ;//  Disable background component of the fit function
+  Bool_t            fDisableRefl       ;//  Disable reflection component of the fit function
   Bool_t            fDisableSig        ;//  Disable signal component of the fit function
   Int_t             fNParSig           ;//  Number of parameters of the signal function
   Int_t             fNParBkg           ;//  Number of parameters of the background function
@@ -120,6 +127,7 @@ class MassFitter : public TNamed {
   TFitResultPtr     fFitResult         ;//  Fit result
   
   TF1*              fFunction          ;//  Fit function
+  TF1*              fFunctionBkgNoRefl ;//  Bkg function (w/o reflections)
   TF1*              fFunctionBkg       ;//  Bkg function
   TH1*              fHistogram         ;//  Histogram to be fitted
   Bool_t            fFitSuccessfull    ;//  Whether the fit was successful
