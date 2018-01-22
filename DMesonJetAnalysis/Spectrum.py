@@ -6,18 +6,20 @@ import DMesonJetUtils
 import Axis
 from DMesonJetBase import AnalysisType
 
+
 class Spectrum:
+
     def __init__(self, config, dmeson, jtype, jradius, jtitle, binSet, effWeight):
         self.fDMeson = dmeson
         self.fJetType = jtype
         self.fJetRadius = jradius
         self.fJetTitle = jtitle
         if "suffix" in config:
-            suffix = config["suffix"]
+            self.fSuffix = config["suffix"]
         else:
-            suffix = None
+            self.fSuffix = None
         self.fSimpleName = config["name"]
-        self.fName = '_'.join(obj for obj in [self.fDMeson, self.fJetType, self.fJetRadius, config["name"], suffix] if obj)
+        self.fName = '_'.join(obj for obj in [self.fDMeson, self.fJetType, self.fJetRadius, self.fSimpleName, self.fSuffix] if obj)
         self.fBinSet = binSet
         self.fHistogram = None
         self.fNormHistogram = None
@@ -107,7 +109,6 @@ class Spectrum:
                 self.fAxis.append(axis)
 
         print("Spectrum {0} with analysis type {1} added".format(self.fName, self.fAnalysisType.name))
-        self.BuildHistograms()
 
     def GenerateRootList(self):
         rlist = ROOT.TList()

@@ -25,6 +25,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
@@ -104,6 +105,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
@@ -157,6 +159,7 @@ analysis:
     title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -217,6 +220,7 @@ analysis:
     title: "|#eta_{D}| < 0.5"
     active_mesons: [] # Deactivated because efficiency correction not implemented (?) for inv. mass fit method, AFTER the fit
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
@@ -241,6 +245,7 @@ analysis:
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -276,6 +281,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -312,6 +318,7 @@ analysis:
     title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -349,6 +356,7 @@ analysis:
     title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30]
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -384,6 +392,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency and also for the kinematic efficiency due to the jet pt cut
       file_name: Jets_EMC_pp_MC_1399_1400_1401_1402/LHC15i2_Train1399_response.root
@@ -428,6 +437,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (coarse bins)"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
       # but NOT for the kinematic efficiency due to the jet pt cut
@@ -473,6 +483,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency:
       # Correcting for reconstruction efficiency as measured for D mesons associated with jets in the pt range [5, 30], 
       # but NOT for the kinematic efficiency due to the jet pt cut

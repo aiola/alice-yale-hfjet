@@ -25,6 +25,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
@@ -94,6 +95,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
@@ -143,6 +145,7 @@ analysis:
     title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [6, 12, 30]
@@ -199,6 +202,7 @@ analysis:
     title: "|#eta_{D}| < 0.5"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
@@ -223,6 +227,7 @@ analysis:
     title: "#it{p}_{T,D} > 3 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
@@ -254,6 +259,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
@@ -286,6 +292,7 @@ analysis:
     title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimHighJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_z: [0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0001]
@@ -319,6 +326,7 @@ analysis:
     title: "#it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       jet_pt: [5, 6, 8, 10, 14, 20, 30]
@@ -350,6 +358,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 4, 6, 9, 15]
@@ -390,6 +399,7 @@ analysis:
     title: "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (fine bins)"
     active_mesons: [D0_D0toKpiCuts]
     need_inv_mass: [D0_D0toKpiCuts]
+    reflection_template_names: []
     efficiency: no
     bins:
       d_pt: [6, 7, 8, 10, 12, 15, 30]
@@ -409,6 +419,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c} (coarse bins)"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [2, 4, 6, 9, 15, 30]
@@ -449,6 +460,7 @@ analysis:
     title: "5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}"
     active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
     need_inv_mass: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
+    reflection_template_names: [DoubleGaus]
     efficiency: no
     bins:
       d_pt: [3, 4, 6, 9, 15, 30]

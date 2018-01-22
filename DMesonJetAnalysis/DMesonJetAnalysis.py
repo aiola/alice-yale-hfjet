@@ -52,7 +52,7 @@ class DMesonJetContainer:
 
 class DMesonJetAnalysisEngine:
 
-    def __init__(self, collision, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, projector):
+    def __init__(self, collision, trigger, dmeson, binSet, nMassBins, minMass, maxMass, jets, reflections, projector):
         self.fCollision = collision
         self.fTrigger = trigger
         self.fDMeson = dmeson
@@ -69,11 +69,11 @@ class DMesonJetAnalysisEngine:
             if "active" in jetDef and not jetDef["active"]:
                 continue
             binset_copy = copy.deepcopy(binSet)
-            binset_copy.Initialize(self.fDMeson, jetDef["type"], jetDef["radius"], jetDef["title"], self.fProjector.fInputPath)
+            binset_copy.Initialize(self.fDMeson, jetDef["type"], jetDef["radius"], jetDef["title"], reflections, self.fProjector.fInputPath)
             self.fBinMultiSets[jetDef["type"], jetDef["radius"]] = binset_copy
 
         binset_copy = copy.deepcopy(binSet)
-        binset_copy.Initialize(self.fDMeson, None, None, None, self.fProjector.fInputPath)
+        binset_copy.Initialize(self.fDMeson, None, None, None, reflections, self.fProjector.fInputPath)
         self.fBinMultiSets[None, None] = binset_copy
 
     def CompareSpectra(self):
@@ -258,6 +258,7 @@ class DMesonJetAnalysisEngine:
         for binMultiSet in self.fBinMultiSets.itervalues():
             spectra = binMultiSet.FindAllSpectra()
             for s in spectra:
+                print("Plotting {}".format(s.fName))
                 if len(s.fAxis) == 1:
                     self.PlotSpectrum1D(s)
                 elif len(s.fAxis) == 2:
@@ -574,61 +575,81 @@ class DMesonJetAnalysisEngine:
     def PlotSpectrum3D(self, s):
         print("PlotSpectrum3D not implemented!")
 
+    def GenerateSpectraForFitterName(self, s, fitter_name):
+        s.BuildHistograms()
+        if len(s.fAxis) == 1:
+            self.GenerateSpectrum1D(s, fitter_name)
+        elif len(s.fAxis) == 2:
+            self.GenerateSpectrum2D(s, fitter_name)
+        elif len(s.fAxis) == 3:
+            self.GenerateSpectrum3D(s, fitter_name)
+        else:
+            print("Not able to generate spectra with dim > 3!")
+        s.GenerateNormalizedSpectrum(self.fEvents, self.fIsWeighted)
+
     def GenerateSpectra(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
-                for s in binSet.fSpectra.itervalues():
-                    if len(s.fAxis) == 1:
-                        self.GenerateSpectrum1D(s)
-                    elif len(s.fAxis) == 2:
-                        self.GenerateSpectrum2D(s)
-                    elif len(s.fAxis) == 3:
-                        self.GenerateSpectrum3D(s)
-                    else:
-                        print("Not able to generate spectra with dim > 3!")
-                    s.GenerateNormalizedSpectrum(self.fEvents, self.fIsWeighted)
+                new_spectra = dict()
+                for sname, s in binSet.fSpectra.iteritems():
+                    comp_refl = None
+                    for fitter_name in s.fBinSet.fReflectionTemplateNames:
+                        s_new = copy.deepcopy(s)
+                        s_new.fName = "{}_{}".format(s_new.fName, fitter_name)
+                        s_new.fCompare = ["{}_{}".format(c, fitter_name) for c in s_new.fCompare]
+                        comp_refl = '_'.join(obj for obj in ["Refl", s.fSimpleName, s.fSuffix] if obj)
+                        s_new.fCompare.append(comp_refl)
+                        s_new.fComparisonTitles.append(fitter_name)
+                        self.GenerateSpectraForFitterName(s_new, fitter_name)
+                        new_spectra["{}_{}".format(sname, fitter_name)] = s_new
+                    if comp_refl:
+                        s.fCompare.append(comp_refl)
+                        s.fComparisonTitles.append("No Refl.")
+                    self.GenerateSpectraForFitterName(s, "default")
+                binSet.fSpectra.update(new_spectra)
 
-    def GenerateSpectrum1DInvMassFit(self, s):
+    def GenerateSpectrum1DInvMassFit(self, s, fitter_name):
         if s.fAnalysisType == AnalysisType.InvMassFit:
             for bin in s.fBinSet.fBins:
-                self.ProcessInvMassFitSpectrumBin(s, bin, s.fBinSet)
+                self.ProcessInvMassFitSpectrumBin(s, bin, s.fBinSet, fitter_name)
         elif s.fAnalysisType == AnalysisType.LikeSignFit:
             if not s.fLikeSignSubtractedBinSet:
                 print("No LS subtracted invariant mass bin sets was found!")
                 return
             for bin in s.fLikeSignSubtractedBinSet.fBins:
-                self.ProcessInvMassFitSpectrumBin(s, bin, s.fLikeSignSubtractedBinSet)
+                self.ProcessInvMassFitSpectrumBin(s, bin, s.fLikeSignSubtractedBinSet, fitter_name)
 
-    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet):
+    def ProcessInvMassFitSpectrumBin(self, s, bin, binSet, fitter_name):
         w = s.fEfficiencyWeight.GetEfficiencyWeightTH1ForPt(bin.GetBinCenter("d_pt"))
+        mass_fitter = bin.fMassFitters[fitter_name]
 
         xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
-        if bin.fMassFitter is None:
+        if mass_fitter is None:
             print("The bin printed below does not have a mass fitter!")
             bin.Print()
             return
-        if not bin.fMassFitter.FitSuccessfull():
+        if not mass_fitter.FitSuccessfull():
             print("The bin printed below does not have a successful invariant mass fit!")
             bin.Print()
             return
-        signal = bin.fMassFitter.GetSignal() * w
-        signal_unc = bin.fMassFitter.GetSignalError() * w
+        signal = mass_fitter.GetSignal() * w
+        signal_unc = mass_fitter.GetSignalError() * w
 
         s.fHistogram.SetBinContent(xbin, signal)
         s.fHistogram.SetBinError(xbin, signal_unc)
         if signal > 0:
             s.fUncertainty.SetBinContent(xbin, signal_unc / signal)
 
-        if bin.fMassFitter:
+        if mass_fitter:
             if s.fBackground:
-                s.fBackground.SetBinContent(xbin, bin.fMassFitter.GetBackground(2))
-                s.fBackground.SetBinError(xbin, bin.fMassFitter.GetBackgroundError(2))
+                s.fBackground.SetBinContent(xbin, mass_fitter.GetBackground(2))
+                s.fBackground.SetBinError(xbin, mass_fitter.GetBackgroundError(2))
             if s.fMass:
-                s.fMass.SetBinContent(xbin, bin.fMassFitter.GetSignalMean())
-                s.fMass.SetBinError(xbin, bin.fMassFitter.GetSignalMeanError())
+                s.fMass.SetBinContent(xbin, mass_fitter.GetSignalMean())
+                s.fMass.SetBinError(xbin, mass_fitter.GetSignalMeanError())
             if s.fMassWidth:
-                s.fMassWidth.SetBinContent(xbin, bin.fMassFitter.GetSignalWidth())
-                s.fMassWidth.SetBinError(xbin, bin.fMassFitter.GetSignalWidthError())
+                s.fMassWidth.SetBinContent(xbin, mass_fitter.GetSignalWidth())
+                s.fMassWidth.SetBinError(xbin, mass_fitter.GetSignalWidthError())
 
     def GenerateInvMassWidonws(self, invMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2):
         print("Generating invariant mass windows for {0}".format(invMassHisto.GetName()))
@@ -644,7 +665,7 @@ class DMesonJetAnalysisEngine:
 
         return signalWindowInvMassHisto, sideBandWindowInvMassHisto
 
-    def GenerateSpectrum1DSideBandMethod(self, s):
+    def GenerateSpectrumSideBandMethod(self, s, fitter_name):
         if s.fSkipBins:
             print("I will skip the following bins: {0}".format(s.fSkipBins))
         else:
@@ -653,15 +674,16 @@ class DMesonJetAnalysisEngine:
             if s.fSkipBins and ibin in s.fSkipBins:
                 print("Skipping bin {0} as requested".format(bin.GetTitle()))
                 continue
-            if not bin.fMassFitter or not bin.fMassFitter.FitSuccessfull():
+            mass_fitter = bin.fMassFitters[fitter_name]
+            if not mass_fitter or not mass_fitter.FitSuccessfull():
                 print("Skipping bin {0} because fit was unsuccessful".format(bin.GetTitle()))
                 continue
 
             binCountAnalysisHisto = bin.fBinCountSpectra[s.fSimpleName][1]
 
             print("Bin: {0}".format(bin.GetTitle()))
-            sigma = bin.fMassFitter.GetSignalWidth()
-            mean = bin.fMassFitter.GetSignalMean()
+            sigma = mass_fitter.GetSignalWidth()
+            mean = mass_fitter.GetSignalMean()
             print("Sigma={0:.3f}, Mean={1:.3f}".format(sigma, mean))
 
             binSBL_1 = binCountAnalysisHisto.GetXaxis().FindBin(mean - s.fSideBandMaxSigmas * sigma)
@@ -709,7 +731,7 @@ class DMesonJetAnalysisEngine:
             sbTotal.Add(sbR)
 
             peakAreaBkgError = ROOT.Double(0.)
-            peakAreaBkg = bin.fMassFitter.GetBackgroundAndError(peakAreaBkgError, mean - effSigma1 * sigma, mean + effSigma2 * sigma)
+            peakAreaBkg = mass_fitter.GetBackgroundAndError(peakAreaBkgError, mean - effSigma1 * sigma, mean + effSigma2 * sigma)
             intSigErr = ROOT.Double(0.)
             if sig.GetDimension() == 1:
                 intSig = sig.IntegralAndError(0, -1, intSigErr)
@@ -720,7 +742,7 @@ class DMesonJetAnalysisEngine:
             elif sbL.GetDimension() == 2:
                 print("The background in side bands is: {0} + {1} = {2}".format(sbL.Integral(0, -1, 0, -1), sbR.Integral(0, -1, 0, -1), sbTotal.Integral(0, -1, 0, -1)))
             print("The estimated background in the signal window is {0} +/- {1}".format(peakAreaBkg, peakAreaBkgError))
-            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(intSig, bin.fInvMassHisto.Integral(binSig_1, binSig_2), bin.fMassFitter.GetSignal(s.fBinCountSignalSigmas) + bin.fMassFitter.GetBackground(s.fBinCountSignalSigmas)))
+            print("The total signal+background is {0}, which is the same from the invariant mass plot {1} or summing signal and background {2}".format(intSig, bin.fInvMassHisto.Integral(binSig_1, binSig_2), mass_fitter.GetSignal(s.fBinCountSignalSigmas) + mass_fitter.GetBackground(s.fBinCountSignalSigmas)))
 
             sbTotalIntegralError = ROOT.Double(0)
             if sbTotal.GetDimension() == 1:
@@ -784,7 +806,7 @@ class DMesonJetAnalysisEngine:
             s.fSignalWindowTotalHistogram.Add(sig)
 
         SBinvMassName = "{0}_SideBand_{1}".format(s.fBinSet.fName, s.fName)
-        self.PlotInvMassPlotsBinSet(SBinvMassName, s.fBinSet.fBins, None, s)
+        self.PlotInvMassPlotsBinSet(SBinvMassName, s.fBinSet, None, s)
 
         s.fHistogram.Add(s.fSignalWindowTotalHistogram)
         s.fHistogram.Add(s.fSideBandWindowTotalHistogram, -1)
@@ -823,51 +845,52 @@ class DMesonJetAnalysisEngine:
                         s.fMassWidth.SetBinContent(xbin + 1, bin.fMassFitter.GetSignalWidth())
                         s.fMassWidth.SetBinError(xbin + 1, bin.fMassFitter.GetSignalWidthError())
 
-    def GenerateSpectrum1D(self, s):
+    def GenerateSpectrum1D(self, s, fitter_name):
         print("Generating spectrum {0}".format(s.fName))
         if s.fAnalysisType == AnalysisType.SideBand:
-            self.GenerateSpectrum1DSideBandMethod(s)
+            self.GenerateSpectrumSideBandMethod(s, fitter_name)
         elif s.fAnalysisType == AnalysisType.LikeSign or s.fAnalysisType == AnalysisType.LikeSignFit:
             print("Like sign analysis not implemented!")
         elif s.fAnalysisType == AnalysisType.InvMassFit:
-            self.GenerateSpectrum1DInvMassFit(s)
+            self.GenerateSpectrum1DInvMassFit(s, fitter_name)
         elif s.fAnalysisType == AnalysisType.Truth:
             self.GenerateSpectrum1DTruth(s)
         else:
             print("Analysis type {0} not recognized!".format(s.fAnalysisType))
 
-    def GenerateSpectrum2D(self, s):
+    def GenerateSpectrum2D(self, s, fitter_name):
         print("Generating spectrum {0}".format(s.fName))
         if s.fAnalysisType == AnalysisType.InvMassFit:
-            self.GenerateSpectrum2DInvMassFit(s)
+            self.GenerateSpectrum2DInvMassFit(s, fitter_name)
         if s.fAnalysisType == AnalysisType.SideBand:
-            self.GenerateSpectrum1DSideBandMethod(s)
+            self.GenerateSpectrumSideBandMethod(s, fitter_name)
         elif s.fAnalysisType == AnalysisType.Truth:
             self.GenerateSpectrum2DTruth(s)
         else:
             print("Analysis type {0} not implemented for 2D spectra!".format(s.fAnalysisType))
 
-    def GenerateSpectrum2DInvMassFit(self, s):
+    def GenerateSpectrum2DInvMassFit(self, s, fitter_name):
         for binSetName in s.fBins:
             for bin in self.fBinMultiSets[s.fJetType, s.fJetRadius].fBinSets[binSetName].fBins:
-                if bin.fMassFitter is None:
+                mass_fitter = bin.fMassFitters[fitter_name]
+                if mass_fitter is None:
                     print("The bin printed below does not have a mass fitter!")
                     bin.Print()
                     continue
                 xbin = s.fHistogram.GetXaxis().FindBin(bin.GetBinCenter(s.fAxis[0].fName))
                 ybin = s.fHistogram.GetYaxis().FindBin(bin.GetBinCenter(s.fAxis[1].fName))
-                signal = bin.fMassFitter.GetSignal()
-                signal_unc = bin.fMassFitter.GetSignalError()
+                signal = mass_fitter.GetSignal()
+                signal_unc = mass_fitter.GetSignalError()
 
                 s.fHistogram.SetBinContent(xbin, ybin, signal)
                 s.fHistogram.SetBinError(xbin, ybin, signal_unc)
-                s.fBackground.SetBinContent(xbin, ybin, bin.fMassFitter.GetBackground())
-                s.fBackground.SetBinError(xbin, ybin, bin.fMassFitter.GetBackgroundError())
+                s.fBackground.SetBinContent(xbin, ybin, mass_fitter.GetBackground())
+                s.fBackground.SetBinError(xbin, ybin, mass_fitter.GetBackgroundError())
                 s.fUncertainty.SetBinContent(xbin, ybin, signal_unc / signal)
-                s.fMass.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignalMean())
-                s.fMass.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalMeanError())
-                s.fMassWidth.SetBinContent(xbin, ybin, bin.fMassFitter.GetSignalWidth())
-                s.fMassWidth.SetBinError(xbin, ybin, bin.fMassFitter.GetSignalWidthError())
+                s.fMass.SetBinContent(xbin, ybin, mass_fitter.GetSignalMean())
+                s.fMass.SetBinError(xbin, ybin, mass_fitter.GetSignalMeanError())
+                s.fMassWidth.SetBinContent(xbin, ybin, mass_fitter.GetSignalWidth())
+                s.fMassWidth.SetBinError(xbin, ybin, mass_fitter.GetSignalWidthError())
 
     def GenerateSpectrum2DTruth(self, s):
         w = 1
@@ -883,23 +906,23 @@ class DMesonJetAnalysisEngine:
                 s.fHistogram.SetBinError(xbin, ybin, s.fHistogram.GetBinError(xbin, ybin) * w)
                 s.fUncertainty.SetBinContent(xbin, ybin, s.fHistogram.GetBinError(xbin, ybin) / s.fHistogram.GetBinContent(xbin, ybin))
 
-    def GenerateSpectrum3D(self, s):
+    def GenerateSpectrum3D(self, s, fitter_name):
         print("GenerateSpectrum3D not implemented!")
 
-    def DrawFitResults(self, bin):
-        if bin.fMassFitter is None or not bin.fMassFitter.FitSuccessfull():
+    def DrawFitResults(self, bin, mass_fitter):
+        if mass_fitter is None or not mass_fitter.FitSuccessfull():
             return
 
-        bin.fMassFitter.Draw("same");
+        mass_fitter.Draw("same");
 
         w = bin.IsWeighted()
 
         if w:
-            chi2Text = bin.fMassFitter.GetChisquareWString().Data()
-            signifText = bin.fMassFitter.GetSignificanceWString().Data()
+            chi2Text = mass_fitter.GetChisquareWString().Data()
+            signifText = mass_fitter.GetSignificanceWString().Data()
         else:
-            chi2Text = bin.fMassFitter.GetChisquareString().Data()
-            signifText = bin.fMassFitter.GetSignificanceString().Data()
+            chi2Text = mass_fitter.GetChisquareString().Data()
+            signifText = mass_fitter.GetSignificanceString().Data()
 
         paveSig = ROOT.TPaveText(0.165, 0.795, 0.490, 0.92, "NB NDC")
         globalList.append(paveSig)
@@ -908,9 +931,9 @@ class DMesonJetAnalysisEngine:
         paveSig.SetTextFont(43)
         paveSig.SetTextSize(14)
         paveSig.SetTextAlign(13)
-        paveSig.AddText("{0}, {1}".format(bin.fMassFitter.GetSignalString().Data(),
-                                          bin.fMassFitter.GetBackgroundString().Data()))
-        paveSig.AddText("{0}, {1}, {2}".format(bin.fMassFitter.GetSignalOverBackgroundString().Data(),
+        paveSig.AddText("{0}, {1}".format(mass_fitter.GetSignalString().Data(),
+                                          mass_fitter.GetBackgroundString().Data()))
+        paveSig.AddText("{0}, {1}, {2}".format(mass_fitter.GetSignalOverBackgroundString().Data(),
                                           signifText,
                                           chi2Text))
         paveSig.Draw()
@@ -923,22 +946,40 @@ class DMesonJetAnalysisEngine:
         paveFit.SetTextSize(14)
         paveFit.SetTextAlign(23)
 
-        paveFit.AddText(bin.fMassFitter.GetSignalMeanString().Data())
-        paveFit.AddText(bin.fMassFitter.GetSignalWidthString().Data())
-        paveFit.AddText(bin.fMassFitter.GetBkgPar1String().Data())
-        paveFit.AddText(bin.fMassFitter.GetTotalEntriesString().Data())
+        paveFit.AddText(mass_fitter.GetSignalMeanString().Data())
+        paveFit.AddText(mass_fitter.GetSignalWidthString().Data())
+        paveFit.AddText(mass_fitter.GetBkgPar1String().Data())
+        paveFit.AddText(mass_fitter.GetTotalEntriesString().Data())
         paveFit.Draw()
+
+        if mass_fitter.GetReflOverSign() > 0:
+            paveRos = ROOT.TPaveText(0.165, 0.51, 0.490, 0.77, "NB NDC")
+            globalList.append(paveRos)
+            paveRos.SetBorderSize(0)
+            paveRos.SetFillStyle(0)
+            paveRos.SetTextFont(43)
+            paveRos.SetTextSize(14)
+            paveRos.SetTextAlign(23)
+
+            paveRos.AddText(mass_fitter.GetReflOverSignString().Data())
+            paveRos.Draw()
 
     def FitInvMassPlots(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
                 if self.fDMeson in binSet.fNeedInvMass:
-                    self.FitInvMassPlotsBinSet(binSet.fName, binSet.fBins, binSet.fFitOptions)
+                    self.FitInvMassPlotsBinSet(binSet)
 
-    def FitInvMassPlotsBinSet(self, name, bins, fitOptions):
-        print("Fitting {0}".format(name))
+    def SetReflectionTemplates(self, massFitter, refl_histo, sig_histo):
+        minMass = self.fMinMass
+        maxMass = self.fMaxMass
+        ros = refl_histo.Integral(refl_histo.GetXaxis().FindBin(minMass + 1e-6), refl_histo.GetXaxis().FindBin(maxMass - 1e-6)) / sig_histo.Integral(sig_histo.GetXaxis().FindBin(minMass + 1e-6), sig_histo.GetXaxis().FindBin(maxMass - 1e-6))
+        massFitter.SetReflectionTemplate(refl_histo, ros)
 
-        for i, bin in enumerate(bins):
+    def FitInvMassPlotsBinSet(self, binSet):
+        print("Fitting {0}".format(binSet.fName))
+
+        for i, bin in enumerate(binSet.fBins):
             if not bin.fInvMassHisto:
                 continue
             if self.fTrigger:
@@ -946,18 +987,27 @@ class DMesonJetAnalysisEngine:
             else:
                 fitterName = "InvMass_{0}_{1}_fitter".format(self.fDMeson, bin.GetName())
 
+            print("Fitting bin {0} (no reflections)".format(bin.GetTitle()))
             fitter = self.CreateMassFitter(fitterName, bin.fInvMassHisto)
             bin.SetMassFitter(fitter)
+            fitter.Fit(bin.fInvMassHisto, binSet.fFitOptions)
 
-            print("Fitting bin {0}".format(bin.GetTitle()))
-
-            fitter.Fit(bin.fInvMassHisto, fitOptions)
+            if binSet.fReflectionTemplates:
+                for refl_name, refl_histos in binSet.fReflectionTemplates.iteritems():
+                    (refl_histo, sig_histo) = refl_histos[i]
+                    print("Fitting bin {} (reflections {})".format(bin.GetTitle(), refl_name))
+                    fitterName_refl = "{}_{}".format(fitterName, refl_name)
+                    invMassHisto = bin.fInvMassHisto.Clone("{}_refl{}".format(bin.fInvMassHisto.GetName(), refl_name))
+                    fitter = self.CreateMassFitter(fitterName_refl, bin.fInvMassHisto)
+                    self.SetReflectionTemplates(fitter, refl_histo, sig_histo)
+                    bin.AddMassFitter(fitter, refl_name)
+                    fitter.Fit(invMassHisto, binSet.fFitOptions)
 
     def PlotInvMassPlots(self):
         for binMultiSet in self.fBinMultiSets.itervalues():
             for binSet in binMultiSet.fBinSets.itervalues():
                 if self.fDMeson in binSet.fNeedInvMass:
-                    self.PlotInvMassPlotsBinSet(binSet.fName, binSet.fBins)
+                    self.PlotInvMassPlotsBinSet(binSet.fName, binSet)
 
     def PlotInvMassLikeSign(self, bin):
         hls = bin.fInvMassHisto.DrawCopy("hist same")
@@ -989,19 +1039,24 @@ class DMesonJetAnalysisEngine:
 
         return hsb
 
-    def PlotInvMassPlotsBinSet(self, name, bins, LS_bins=None, spectrum=None):
+    def PlotInvMassPlotsBinSet(self, name, bin_set, LS_bins=None, spectrum=None):
+        self.PlotInvMassPlotsBinSetForFitterName(name, bin_set, "default", LS_bins, spectrum)
+        for refl_name in bin_set.fReflectionTemplateNames:
+            self.PlotInvMassPlotsBinSetForFitterName(name, bin_set, refl_name, LS_bins, spectrum)
+
+    def PlotInvMassPlotsBinSetForFitterName(self, name, bin_set, fitter_name, LS_bins=None, spectrum=None):
         if self.fTrigger:
-            cname = "{0}_{1}".format(self.fTrigger, name)
+            cname = "{}_{}_{}".format(self.fTrigger, name, fitter_name)
         else:
-            cname = name
-        nbins = len(bins)
+            cname = "{}_{}".format(name, fitter_name)
+        nbins = len(bin_set.fBins)
         if spectrum and spectrum.fSkipBins:
             nbins -= len(spectrum.fSkipBins)
         c = DMesonJetUtils.GenerateMultiCanvas(cname, nbins)
         self.fCanvases.append(c)
         globalList.append(c)
         icanvas = 1
-        for i, bin in enumerate(bins):
+        for i, bin in enumerate(bin_set.fBins):
             if spectrum and spectrum.fSkipBins and i in spectrum.fSkipBins:
                 continue
             if not bin.fInvMassHisto:
@@ -1050,7 +1105,7 @@ class DMesonJetAnalysisEngine:
             htitle.AddText(bin.GetTitle())
             htitle.Draw()
             globalList.append(htitle)
-            self.DrawFitResults(bin)
+            self.DrawFitResults(bin, bin.fMassFitters[fitter_name])
             if LS_bins:
                 self.PlotInvMassLikeSign(LS_bins[i])
             icanvas += 1
@@ -1063,13 +1118,15 @@ class DMesonJetAnalysis:
         self.fAnalysisEngine = []
         self.fCanvases = []
         self.fJets = None
+        self.fReflections = None
 
     def SetProjector(self, projector):
         self.fProjector = projector
 
-    def StartAnalysis(self, collision, config):
+    def StartAnalysis(self, collision, reflection_templates, config):
         self.fCollision = collision
         self.fJets = config["jets"]
+        self.fReflections = reflection_templates
         binMultiSet = BinSet.BinMultiSet()
         for binLists in config["binLists"]:
             if len(binLists["active_mesons"]) == 0:
@@ -1097,7 +1154,11 @@ class DMesonJetAnalysis:
 
             if not "spectra" in binLists:
                 binLists["spectra"] = []
-            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, binLists["efficiency"], fitOptions))
+            if "reflection_template_names" in binLists:
+                reflection_template_names = binLists["reflection_template_names"]
+            else:
+                reflection_template_names = []
+            binMultiSet.AddBinSet(BinSet.BinSet(binLists["name"], binLists["title"], binLists["active_mesons"], binLists["need_inv_mass"], limitSetList, binLists["spectra"], axis, cuts, binLists["efficiency"], reflection_template_names, fitOptions))
 
         for trigger in config["trigger"]:
             for d_meson in config["d_meson"]:
@@ -1107,7 +1168,7 @@ class DMesonJetAnalysis:
                     print("Projecting D meson {0}".format(d_meson))
                 eng = DMesonJetAnalysisEngine(collision, trigger, d_meson,
                                               binMultiSet, config["n_mass_bins"], config["min_mass"], config["max_mass"],
-                                              self.fJets, self.fProjector)
+                                              self.fJets, self.fReflections, self.fProjector)
                 self.fAnalysisEngine.append(eng)
                 eng.DoProjections()
 

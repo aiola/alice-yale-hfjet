@@ -28,7 +28,7 @@ class BinMultiSet:
     def AddBinSet(self, binSet):
         self.fBinSets[binSet.fBinSetName] = binSet
 
-    def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
+    def Initialize(self, dmeson, jtype, jradius, jtitle, reflections, inputPath):
         self.fDMeson = dmeson
         self.fJetType = jtype
         self.fJetRadius = jradius
@@ -36,7 +36,7 @@ class BinMultiSet:
             if not dmeson in binSet.fActiveMesons:
                 del self.fBinSets[k]
                 continue
-            r = binSet.Initialize(dmeson, jtype, jradius, jtitle, inputPath)
+            r = binSet.Initialize(dmeson, jtype, jradius, jtitle, reflections, inputPath)
             if not r:
                 del self.fBinSets[k]
 
@@ -81,7 +81,7 @@ class BinMultiSet:
 
 class BinSet:
 
-    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, efficiency, fitOptions):
+    def __init__(self, name, title, active_mesons, need_inv_mass, limitSetList, spectra, axis, cutList, efficiency, refl_templ_names, fitOptions):
         self.fBinSetName = name
         self.fTitle = title
         self.fBins = []
@@ -95,6 +95,9 @@ class BinSet:
         self.fActiveMesons = active_mesons
         self.fBinCountSpectraAxis = dict()
         self.fLimitSetList = limitSetList
+        self.fReflectionTemplates = None
+        self.fReflOverSign = 0
+        self.fReflectionTemplateNames = refl_templ_names
 
     def AmIJetDependent(self):
         for axis in self.fAxis:
@@ -117,7 +120,59 @@ class BinSet:
             weightEfficiency = DetectorResponseLoader.DMesonJetEfficiency.fromConfig(eff, "Prompt", dmeson, jetName)
         return weightEfficiency
 
-    def Initialize(self, dmeson, jtype, jradius, jtitle, inputPath):
+    def LoadReflectionsForTemplateName(self, reflFileName, refl_fit):
+        reflFileName = "{}_fitted_{}.root".format(reflFileName, refl_fit)
+        print("Loading reflections from file '{}' for bin set '{}'".format(reflFileName, self.fBinSetName))
+        file = ROOT.TFile(reflFileName, "read")
+        if not file or file.IsZombie():
+            print("BinSet.LoadReflectionsForTemplateName: Could not open file {}".format(reflFileName))
+            exit(1)
+        result = []
+        for ibin in range(0, len(self.fBins)):
+            reflHistoname = "histRflFitted{fit}_ptBin{bin}".format(fit=refl_fit, bin=ibin)  # name of template histo
+            reflHisto = file.Get(reflHistoname)
+            if not reflHisto:
+                print("Histogram '{}' could not be loaded from file '{}'".format(reflHistoname, reflFileName))
+                exit(1)
+            MCSigHistoname = "histSgn_{0}".format(ibin)  # name of template histo
+            MCSigHisto = file.Get(MCSigHistoname)
+            if not MCSigHisto:
+                print("Histogram '{}' could not be loaded from file '{}'".format(MCSigHistoname, reflFileName))
+                exit(1)
+
+            result.append((reflHisto, MCSigHisto))
+        return result
+
+    def LoadReflections(self, dmeson, jtype, jradius, reflections):
+        # hard coded conversion from D meson name to D meson cut name
+        dmeson_cuts = dmeson[3:]
+
+        if "DPtBins" in self.fBinSetName:
+            varname = "DPt"
+        elif "JetPtBins" in self.fBinSetName:
+            varname = "JetPt"
+        elif "JetZBins" in self.fBinSetName:
+            varname = "JetZ"
+
+        if jtype and jradius:
+            jet_def = "_{}_{}".format(jtype, jradius)
+        else:
+            jet_def = ""
+
+        if self.fEfficiency:
+            is_eff_corrected = "_efficiency"
+        else:
+            is_eff_corrected = ""
+
+        reflFileName = "../rawYieldUnc/reflTemp/{refl_name}{is_eff_corrected}_{cuts}_{var}{jet_def}_{binlist_name}".format(refl_name=reflections,
+                                                                                                             cuts=dmeson_cuts, jet_def=jet_def, binlist_name=self.fBinSetName,
+                                                                                                             var=varname, is_eff_corrected=is_eff_corrected)
+
+        self.fReflectionTemplates = dict()
+        for refl_fit in self.fReflectionTemplateNames:
+            self.fReflectionTemplates[refl_fit] = self.LoadReflectionsForTemplateName(reflFileName, refl_fit)
+
+    def Initialize(self, dmeson, jtype, jradius, jtitle, reflections, inputPath):
         self.fName = "_".join(obj for obj in [dmeson, jtype, jradius, self.fBinSetName] if not obj == None)
         jetDep = self.AmIJetDependent()
         if jtype or jradius:
@@ -168,6 +223,9 @@ class BinSet:
 
         limits = dict()
         self.AddBinsRecursive(self.fLimitSetList, limits)
+
+        if reflections: self.LoadReflections(dmeson, jtype, jradius, reflections)
+
         return True
 
     def GenerateInvMassRootList(self):
@@ -176,8 +234,8 @@ class BinSet:
         for bin in self.fBins:
             if bin.fInvMassHisto:
                 rlist.Add(bin.fInvMassHisto)
-            if bin.fMassFitter:
-                rlist.Add(bin.fMassFitter)
+            for fitter in bin.fMassFitters.itervalues():
+                rlist.Add(fitter)
             for _, h in bin.fBinCountSpectra.itervalues():
                 rlist.Add(h)
         return rlist
@@ -211,6 +269,7 @@ class BinLimits:
         self.fLimits = copy.deepcopy(limits)
         self.fInvMassHisto = None
         self.fMassFitter = None
+        self.fMassFitters = dict()
         self.fBinCountSpectra = None
         self.fCounts = 0
         self.fSumw2 = 0
@@ -263,6 +322,11 @@ class BinLimits:
 
     def SetMassFitter(self, fitter):
         self.fMassFitter = fitter
+        if not fitter in self.fMassFitters:
+            self.AddMassFitter(fitter)
+
+    def AddMassFitter(self, fitter, name="default"):
+        self.fMassFitters[name] = fitter
 
     def IsSameOf(self, bin):
         for name, (min, max) in self.fLimits.iteritems():

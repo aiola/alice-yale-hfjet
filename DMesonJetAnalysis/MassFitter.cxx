@@ -17,6 +17,7 @@ MassFitter::MassFitter() :
   fMassFitTypeSig(kGaus),
   fMassFitTypeBkg(kExpo),
   fReflectionTempl(0),
+  fReflOverSign(0.),
   fMean(0.),
   fMeanError(0.),
   fWidth(0.),
@@ -56,6 +57,7 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
   fMassFitTypeSig(kGaus),
   fMassFitTypeBkg(kExpo),
   fReflectionTempl(0),
+  fReflOverSign(0.),
   fMean(0.),
   fMeanError(0.),
   fWidth(0.),
@@ -110,7 +112,10 @@ MassFitter::MassFitter(const char* name, EMeson m, Double_t minMass, Double_t ma
 //____________________________________________________________________________________
 MassFitter::~MassFitter()
 {
-
+  delete fReflectionTempl;
+  delete fFunction;
+  delete fFunctionBkg;
+  delete fFunctionBkgNoRefl;
 }
 
 //____________________________________________________________________________________
@@ -179,7 +184,7 @@ void MassFitter::Reset(TH1* histo)
   fFunction->SetLineStyle(1);
 
   TString fnameBkg(Form("%sBkg_fit", GetName()));
-  fFunctionBkg = new TF1(fnameBkg, this, &MassFitter::FunctionBkg, fMinMass, fMaxMass, fNParBkg);
+  fFunctionBkg = new TF1(fnameBkg, this, &MassFitter::FunctionBkg, fMinMass, fMaxMass, fNParBkg + 1);
   fFunctionBkg->SetLineColor(kRed+1);
   fFunctionBkg->SetLineWidth(2);
   fFunctionBkg->SetLineStyle(2);
@@ -235,19 +240,24 @@ TFitResultPtr MassFitter::Fit(Option_t* opt)
     fMeanError = fFunction->GetParError(fNParBkg+1);
     fWidth = fFunction->GetParameter(fNParBkg+2);
     fWidthError = fFunction->GetParError(fNParBkg+2);
-    fSignal = fFunction->GetParameter(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(0);
-    fSignalError = fFunction->GetParError(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(0);
-    fBackground = fFunction->GetParameter(0) / fHistogram->GetXaxis()->GetBinWidth(0);
-    fBackgroundError = fFunction->GetParError(0) / fHistogram->GetXaxis()->GetBinWidth(0);
+    fSignal = fFunction->GetParameter(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(1);
+    fSignalError = fFunction->GetParError(fNParBkg) / fHistogram->GetXaxis()->GetBinWidth(1);
+    fBackground = fFunction->GetParameter(0) / fHistogram->GetXaxis()->GetBinWidth(1);
+    fBackgroundError = fFunction->GetParError(0) / fHistogram->GetXaxis()->GetBinWidth(1);
 
     if (fReflectionTempl && !fDisableRefl) {
       fBackground += fReflectionTempl->Integral(1,fReflectionTempl->GetNbinsX(), "width") / fHistogram->GetXaxis()->GetBinWidth(0);
     }
 
     for (Int_t i = 0; i < fNParBkg; i++) {
-      fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
-      fFunctionBkg->SetParError(i, fFunction->GetParError(i));
+      fFunctionBkg->SetParameter(i + 1, fFunction->GetParameter(i));
+      fFunctionBkg->SetParError(i + 1, fFunction->GetParError(i));
+      fFunctionBkgNoRefl->SetParameter(i, fFunction->GetParameter(i));
+      fFunctionBkgNoRefl->SetParError(i, fFunction->GetParError(i));
     }
+
+    fFunctionBkg->SetParameter(0, fFunction->GetParameter(fNParBkg));
+    fFunctionBkg->SetParError(0, fFunction->GetParError(fNParBkg));
   }
 
   if (fFitSuccessfull) {
@@ -649,6 +659,17 @@ TString MassFitter::GetChisquareWString() const
 }
 
 //____________________________________________________________________________________
+TString MassFitter::GetReflOverSignString() const
+{
+  TString r;
+
+  Double_t v = GetReflOverSign();
+  r = Form("R/S=%.3f", v);
+
+  return r;
+}
+
+//____________________________________________________________________________________
 Double_t MassFitter::GetTotalEntriesAndError(Double_t& err) const
 {
   if (!fHistogram) return 0;
@@ -725,25 +746,26 @@ double MassFitter::FunctionBkgNoRefl(double *x, double *p)
 //____________________________________________________________________________________
 double MassFitter::FunctionBkg(double *x, double *p)
 {
-  Double_t r = FunctionBkgNoRefl(x, p);
+  Double_t r = FunctionBkgNoRefl(x, p + 1); // skip first parameter which is the signal Gaussian constant
 
   Double_t refl = 0;
   if (!fDisableRefl && fReflectionTempl) {
-    refl = FunctionRefl(x, p);
+    Double_t p_refl[] = { p[0], fReflOverSign };
+    refl = FunctionRefl(x, p_refl);
   }
 
   return r + refl;
 }
 
 //____________________________________________________________________________________
-double MassFitter::FunctionRefl(double *x, double*)
+double MassFitter::FunctionRefl(double *x, double *p)
 {
-  if (fReflectionTempl) {
-    return fReflectionTempl->GetBinContent(fReflectionTempl->GetXaxis()->FindBin(x[0]));
+  Double_t r = 0.;
+  if (fReflectionTempl && fHistogram) {
+    r = fReflectionTempl->GetBinContent(fReflectionTempl->GetXaxis()->FindBin(x[0]));
+    r *= p[1] * p[0] / fHistogram->GetXaxis()->GetBinWidth(1);
   }
-  else {
-    return 0.;
-  }
+  return r;
 }
 
 //____________________________________________________________________________________
@@ -757,9 +779,9 @@ double MassFitter::FunctionSigBkg(double *x, double *p)
   if (!fDisableBkg) {
     Double_t bkgPars[10] = {0.};
     for (Int_t i = 0; i < fNParBkg; i++) {
-      bkgPars[i] = p[i];
+      bkgPars[i+1] = p[i];
     }
-    //bkgPars[0] -= p[fNParBkg];
+    bkgPars[0] = p[fNParBkg];  // first background parameter is the signal Gaussian constant, which is needed to compute the background function when reflections are on
     
     r += FunctionBkg(x, bkgPars);
   }
@@ -783,9 +805,12 @@ void MassFitter::Draw(Option_t* opt)
   if (!optAndSame.Contains("same")) optAndSame += " same";
 
   for (Int_t i = 0; i < fNParBkg; i++) {
-    fFunctionBkg->SetParameter(i, fFunction->GetParameter(i));
+    fFunctionBkg->SetParameter(i+1, fFunction->GetParameter(i));
+    fFunctionBkgNoRefl->SetParameter(i, fFunction->GetParameter(i));
   }
   
+  fFunctionBkg->SetParameter(0, fFunction->GetParameter(fNParBkg));
+
   if (fReflectionTempl && !fDisableRefl) {
     fFunctionBkgNoRefl->Draw(opt);
     fFunctionBkg->Draw(optAndSame);
@@ -852,4 +877,20 @@ void MassFitter::DisableSig(Bool_t d)
       fFunction->SetParameter(i+fNParBkg, 0);
     }
   }
+}
+
+//____________________________________________________________________________________
+void MassFitter::DisableRefl(Bool_t d)
+{
+  fDisableRefl = d;
+}
+
+//____________________________________________________________________________________
+void MassFitter::SetReflectionTemplate(TH1* refl, Double_t ros)
+{
+  if (!refl) return;
+  delete fReflectionTempl;
+  fReflectionTempl = static_cast<TH1*>(refl->Clone());
+  fReflectionTempl->Scale(1.0 / fReflectionTempl->Integral(1, fReflectionTempl->GetNbinsX()));
+  fReflOverSign = ros;
 }
