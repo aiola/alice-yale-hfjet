@@ -73,6 +73,14 @@ class RawYieldSpectrumLoader:
         else:
             print("No variable name provided!")
             exit(1)
+        if self.fUseReflections:
+            if not self.fReflectionRoS == 0:
+                print("****Attention Attention Attention****")
+                print("You asked for reflections with RoS != 0. This is not available in DMesonJetAnalysis!")
+                exit(1)
+            refl = self.fReflectionFit
+        else:
+            refl = None
         spectrumName = "{}Spectrum".format(var)
         if self.fDMeson:
             if self.fTrigger:
@@ -91,14 +99,14 @@ class RawYieldSpectrumLoader:
                     self.fDataMesonList.Print()
                     exit(1)
                 if var:
-                    dataListName = "_".join([s for s in [self.fDMeson, dataJetListName, spectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
+                    dataListName = "_".join([s for s in [self.fDMeson, dataJetListName, spectrumName, self.fKinematicCuts, self.fRawYieldMethod, refl] if s])
                     self.fDataSpectrumList = self.fDataJetList.FindObject(dataListName)
                     if not self.fDataSpectrumList:
                         print("Could not find list {0}/{1}/{2} in file {3}". format(self.fDMeson, dataJetListName, dataListName, self.fDataFile.GetName()))
                         self.fDataJetList.Print()
                         exit(1)
             if var and not (self.fJetType and self.fJetRadius):
-                dataListName = "_".join([s for s in [self.fDMeson, spectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
+                dataListName = "_".join([s for s in [self.fDMeson, spectrumName, self.fKinematicCuts, self.fRawYieldMethod, refl] if s])
                 self.fDataSpectrumList = self.fDataMesonList.FindObject(dataListName)
                 if not self.fDataSpectrumList:
                     print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataListName, self.fDataFile.GetName()))
@@ -113,12 +121,16 @@ class RawYieldSpectrumLoader:
             print("No variable name provided!")
             exit(1)
         if self.fUseReflections:
-            print("****Attention Attention Attention****")
-            print("You asked for reflections, but reflections are not available in DMesonJetAnalysis!")
-            exit(1)
+            if not self.fReflectionRoS == 0:
+                print("****Attention Attention Attention****")
+                print("You asked for reflections with RoS != 0. This is not available in DMesonJetAnalysis!")
+                exit(1)
+            refl = self.fReflectionFit
+        else:
+            refl = None
         if not self.fDataSpectrumList: self.LoadDataListFromDMesonJetAnalysis()
         spectrumName = "{}Spectrum".format(var)
-        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, spectrumName, self.fKinematicCuts, self.fRawYieldMethod] if s])
+        inputSpectrumName = "_".join([s for s in [self.fDMeson, self.fJetType, self.fJetRadius, spectrumName, self.fKinematicCuts, self.fRawYieldMethod, refl] if s])
         h_orig = self.fDataSpectrumList.FindObject(inputSpectrumName)
         if not h_orig:
             print("Could not find histogram {0} in list {1}". format(inputSpectrumName, self.fDataSpectrumList.GetName()))

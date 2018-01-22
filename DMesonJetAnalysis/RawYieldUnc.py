@@ -70,12 +70,31 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     comp.fNoErrorInBaseline = True
     comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
     comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
-    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
+    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts, None)
     if var == "JetPt":
         comp.fOptSpectrumBaseline = "same"
         comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
         comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
-        default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
+        default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts, None)
+
+    comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefault_DoubleGaus")
+    comp.fDoSpectraPlot = do_spectra_plot
+    comp.fOptRatio = "hist"
+    comp.fX1LegRatio = 0.15
+    comp.fX1LegSpectrum = 0.20
+    comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fLinUpperSpace = 0.3  # this factor will be used to adjust the y axis in linear scale
+    comp.fLinLowerSpace = 0.1  # this factor will be used to adjust the y axis in linear scale
+    comp.fNoErrorInBaseline = True
+    comp.fColors = [ROOT.kOrange + 2, ROOT.kRed + 2]
+    comp.fMarkers = [ROOT.kOpenSquare, ROOT.kFullSquare]
+    default_vs_default_mt(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts, "DoubleGaus")
+    if var == "JetPt":
+        comp.fOptSpectrumBaseline = "same"
+        comp.fColors = [ROOT.kGreen + 2, ROOT.kBlue + 2]
+        comp.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle]
+        default_vs_default_mt(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts, "DoubleGaus")
 
     comp = DMesonJetCompare.DMesonJetCompare("DefaultMTRawYieldVsDefaultUncertainties")
     comp.fDoSpectraPlot = "lineary"
@@ -134,14 +153,18 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
             obj.SaveAs(fname)
 
 
-def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
+def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts, refl):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
     wrap.fVariableName = var
     wrap.fKinematicCuts = kincuts
     wrap.fRawYieldMethod = method
-    wrap.fUseReflections = False
+    if refl:
+        wrap.fUseReflections = True
+        wrap.fReflectionFit = refl
+    else:
+        wrap.fUseReflections = False
 
     wrap.fDataSpectrumList = None
     wrap.fDataFile = None

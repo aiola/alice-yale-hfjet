@@ -16,6 +16,7 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
+
 def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
     if bg: ROOT.gROOT.SetBatch(True)
 
@@ -53,6 +54,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
         output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
     else:
         collision = config["collision_system"]
+        reflection_templates = config["reflection_templates"]
         name = config["name"]
         train = config["train"]
         input_path = config["input_path"]
@@ -70,10 +72,11 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
     ana.SetProjector(projector)
 
     for anaConfig in config["analysis"]:
-        ana.StartAnalysis(collision, anaConfig)
+        ana.StartAnalysis(collision, reflection_templates, anaConfig)
 
     ana.SaveRootFile("{0}/{1}".format(output_path, train))
     ana.SavePlots("{0}/{1}".format(output_path, train), format)
+
 
 if __name__ == '__main__':
 
