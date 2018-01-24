@@ -108,6 +108,5 @@ variations:
   name: EvtGen
   active: yes
   title: "EvtGen"
-  ts: 1512404613
-  scaling: 0.11965e-7 # 0.2393 / 2e7
+  ts: 1516708272
   generator: powheg+pythia6+evtgen_beauty
