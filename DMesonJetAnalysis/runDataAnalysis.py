@@ -52,6 +52,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
             file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
         train = ""
         output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
+        reflection_templates = None
     else:
         collision = config["collision_system"]
         reflection_templates = config["reflection_templates"]
