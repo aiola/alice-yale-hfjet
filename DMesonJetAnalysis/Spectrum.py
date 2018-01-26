@@ -10,10 +10,12 @@ from DMesonJetBase import AnalysisType
 class Spectrum:
 
     def __init__(self, config, dmeson, jtype, jradius, jtitle, binSet, effWeight):
+        self.fConfig = config
         self.fDMeson = dmeson
         self.fJetType = jtype
         self.fJetRadius = jradius
         self.fJetTitle = jtitle
+        self.fReflFitterName = ""
         if "suffix" in config:
             self.fSuffix = config["suffix"]
         else:
@@ -109,6 +111,10 @@ class Spectrum:
                 self.fAxis.append(axis)
 
         print("Spectrum {0} with analysis type {1} added".format(self.fName, self.fAnalysisType.name))
+
+    def Clone(self):
+        s_new = Spectrum(self.fConfig, self.fDMeson, self.fJetType, self.fJetRadius, self.fJetTitle, self.fBinSet, self.fEfficiencyWeight)
+        return s_new
 
     def GenerateRootList(self):
         rlist = ROOT.TList()
