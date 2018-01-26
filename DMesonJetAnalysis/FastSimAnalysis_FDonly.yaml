@@ -1,3 +1,4 @@
+# Selects only b or bbar
 name: FastSimAnalysis_FDonly
 input_path: /Volumes/DATA/ALICE/JetResults
 train: FastSim

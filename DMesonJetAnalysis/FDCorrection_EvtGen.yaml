@@ -60,60 +60,80 @@ variations:
   title: "Central Values"
   ts: 1516708272
   # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: mass_low
   active: yes
   title: "#it{m}_{b} = 4.5 GeV/#it{c}^{2}"
   ts: 1516721315
   # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: mass_high
   active: yes
   title: "#it{m}_{b} = 5.0 GeV/#it{c}^{2}"
   ts: 1516797241
-  # merge
+  # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: PDF_MSTW2008nlo68cl
   active: yes
   title: "PDF = MSTW2008nlo68cl (21200)" 
   ts: 1516799554
   # merge
+  # 
+  # 
 -
   name: facscfact2_renscfact2
   active: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 2.0"
   ts: 1516800577
-  # merge
+  # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: facscfact05_renscfact05
   active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 0.5"
   ts: 1516711706
   # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: facscfact1_renscfact05
   active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
   ts: 1516803425
-  # merge
+  # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: facscfact05_renscfact1
   active: yes
   title: "#mu_{F} = 0.5, #mu_{R} = 1.0"
   ts: 1516715715
   # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: facscfact2_renscfact1
   active: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
-  ts: x
-  # merge
+  ts: 1516883508
+  # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: facscfact1_renscfact2
   active: yes
   title: "#mu_{F} = 1.0, #mu_{R} = 2.0"
-  ts: x
-  # merge
+  ts: 1516889693
+  # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: pythia_decayer
   active: yes
@@ -121,3 +141,5 @@ variations:
   generator: powheg+pythia6_beauty
   ts: 1505317519
   # merge 1, 2
+  # downloaded
+  # analyzed
