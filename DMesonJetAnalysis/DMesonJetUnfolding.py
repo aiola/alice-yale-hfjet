@@ -78,7 +78,9 @@ class DMesonJetUnfoldingEngine:
 
         # name
         self.fName = config["name"]
-        if self.fFDErrorBand > 0:
+        if isinstance(self.fFDErrorBand, basestring):
+            self.fName += "_FD{}".format(self.fFDErrorBand)
+        elif self.fFDErrorBand > 0:
             self.fName += "_FDUpperBand"
         elif self.fFDErrorBand < 0:
             self.fName += "_FDLowerBand"
@@ -252,12 +254,13 @@ class DMesonJetUnfoldingEngine:
         wrap.fDataSpectrumList = self.fDataList
         wrap.fUseReflections = self.fUseReflections
         wrap.fReflectionFit = self.fReflectionFit
-        wrap.fReflectionRoS = self.fReflectionRoS
         wrap.fRawYieldMethod = self.fRawYieldMethod
 
         self.fNumberOfEvents = wrap.LoadNumberOfEvents()
         self.fEvents = ROOT.TH1D("Events", "Events", 1, 0, 1)
         self.fEvents.SetBinContent(1, self.fNumberOfEvents)
+
+        wrap.fReflectionRoS = self.fReflectionRoS
 
         self.fDataList = wrap.fDataSpectrumList
 

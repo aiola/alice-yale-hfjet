@@ -5,10 +5,13 @@ import yaml
 import ROOT
 import DMesonJetUtils
 
+
 class DMesonJetFDCorrection:
+
     def __init__(self, config, spectrumName, inputPath=None, dmeson=None, jetType=None, jetRadius=None):
         self.fInputPath = inputPath
         self.fSpectrumName = spectrumName
+        self.fFDHistogramVariations = dict()
         # For the moment these parameters are not used
         #####
         self.fDMeson = dmeson
@@ -21,9 +24,22 @@ class DMesonJetFDCorrection:
             self.fFDSpectrumName = config["spectrum"]
             self.LoadFD()
         else:
+            self.fFileName = None
+            self.fCentralPoints = None
+            self.fFDSpectrumName = None
             self.fFDHistogram = None
+            self.fFDUpSystUncHistogram = None
+            self.fFDLowSystUncHistogram = None
+            self.fFDSystUncGraph = None
 
-    def LoadFD(self):
+    def GetFDHistogram(self, variation_name):
+        if variation_name == self.fCentralPoints: return self.fFDHistogram
+        if variation_name in self.fFDHistogramVariations: return self.fFDHistogramVariations[variation_name]
+        h = self.LoadVariation(variation_name)
+        self.fFDHistogramVariations[variation_name] = h
+        return h
+
+    def LoadVariation(self, variation_name):
         filename = "{0}/{1}".format(self.fInputPath, self.fFileName)
         file = ROOT.TFile(filename)
         if not file or file.IsZombie():
@@ -31,12 +47,12 @@ class DMesonJetFDCorrection:
             return
         else:
             print("File {0} open for FD correction".format(filename))
-        rlist = file.Get(self.fCentralPoints)
+        rlist = file.Get(variation_name)
         if not rlist:
-            print("Could not find list {0}".format(self.fCentralPoints))
+            print("Could not find list {0}".format(variation_name))
             return
         else:
-            print("List {0} loaded".format(self.fCentralPoints))
+            print("List {0} loaded".format(variation_name))
         rlist2 = rlist.FindObject(self.fSpectrumName)
         if not rlist2:
             print("Could not find list {0}".format(self.fSpectrumName))
@@ -49,7 +65,19 @@ class DMesonJetFDCorrection:
             return
         else:
             print("Histogram {0} loaded".format(self.fFDSpectrumName))
-        self.fFDHistogram = h.Clone("FD")
+        h_copy = h.Clone("FD")
+        return h_copy
+
+    def LoadFD(self):
+        self.fFDHistogram = self.LoadVariation(self.fCentralPoints)
+
+        filename = "{0}/{1}".format(self.fInputPath, self.fFileName)
+        file = ROOT.TFile(filename)
+        if not file or file.IsZombie():
+            print("Could not open file {0}".format(filename))
+            return
+        else:
+            print("File {0} open for FD correction".format(filename))
 
         # Loading systematic uncertainty
         systListName = "SystematicUncertainty"

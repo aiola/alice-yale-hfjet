@@ -21,16 +21,6 @@ fixed_uncertainties:
   title: "Tracking Eff. (D-Meson)"
   uncertainty: 0.04
   plot: yes
-#-
-#  name: branching_ratio
-#  title: "Branching Ratio"
-#  uncertainty: 0.01
-#  plot: no
-#-
-#  name: luminosity
-#  title: "Luminosity"
-#  uncertainty: 0.035
-#  plot: no
 sources:
 -
   name: tracking_efficiency
@@ -48,38 +38,54 @@ sources:
   active: yes
   title: "Raw Yield Extraction"
   symmetrize: yes
-  combine_strategy: sum_in_quadrature
-  up_variations:
+  combine_strategy: envelope
+  variations:
   -
     input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus
     histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30_RYUpperBand/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_RYUpperBand_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
     histogram_title: "Multi-Trial (up)"
   -
-    input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus_5
-    histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
-    histogram_title: "Refl/Sign #times 0.5"
-  low_variations:
-  -
     input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus
     histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30_RYLowerBand/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_RYLowerBand_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
     histogram_title: "Multi-Trial (low)"
+-
+  name: reflections
+  active: yes
+  title: "Reflections"
+  symmetrize: yes
+  combine_strategy: envelope
+  variations:
+  -
+    input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus_5
+    histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
+    histogram_title: "Refl/Sign #times 0.5"
   - 
     input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus_15
     histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
     histogram_title: "Refl/Sign #times 1.5"
 -
-  name: b_feed_down
+  name: b_feed_down_powheg
   active: yes
-  title: "B Feed-Down"
+  title: "B Feed-Down (POWHEG)"
   symmetrize: yes
-  combine_strategy: sum_in_quadrature
-  up_variations:
+  combine_strategy: envelope
+  variations:
   -
     input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus
     histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30_FDUpperBand/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_FDUpperBand_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
     histogram_title: "B Feed-Down (up)"
-  low_variations:
   -
     input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus
     histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30_FDLowerBand/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_FDLowerBand_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
     histogram_title: "B Feed-Down (low)"
+-
+  name: b_feed_down_decayer
+  active: yes
+  title: "B Feed-Down (decayer)"
+  symmetrize: yes
+  combine_strategy: envelope
+  variations:
+  -
+    input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus
+    histogram_name: JetZ_SideBand_DPt_60_JetPt_15_30_FDpythia_decayer/Bayes/JetZ_SideBand_DPt_60_JetPt_15_30_FDpythia_decayer_UnfoldedSpectrum_Bayes_Reg3_PriorResponseTruth
+    histogram_title: "B Feed-Down (PYTHIA6 decayer)"

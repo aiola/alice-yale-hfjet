@@ -270,7 +270,8 @@ class RawYieldSpectrumLoader:
 
     def ApplyFDCorrection(self, h, error_band):
         print("Applying FD correction with error band point: {0} (0 = central point, +/- = upper/lower error band)".format(error_band))
-        fdHist = self.GetFDCorrection(-error_band)
+        if not isinstance(error_band, basestring): error_band = -error_band
+        fdHist = self.GetFDCorrection(error_band)
         h.Add(fdHist, -1)
 
     def GetFDCorrection(self, error_band=0):
@@ -293,21 +294,25 @@ class RawYieldSpectrumLoader:
         fdSyst[-1] = fdCorrection.fFDLowSystUncHistogram.Clone("FDLowSystUnc")
         fdSystGraph = fdCorrection.fFDSystUncGraph.Clone("FDSystUnc")
 
-        crossSection = 62.2  # mb CINT1
-        branchingRatio = 0.0393  # D0->Kpi
-        if self.fEvents is None: self.LoadNumberOfEvents()
-        norm = self.fEvents / crossSection * branchingRatio
-        fdHist.Scale(norm)
-        fdSyst[1].Scale(norm)
-        fdSyst[-1].Scale(norm)
         if error_band == "graph":
             for ibin in xrange(0, fdSystGraph.GetN()):
                 fdSystGraph.SetPoint(ibin, fdSystGraph.GetX()[ibin], fdSystGraph.GetY()[ibin] * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
                 fdSystGraph.SetPointEYlow(ibin, fdSystGraph.GetErrorYlow(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
                 fdSystGraph.SetPointEYhigh(ibin, fdSystGraph.GetErrorYhigh(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
             return fdSystGraph
-        elif error_band <> 0:
+        elif error_band == 1 or error_band == -1:
             fdHist.Add(fdSyst[error_band], error_band)
+        elif error_band == 0:
+            pass
+        else:
+            fdHist = fdCorrection.GetFDHistogram(error_band)
+
+        crossSection = 62.2  # mb CINT1
+        branchingRatio = 0.0393  # D0->Kpi
+        if self.fEvents is None: self.LoadNumberOfEvents()
+        norm = self.fEvents / crossSection * branchingRatio
+        fdHist.Scale(norm)
+
         return fdHist
 
     def GetRawYieldSystFromMultiTrial(self):

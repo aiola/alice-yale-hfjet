@@ -28,7 +28,7 @@ def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format, b
         if anaConfig["active"]:
             ana.StartUnfolding(anaConfig, config["efficiency"], config["use_overflow"], 0, 0, True)
             if fd_syst:
-                for fd_error_band in [-1, 1]: ana.StartUnfolding(anaConfig, config["efficiency"], config["use_overflow"], fd_error_band, 0, False)
+                for fd_error_band in [-1, 1, "pythia_decayer"]: ana.StartUnfolding(anaConfig, config["efficiency"], config["use_overflow"], fd_error_band, 0, False)
             if ry_syst:
                 for ry_error_band in [-1, 1]: ana.StartUnfolding(anaConfig, config["efficiency"], config["use_overflow"], 0, ry_error_band, False)
 
