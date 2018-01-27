@@ -83,9 +83,9 @@ variations:
   active: yes
   title: "PDF = MSTW2008nlo68cl (21200)" 
   ts: 1516799554
-  # merge
-  # 
-  # 
+  # merge 1, 2
+  # downloaded
+  # analyzed
 -
   name: facscfact2_renscfact2
   active: yes
