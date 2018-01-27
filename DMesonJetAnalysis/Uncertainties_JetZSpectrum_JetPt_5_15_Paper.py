@@ -46,7 +46,7 @@ def PlotUncertainties(results, name):
     sourcesLow.append(tot_rel_syst_unc_low)
     colorsLow.append(ROOT.kGreen + 2)
 
-    colorsPart = [ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kYellow + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2]
+    colorsPart = [ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kYellow + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kViolet + 2, ROOT.kSpring + 2]
     cont = 0
     for hUp, hLow in zip(results["Uncertainties"]["PartialSystematicUncertaintiesUp"], results["Uncertainties"]["PartialSystematicUncertaintiesLow"]):
         if hLow:

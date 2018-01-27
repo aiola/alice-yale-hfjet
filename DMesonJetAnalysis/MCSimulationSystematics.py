@@ -196,6 +196,7 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name, norma
     baseline = h.Clone("{0}_copy".format(h.GetName()))
     baseline.SetTitle(variations[0]["title"])
     spectra = []
+    spectra_syst = []
     for v in variations:
         vname = v["name"]
         if not v["active"] or vname == "default": continue
@@ -203,11 +204,12 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name, norma
         h_copy = h.Clone("{0}_copy".format(h.GetName()))
         h_copy.SetTitle(v["title"])
         spectra.append(h_copy)
+        if v["systematic"]: spectra_syst.append(h_copy)
     comp.CompareSpectra(baseline, spectra)
     globalList.append(baseline)
     globalList.extend(spectra)
     globalList.extend(comp.fResults)
-    return GenerateSystematicUncertainty(baseline, spectra, normalization)
+    return GenerateSystematicUncertainty(baseline, spectra_syst, normalization)
 
 
 def GenerateSystematicUncertainty(baseline, spectra, normalization):

@@ -47,7 +47,6 @@ def main(config):
             print("Normalization option '{}' invalid".format(config["normalization"]))
             exit(1)
 
-    print(xaxis_title, yaxis_title)
     results = Start(config)
 
     PlotSystematicUncertaintySummary(config["name"], results)
@@ -87,7 +86,6 @@ def LoadHistograms(config):
     histograms = dict()
 
     h = DMesonJetUtils.GetObject(files[config["default"]["input_name"]], config["default"]["histogram_name"])
-    print(xaxis_title, yaxis_title)
     h.GetXaxis().SetTitle(xaxis_title)
     h.GetYaxis().SetTitle(yaxis_title)
     if config["normalization"] == "cross_section":
@@ -118,7 +116,6 @@ def LoadHistograms(config):
                         print("Unknown normalization option '{}'".format(config["normalization"]))
                         exit(1)
                     h_copy.SetTitle(v["histogram_title"])
-                    print(xaxis_title, yaxis_title)
                     h_copy.GetXaxis().SetTitle(xaxis_title)
                     h_copy.GetYaxis().SetTitle(yaxis_title)
                     histograms[s["name"]][v_type].append(h_copy)
@@ -176,7 +173,6 @@ def CompareVariations(config, histograms):
     baseline = h.Clone("default")
     baseline.SetTitle(config["default"]["title"])
 
-    print(xaxis_title, yaxis_title)
     baseline.GetXaxis().SetTitle(xaxis_title)
     baseline.GetYaxis().SetTitle(yaxis_title)
     result[baseline.GetName()] = baseline
@@ -251,28 +247,33 @@ def GenerateUncertainties(config, histograms):
             if not s["active"]: continue
             low_unc2 = 0
             up_unc2 = 0
-            if "variations" in histograms[s["name"]]:
-                for h in histograms[s["name"]]["variations"]:
-                    diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
-                    if diff > 0:
-                        up_unc2 += diff ** 2
+            sym_unc2 = 0
+
+            for h in histograms[s["name"]]["variations"]:
+                diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
+                if s["combine_strategy"] == "sum_in_quadrature":
+                    if s["symmetrize"]:
+                        sym_unc2 += diff ** 2
                     else:
-                        low_unc2 += diff ** 2
-            else:
-                if "low_variations" in histograms[s["name"]]:
-                    for h in histograms[s["name"]]["low_variations"]:
-                        diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
-                        low_unc2 += diff ** 2
-                if "up_variations" in histograms[s["name"]]:
-                    for h in histograms[s["name"]]["up_variations"]:
-                        diff = baseline.GetBinContent(ibin) - h.GetBinContent(ibin)
-                        up_unc2 += diff ** 2
+                        if diff > 0:
+                            up_unc2 += diff ** 2
+                        else:
+                            low_unc2 += diff ** 2
+                elif s["combine_strategy"] == "envelope":
+                    if s["symmetrize"]:
+                        sym_unc2 = max(diff ** 2, sym_unc2)
+                    else:
+                        if diff > 0:
+                            up_unc2 = max(diff ** 2, up_unc2)
+                        else:
+                            low_unc2 = max(diff ** 2, low_unc2)
+                else:
+                    print("combine strategy {} unknown".format(s["combine_strategy"]))
+                    exit(1)
+
             if s["symmetrize"]:
-                part_unc_up2 = max(up_unc2, low_unc2)
-                part_unc_low2 = part_unc_up2
-                part_unc_up = math.sqrt(part_unc_up2)
-                part_unc_low = math.sqrt(part_unc_low2)
-                partialRelSystUncUp[ivar].SetBinContent(ibin, part_unc_up / baseline.GetBinContent(ibin))
+                part_unc = part_unc_up = part_unc_low = math.sqrt(sym_unc2)
+                partialRelSystUncUp[ivar].SetBinContent(ibin, part_unc / baseline.GetBinContent(ibin))
             else:
                 part_unc_up2 = up_unc2
                 part_unc_low2 = low_unc2
@@ -387,7 +388,6 @@ def GenerateUncertainties(config, histograms):
                                             numpy.array(yerrlow, dtype=float), numpy.array(yerrup, dtype=float))
     centralSystUnc.SetName("central_syst_unc")
     centralSystUnc.SetTitle("{0} Systematics".format(baseline.GetTitle()))
-    print(xaxis_title, yaxis_title)
     centralSystUnc.GetXaxis().SetTitle(xaxis_title)
     centralSystUnc.GetYaxis().SetTitle(yaxis_title)
     result = {"PartialSystematicUncertaintiesUp" : partialRelSystUncUp_smooth, "PartialSystematicUncertaintiesLow" : partialRelSystUncLow_smooth,
@@ -498,7 +498,6 @@ def PlotSpectrumStatAndSyst(name, results):
     h = stat.DrawCopy("axis")
     h.GetYaxis().SetTitleOffset(1.5)
 
-    print(xaxis_title, yaxis_title)
     h.GetXaxis().SetTitle(xaxis_title)
     h.GetYaxis().SetTitle(yaxis_title)
 

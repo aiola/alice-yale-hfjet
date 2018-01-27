@@ -1,13 +1,13 @@
-name: BFeedDown_1512404613_1399
+name: BFeedDown_1512404613_1416
 analysis_name: FastSimAnalysis_FDonly
 input_path: /Volumes/DATA/ALICE/JetResults
 generator: powheg+pythia6+evtgen_beauty
 c_response:
-  train: Jets_EMC_pp_MC_1399_1400_1401_1402
-  name: LHC15i2_Train1399_response
+  train: Jets_EMC_pp_MC_1416_1417_1418_1419
+  name: LHC15i2_Train1416_response
 b_response:
-  train: Jets_EMC_pp_MC_1399_1400_1401_1402
-  name: LHC15i2_Train1399_response
+  train: Jets_EMC_pp_MC_1416_1417_1418_1419
+  name: LHC15i2_Train1416_response
 spectra:
 -
   variable_name: DPt
