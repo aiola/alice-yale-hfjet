@@ -7,7 +7,7 @@ import os
 import ROOT
 
 import DetectorResponse
-import DMesonJetEfficiency
+import DetectorResponseLoader
 import DMesonJetCompare
 import DMesonJetUtils
 import Axis

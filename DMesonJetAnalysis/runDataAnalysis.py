@@ -77,6 +77,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
 
     ana.SaveRootFile("{0}/{1}".format(output_path, train))
     ana.SavePlots("{0}/{1}".format(output_path, train), format)
+    ana.SavePlots("{0}/{1}".format(output_path, train), "C")
 
 
 if __name__ == '__main__':

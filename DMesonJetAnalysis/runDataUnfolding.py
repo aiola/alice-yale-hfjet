@@ -34,6 +34,7 @@ def main(config, no_mt, no_refl, refl_fit, refl_ros, fd_syst, ry_syst, format, b
 
     ana.SaveRootFile()
     ana.SavePlots(format)
+    ana.SavePlots("C")
 
 
 if __name__ == '__main__':
