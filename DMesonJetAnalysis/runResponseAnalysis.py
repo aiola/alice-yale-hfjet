@@ -11,6 +11,7 @@ import ROOT
 
 globalList = []
 
+
 def main(config, maxEvents, suffix, format, doNotAsk, bg):
     if bg: ROOT.gROOT.SetBatch(True)
 
@@ -39,6 +40,8 @@ def main(config, maxEvents, suffix, format, doNotAsk, bg):
 
     ana.SaveRootFile("{0}/{1}".format(config["input_path"], config["train"]))
     ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), format)
+    ana.SavePlots("{0}/{1}".format(config["input_path"], config["train"]), "C")
+
 
 if __name__ == '__main__':
 
