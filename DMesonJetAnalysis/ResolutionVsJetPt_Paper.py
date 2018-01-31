@@ -72,7 +72,7 @@ def ResolutionComparison(config):
     h.GetYaxis().SetTitleOffset(0.9)
     # h.GetYaxis().SetRangeUser(0, 0.59)
 
-    paveALICE = ROOT.TPaveText(0.14, 0.63, 0.53, 0.95, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.14, 0.62, 0.53, 0.95, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -82,6 +82,7 @@ def ResolutionComparison(config):
     # paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Prompt D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
+    paveALICE.AddText("#it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
     paveALICE.AddText("|#eta_{jet}| < 0.5")
     paveALICE.Draw()
