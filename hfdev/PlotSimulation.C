@@ -119,7 +119,7 @@ void PlotSimulation()
   TH1* myBlankHist = new TH1F("myBlankHist", "myBlankHist", 100, 0, TMath::Pi());
   myBlankHist->GetXaxis()->SetTitle("angle_{lab} (daughter, mother)");
   myBlankHist->GetYaxis()->SetTitle("Probability density");
-  myBlankHist->GetYaxis()->SetRangeUser(0,5);
+  myBlankHist->GetYaxis()->SetRangeUser(0,6.5);
   myBlankHist->Draw();
 
   TLegend* leg = new TLegend(0.28, 0.35, 0.68, 0.88);
