@@ -20,24 +20,25 @@ def GetBFeedDownSpectra(kincuts):
     loader.fVariableName = "JetZ"
     loader.fKinematicCuts = kincuts
     loader.fRawYieldMethod = "SideBand"
-    loader.fFDConfig = { "file_name": "BFeedDown_1505317519_1399.root",
+    loader.fFDConfig = { "file_name": "BFeedDown_1512404613_1399.root",
                         "central_points": "default",
                         "spectrum": "DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide"}
     h = loader.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     hFDsub = loader.GetDefaultSpectrumFromMultiTrial(True, 0, 0)
     hFD = loader.GetFDCorrection()
-    hFD_up = loader.GetFDCorrection(1)
-    hFD_down = loader.GetFDCorrection(-1)
-    hFDsyst = loader.GetFDCorrection("graph")
+    hFD_up = loader.GetFDCorrection("tot_up")
+    hFD_down = loader.GetFDCorrection("tot_low")
+    hFDsyst = loader.GetFDCorrection("tot_graph")
     return h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst
 
 
-def PrepareRatio(h, hFD, hFDsyst, marker, color, fillstyle, opt):
+def PrepareRatio(h, hFD, hFDsyst, marker, color, fillstyle, opt, minX, maxX):
     ratio = hFD.DrawCopy(opt)
     ratio.Divide(h)
     ratio.SetMarkerStyle(marker)
     ratio.SetMarkerColor(color)
     ratio.SetLineColor(color)
+    ratio.SetLineWidth(2)
     globalList.append(ratio)
 
     ratio.GetYaxis().SetTitle("B Feed-Down Fraction")
@@ -51,23 +52,29 @@ def PrepareRatio(h, hFD, hFDsyst, marker, color, fillstyle, opt):
     ratio.GetYaxis().SetLabelFont(43)
     ratio.GetYaxis().SetLabelSize(22)
     ratio.GetYaxis().SetTitleOffset(0.9)
-    ratio.GetYaxis().SetRangeUser(0, 1.3)
+    ratio.GetYaxis().SetRangeUser(0, 1.5)
+    ratio.GetXaxis().SetRangeUser(minX, maxX)
 
     ratioSyst = hFDsyst.Clone("ratioSyst")
     globalList.append(ratioSyst)
     ratioSyst.Draw("2")
     ratioSyst.SetLineColor(color)
     ratioSyst.SetFillColor(color)
-    ratioSyst.SetLineWidth(0)
+    ratioSyst.SetLineWidth(2)
     ratioSyst.SetFillStyle(fillstyle)
 
     for ibin in range(1, h.GetNbinsX() + 1):
         # print(hFDsyst.GetY()[ibin - 1], hFD.GetBinContent(ibin))
-        ratioSyst.SetPoint(ibin - 1, ratioSyst.GetX()[ibin - 1], ratioSyst.GetY()[ibin - 1] / h.GetBinContent(ibin))
-        print(ratioSyst.GetErrorYlow(ibin - 1), ratioSyst.GetErrorYhigh(ibin - 1))
-        ratioSyst.SetPointEYlow(ibin - 1, ratioSyst.GetErrorYlow(ibin - 1) / h.GetBinContent(ibin))
-        ratioSyst.SetPointEYhigh(ibin - 1, ratioSyst.GetErrorYhigh(ibin - 1) / h.GetBinContent(ibin))
-        print(ratioSyst.GetErrorYlow(ibin - 1), ratioSyst.GetErrorYhigh(ibin - 1))
+        if ratioSyst.GetX()[ibin - 1] < minX or ratioSyst.GetX()[ibin - 1] > maxX:
+            ratioSyst.SetPoint(ibin - 1, 0, 0)
+            ratioSyst.SetPointEYlow(ibin - 1, 0)
+            ratioSyst.SetPointEYhigh(ibin - 1, 0)
+        else:
+            ratioSyst.SetPoint(ibin - 1, ratioSyst.GetX()[ibin - 1], ratioSyst.GetY()[ibin - 1] / h.GetBinContent(ibin))
+            print(ratioSyst.GetErrorYlow(ibin - 1), ratioSyst.GetErrorYhigh(ibin - 1))
+            ratioSyst.SetPointEYlow(ibin - 1, ratioSyst.GetErrorYlow(ibin - 1) / h.GetBinContent(ibin))
+            ratioSyst.SetPointEYhigh(ibin - 1, ratioSyst.GetErrorYhigh(ibin - 1) / h.GetBinContent(ibin))
+            print(ratioSyst.GetErrorYlow(ibin - 1), ratioSyst.GetErrorYhigh(ibin - 1))
 
     return ratio
 
@@ -85,8 +92,11 @@ def PlotBFeedDown():
     canvas.SetBottomMargin(0.15)
     canvas.cd()
 
-    ratio_low = PrepareRatio(h_low, hFD_low, hFDsyst_low, ROOT.kFullCircle, ROOT.kGreen + 2, 3245, "p")
-    ratio_high = PrepareRatio(h_high, hFD_high, hFDsyst_high, ROOT.kFullSquare, ROOT.kOrange + 2, 3254, "psame")
+    # ratio_low = PrepareRatio(h_low, hFD_low, hFDsyst_low, ROOT.kFullCircle, ROOT.kGreen + 2, 3245, "p", 0.2, 1.0)
+    # ratio_high = PrepareRatio(h_high, hFD_high, hFDsyst_high, ROOT.kFullSquare, ROOT.kOrange + 2, 3254, "psame", 0.4, 1.0)
+
+    ratio_low = PrepareRatio(h_low, hFD_low, hFDsyst_low, ROOT.kFullCircle, ROOT.kGreen + 2, 0, "p", 0.2, 1.0)
+    ratio_high = PrepareRatio(h_high, hFD_high, hFDsyst_high, ROOT.kFullSquare, ROOT.kOrange + 2, 0, "psame", 0.4, 1.0)
 
     paveALICE = ROOT.TPaveText(0.17, 0.74, 0.56, 0.94, "NB NDC")
     globalList.append(paveALICE)
@@ -114,10 +124,12 @@ def PlotBFeedDown():
     leg1.SetMargin(0.2)
     leg1.AddEntry(ratio_low, "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}, #it{p}_{T,D} > 2 GeV/#it{c}", "p")
     leg1.AddEntry(ratio_high, "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, #it{p}_{T,D} > 6 GeV/#it{c}", "p")
-    entry = leg1.AddEntry(None, "POWHEG Systematic Uncertainty", "f")
+    entry = leg1.AddEntry(None, "Systematic Uncertainty", "f")
     entry.SetLineColor(ROOT.kBlack)
-    entry.SetFillColor(ROOT.kBlack)
-    entry.SetFillStyle(3244)
+    entry.SetLineWidth(2)
+    entry.SetFillStyle(0)
+    # entry.SetFillColor(ROOT.kBlack)
+    # entry.SetFillStyle(3244)
     leg1.Draw()
 
     return canvas

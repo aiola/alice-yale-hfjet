@@ -30,7 +30,10 @@ class DMesonJetFDCorrection:
             self.fFDHistogram = None
             self.fFDUpSystUncHistogram = None
             self.fFDLowSystUncHistogram = None
+            self.fFDTotUpSystUncHistogram = None
+            self.fFDTotLowSystUncHistogram = None
             self.fFDSystUncGraph = None
+            self.fFDTotSystUncGraph = None
 
     def GetFDHistogram(self, variation_name):
         if variation_name == self.fCentralPoints: return self.fFDHistogram
@@ -83,6 +86,7 @@ class DMesonJetFDCorrection:
         systListName = "SystematicUncertainty"
         systList = file.Get(systListName)
         if not systList:
+            file.ls()
             print("Could not find list {0}".format(systListName))
             return
         else:
@@ -91,8 +95,8 @@ class DMesonJetFDCorrection:
         detLevListName = "{0}/{1}".format(self.fSpectrumName, self.fFDSpectrumName)
         detLevList = systList.FindObject(detLevListName)
         if not detLevList:
-            print("Could not find list {0}".format(detLevListName))
             systList.ls()
+            print("Could not find list {0}".format(detLevListName))
             return
         else:
             print("List {0} loaded".format(detLevListName))
@@ -100,6 +104,7 @@ class DMesonJetFDCorrection:
         detLevUpSystName = "{0}_UpperSyst".format(self.fFDSpectrumName)
         h = detLevList.FindObject(detLevUpSystName)
         if not h:
+            detLevList.ls()
             print("Could not find hist {0}".format(detLevUpSystName))
             return
         else:
@@ -109,19 +114,51 @@ class DMesonJetFDCorrection:
         detLevLowSystName = "{0}_LowerSyst".format(self.fFDSpectrumName)
         h = detLevList.FindObject(detLevLowSystName)
         if not h:
+            detLevList.ls()
             print("Could not find hist {0}".format(detLevLowSystName))
             return
         else:
             print("Hist {0} loaded".format(detLevLowSystName))
         self.fFDLowSystUncHistogram = h.Clone("FD_DetectorLevelLowSyst")
 
+        tot_detLevUpSystName = "{0}_TotUpperSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(tot_detLevUpSystName)
+        if not h:
+            detLevList.ls()
+            print("Could not find hist {0}".format(tot_detLevUpSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(tot_detLevUpSystName))
+        self.fFDTotUpSystUncHistogram = h.Clone("FD_DetectorLevelTotUpSyst")
+
+        tot_detLevLowSystName = "{0}_TotLowerSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(tot_detLevLowSystName)
+        if not h:
+            detLevList.ls()
+            print("Could not find hist {0}".format(tot_detLevLowSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(tot_detLevLowSystName))
+        self.fFDTotLowSystUncHistogram = h.Clone("FD_DetectorLevelTotLowSyst")
+
         detLevSystName = "{0}_CentralAsymmSyst".format(self.fFDSpectrumName)
         h = detLevList.FindObject(detLevSystName)
         if not h:
+            detLevList.ls()
             print("Could not find hist {0}".format(detLevSystName))
             return
         else:
             print("Hist {0} loaded".format(detLevSystName))
         self.fFDSystUncGraph = h.Clone("FD_DetectorLevelSyst")
+
+        tot_detLevSystName = "{0}_CentralTotAsymmSyst".format(self.fFDSpectrumName)
+        h = detLevList.FindObject(tot_detLevSystName)
+        if not h:
+            detLevList.ls()
+            print("Could not find hist {0}".format(tot_detLevSystName))
+            return
+        else:
+            print("Hist {0} loaded".format(tot_detLevSystName))
+        self.fFDTotSystUncGraph = h.Clone("FD_DetectorLevelTotSyst")
 
         file.Close()

@@ -293,24 +293,34 @@ class RawYieldSpectrumLoader:
         fdSyst[1] = fdCorrection.fFDUpSystUncHistogram.Clone("FDUpSystUnc")
         fdSyst[-1] = fdCorrection.fFDLowSystUncHistogram.Clone("FDLowSystUnc")
         fdSystGraph = fdCorrection.fFDSystUncGraph.Clone("FDSystUnc")
-
-        if error_band == "graph":
-            for ibin in xrange(0, fdSystGraph.GetN()):
-                fdSystGraph.SetPoint(ibin, fdSystGraph.GetX()[ibin], fdSystGraph.GetY()[ibin] * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
-                fdSystGraph.SetPointEYlow(ibin, fdSystGraph.GetErrorYlow(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
-                fdSystGraph.SetPointEYhigh(ibin, fdSystGraph.GetErrorYhigh(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
-            return fdSystGraph
-        elif error_band == 1 or error_band == -1:
-            fdHist.Add(fdSyst[error_band], error_band)
-        elif error_band == 0:
-            pass
-        else:
-            fdHist = fdCorrection.GetFDHistogram(error_band)
+        fdSyst["tot_up"] = fdCorrection.fFDTotUpSystUncHistogram.Clone("FDTotUpSystUnc")
+        fdSyst["tot_low"] = fdCorrection.fFDTotLowSystUncHistogram.Clone("FDTotLowSystUnc")
+        fdTotSystGraph = fdCorrection.fFDTotSystUncGraph.Clone("FDTotSystUnc")
 
         crossSection = 62.2  # mb CINT1
         branchingRatio = 0.0393  # D0->Kpi
         if self.fEvents is None: self.LoadNumberOfEvents()
         norm = self.fEvents / crossSection * branchingRatio
+
+        if isinstance(error_band, basestring) and "graph" in error_band:
+            if "tot" in error_band:
+                graph = fdTotSystGraph
+            else:
+                graph = fdSystGraph
+            for ibin in xrange(0, graph.GetN()):
+                graph.SetPoint(ibin, graph.GetX()[ibin], graph.GetY()[ibin] * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
+                graph.SetPointEYlow(ibin, graph.GetErrorYlow(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
+                graph.SetPointEYhigh(ibin, graph.GetErrorYhigh(ibin) * norm * fdHist.GetXaxis().GetBinWidth(ibin + 1))
+            return graph
+        elif error_band in fdSyst:
+            if error_band == -1 or error_band == "tot_low": s = -1
+            else: s = 1
+            fdHist.Add(fdSyst[error_band], s)
+        elif error_band == 0:
+            pass
+        else:
+            fdHist = fdCorrection.GetFDHistogram(error_band)
+
         fdHist.Scale(norm)
 
         return fdHist
