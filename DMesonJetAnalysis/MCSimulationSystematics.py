@@ -195,8 +195,9 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name, norma
     comp.fName = name
     baseline = h.Clone("{0}_copy".format(h.GetName()))
     baseline.SetTitle(variations[0]["title"])
-    spectra = []
-    spectra_syst = []
+    spectra = []  # all variations
+    spectra_syst = []  # envelope is taken from this set of variations (usually all POWHEG paramter variations)
+    spectra_syst_add = []  # added in quadrature (usually decay model, e.g. EvtGen vs PYTHIA)
     for v in variations:
         vname = v["name"]
         if not v["active"] or vname == "default": continue
@@ -204,15 +205,18 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name, norma
         h_copy = h.Clone("{0}_copy".format(h.GetName()))
         h_copy.SetTitle(v["title"])
         spectra.append(h_copy)
-        if v["systematic"]: spectra_syst.append(h_copy)
+        if v["systematic"]:
+            spectra_syst.append(h_copy)
+        else:
+            spectra_syst_add.append(h_copy)
     comp.CompareSpectra(baseline, spectra)
     globalList.append(baseline)
     globalList.extend(spectra)
     globalList.extend(comp.fResults)
-    return GenerateSystematicUncertainty(baseline, spectra_syst, normalization)
+    return GenerateSystematicUncertainty(baseline, spectra_syst, normalization, spectra_syst_add)
 
 
-def GenerateSystematicUncertainty(baseline, spectra, normalization):
+def GenerateSystematicUncertainty(baseline, spectra, normalization, spectra_add):
     hname = baseline.GetName().replace("_copy", "")
     upperLimitsHist = ROOT.TH1D("{0}_UpperSyst".format(hname), "{0}_UpperSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     upperLimitsHist.Sumw2()
@@ -221,11 +225,13 @@ def GenerateSystematicUncertainty(baseline, spectra, normalization):
     symmetricLimitsHist = ROOT.TH1D("{0}_SymmSyst".format(hname), "{0}_SymmSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
     symmetricLimitsHist.Sumw2()
     relativeSystHist = ROOT.TH1D("{0}_RelSyst".format(hname), "{0}_RelSyst".format(hname), baseline.GetNbinsX(), baseline.GetXaxis().GetXbins().GetArray())
+
     result = OrderedDict()
     result[upperLimitsHist.GetName()] = upperLimitsHist
     result[lowerLimitsHist.GetName()] = lowerLimitsHist
     result[symmetricLimitsHist.GetName()] = symmetricLimitsHist
     result[relativeSystHist.GetName()] = relativeSystHist
+
     for ibin in range(1, baseline.GetNbinsX() + 1):
         centralValue = baseline.GetBinContent(ibin)
         centralValueErr2 = baseline.GetBinError(ibin) ** 2
@@ -240,43 +246,95 @@ def GenerateSystematicUncertainty(baseline, spectra, normalization):
                 lowerLimitsHist.SetBinContent(ibin, -diff)
                 lowerLimitsHist.SetBinError(ibin, diffErr)
                 print("Bin {0}, lower limit {1}".format(ibin, -diff))
+
         if upperLimitsHist.GetBinContent(ibin) > lowerLimitsHist.GetBinContent(ibin):
             symmetricLimitsHist.SetBinContent(ibin, upperLimitsHist.GetBinContent(ibin))
             symmetricLimitsHist.SetBinError(ibin, upperLimitsHist.GetBinError(ibin))
         else:
             symmetricLimitsHist.SetBinContent(ibin, lowerLimitsHist.GetBinContent(ibin))
             symmetricLimitsHist.SetBinError(ibin, lowerLimitsHist.GetBinError(ibin))
+
+    tot_upperLimitsHist = upperLimitsHist.Clone("{0}_TotUpperSyst".format(hname))
+    tot_lowerLimitsHist = lowerLimitsHist.Clone("{0}_TotLowerSyst".format(hname))
+    tot_symmetricLimitsHist = symmetricLimitsHist.Clone("{0}_TotSymmSyst".format(hname))
+    tot_relativeSystHist = relativeSystHist.Clone("{0}_TotRelSyst".format(hname))
+
+    result[tot_upperLimitsHist.GetName()] = tot_upperLimitsHist
+    result[tot_lowerLimitsHist.GetName()] = tot_lowerLimitsHist
+    result[tot_symmetricLimitsHist.GetName()] = tot_symmetricLimitsHist
+    result[tot_relativeSystHist.GetName()] = tot_relativeSystHist
+
+    for ibin in range(1, baseline.GetNbinsX() + 1):
+        centralValue = baseline.GetBinContent(ibin)
+        tot_upperLimitsHist.SetBinError(ibin, 0)
+        tot_lowerLimitsHist.SetBinError(ibin, 0)
+        tot_symmetricLimitsHist.SetBinError(ibin, 0)
+        tot_relativeSystHist.SetBinError(ibin, 0)
+        for var in spectra_add:
+            diff = var.GetBinContent(ibin) - centralValue
+            if diff > 0:
+                tot_upperLimitsHist.SetBinContent(ibin, math.sqrt(diff ** 2 + tot_upperLimitsHist.GetBinContent(ibin) ** 2))
+            elif diff < 0:
+                tot_lowerLimitsHist.SetBinContent(ibin, math.sqrt(diff ** 2 + tot_lowerLimitsHist.GetBinContent(ibin) ** 2))
+
+            tot_symmetricLimitsHist.SetBinContent(ibin, math.sqrt(diff ** 2 + tot_symmetricLimitsHist.GetBinContent(ibin) ** 2))
+
         if baseline.GetBinContent(ibin) != 0:
-            relativeSystHist.SetBinContent(ibin, symmetricLimitsHist.GetBinContent(ibin) / baseline.GetBinContent(ibin))
+            tot_relativeSystHist.SetBinContent(ibin, tot_symmetricLimitsHist.GetBinContent(ibin) / baseline.GetBinContent(ibin))
+
     xArray = numpy.array([baseline.GetXaxis().GetBinCenter(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
     xArrayErr = numpy.array([baseline.GetXaxis().GetBinWidth(ibin) / 2 for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
     yArray = numpy.array([baseline.GetBinContent(ibin) / baseline.GetXaxis().GetBinWidth(ibin) for ibin in range(1, baseline.GetNbinsX() + 1)], dtype=numpy.float32)
+
     yArrayErrUp = numpy.array([upperLimitsHist.GetBinContent(ibin) / upperLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, upperLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
     yArrayErrLow = numpy.array([lowerLimitsHist.GetBinContent(ibin) / lowerLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, lowerLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
     yArrayErrSym = numpy.array([symmetricLimitsHist.GetBinContent(ibin) / symmetricLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, symmetricLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+
+    yArrayTotErrUp = numpy.array([tot_upperLimitsHist.GetBinContent(ibin) / tot_upperLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, tot_upperLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+    yArrayTotErrLow = numpy.array([tot_lowerLimitsHist.GetBinContent(ibin) / tot_lowerLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, tot_lowerLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+    yArrayTotErrSym = numpy.array([tot_symmetricLimitsHist.GetBinContent(ibin) / tot_symmetricLimitsHist.GetXaxis().GetBinWidth(ibin) for ibin in range(1, tot_symmetricLimitsHist.GetNbinsX() + 1)], dtype=numpy.float32)
+
     symmetricUncGraph = ROOT.TGraphErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, yArrayErrSym)
     symmetricUncGraph.SetName("{0}_CentralSymmSyst".format(hname))
     symmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
     asymmetricUncGraph = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, xArrayErr, yArrayErrLow, yArrayErrUp)
     asymmetricUncGraph.SetName("{0}_CentralAsymmSyst".format(hname))
     asymmetricUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
+
+    symmetricTotUncGraph = ROOT.TGraphErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, yArrayTotErrSym)
+    symmetricTotUncGraph.SetName("{0}_CentralTotSymmSyst".format(hname))
+    symmetricTotUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
+    asymmetricTotUncGraph = ROOT.TGraphAsymmErrors(baseline.GetNbinsX(), xArray, yArray, xArrayErr, xArrayErr, yArrayTotErrLow, yArrayTotErrUp)
+    asymmetricTotUncGraph.SetName("{0}_CentralTotAsymmSyst".format(hname))
+    asymmetricTotUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
+
     if "it{p}" in baseline.GetXaxis().GetTitle():
         if normalization == "cross_section":
             symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
             asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
+            symmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
+            asymmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
         elif normalization == "distribution":
             symmetricUncGraph.GetYaxis().SetTitle("probability density (GeV/#it{c})^{-1}")
             asymmetricUncGraph.GetYaxis().SetTitle("probability density (GeV/#it{c})^{-1}")
+            symmetricTotUncGraph.GetYaxis().SetTitle("probability density (GeV/#it{c})^{-1}")
+            asymmetricTotUncGraph.GetYaxis().SetTitle("probability density (GeV/#it{c})^{-1}")
     elif "it{z}" in baseline.GetXaxis().GetTitle():
         if normalization == "cross_section":
             symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
             asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
+            symmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
+            asymmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||,D}^{ch jet}} (mb)")
         elif normalization == "distribution":
             symmetricUncGraph.GetYaxis().SetTitle("probability density")
             asymmetricUncGraph.GetYaxis().SetTitle("probability density")
+            symmetricTotUncGraph.GetYaxis().SetTitle("probability density")
+            asymmetricTotUncGraph.GetYaxis().SetTitle("probability density")
 
     result[symmetricUncGraph.GetName()] = symmetricUncGraph
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
+    result[symmetricTotUncGraph.GetName()] = symmetricTotUncGraph
+    result[asymmetricTotUncGraph.GetName()] = asymmetricTotUncGraph
     return result
 
 
@@ -321,6 +379,7 @@ def GenerateRootList(pdict, name):
     for nobj, obj in pdict.iteritems():
         if isinstance(obj, ROOT.TObject):
             rlist.Add(obj)
+            print("Adding {0}".format(nobj))
         elif isinstance(obj, dict) or isinstance(obj, OrderedDict):
             print("Recursion in {0}".format(nobj))
             rlist.Add(GenerateRootList(obj, nobj))

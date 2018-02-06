@@ -20,15 +20,15 @@ def GetBFeedDownSpectra():
     loader.fVariableName = "JetZ"
     loader.fKinematicCuts = "DPt_60_JetPt_15_30"
     loader.fRawYieldMethod = "SideBand"
-    loader.fFDConfig = { "file_name": "BFeedDown_1505317519_1399.root",
+    loader.fFDConfig = { "file_name": "BFeedDown_1512404613_1399.root",
                         "central_points": "default",
                         "spectrum": "DetectorLevel_JetZSpectrum_bEfficiencyMultiply_cEfficiencyDivide"}
     h = loader.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
     hFDsub = loader.GetDefaultSpectrumFromMultiTrial(True, 0, 0)
     hFD = loader.GetFDCorrection()
-    hFD_up = loader.GetFDCorrection(1)
-    hFD_down = loader.GetFDCorrection(-1)
-    hFDsyst = loader.GetFDCorrection("graph")
+    hFD_up = loader.GetFDCorrection("tot_up")
+    hFD_down = loader.GetFDCorrection("tot_low")
+    hFDsyst = loader.GetFDCorrection("tot_graph")
     return h, hFDsub, hFD, hFD_up, hFD_down, hFDsyst
 
 
