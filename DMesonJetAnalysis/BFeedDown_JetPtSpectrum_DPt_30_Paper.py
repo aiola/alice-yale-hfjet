@@ -203,7 +203,7 @@ def PlotBFeedDown():
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
     leg1.AddEntry(ratio2, "Raw B Feed-Down Fraction", "p")
-    leg1.AddEntry(ratio2Syst, "POWHEG Systematic Uncertainty", "f")
+    leg1.AddEntry(ratio2Syst, "Systematic Uncertainty", "f")
     leg1.Draw()
 
     return canvas1, canvas2
