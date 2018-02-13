@@ -23,7 +23,7 @@ def EfficiencyComparison(config):
     dmesonName = "D0_D0toKpiCuts"
     prefix = "Prompt_{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
 
-    DPtBins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 
     pt_lim = [(5, 15), (15, 30)]
     histos = []
