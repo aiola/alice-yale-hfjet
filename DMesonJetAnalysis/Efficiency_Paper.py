@@ -30,7 +30,7 @@ def EfficiencyComparison(config_c, config_b):
     prefix_c = "Prompt_{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
     prefix_b = "NonPrompt_{0}_{1}_{2}".format(dmesonName, jetName, spectrumName)
 
-    DPtBins = [3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
+    DPtBins = [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 30]
 
     minJetPt = 5
     maxJetPt = 30
