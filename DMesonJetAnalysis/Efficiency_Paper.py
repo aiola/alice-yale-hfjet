@@ -103,7 +103,7 @@ def EfficiencyComparison(config_c, config_b):
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
     # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
     paveALICE.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")

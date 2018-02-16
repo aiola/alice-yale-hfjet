@@ -80,7 +80,7 @@ def ResolutionComparison(config):
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
     # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Prompt D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
     paveALICE.AddText("#it{p}_{T,D} > 3 GeV/#it{c}")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")

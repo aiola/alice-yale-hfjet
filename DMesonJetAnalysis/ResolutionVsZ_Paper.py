@@ -76,7 +76,7 @@ def ResolutionComparison(config):
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Prompt D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
     paveALICE.AddText("|#eta_{jet}| < 0.5")
