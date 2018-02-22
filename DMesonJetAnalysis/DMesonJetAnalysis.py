@@ -19,7 +19,7 @@ globalList = []
 
 class DMesonJetContainer:
 
-    def __init__(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass,):
+    def __init__(self, trigger, DMesonDef, binMultiSets, nMassBins, minMass, maxMass):
         self.fBinMultiSets = binMultiSets
         self.fNMassBins = nMassBins
         self.fMinMass = minMass
