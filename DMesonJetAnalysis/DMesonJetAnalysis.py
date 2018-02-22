@@ -31,6 +31,7 @@ class DMesonJetContainer:
 
     def Fill(self, event, eventWeight):
         dmeson = event.DmesonJet
+        if dmeson.fInvMass < self.fMinMass or dmeson.fInvMass >= self.fMaxMass: return
 
         for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
             if jtype or jradius:
