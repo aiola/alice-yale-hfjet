@@ -439,6 +439,7 @@ class BinLimits:
         self.CreateQAHistos(trigger, DMesonDef, yAxis)
 
     def CreateQAHistos(self, trigger, DMesonDef, yAxis):
+        xAxis = "Selection Type"
         if trigger:
             hname = "Selection_{0}_{1}_{2}".format(trigger, DMesonDef, self.GetName())
             htitle = "{0} - {1} Selection Type: {2};{3};{4}".format(trigger, DMesonDef, self.GetTitle(), xAxis, yAxis)
