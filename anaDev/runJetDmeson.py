@@ -7,6 +7,7 @@ import argparse
 import helperFunctions
 import yaml
 
+
 def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, cmin, cmax):
     nOutputTrees = 0
 
@@ -131,19 +132,19 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
         if config["MC"] and doWrongPID and not doResponse and config["dzero"]:
             # D0
             if config["charged_jets"]:
-                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.4, rhoName)
+                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kChargedJet, 0.4, rhoName)
                 eng.SetJetPtRange(5, 500)
-                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.6, rhoName)
-                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.4, rhoName)
+                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kChargedJet, 0.6, rhoName)
+                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kChargedJet, 0.4, rhoName)
                 eng.SetJetPtRange(5, 500)
-                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kChargedJet, 0.6, rhoName)
+                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kChargedJet, 0.6, rhoName)
 
             if config["full_jets"]:
-                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.2, rhoName)
-                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.4, rhoName)
+                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kFullJet, 0.2, rhoName)
+                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kFullJet, 0.4, rhoName)
                 if not doResponse: eng.SetJetPtRange(5, 500)
-                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.2, rhoName)
-                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kWrongPID, ROOT.AliJetContainer.kFullJet, 0.4, rhoName)
+                eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kFullJet, 0.2, rhoName)
+                # eng = pDMesonJetsTask.AddAnalysisEngine(ROOT.AliAnalysisTaskDmesonJets.kD0toKpi, config["rdhf_cuts_dzero"], "loosest_nopid", ROOT.AliAnalysisTaskDmesonJets.kD0Reflection, ROOT.AliJetContainer.kFullJet, 0.4, rhoName)
                 if not doResponse: eng.SetJetPtRange(5, 500)
 
         if config["MC"] and doMCTruth:
@@ -174,6 +175,7 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
 
     return pDMesonJetsTask
 
+
 def ExtractTriggerSelection(triggerList):
     r = 0
     for t in triggerList:
@@ -184,6 +186,7 @@ def ExtractTriggerSelection(triggerList):
             print("Error: could not parse trigger name '{}'".format(t))
             exit(1)
     return r
+
 
 def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTruth, doWrongPID, doResponse, noInclusiveJets, efficiency, selectGen, taskName="JetDmesonAna", debugLevel=0):
 
@@ -507,6 +510,7 @@ def main(configFileName, nFiles, nEvents, d2h, doRecLevel, doSignalOnly, doMCTru
     # start analysis
     print "Starting Analysis..."
     mgr.StartAnalysis("local", chain, nEvents)
+
 
 if __name__ == '__main__':
     # runJetDmeson.py executed as script
