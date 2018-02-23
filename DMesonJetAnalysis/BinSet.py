@@ -110,8 +110,10 @@ class BinSet:
         return False
 
     def LoadEfficiency(self, inputPath, dmeson, jetName, eff, axis):
-        dmeson = dmeson.replace("_kSignalOnly", "")
-        dmeson = dmeson.replace("_WrongPID", "")
+        dmeson = dmeson.replace("_kSignalOnly", "")  # for backward compatibility
+        dmeson = dmeson.replace("_SignalOnly", "")  # for >= vAN-20180222
+        dmeson = dmeson.replace("_WrongPID", "")  # for backward compatibility
+        dmeson = dmeson.replace("_D0Reflection", "")  # for >= vAN-20180222
         if eff and "file_name" in eff:
             eff["file_name"] = "{0}/{1}".format(inputPath, eff["file_name"])
         if axis:

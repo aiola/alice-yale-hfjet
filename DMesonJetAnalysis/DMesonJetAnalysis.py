@@ -246,17 +246,17 @@ class DMesonJetAnalysisEngine:
 
     def Start(self, ana):
         self.fEngines = ana.fAnalysisEngine
-        if not "MCTruth" in self.fDMeson and not "WrongPID" in self.fDMeson:
+        if not "MCTruth" in self.fDMeson and not "WrongPID" in self.fDMeson and not "D0Reflection" in self.fDMeson:
             self.FitInvMassPlots()
 
-        if not "BackgroundOnly" in self.fDMeson and not "WrongPID" in self.fDMeson:
+        if not "BackgroundOnly" in self.fDMeson and not "WrongPID" in self.fDMeson and not "D0Reflection" in self.fDMeson:
             print("Spectra generation for {0}".format(self.fDMeson))
             self.GenerateSpectra()
         else:
             print("Skipping spectra generation for {0}".format(self.fDMeson))
 
         self.PlotInvMassPlots()
-        if not "BackgroundOnly" in self.fDMeson and not "WrongPID" in self.fDMeson:
+        if not "BackgroundOnly" in self.fDMeson and not "WrongPID" in self.fDMeson and not "D0Reflection" in self.fDMeson:
             self.PlotSpectra()
 
     def PlotSpectra(self):
