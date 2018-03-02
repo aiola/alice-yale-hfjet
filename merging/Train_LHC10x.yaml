@@ -1,3 +1,5 @@
 year: 2010
 datasets: [LHC10b, LHC10c, LHC10d, LHC10e]
 train: Jets_EMC_pp
+MC: no
+pt_hard_bins: no
