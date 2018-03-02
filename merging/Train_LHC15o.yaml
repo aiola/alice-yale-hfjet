@@ -1,3 +1,5 @@
 year: 2015
 datasets: [LHC15o_pass1, LHC15o_pass1_pidfix, LHC15o_pass3_lowIR]
 train: Jets_EMC_PbPb
+MC: no
+pt_hard_bins: no

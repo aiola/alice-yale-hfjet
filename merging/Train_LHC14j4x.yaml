@@ -1,3 +1,5 @@
 year: 2014
 datasets: [LHC14j4b, LHC14j4c, LHC14j4d, LHC14j4e]
 train: Jets_EMC_pp_MC
+MC: yes
+pt_hard_bins: no

@@ -1,3 +1,5 @@
 year: 2012
 datasets: [LHC12a, LHC12b, LHC12c, LHC12d, LHC12e, LHC12f, LHC12g, LHC12h, LHC12i]
 train: Jets_EMC_pp
+MC: no
+pt_hard_bins: no

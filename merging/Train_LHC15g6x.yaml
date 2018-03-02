@@ -1,0 +1,8 @@
+year: 2015
+datasets: [LHC15g6b, LHC15g6c, LHC15g6d, LHC15g6e]
+train: Jets_EMC_pp_MC
+MC: yes
+pt_hard_bins: yes
+min_pt_hard_bin: 1
+max_pt_hard_bin: 20
+inverted_scheme: yes
