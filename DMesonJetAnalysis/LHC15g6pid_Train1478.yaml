@@ -1,0 +1,14 @@
+name: LHC15g6pid_Train1478
+title: "PID analysis LHC14j4bcde"
+input_path: /Volumes/DATA/ALICE/JetResults
+train: Jets_EMC_pp_MC_1478_1479_1480_1481
+file_name: AnalysisResults.root
+task_name: AliAnalysisTaskDmesonJets
+merging_type: weighted_sum
+normalization_factor: 1
+mc: yes
+trigger: null
+d_meson: D0
+d_meson_suffix: D0toKpiCuts
+jet_pt_bins: [5, 6, 8, 10, 14, 20, 30]
+d_pt_bins: [2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 30]
