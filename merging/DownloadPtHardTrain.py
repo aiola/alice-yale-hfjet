@@ -13,7 +13,9 @@ import ScaleResults
 
 def GetFullTrainNumber(SearchPath, TrainNumber):
     output = subprocess.check_output(["alien_find", "-d", "-l", "1", SearchPath, "{0}_20".format(TrainNumber)], universal_newlines=True)
-    # print(output)
+    if not output:
+        print("Could not find train {} in {}!".format(TrainNumber, SearchPath))
+        exit(1)
     i = output.rfind("{0}_".format(TrainNumber))
     j = len(str(TrainNumber)) + 14 + i
     FullTrainNumber = output[i:j]
