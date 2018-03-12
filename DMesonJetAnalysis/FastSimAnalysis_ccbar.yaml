@@ -201,7 +201,7 @@ analysis:
       type: truth
       active_mesons: [D0_MCTruth]
   -
-    name: JetZBins_DPt_20_JetPt_5_15
+    name: JetZBins_DPt_2_JetPt_5_15
     title: "5 < #it{p}_{T,jet} < 15 GeV/#it{c}, #it{p}_{T,D} > 2 GeV/#it{c}"
     active_mesons: [D0_MCTruth]
     need_inv_mass: []
@@ -229,7 +229,7 @@ analysis:
       include: 4
     spectra:
     -
-      name: JetZSpectrum_DPt_20_JetPt_5_15
+      name: JetZSpectrum_DPt_2_JetPt_5_15
       title: ""
       type: truth
       active_mesons: [D0_MCTruth]
