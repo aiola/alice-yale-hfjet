@@ -1,0 +1,29 @@
+name: JetPtSpectrum_TheoryComp_Paper
+input_path: /Volumes/DATA/ALICE/JetResults
+data: JetPtSpectrum_DPt_30_Systematics
+title: null
+theory:
+-
+  title: POWHEG+PYTHIA 6
+  gen: powheg+pythia6
+  ts: 1520017218
+  color: 418 # kGreen+2
+  line: 1
+-
+  title: POWHEG+PYTHIA 8
+  gen: powheg+pythia8
+  ts: 1520018317
+  color: 618 # kMagenta
+  line: 2
+-
+  title: PYTHIA 6 Perugia-2011
+  gen: pythia6
+  ts: 1520422008
+  color: 602 # kBlue+2
+  line: 5
+-
+  title: PYTHIA 8 Monash-2013
+  gen: pythia8
+  ts: 1520426239
+  color: 802 # kOrange+2
+  line: 4
