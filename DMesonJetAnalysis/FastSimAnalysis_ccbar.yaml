@@ -1,5 +1,5 @@
 # Selects only c or cbar
-name: FastSimAnalysis_bbbar
+name: FastSimAnalysis_ccbar
 input_path: /Volumes/DATA/ALICE/JetResults
 train: FastSim
 file_name: ""
