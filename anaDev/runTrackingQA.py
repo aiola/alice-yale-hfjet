@@ -53,12 +53,18 @@ def main(configFileName, nFiles, nEvents, debugLevel=0):
         helperFunctions.AddAODHandler()
     elif mode is helperFunctions.AnaMode.ESD:
         helperFunctions.AddESDHandler()
+        if config["MC"]:
+            helperFunctions.AddMCHandler()
 
-    # task = helperFunctions.AddTaskCDBConnect()
-    # task.SetFallBackToRaw(True)
+    if mode is helperFunctions.AnaMode.ESD:
+        task = helperFunctions.AddTaskCDBConnect()
+        # task.SetFallBackToRaw(True)
 
     # Physics selection task
     if not config["MC"]: ROOT.AddTaskPhysicsSelection()
+
+    if mode is helperFunctions.AnaMode.ESD and config["MC"]:
+        ROOT.AddTaskMCTrackSelector("mcparticles", False, False, -1, False)
 
     if config["cent_type"] == "new":
         ROOT.AddTaskMultSelection(False)
@@ -126,6 +132,9 @@ def main(configFileName, nFiles, nEvents, debugLevel=0):
     else:
         # To have more debug info
         mgr.AddClassDebug("AliEmcalTrackingQATask", ROOT.AliLog.kDebug + 100)
+        mgr.AddClassDebug("AliEmcalContainer", ROOT.AliLog.kDebug + 100)
+        mgr.AddClassDebug("AliMCParticleContainer", ROOT.AliLog.kDebug + 100)
+        mgr.AddClassDebug("AliEmcalMCTrackSelector", ROOT.AliLog.kDebug + 100)
 
     mgr.SetDebugLevel(debugLevel)
 

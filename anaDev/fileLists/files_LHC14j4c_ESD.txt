@@ -1,0 +1,10 @@
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/001/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/002/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/003/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/004/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/005/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/006/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/008/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/009/root_archive.zip
+/Volumes/DATA/ALICE/Data/sim/2014/LHC14j4c/119841/010/root_archive.zip
+
