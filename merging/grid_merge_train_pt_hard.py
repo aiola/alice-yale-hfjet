@@ -81,7 +81,7 @@ def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
     return FullTrainNumber
 
 
-def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin, MaxPtHardBin, Year, InvertedScheme, AliPhysicsVersion, TestMode, GridTestMode, GridUpdate):
+def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin, MaxPtHardBin, Year, InvertedScheme, AliPhysicsVersion, TTL, TestMode, GridTestMode, GridUpdate):
     for Dataset, TrainNumber in zip(sorted(Datasets), TrainNumbers):
 
         AlienPath = "/alice/sim/" + str(Year) + "/" + Dataset
@@ -126,7 +126,7 @@ def PtHardBinMerging(LocalPath, Datasets, TrainName, TrainNumbers, MinPtHardBin,
             jdlContent = "# This is the startup script \n\
 Executable = \"{executable}\"; \n\
 # Time after which the job is killed (500 min.) \n\
-TTL = \"14400\"; \n\
+TTL = \"{TTL}\"; \n\
 OutputDir = \"{dest}/{pt_hard}/output\"; \n\
 Output = {{ \n\
 \"AnalysisResults*.root\", \n\
@@ -155,7 +155,7 @@ InputDataCollection = {{ \n\
 \"LF:{dest}/{pt_hard}/merge_files.xml,nodownload\" \n\
 }}; \n\
 Validationcommand = \"{validationScript}\"; \n\
-".format(executable=executableFile, dest=dest, aliphysics=AliPhysicsVersion, pt_hard=PtHardBin, validationScript=validationScript)
+".format(executable=executableFile, dest=dest, aliphysics=AliPhysicsVersion, pt_hard=PtHardBin, validationScript=validationScript, TTL=TTL)
 
             localJdlFile = "{0}/grid_merge_train_pt_hard.jdl".format(localDest)
 
@@ -250,7 +250,7 @@ def StartMerging(TrainNumbers, config, AliPhysicsVersion, TestMode, GridTestMode
 
     if config["pt_hard_bins"]:
         PtHardBinMerging(LocalPath, Datasets, config["train"], TrainNumbers, config["min_pt_hard_bin"], config["max_pt_hard_bin"],
-                         config["year"], InvertedScheme, AliPhysicsVersion, TestMode, GridTestMode, GridUpdate)
+                         config["year"], InvertedScheme, AliPhysicsVersion, config["ttl"], TestMode, GridTestMode, GridUpdate)
     else:
         print("Error! This is only for pt hard binned productions! Fix YAML file.")
 
