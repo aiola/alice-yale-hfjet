@@ -6,3 +6,4 @@ pt_hard_bins: yes
 min_pt_hard_bin: 0
 max_pt_hard_bin: 8
 inverted_scheme: no
+ttl: 14400
