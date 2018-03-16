@@ -1,15 +1,15 @@
-name: JetPtSpectrum_PowhegComp_Paper
+name: JetZSpectrum_JetPt_5_15_TheoryComp_Paper
 input_path: /Volumes/DATA/ALICE/JetResults
-data: JetPtSpectrum_DPt_30_Systematics
-theory_spectrum: JetPtSpectrum_DPt_3
-logy: yes
-miny: 6.0e-6
-maxy: 1.0e+2
+data: JetZSpectrum_JetPt_5_15_Systematics
+theory_spectrum: JetZSpectrum_DPt_20_JetPt_5_15
+logy: no
+miny: 0.001
+maxy: 7
 minr: 0.0
-maxr: 2.99
-legx: 0.50
-normalize: no
-title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "POWHEG+PYTHIA 6"]
+maxr: 2.49
+legx: 0.18
+normalize: yes
+title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T, ch jet} < 15 GeV/#it{c}, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}", "POWHEG+PYTHIA 6"]
 theory:
 -
   title: Central
