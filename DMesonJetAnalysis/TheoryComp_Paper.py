@@ -27,27 +27,33 @@ def GetMeasuredCrossSection(input_path, file_name):
     return hStat, hSyst
 
 
-def GetTheoryCrossSectionAll(config):
+def GetTheoryCrossSectionAll(config, axis):
     for t in config["theory"]:
-        h = GetTheoryCrossSection(config["input_path"], t["gen"], t["ts"])
+        h = GetTheoryCrossSection(config["input_path"], t["gen"], t["ts"], config["theory_spectrum"], axis, config["normalize"])
         t["histogram"] = h
 
 
-def GetTheoryCrossSection(input_path, gen, ts):
+def GetTheoryCrossSection(input_path, gen, ts, spectrum, axis, normalize):
     fname = "{input_path}/FastSim_{gen}_charm_{ts}/FastSimAnalysis_ccbar_{gen}_charm_{ts}.root".format(input_path=input_path, gen=gen, ts=ts)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
         exit(1)
-    h = DMesonJetUtils.GetObject(file, "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3")
-    if not h:
+    h_orig = DMesonJetUtils.GetObject(file, "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_{spectrum}/D0_MCTruth_Charged_R040_{spectrum}".format(spectrum=spectrum))
+    if not h_orig:
         print("Cannot get theory cross section with statistical uncertainty!")
         exit(1)
+
+    h = DMesonJetUtils.Rebin1D(h_orig, axis)
+    if normalize:
+        h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "width")
+    else:
+        h.Scale(0.5, "width")  # particle/antiparticle
 
     return h
 
 
-def PlotCrossSections(dataStat, dataSyst, theory, title):
+def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr, maxr, legx):
     cname = "D0JetCrossSection_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 900)
     globalList.append(canvas)
@@ -66,9 +72,9 @@ def PlotCrossSections(dataStat, dataSyst, theory, title):
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
-    padMain.SetLogy()
+    if logy: padMain.SetLogy()
     h = dataStat.DrawCopy("axis")
-    h.GetYaxis().SetRangeUser(6e-6, 1e2)
+    h.GetYaxis().SetRangeUser(miny, maxy)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
@@ -85,9 +91,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title):
     globalList.append(dataStat_copy)
 
     for t in theory:
-        h_orig = t["histogram"].Clone(t["gen"])
-        h = DMesonJetUtils.Rebin1D(h_orig, dataStat_copy.GetXaxis())
-        h.Scale(0.5, "width")
+        h = t["histogram"].Clone(t["gen"])
         h.Draw("same e0")
         globalList.append(h)
         h.SetLineColor(t["color"])
@@ -111,7 +115,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title):
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(0, 2.99)
+    hRatio.GetYaxis().SetRangeUser(minr, maxr)
     hRatio.GetYaxis().SetNdivisions(509)
 
     ratioSyst = dataSyst_copy.Clone("ratioSyst")
@@ -148,22 +152,8 @@ def PlotCrossSections(dataStat, dataSyst, theory, title):
 
     padMain.cd()
 
-    leg1 = ROOT.TLegend(0.50, 0.28, 0.80, 0.40, "", "NB NDC")
-    globalList.append(leg1)
-    leg1.SetBorderSize(0)
-    leg1.SetFillStyle(0)
-    leg1.SetTextFont(43)
-    leg1.SetTextSize(20)
-    leg1.SetTextAlign(12)
-    leg1.SetMargin(0.2)
-    leg1.AddEntry(dataStat_copy, "Data", "p")
-    leg1.AddEntry(dataSyst_copy, "Syst. Unc. (data)", "f")
-    leg1.Draw()
-
-    if title:
-        y2 = 0.60
-    else:
-        y2 = 0.66
+    y2 = 0.66
+    if len(title) > 3: y2 = 0.66 - 0.06 * (len(title) - 3)
     y1 = y2 - 0.036 * len(t) / 2
     if y1 < 0.1: y1 = 0.1
     leg1 = ROOT.TLegend(0.18, y1, 0.85, y2, "", "NB NDC")
@@ -175,25 +165,30 @@ def PlotCrossSections(dataStat, dataSyst, theory, title):
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    for t in theory:
-        leg1.AddEntry(t["histogram_plot"], t["title"], "l")
+    for t in theory: leg1.AddEntry(t["histogram_plot"], t["title"], "l")
+    leg1.Draw()
+
+    leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
+    globalList.append(leg1)
+    leg1.SetBorderSize(0)
+    leg1.SetFillStyle(0)
+    leg1.SetTextFont(43)
+    leg1.SetTextSize(20)
+    leg1.SetTextAlign(12)
+    leg1.SetMargin(0.2)
+    leg1.AddEntry(dataStat_copy, "Data", "p")
+    leg1.AddEntry(dataSyst_copy, "Syst. Unc. (data)", "f")
     leg1.Draw()
 
     padMain.cd()
-    if title:
-        paveALICE = ROOT.TPaveText(0.16, 0.62, 0.55, 0.90, "NB NDC")
-    else:
-        paveALICE = ROOT.TPaveText(0.16, 0.69, 0.55, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.16, 0.90 - 0.07 * len(title), 0.55, 0.90, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(22)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
-    if title: paveALICE.AddText(title)
+    for line in title: paveALICE.AddText(line)
     paveALICE.Draw()
 
     padRatio.RedrawAxis("g")
@@ -209,8 +204,9 @@ def main(config):
     ROOT.gStyle.SetOptStat(0)
 
     dataStat, dataSyst = GetMeasuredCrossSection(config["input_path"], config["data"])
-    GetTheoryCrossSectionAll(config)
-    canvas = PlotCrossSections(dataStat, dataSyst, config["theory"], config["title"])
+    GetTheoryCrossSectionAll(config, dataStat.GetXaxis())
+    canvas = PlotCrossSections(dataStat, dataSyst, config["theory"], config["title"], config["logy"],
+                               config["miny"], config["maxy"], config["minr"], config["maxr"], config["legx"])
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name"]))
 
