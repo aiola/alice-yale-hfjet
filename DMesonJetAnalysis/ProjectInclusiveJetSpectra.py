@@ -99,9 +99,9 @@ class ProjectInclusiveJetSpectra:
     def ProjectTree(self):
         print("Total number of events: {}".format(self.fTree.GetEntries()))
         for i, entry in enumerate(self.fTree):
-            if i > self.fMaxEvents: break
+            if self.fMaxEvents > 0 and i > self.fMaxEvents: break
             self.OnFileChange()
-            if i % 1000 == 0: print("Event #{}".format(i))
+            if i % 10000 == 0: print("Event #{}".format(i))
             jets = getattr(entry, self.fJetBranch)
             for jet in jets:
                 bad = False
