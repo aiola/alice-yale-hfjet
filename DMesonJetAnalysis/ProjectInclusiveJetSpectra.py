@@ -23,6 +23,9 @@ class Histogram:
         v = getattr(obj, self.fVariable)
         self.fHistogram.Fill(v, w)
 
+    def Normalize(self):
+        self.fHistogram.Scale(1.0, "width")
+
 
 class ProjectInclusiveJetSpectra:
 
@@ -64,10 +67,14 @@ class ProjectInclusiveJetSpectra:
             self.fOutputPath = config["input_path"]
             self.fFileName = config["file_name"]
 
+    def Terminate(self):
+        for h in self.fHistograms: h.Normalize()
+
     def Start(self):
         self.GenerateChain()
         self.GenerateHistograms()
         self.ProjectTree()
+        self.Terminate()
 
         fname = "{}/{}/Jets.root".format(self.fOutputPath, self.fTrain)
         file = ROOT.TFile(fname, "recreate")
