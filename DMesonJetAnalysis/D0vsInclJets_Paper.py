@@ -34,7 +34,7 @@ def GetInclJetCrossSection():
     triggerEff = 62.2 / 73.2  # eff of MB OR trigger to be applied to data
     bin0CorrData = 0.91  # ratio event after vertexNcontributors cut to evts after phys selection
 
-    fname = "../obusch/outData_spec_Bayes_combPtH_rebinned.root".format(input_path)
+    fname = "../obusch/outData_spec_Bayes_combPtH_rebinned.root"
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {}".format(fname))
@@ -48,7 +48,7 @@ def GetInclJetCrossSection():
     hStat.Scale(sigmapp * triggerEff)
     hStat.Scale(bin0CorrData)
 
-    fname = "../obusch/outData_spec_Bayes_combPtH.root".format(input_path)
+    fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {}".format(fname))
@@ -62,7 +62,7 @@ def GetInclJetCrossSection():
     hStat_orig.Scale(sigmapp * triggerEff)
     hStat_orig.Scale(bin0CorrData)
 
-    fname = "../obusch/outSys_tot_spec.root".format(input_path)
+    fname = "../obusch/outSys_tot_spec.root"
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {}".format(fname))

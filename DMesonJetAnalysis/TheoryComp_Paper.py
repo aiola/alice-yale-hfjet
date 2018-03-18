@@ -29,16 +29,18 @@ def GetMeasuredCrossSection(input_path, file_name):
 
 def GetTheoryCrossSectionAll(config, axis):
     for t in config["theory"]:
-        h = GetTheoryCrossSection(config["input_path"], t["gen"], t["ts"], config["theory_spectrum"], axis, config["normalize"])
+        h = GetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis, config["normalize"])
         t["histogram"] = h
 
 
-def GetTheoryCrossSection(input_path, gen, ts, spectrum, axis, normalize):
-    fname = "{input_path}/FastSim_{gen}_charm_{ts}/FastSimAnalysis_ccbar_{gen}_charm_{ts}.root".format(input_path=input_path, gen=gen, ts=ts)
+def GetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normalize):
+    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_ccbar_{gen}_{proc}_{ts}.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
         exit(1)
+    else:
+        print("File {} open".format(fname))
     h_orig = DMesonJetUtils.GetObject(file, "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_{spectrum}/D0_MCTruth_Charged_R040_{spectrum}".format(spectrum=spectrum))
     if not h_orig:
         print("Cannot get theory cross section with statistical uncertainty!")

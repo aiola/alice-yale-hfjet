@@ -68,7 +68,7 @@ class ProjectInclusiveJetSpectra:
             self.fFileName = config["file_name"]
 
     def Terminate(self):
-        for h in self.fHistograms: h.Normalize()
+        for h in self.fHistograms.itervalues(): h.Normalize()
 
     def Start(self):
         self.GenerateChain()
