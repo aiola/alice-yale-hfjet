@@ -3,35 +3,77 @@ input_path: /Volumes/DATA/ALICE/JetResults
 data: JetPtSpectrum_DPt_30_Systematics
 theory_spectrum: JetPtSpectrum_DPt_3
 logy: yes
+normalize: no
+title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "POWHEG+PYTHIA 6"]
 miny: 6.0e-6
 maxy: 1.0e+2
 minr: 0.0
 maxr: 2.99
 legx: 0.50
-normalize: no
-title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "POWHEG+PYTHIA 6"]
+title_inclusive: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "POWHEG+PYTHIA 6"]
+miny_inclusive: 6.0e-6
+maxy_inclusive: 5.0e+3
+minr_inclusive: 0.0
+maxr_inclusive: 2.99
+legx_inclusive: 0.50
 theory:
 -
   title: POWHEG+PYTHIA 6
   gen: powheg+pythia6
+  proc: charm
   ts: 1520017218
   color: 418 # kGreen+2
   line: 1
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet
+    ts: 1520879631
 -
   title: POWHEG+PYTHIA 8
   gen: powheg+pythia8
+  proc: charm
   ts: 1520018317
   color: 618 # kMagenta
   line: 2
+  inclusive:
+    gen: powheg+pythia8
+    proc: dijet
+    ts: 1521150255
 -
   title: PYTHIA 6 Perugia-2011
   gen: pythia6
+  proc: charm
   ts: 1520422008
   color: 602 # kBlue+2
   line: 5
+  inclusive:
+    gen: pythia6
+    proc: mb
+    ts: 1520882421
 -
   title: PYTHIA 8 Monash-2013
   gen: pythia8
+  proc: charm
   ts: 1520426239
   color: 802 # kOrange+2
   line: 4
+  inclusive:
+    gen: pythia8
+    proc: mb
+    ts: 1521277750
+-
+  title: PYTHIA 6 LO
+  gen: pythia6
+  proc: charm_lo
+  ts: 1521276365
+  color: 862 # kAzure+2
+  line: 6
+  inclusive: no
+-
+  title: PYTHIA 8 LO
+  gen: pythia8
+  proc: charm_lo
+  ts: 1521276607
+  color: 902 # kPink+2
+  line: 7
+  inclusive: no

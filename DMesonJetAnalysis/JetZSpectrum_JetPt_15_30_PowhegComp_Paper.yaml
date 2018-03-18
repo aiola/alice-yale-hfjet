@@ -3,13 +3,13 @@ input_path: /Volumes/DATA/ALICE/JetResults
 data: JetZSpectrum_JetPt_15_30_Systematics
 theory_spectrum: JetZSpectrum_DPt_6_JetPt_15_30
 logy: no
+normalize: yes
+title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "15 < #it{p}_{T, ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}", "POWHEG+PYTHIA 6"]
 miny: 0.001
 maxy: 8
 minr: 0.0
 maxr: 3.49
 legx: 0.18
-normalize: yes
-title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "15 < #it{p}_{T, ch jet} < 30 GeV/#it{c}, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}", "POWHEG+PYTHIA 6"]
 theory:
 -
   title: Central
