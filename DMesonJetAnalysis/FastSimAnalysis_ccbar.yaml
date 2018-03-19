@@ -25,7 +25,7 @@ analysis:
     radius: R060
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.6"
   -
-    active: no
+    active: yes
     type: Full
     radius: R040
     title: "Full Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
