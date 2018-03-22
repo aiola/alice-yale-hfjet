@@ -7,6 +7,7 @@ import ROOT
 import DMesonJetUtils
 import argparse
 import math
+import numpy
 
 globalList = []
 
@@ -38,14 +39,17 @@ def GetInclJetCrossSection():
     if not file or file.IsZombie():
         print("Could not open file {}".format(fname))
         exit(1)
-    hStat = file.Get("hSpecComb")
-    if not hStat:
+    hStat_old = file.Get("hSpecComb")
+    if not hStat_old:
         print("Cannot get inclusive cross section with statistical uncertainty!")
         exit(1)
     file.Close()
 
-    hStat.Scale(sigmapp * triggerEff)
-    hStat.Scale(bin0CorrData)
+    hStat_old.Scale(sigmapp * triggerEff)
+    hStat_old.Scale(bin0CorrData)
+
+    jetptbins = [5, 6, 8, 10, 14, 20, 30]
+    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float32))
 
     fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
@@ -101,11 +105,11 @@ def GetInclJetCrossSection():
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
     for t in config["theory"]:
-        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis, config["normalize"])
+        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
         t["histogram"] = h
 
 
-def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normalize):
+def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
     fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_ccbar_{gen}_{proc}_{ts}.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
@@ -117,10 +121,7 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normal
         exit(1)
 
     h = DMesonJetUtils.Rebin1D(h_orig, axis)
-    if normalize:
-        h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "width")
-    else:
-        h.Scale(0.5, "width")  # particle/antiparticle
+    h.Scale(0.5, "width")  # particle/antiparticle
 
     return h
 
@@ -128,11 +129,11 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normal
 def GetInclusiveJetTheoryCrossSectionAll(config):
     for t in config["theory"]:
         if not t["inclusive"]: continue
-        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], config["normalize"])
+        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"])
         t["inclusive_histogram"] = h
 
 
-def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, normalize):
+def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts):
     fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/Jets.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
@@ -144,21 +145,26 @@ def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, normalize):
         exit(1)
 
     h = h_orig.Clone()
-    if normalize: h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "")
-
     return h
 
 
-def GetTotalCrossSection(incl_stat_copy, incl_syst_copy):
-    for ibin in range(0, ratioSyst.GetN()):
-        xsec_incl_tot += incl_stat_copy.GetBinContent(ibin + 6)
-        stat_xsec_incl_tot2 += incl_stat_copy.GetBinError(ibin + 6) ** 2
-        syst_xsec_incl_tot += incl_syst_copy.GetErrorY(ibin + 5)  # take the weighted average of the rel unc
+def GetTotalCrossSection(stat, syst, minpt, maxpt):
+    xsec_tot = 0
+    stat_xsec_tot2 = 0
+    syst_xsec_tot = 0
+    for ibin in range(1, stat.GetNbinsX() + 1):
+        if stat.GetXaxis().GetBinCenter() < minpt: continue
+        if stat.GetXaxis().GetBinCenter() > maxpt: break
+        xsec_tot += stat.GetBinContent(ibin)
+        stat_xsec_tot2 += stat.GetBinError(ibin) ** 2
+        if syst: syst_xsec_tot += syst.GetErrorY(ibin - 1)  # take the weighted average of the rel unc
 
-    stat_xsec_incl_tot = math.sqrt(stat_xsec_incl_tot2)
+    stat_xsec_tot = math.sqrt(stat_xsec_tot2)
+
+    return xsec_tot, stat_xsec_tot, syst_xsec_tot
 
 
-def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, title, logy, miny, maxy, minr, maxr, legx):
+def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr, legx):
     cname = "D0JetVsInclusiveCrossSectionTheoryComp_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 900)
     globalList.append(canvas)
@@ -178,7 +184,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
 
     padMain.cd()
     if logy: padMain.SetLogy()
-    h = d0jet_stat.DrawCopy("axis")
+    h = dataStat.DrawCopy("axis")
     h.GetYaxis().SetRangeUser(miny, maxy)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
@@ -188,38 +194,28 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     # h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
     # h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
 
-    d0jet_syst_copy = d0jet_syst.Clone("{0}_copy".format(d0jet_syst.GetName()))
-    d0jet_syst_copy.Draw("2")
-    d0jet_syst_copy.SetFillStyle(1001)
-    d0jet_syst_copy.SetLineWidth(0)
-    d0jet_syst_copy.SetFillColor(ROOT.kRed - 10)
-    globalList.append(d0jet_syst_copy)
+    dataSyst_copy = dataSyst.Clone("{0}_copy".format(dataSyst.GetName()))
+    dataSyst_copy.Draw("2")
+    globalList.append(dataSyst_copy)
 
-    d0jet_stat_copy = d0jet_stat.DrawCopy("same p e0 x0")
-    d0jet_stat_copy.SetLineColor(ROOT.kRed + 2)
-    d0jet_stat_copy.SetMarkerColor(ROOT.kRed + 2)
-    d0jet_stat_copy.SetMarkerStyle(ROOT.kFullCircle)
-    d0jet_stat_copy.SetMarkerSize(1.2)
-    globalList.append(d0jet_stat_copy)
+    dataStat_copy = dataStat.DrawCopy("same p e0 x0")
+    globalList.append(dataStat_copy)
 
-    incl_syst_copy = incl_syst.Clone("incl_syst_copy")
-    globalList.append(incl_syst_copy)
-    incl_syst_copy.Draw("2")
-    incl_syst_copy.SetFillStyle(1001)
-    incl_syst_copy.SetLineWidth(0)
-    incl_syst_copy.SetFillColor(ROOT.kCyan - 10)
-
-    incl_stat_copy = incl_stat.DrawCopy("same p e0 x0")
-    globalList.append(incl_stat_copy)
-    incl_stat_copy.SetLineColor(ROOT.kBlue + 2)
-    incl_stat_copy.SetMarkerColor(ROOT.kBlue + 2)
-    incl_stat_copy.SetMarkerStyle(ROOT.kFullSquare)
-    incl_stat_copy.SetMarkerSize(1.2)
+    for t in theory:
+        h = t["histogram"].Clone(t["gen"])
+        h.Draw("same e0")
+        globalList.append(h)
+        h.SetLineColor(t["color"])
+        h.SetLineStyle(t["line"])
+        h.SetLineWidth(2)
+        h.SetMarkerStyle(1)
+        h.SetMarkerColor(t["color"])
+        t["histogram_plot"] = h
 
     padRatio.cd()
 
-    hRatio = d0jet_stat_copy.DrawCopy("axis")
-    hRatio.GetYaxis().SetTitle("ratio")
+    hRatio = dataStat_copy.DrawCopy("axis")
+    hRatio.GetYaxis().SetTitle("theory / data")
     hRatio.GetXaxis().SetTitleFont(43)
     hRatio.GetXaxis().SetTitleSize(26)
     hRatio.GetXaxis().SetLabelFont(43)
@@ -230,46 +226,40 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(0, 0.079)
+    hRatio.GetYaxis().SetRangeUser(minr, maxr)
     hRatio.GetYaxis().SetNdivisions(509)
 
-    ratioSyst = d0jet_syst_copy.Clone("ratioSyst")
+    ratioSyst = dataSyst_copy.Clone("ratioSyst")
     globalList.append(ratioSyst)
     ratioSyst.Draw("2")
 
-    ratioStat = d0jet_stat_copy.DrawCopy("same p e0 x0")
+    ratioStat = dataStat_copy.Clone("ratioStat")
     globalList.append(ratioStat)
+    ratioStat.Draw("same p e0 x0")
+    # ratioStat.Draw("same e2")
+    ratioStat.SetFillStyle(0)
+    # ratioStat.SetMarkerSize(0)
 
-    xsec_incl_tot, stat_xsec_incl_tot2, syst_xsec_incl_tot = GetTotalCrossSection(incl_stat_copy, incl_syst_copy)
+    for ibin in range(0, ratioSyst.GetN()):
+        ratioSyst.SetPointEYlow(ibin, ratioSyst.GetErrorYlow(ibin) / ratioSyst.GetY()[ibin])
+        ratioSyst.SetPointEYhigh(ibin , ratioSyst.GetErrorYhigh(ibin) / ratioSyst.GetY()[ibin])
+        ratioSyst.SetPoint(ibin, ratioSyst.GetX()[ibin], 1.0)
+        ratioStat.SetBinError(ibin + 1, ratioStat.GetBinError(ibin + 1) / ratioStat.GetBinContent(ibin + 1))
+        ratioStat.SetBinContent(ibin + 1, 1.0)
 
     for t in theory:
-        if not t["inclusive"]: continue
-        padMain.cd()
-        d0jet_h = t["histogram"].Clone("_".join([t["gen"], t["proc"]]))
-        d0jet_h.Draw("same e0")
-        globalList.append(d0jet_h)
-        d0jet_h.SetLineColor(t["color"])
-        d0jet_h.SetLineStyle(1)
-        d0jet_h.SetLineWidth(2)
-        d0jet_h.SetMarkerStyle(1)
-        d0jet_h.SetMarkerColor(t["color"])
-        t["histogram_plot"] = d0jet_h
-
-        incl_h = t["inclusive_histogram"].Clone("_".join([t["inclusive"]["gen"], t["inclusive"]["proc"]]))
-        incl_h.Draw("same e0")
-        globalList.append(incl_h)
-        incl_h.SetLineColor(t["color"])
-        incl_h.SetLineStyle(2)
-        incl_h.SetLineWidth(2)
-        incl_h.SetMarkerStyle(1)
-        incl_h.SetMarkerColor(t["color"])
-        t["inclusive_histogram_plot"] = incl_h
-
-        padRatio.cd()
-        hratio = d0jet_h.Clone("_".join([t["gen"], t["proc"], "over", t["inclusive"]["gen"], t["inclusive"]["proc"]]))
-        hratio.Divide(incl_h)
-        hratio.Draw("same e0")
-        t["ratio_histogram"] = hratio
+        r = t["histogram_plot"].Clone()
+        for ibin in range(1, r.GetNbinsX() + 1):
+            r.SetBinError(ibin, t["histogram_plot"].GetBinError(ibin) / t["histogram_plot"].GetBinContent(ibin))
+            r.SetBinContent(ibin, t["histogram_plot"].GetBinContent(ibin) / dataStat_copy.GetBinContent(ibin))
+        r.SetLineColor(t["color"])
+        r.SetLineStyle(t["line"])
+        r.SetLineWidth(2)
+        r.SetMarkerStyle(20)
+        r.SetMarkerSize(0)
+        r.Draw("same e0")
+        globalList.append(r)
+        t["ratio"] = r
 
     padMain.cd()
 
@@ -286,8 +276,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    for t in theory:
-        if "histogram_plot" in t: leg1.AddEntry(t["histogram_plot"], t["title"], "l")
+    for t in theory: leg1.AddEntry(t["histogram_plot"], t["title"], "l")
     leg1.Draw()
 
     leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
@@ -295,23 +284,14 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
-    leg1.SetTextSize(23)
+    leg1.SetTextSize(20)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    entry = leg1.AddEntry(None, "D^{0} Jets, #it{p}_{T,D} > 3 GeV/#it{c}", "pf")
-    entry.SetFillStyle(d0jet_syst_copy.GetFillStyle())
-    entry.SetFillColor(d0jet_syst_copy.GetFillColor())
-    entry.SetLineColor(d0jet_syst_copy.GetFillColor())
-    entry.SetMarkerColor(d0jet_stat_copy.GetMarkerColor())
-    entry.SetMarkerStyle(d0jet_stat_copy.GetMarkerStyle())
-    entry = leg1.AddEntry(None, "Inclusive Jets", "pf")
-    entry.SetFillStyle(incl_syst_copy.GetFillStyle())
-    entry.SetFillColor(incl_syst_copy.GetFillColor())
-    entry.SetLineColor(incl_syst_copy.GetFillColor())
-    entry.SetMarkerColor(incl_stat_copy.GetMarkerColor())
-    entry.SetMarkerStyle(incl_stat_copy.GetMarkerStyle())
+    leg1.AddEntry(dataStat_copy, "Data", "p")
+    leg1.AddEntry(dataSyst_copy, "Syst. Unc. (data)", "f")
     leg1.Draw()
 
+    padMain.cd()
     paveALICE = ROOT.TPaveText(0.16, 0.90 - 0.07 * len(title), 0.55, 0.90, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
@@ -338,6 +318,8 @@ def main(config):
     incl_stat, incl_syst = GetInclJetCrossSection()
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
     GetInclusiveJetTheoryCrossSectionAll(config)
+    NormalizeData(d0jet_stat, d0jet_syst, incl_stat, incl_syst)
+    NormalizeTheory(config)
     canvas = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, config["theory"], config["title_inclusive"], config["logy"],
                                config["miny_inclusive"], config["maxy_inclusive"], config["minr_inclusive"], config["maxr_inclusive"], config["legx_inclusive"])
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))

@@ -38,14 +38,17 @@ def GetInclJetCrossSection():
     if not file or file.IsZombie():
         print("Could not open file {}".format(fname))
         exit(1)
-    hStat = file.Get("hSpecComb")
-    if not hStat:
+    hStat_old = file.Get("hSpecComb")
+    if not hStat_old:
         print("Cannot get inclusive cross section with statistical uncertainty!")
         exit(1)
     file.Close()
 
-    hStat.Scale(sigmapp * triggerEff)
-    hStat.Scale(bin0CorrData)
+    hStat_old.Scale(sigmapp * triggerEff)
+    hStat_old.Scale(bin0CorrData)
+
+    jetptbins = [5, 6, 8, 10, 14, 20, 30]
+    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float32))
 
     fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
@@ -101,11 +104,11 @@ def GetInclJetCrossSection():
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
     for t in config["theory"]:
-        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis, config["normalize"])
+        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
         t["histogram"] = h
 
 
-def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normalize):
+def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
     fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_ccbar_{gen}_{proc}_{ts}.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
@@ -117,10 +120,7 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normal
         exit(1)
 
     h = DMesonJetUtils.Rebin1D(h_orig, axis)
-    if normalize:
-        h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "width")
-    else:
-        h.Scale(0.5, "width")  # particle/antiparticle
+    h.Scale(0.5, "width")  # particle/antiparticle
 
     return h
 
@@ -128,11 +128,11 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normal
 def GetInclusiveJetTheoryCrossSectionAll(config):
     for t in config["theory"]:
         if not t["inclusive"]: continue
-        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], config["normalize"])
+        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"])
         t["inclusive_histogram"] = h
 
 
-def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, normalize):
+def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts):
     fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/Jets.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
@@ -144,8 +144,6 @@ def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, normalize):
         exit(1)
 
     h = h_orig.Clone()
-    if normalize: h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "")
-
     return h
 
 
@@ -249,17 +247,17 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     syst_avg_flat2 = 0.0
 
     for ibin in range(0, ratioSyst.GetN()):
-        ratioSyst.SetPoint(ibin, ratioSyst.GetX()[ibin], d0jet_syst_copy.GetY()[ibin] / incl_syst_copy.GetY()[ibin + 5])
-        syst_erry2 = ((d0jet_syst_copy.GetErrorY(ibin) / d0jet_syst_copy.GetY()[ibin]) ** 2 + (incl_syst_copy.GetErrorY(ibin + 5) / incl_syst_copy.GetY()[ibin + 5]) ** 2 - 2 * 0.035 ** 2) * ratioSyst.GetY()[ibin] ** 2
+        ratioSyst.SetPoint(ibin, ratioSyst.GetX()[ibin], d0jet_syst_copy.GetY()[ibin] / incl_syst_copy.GetY()[ibin])
+        syst_erry2 = ((d0jet_syst_copy.GetErrorY(ibin) / d0jet_syst_copy.GetY()[ibin]) ** 2 + (incl_syst_copy.GetErrorY(ibin) / incl_syst_copy.GetY()[ibin]) ** 2 - 2 * 0.035 ** 2) * ratioSyst.GetY()[ibin] ** 2
         syst_erry = math.sqrt(syst_erry2)
         ratioSyst.SetPointError(ibin, ratioSyst.GetErrorX(ibin), ratioSyst.GetErrorX(ibin), syst_erry, syst_erry)
 
-        xsec_incl_tot += incl_stat_copy.GetBinContent(ibin + 6)
-        stat_xsec_incl_tot2 += incl_stat_copy.GetBinError(ibin + 6) ** 2
-        syst_xsec_incl_tot += incl_syst_copy.GetErrorY(ibin + 5)  # take the weighted average of the rel unc
+        xsec_incl_tot += incl_stat_copy.GetBinContent(ibin + 1)
+        stat_xsec_incl_tot2 += incl_stat_copy.GetBinError(ibin + 1) ** 2
+        syst_xsec_incl_tot += incl_syst_copy.GetErrorY(ibin)  # take the weighted average of the rel unc
 
-        ratioStat.SetBinContent(ibin + 1, d0jet_stat_copy.GetBinContent(ibin + 1) / incl_stat_copy.GetBinContent(ibin + 6))
-        stat_err_y2 = ((d0jet_stat_copy.GetBinError(ibin + 1) / d0jet_stat_copy.GetBinContent(ibin + 1)) ** 2 + (incl_stat_copy.GetBinError(ibin + 6) / incl_stat_copy.GetBinContent(ibin + 6)) ** 2) * ratioStat.GetBinContent(ibin + 1) ** 2
+        ratioStat.SetBinContent(ibin + 1, d0jet_stat_copy.GetBinContent(ibin + 1) / incl_stat_copy.GetBinContent(ibin + 1))
+        stat_err_y2 = ((d0jet_stat_copy.GetBinError(ibin + 1) / d0jet_stat_copy.GetBinContent(ibin + 1)) ** 2 + (incl_stat_copy.GetBinError(ibin + 1) / incl_stat_copy.GetBinContent(ibin + 1)) ** 2) * ratioStat.GetBinContent(ibin + 1) ** 2
         stat_err_y = math.sqrt(stat_err_y2)
         ratioStat.SetBinError(ibin + 1, stat_err_y)
 
