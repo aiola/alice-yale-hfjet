@@ -49,7 +49,7 @@ def GetInclJetCrossSection():
     hStat_old.Scale(bin0CorrData)
 
     jetptbins = [5, 6, 8, 10, 14, 20, 30]
-    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float32))
+    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float64))
 
     fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
@@ -105,6 +105,7 @@ def GetInclJetCrossSection():
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
     for t in config["theory"]:
+        if not t["active"]: continue
         h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
         t["histogram"] = h
 
@@ -129,6 +130,7 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
 def GetInclusiveJetTheoryCrossSectionAll(config):
     for t in config["theory"]:
         if not t["inclusive"]: continue
+        if not t["active"]: continue
         h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"])
         t["inclusive_histogram"] = h
 
@@ -146,22 +148,6 @@ def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts):
 
     h = h_orig.Clone()
     return h
-
-
-def GetTotalCrossSection(stat, syst, minpt, maxpt):
-    xsec_tot = 0
-    stat_xsec_tot2 = 0
-    syst_xsec_tot = 0
-    for ibin in range(1, stat.GetNbinsX() + 1):
-        if stat.GetXaxis().GetBinCenter() < minpt: continue
-        if stat.GetXaxis().GetBinCenter() > maxpt: break
-        xsec_tot += stat.GetBinContent(ibin)
-        stat_xsec_tot2 += stat.GetBinError(ibin) ** 2
-        if syst: syst_xsec_tot += syst.GetErrorY(ibin - 1)  # take the weighted average of the rel unc
-
-    stat_xsec_tot = math.sqrt(stat_xsec_tot2)
-
-    return xsec_tot, stat_xsec_tot, syst_xsec_tot
 
 
 def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr, legx):
@@ -183,7 +169,6 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
-    if logy: padMain.SetLogy()
     h = dataStat.DrawCopy("axis")
     h.GetYaxis().SetRangeUser(miny, maxy)
     h.GetYaxis().SetTitleFont(43)
@@ -202,6 +187,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     globalList.append(dataStat_copy)
 
     for t in theory:
+        if not t["active"]: continue
         h = t["histogram"].Clone(t["gen"])
         h.Draw("same e0")
         globalList.append(h)
@@ -248,6 +234,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
         ratioStat.SetBinContent(ibin + 1, 1.0)
 
     for t in theory:
+        if not t["active"]: continue
         r = t["histogram_plot"].Clone()
         for ibin in range(1, r.GetNbinsX() + 1):
             r.SetBinError(ibin, t["histogram_plot"].GetBinError(ibin) / t["histogram_plot"].GetBinContent(ibin))
@@ -276,7 +263,9 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    for t in theory: leg1.AddEntry(t["histogram_plot"], t["title"], "l")
+    for t in theory:
+        if not t["active"]: continue
+        leg1.AddEntry(t["histogram_plot"], t["title"], "l")
     leg1.Draw()
 
     leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
@@ -309,6 +298,56 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     return canvas
 
 
+def NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst):
+    xsec_tot, stat_xsec_tot, syst_xsec_tot = GetTotalCrossSection(incl_stat, incl_syst, config["min_jet_pt"], config["max_jet_pt"])
+    for ibin in range(1, d0jet_stat.GetNbinsX() + 1):
+        y = d0jet_stat.GetBinContent(ibin) / xsec_tot
+        stat_err = math.sqrt((d0jet_stat.GetBinError(ibin) / d0jet_stat.GetBinContent(ibin)) ** 2 + (stat_xsec_tot / xsec_tot) ** 2) * y
+        syst_err = math.sqrt((d0jet_syst.GetErrorY(ibin - 1) / d0jet_stat.GetBinContent(ibin)) ** 2 + (syst_xsec_tot / xsec_tot) ** 2) * y
+        d0jet_stat.SetBinContent(ibin, y)
+        d0jet_stat.SetBinError(ibin, stat_err)
+        d0jet_syst.SetPointError(ibin - 1, d0jet_syst.GetErrorX(ibin - 1), d0jet_syst.GetErrorX(ibin - 1), syst_err, syst_err)
+        d0jet_syst.SetPoint(ibin - 1, d0jet_stat.GetXaxis().GetBinCenter(ibin), y)
+    d0jet_stat.GetYaxis().SetTitle("R(#it{p}_{T, ch jet},#it{z}) / #Delta#it{z}")
+    d0jet_syst.GetYaxis().SetTitle("R(#it{p}_{T, ch jet},#it{z}) / #Delta#it{z}")
+    d0jet_stat.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
+    d0jet_syst.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
+
+
+def NormalizeTheory(config):
+    for t in config["theory"]:
+        if not t["active"]: continue
+        if not "inclusive_histogram" in t or not "histogram" in t: continue
+        xsec_tot, stat_xsec_tot, _ = GetTotalCrossSection(t["inclusive_histogram"], None, config["min_jet_pt"], config["max_jet_pt"])
+        h = t["histogram"]
+        for ibin in range(1, h.GetNbinsX() + 1):
+            y = h.GetBinContent(ibin) / xsec_tot
+            stat_err = math.sqrt((h.GetBinError(ibin) / h.GetBinContent(ibin)) ** 2 + (stat_xsec_tot / xsec_tot) ** 2) * y
+            h.SetBinContent(ibin, y)
+            h.SetBinError(ibin, stat_err)
+        h.GetYaxis().SetTitle("R(#it{p}_{T, ch jet},#it{z}) / #Delta#it{z}")
+        h.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
+
+
+def GetTotalCrossSection(stat, syst, minpt, maxpt):
+    xsec_tot = 0
+    stat_xsec_tot2 = 0
+    syst_xsec_tot = 0
+    for ibin in range(1, stat.GetNbinsX() + 1):
+        if stat.GetXaxis().GetBinCenter(ibin) < minpt: continue
+        if stat.GetXaxis().GetBinCenter(ibin) > maxpt: break
+        binw = stat.GetXaxis().GetBinWidth(ibin)
+        xsec_tot += stat.GetBinContent(ibin) * binw
+        stat_xsec_tot2 += (stat.GetBinError(ibin) * binw) ** 2
+        if syst: syst_xsec_tot += syst.GetErrorY(ibin - 1) * binw  # take the weighted average of the rel unc
+
+    stat_xsec_tot = math.sqrt(stat_xsec_tot2)
+
+    print("The total cross section for '{}' is {:.4f} +/- {:.4f} (stat) +/- {:.4f} (syst)".format(stat.GetName(), xsec_tot, stat_xsec_tot, syst_xsec_tot))
+
+    return xsec_tot, stat_xsec_tot, syst_xsec_tot
+
+
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -318,10 +357,10 @@ def main(config):
     incl_stat, incl_syst = GetInclJetCrossSection()
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
     GetInclusiveJetTheoryCrossSectionAll(config)
-    NormalizeData(d0jet_stat, d0jet_syst, incl_stat, incl_syst)
+    NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst)
     NormalizeTheory(config)
-    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, config["theory"], config["title_inclusive"], config["logy"],
-                               config["miny_inclusive"], config["maxy_inclusive"], config["minr_inclusive"], config["maxr_inclusive"], config["legx_inclusive"])
+    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, config["theory"], config["title"],
+                               config["miny"], config["maxy"], config["minr"], config["maxr"], config["legx"])
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name"]))
 
