@@ -395,8 +395,8 @@ def main(config):
     GetInclusiveJetTheoryCrossSectionAll(config)
     canvas = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, config["theory"], config["title_inclusive"], config["logy"],
                                config["miny_inclusive"], config["maxy_inclusive"], config["minr_inclusive"], config["maxr_inclusive"], config["legx_inclusive"])
-    canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))
-    canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name"]))
+    canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name_inclusive"]))
+    canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name_inclusive"]))
 
 
 if __name__ == '__main__':
