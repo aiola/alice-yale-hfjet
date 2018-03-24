@@ -1,4 +1,4 @@
-name: JetZSpectrum_JetPt_5_15_TheoryComp_Paper
+name: D0JetRate_JetPt_5_15_TheoryComp_Paper
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetZCrossSection_JetPt_5_15_Systematics
 theory_spectrum: JetZSpectrum_DPt_2_JetPt_5_15

@@ -7,6 +7,7 @@ import ROOT
 import DMesonJetUtils
 import argparse
 import math
+import numpy
 
 globalList = []
 
@@ -48,7 +49,7 @@ def GetInclJetCrossSection():
     hStat_old.Scale(bin0CorrData)
 
     jetptbins = [5, 6, 8, 10, 14, 20, 30]
-    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float32))
+    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float64))
 
     fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
@@ -104,6 +105,7 @@ def GetInclJetCrossSection():
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
     for t in config["theory"]:
+        if not t["active"]: continue
         h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
         t["histogram"] = h
 
@@ -127,6 +129,7 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
 
 def GetInclusiveJetTheoryCrossSectionAll(config):
     for t in config["theory"]:
+        if not t["active"]: continue
         if not t["inclusive"]: continue
         h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"])
         t["inclusive_histogram"] = h
@@ -170,7 +173,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     h = d0jet_stat.DrawCopy("axis")
     h.GetYaxis().SetRangeUser(miny, maxy)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleSize(26)
+    h.GetYaxis().SetTitleSize(23)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
     h.GetYaxis().SetTitleOffset(1.6)
@@ -208,18 +211,18 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     padRatio.cd()
 
     hRatio = d0jet_stat_copy.DrawCopy("axis")
-    hRatio.GetYaxis().SetTitle("ratio")
+    hRatio.GetYaxis().SetTitle("R(#it{p}_{T}) / #Delta#it{p}_{T} (GeV/#it{c})^{-1}")
     hRatio.GetXaxis().SetTitleFont(43)
-    hRatio.GetXaxis().SetTitleSize(26)
+    hRatio.GetXaxis().SetTitleSize(23)
     hRatio.GetXaxis().SetLabelFont(43)
     hRatio.GetXaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleFont(43)
-    hRatio.GetYaxis().SetTitleSize(26)
+    hRatio.GetYaxis().SetTitleSize(23)
     hRatio.GetYaxis().SetLabelFont(43)
     hRatio.GetYaxis().SetLabelSize(22)
-    hRatio.GetYaxis().SetTitleOffset(1.4)
+    hRatio.GetYaxis().SetTitleOffset(1.9)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(0, 0.079)
+    hRatio.GetYaxis().SetRangeUser(minr, maxr)
     hRatio.GetYaxis().SetNdivisions(509)
 
     ratioSyst = d0jet_syst_copy.Clone("ratioSyst")
@@ -295,6 +298,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     print("Average ratio in flat region (pt > 8 GeV/c): {} +/- {} (stat) +/- {} (syst)".format(avg_flat, stat_avg_flat, syst_avg_flat))
 
     for t in theory:
+        if not t["active"]: continue
         if not t["inclusive"]: continue
         padMain.cd()
         d0jet_h = t["histogram"].Clone("_".join([t["gen"], t["proc"]]))
@@ -325,8 +329,17 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
 
     padMain.cd()
 
-    y2 = 0.66
-    if len(title) > 3: y2 = 0.66 - 0.06 * (len(title) - 3)
+    y2 = 0.90 - 0.07 * len(title)
+    paveALICE = ROOT.TPaveText(0.16, y2, 0.55, 0.90, "NB NDC")
+    globalList.append(paveALICE)
+    paveALICE.SetBorderSize(0)
+    paveALICE.SetFillStyle(0)
+    paveALICE.SetTextFont(43)
+    paveALICE.SetTextSize(22)
+    paveALICE.SetTextAlign(13)
+    for line in title: paveALICE.AddText(line)
+    paveALICE.Draw()
+
     y1 = y2 - 0.036 * len(t) / 2
     if y1 < 0.1: y1 = 0.1
     leg1 = ROOT.TLegend(0.18, y1, 0.85, y2, "", "NB NDC")
@@ -363,16 +376,6 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     entry.SetMarkerColor(incl_stat_copy.GetMarkerColor())
     entry.SetMarkerStyle(incl_stat_copy.GetMarkerStyle())
     leg1.Draw()
-
-    paveALICE = ROOT.TPaveText(0.16, 0.90 - 0.07 * len(title), 0.55, 0.90, "NB NDC")
-    globalList.append(paveALICE)
-    paveALICE.SetBorderSize(0)
-    paveALICE.SetFillStyle(0)
-    paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(22)
-    paveALICE.SetTextAlign(13)
-    for line in title: paveALICE.AddText(line)
-    paveALICE.Draw()
 
     padRatio.RedrawAxis("g")
     padRatio.RedrawAxis()
