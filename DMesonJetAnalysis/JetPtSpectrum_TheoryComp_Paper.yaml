@@ -4,21 +4,22 @@ data: JetPtSpectrum_DPt_30_Systematics
 theory_spectrum: JetPtSpectrum_DPt_3
 logy: yes
 normalize: no
-title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "POWHEG+PYTHIA 6"]
+title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}"]
 miny: 6.0e-6
 maxy: 1.0e+2
 minr: 0.0
 maxr: 2.99
 legx: 0.50
-title_inclusive: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "POWHEG+PYTHIA 6"]
+title_inclusive: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5"]
 miny_inclusive: 6.0e-6
-maxy_inclusive: 5.0e+3
-minr_inclusive: 0.0
-maxr_inclusive: 2.99
+maxy_inclusive: 1.0e+2
+minr_inclusive: 0.005
+maxr_inclusive: 0.0659
 legx_inclusive: 0.50
 theory:
 -
   title: POWHEG+PYTHIA 6
+  active: yes
   gen: powheg+pythia6
   proc: charm
   ts: 1520017218
@@ -30,6 +31,7 @@ theory:
     ts: 1520879631
 -
   title: POWHEG+PYTHIA 8
+  active: no
   gen: powheg+pythia8
   proc: charm
   ts: 1520018317
@@ -41,6 +43,7 @@ theory:
     ts: 1521150255
 -
   title: PYTHIA 6 Perugia-2011
+  active: yes
   gen: pythia6
   proc: charm
   ts: 1520422008
@@ -52,6 +55,7 @@ theory:
     ts: 1520882421
 -
   title: PYTHIA 8 Monash-2013
+  active: no
   gen: pythia8
   proc: charm
   ts: 1520426239
@@ -63,6 +67,7 @@ theory:
     ts: 1521277750
 -
   title: PYTHIA 6 LO
+  active: no
   gen: pythia6
   proc: charm_lo
   ts: 1521276365
@@ -71,6 +76,7 @@ theory:
   inclusive: no
 -
   title: PYTHIA 8 LO
+  active: no
   gen: pythia8
   proc: charm_lo
   ts: 1521276607
