@@ -1,4 +1,5 @@
 name: JetPtSpectrum_TheoryComp_Paper
+name_inclusive: D0JetRateVsJetPt_TheoryComp_Paper
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetPtSpectrum_DPt_30_Systematics
 theory_spectrum: JetPtSpectrum_DPt_3
