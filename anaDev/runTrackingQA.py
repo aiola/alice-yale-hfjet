@@ -29,6 +29,7 @@ def main(configFileName, nFiles, nEvents, debugLevel=0):
     print("Trigger selection is {}".format(physSel))
 
     ROOT.gSystem.Load("libCGAL")
+    ROOT.gSystem.Load("libpythia6_4_28.so");
 
     ROOT.AliTrackContainer.SetDefTrackCutsPeriod(config["run_period"])
 
