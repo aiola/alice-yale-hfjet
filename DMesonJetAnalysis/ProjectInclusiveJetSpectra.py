@@ -9,22 +9,32 @@ import DMesonJetCompare
 import DMesonJetUtils
 import numpy
 import yaml
+from enum import Enum
 
 globalList = []
 
 
+class VariableType(Enum):
+    Jet = 0
+    Event = 1
+
+
 class Histogram:
 
-    def __init__(self, var, h):
+    def __init__(self, type, var, h):
+        self.fType = type
         self.fVariable = var
         self.fHistogram = h
+        self.fHistogramUnweighted = h.Clone("{}_Unweighted".format(h.GetName()))
 
     def Fill(self, obj, w):
         v = getattr(obj, self.fVariable)
         self.fHistogram.Fill(v, w)
+        self.fHistogramUnweighted.Fill(v)
 
     def Normalize(self):
         self.fHistogram.Scale(1.0, "width")
+        self.fHistogramUnweighted.Scale(1.0, "width")
 
 
 class ProjectInclusiveJetSpectra:
@@ -59,6 +69,15 @@ class ProjectInclusiveJetSpectra:
             else:
                 self.fInputPath += "output"
                 self.fFileName = "AnalysisResults_FastSim_{}_{}.root".format(self.fGenerator, self.fProcess)
+            self.fTrain = ""
+        elif self.fConfig["train"] == "debug":
+            name = raw_input("Directory name: ")
+            self.fName = name
+
+            self.fOutputPath = "{}/{}/".format(config["input_path"], name)
+            self.fInputPath = self.fOutputPath
+
+            self.fFileName = "AnalysisResults_FastSim_{}_{}.root".format(self.fGenerator, self.fProcess)
             self.fTrain = ""
         else:
             self.fName = config["name"]
@@ -100,15 +119,25 @@ class ProjectInclusiveJetSpectra:
         self.fHistograms = dict()
         for hdef in config["histograms"]:
             hobj = ROOT.TH1D(hdef["name"], hdef["title"], len(hdef["bins"]) - 1, numpy.array(hdef["bins"], dtype=numpy.float32))
-            h = Histogram(hdef["variable"], hobj)
+            h = Histogram(VariableType.Jet, hdef["variable"], hobj)
             self.fHistograms[hdef["name"]] = h
+
+        hobj = ROOT.TH1D("PtHard", "PtHard", 1000, 0, 1000)
+        h = Histogram(VariableType.Event, "fPtHard", hobj)
+        self.fHistograms["PtHard"] = h
 
     def ProjectTree(self):
         print("Total number of events: {}".format(self.fTree.GetEntries()))
         for i, entry in enumerate(self.fTree):
             if self.fMaxEvents > 0 and i > self.fMaxEvents: break
-            self.OnFileChange()
             if i % 10000 == 0: print("Event #{}".format(i))
+            self.OnFileChange()
+            if self.fMergingType == "explicit_weight": self.GetExplicitWeight(entry)
+
+            for h in self.fHistograms.itervalues():
+                if h.fType != VariableType.Event: continue
+                h.Fill(entry.Event, self.fWeight)
+
             jets = getattr(entry, self.fJetBranch)
             for jet in jets:
                 bad = False
@@ -119,12 +148,19 @@ class ProjectInclusiveJetSpectra:
                         break
                 if bad: break
                 for h in self.fHistograms.itervalues():
+                    if h.fType != VariableType.Jet: continue
                     h.Fill(jet, self.fWeight)
+
+    def GetExplicitWeight(self, entry):
+        event = entry.Event
+        self.fWeight = event.fWeight / self.fTree.GetEntries()
+        # print("w = {:e}".format(self.fWeight))
 
     def AddToTCollection(self, container, objects):
         for objName, obj in objects.iteritems():
             if isinstance(obj, Histogram):
                 container.Add(obj.fHistogram)
+                container.Add(obj.fHistogramUnweighted)
             elif isinstance(obj, ROOT.TObject):
                 container.Add(obj)
             elif isinstance(obj, dict):
@@ -142,6 +178,7 @@ class ProjectInclusiveJetSpectra:
                 obj.Write(objName, ROOT.TObject.kSingleKey)
             elif isinstance(obj, Histogram):
                 obj.fHistogram.Write()
+                obj.fHistogramUnweighted.Write()
             elif isinstance(obj, ROOT.TObject):
                 obj.Write()
             elif isinstance(obj, dict):
@@ -153,8 +190,12 @@ class ProjectInclusiveJetSpectra:
                 print("Object type '{}' not recognized".format(obj))
 
     def ExtractWeightFromHistogramList(self, hlist):
-        xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
+        xsection = hlist.FindObject("fHistXsectionNoSel")
         trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
+
+        if not trials or not xsection:
+            xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
+            trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
         if not trials or not xsection:
             print("Falling back to secondary method for x-section and trials...")
@@ -175,6 +216,8 @@ class ProjectInclusiveJetSpectra:
     def RecalculateWeight(self):
         if self.fMergingType == "simple_sum":
             self.fWeight = 1
+        elif self.fMergingType == "explicit_weight":
+            pass
         else:
             listName = "{0}_histos".format(self.fTaskName)
             hlist = self.fTree.GetCurrentFile().Get(listName)
@@ -202,9 +245,9 @@ class ProjectInclusiveJetSpectra:
             print("Could not get list '{0}' from file '{1}'".format(listName, self.fTree.GetCurrentFile().GetName()))
             return
 
-        self.RecalculateWeight()
-
-        print("File: {}\nWeight: {} (merging type = {})".format(self.fTree.GetCurrentFile().GetName(), self.fWeight, self.fMergingType))
+        if self.fMergingType != "explicit_weight":
+            self.RecalculateWeight()
+            print("File: {}\nWeight: {} (merging type = {})".format(self.fTree.GetCurrentFile().GetName(), self.fWeight, self.fMergingType))
 
 
 def main(config, gen, proc, ts, stage, events):
