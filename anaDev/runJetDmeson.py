@@ -53,13 +53,14 @@ def AddDMesonJetTask(mgr, config, doRecLevel, doSignalOnly, doMCTruth, doWrongPI
                     pDMesonJetsTask.SetNeedEmcalGeom(True)
                 else:
                     pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJets.AddTaskDmesonJets("usedefault", "", "usedefault", nOutputTrees, suffix)
-                pDMesonJetsTask.SetOutputType(ROOT.AliAnalysisTaskDmesonJets.kTreeOutput)
+                pDMesonJetsTask.SetOutputType(ROOT.AliAnalysisTaskDmesonJets.kTreeExtendedOutput)
         else:
             if config["full_jets"]:
                 pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJets.AddTaskDmesonJets("usedefault", "usedefault", "", nOutputTrees, suffix)
                 pDMesonJetsTask.SetNeedEmcalGeom(True)
             else:
                 pDMesonJetsTask = ROOT.AliAnalysisTaskDmesonJets.AddTaskDmesonJets("usedefault", "", "", nOutputTrees, suffix)
+            pDMesonJetsTask.SetOutputType(ROOT.AliAnalysisTaskDmesonJets.kTreeExtendedOutput)
 
         pDMesonJetsTask.SetApplyKinematicCuts(True)
         if not cmin is None and not cmax is None:
