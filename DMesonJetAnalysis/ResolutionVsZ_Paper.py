@@ -76,6 +76,7 @@ def ResolutionComparison(config):
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
+    paveALICE.AddText("ALICE Simulation")
     paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Prompt D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
@@ -135,8 +136,8 @@ def main():
     f.close()
 
     canvas = ResolutionComparison(config)
-    canvas.SaveAs("{0}/ResolutionVsZ_Paper.pdf".format(config["input_path"]))
-    canvas.SaveAs("{0}/ResolutionVsZ_Paper.C".format(config["input_path"]))
+    canvas.SaveAs("{0}/ResolutionVsZ_QM18.pdf".format(config["input_path"]))
+    canvas.SaveAs("{0}/ResolutionVsZ_QM18.C".format(config["input_path"]))
 
 
 if __name__ == '__main__':
