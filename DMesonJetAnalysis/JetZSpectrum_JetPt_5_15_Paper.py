@@ -129,7 +129,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
 
     padMain.cd()
     h = dataStat.DrawCopy("axis")
-    h.GetYaxis().SetRangeUser(0.0001, 7.0)
+    h.GetYaxis().SetRangeUser(0.0001, 7.5)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
@@ -174,7 +174,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(0, 1.9)
+    hRatio.GetYaxis().SetRangeUser(0.001, 1.9)
     hRatio.GetYaxis().SetNdivisions(509)
 
     ratioSyst.Draw("2")
@@ -218,7 +218,7 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(22)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
+    paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5,")
     paveALICE.AddText("5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}")
@@ -240,8 +240,8 @@ def main():
     dataStat, dataSyst = GetMeasuredCrossSection()
     theoryStat, theorySystUp, theorySystDown, theorySyst = GetTheoryCrossSection()
     canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
-    canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_Paper.pdf".format(input_path))
-    canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_Paper.C".format(input_path))
+    canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_QM18.pdf".format(input_path))
+    canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_QM18.C".format(input_path))
 
 
 if __name__ == '__main__':

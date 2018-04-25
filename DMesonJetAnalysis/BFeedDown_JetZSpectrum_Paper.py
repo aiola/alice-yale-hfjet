@@ -105,7 +105,7 @@ def PlotBFeedDown():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
+    paveALICE.AddText("ALICE Preliminary")
     paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
     paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
@@ -141,8 +141,8 @@ def main():
     ROOT.gStyle.SetOptStat(0)
 
     canvas = PlotBFeedDown()
-    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_Paper.pdf".format(input_path))
-    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_Paper.C".format(input_path))
+    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.pdf".format(input_path))
+    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.C".format(input_path))
 
 
 if __name__ == '__main__':
