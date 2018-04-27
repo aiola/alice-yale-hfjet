@@ -52,7 +52,7 @@ def PrepareRatio(h, hFD, hFDsyst, marker, color, fillstyle, opt, minX, maxX):
     ratio.GetYaxis().SetLabelFont(43)
     ratio.GetYaxis().SetLabelSize(22)
     ratio.GetYaxis().SetTitleOffset(0.9)
-    ratio.GetYaxis().SetRangeUser(0, 1.5)
+    ratio.GetYaxis().SetRangeUser(0.0001, 1.6)
     ratio.GetXaxis().SetRangeUser(minX, maxX)
 
     ratioSyst = hFDsyst.Clone("ratioSyst")
@@ -114,7 +114,7 @@ def PlotBFeedDown():
     # paveALICE.AddText("jet momentum resolution")
     paveALICE.Draw()
 
-    leg1 = ROOT.TLegend(0.17, 0.54, 0.56, 0.72, "", "NB NDC")
+    leg1 = ROOT.TLegend(0.17, 0.52, 0.56, 0.72, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
@@ -124,7 +124,7 @@ def PlotBFeedDown():
     leg1.SetMargin(0.2)
     leg1.AddEntry(ratio_low, "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}, #it{p}_{T,D} > 2 GeV/#it{c}", "p")
     leg1.AddEntry(ratio_high, "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, #it{p}_{T,D} > 6 GeV/#it{c}", "p")
-    entry = leg1.AddEntry(None, "Systematic Uncertainty", "f")
+    entry = leg1.AddEntry(None, "POWHEG Systematic Uncertainty", "f")
     entry.SetLineColor(ROOT.kBlack)
     entry.SetLineWidth(2)
     entry.SetFillStyle(0)
