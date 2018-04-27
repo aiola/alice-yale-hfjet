@@ -141,6 +141,7 @@ def main():
     canvas = ResolutionComparison(config)
     canvas.SaveAs("{0}/ResolutionVsZ_QM18.pdf".format(config["input_path"]))
     canvas.SaveAs("{0}/ResolutionVsZ_QM18.C".format(config["input_path"]))
+    canvas.SaveAs("{0}/ResolutionVsZ_QM18.eps".format(config["input_path"]))
 
 
 if __name__ == '__main__':
