@@ -242,6 +242,7 @@ def main():
     canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
     canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_QM18.pdf".format(input_path))
     canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_QM18.C".format(input_path))
+    canvas.SaveAs("{0}/JetZSpectrum_JetPt_5_15_QM18.eps".format(input_path))
 
 
 if __name__ == '__main__':

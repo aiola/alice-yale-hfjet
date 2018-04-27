@@ -143,6 +143,7 @@ def main():
     canvas = PlotBFeedDown()
     canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.pdf".format(input_path))
     canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.C".format(input_path))
+    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.eps".format(input_path))
 
 
 if __name__ == '__main__':
