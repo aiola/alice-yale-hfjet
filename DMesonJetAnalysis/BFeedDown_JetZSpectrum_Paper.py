@@ -124,7 +124,7 @@ def PlotBFeedDown():
     leg1.SetMargin(0.2)
     leg1.AddEntry(ratio_low, "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}, #it{p}_{T,D} > 2 GeV/#it{c}", "p")
     leg1.AddEntry(ratio_high, "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, #it{p}_{T,D} > 6 GeV/#it{c}", "p")
-    entry = leg1.AddEntry(None, "POWHEG Systematic Uncertainty", "f")
+    entry = leg1.AddEntry(None, "Syst. Unc. from POWHEG+PYTHIA6", "f")
     entry.SetLineColor(ROOT.kBlack)
     entry.SetLineWidth(2)
     entry.SetFillStyle(0)
