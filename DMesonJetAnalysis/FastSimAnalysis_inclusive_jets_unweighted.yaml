@@ -1,9 +1,9 @@
-name: FastSimAnalysis_inclusive_jets
+name: FastSimAnalysis_inclusive_jets_unweighted
 input_path: /Volumes/DATA/ALICE/JetResults
 train: FastSim
 file_name: ""
 task_name: AliAnalysisTaskEmcalJetTree
-merging_type: explicit_weight
+merging_type: average
 jet_branch: Jet_AKTChargedR040_mcparticles_pT0000_pt_scheme
 cuts: []
 histograms:

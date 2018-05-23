@@ -48,31 +48,31 @@ class ProjectInclusiveJetSpectra:
         self.fCurrentTreeNumber = -1
         self.fTaskName = self.fConfig["task_name"]
         self.fTreeName = "{}_jets".format(self.fTaskName)
-        self.fMergingType = config["merging_type"]
+        self.fMergingType = self.fConfig["merging_type"]
+        self.fName = self.fConfig["name"]
         self.fWeight = 1.0
         self.fMaxEvents = events
 
         self.fCuts = self.fConfig["cuts"]
         self.fJetBranch = self.fConfig["jet_branch"]
 
-        if self.fConfig["train"] == "FastSim":
+        if self.fConfig["train"] == "FastSim" or self.fConfig["train"] == "FastSimOld":
             suffix = "_".join([self.fGenerator, self.fProcess, self.fTS])
-
-            self.fName = "_".join([self.fConfig["name"], suffix])
 
             self.fOutputPath = "{}/FastSim_{}/".format(config["input_path"], suffix)
             self.fInputPath = self.fOutputPath
 
+            if self.fConfig["train"] == "FastSimOld":
+                self.fFileName = "AnalysisResults_FastSim_{}_{}_{}.root".format(self.fGenerator, self.fProcess, self.fTS)
+            else:
+                self.fFileName = "AnalysisResults_FastSim_{}_{}_jets.root".format(self.fGenerator, self.fProcess)
             if self.fMergingStage >= 0:
                 self.fInputPath += "stage_{}/output".format(self.fMergingStage)
-                self.fFileName = "AnalysisResults_FastSim_{}.root".format(suffix)
             else:
                 self.fInputPath += "output"
-                self.fFileName = "AnalysisResults_FastSim_{}_{}.root".format(self.fGenerator, self.fProcess)
             self.fTrain = ""
         elif self.fConfig["train"] == "debug":
             name = raw_input("Directory name: ")
-            self.fName = name
 
             self.fOutputPath = "{}/{}/".format(config["input_path"], name)
             self.fInputPath = self.fOutputPath
@@ -80,7 +80,6 @@ class ProjectInclusiveJetSpectra:
             self.fFileName = "AnalysisResults_FastSim_{}_{}.root".format(self.fGenerator, self.fProcess)
             self.fTrain = ""
         else:
-            self.fName = config["name"]
             self.fTrain = config["train"]
             self.fInputPath = config["input_path"]
             self.fOutputPath = config["input_path"]
@@ -95,7 +94,7 @@ class ProjectInclusiveJetSpectra:
         self.ProjectTree()
         self.Terminate()
 
-        fname = "{}/{}/Jets.root".format(self.fOutputPath, self.fTrain)
+        fname = "{}/{}/{}.root".format(self.fOutputPath, self.fTrain, self.fName)
         file = ROOT.TFile(fname, "recreate")
         self.AddToTDirectory(file, self.fHistograms)
         file.Close()
@@ -122,9 +121,10 @@ class ProjectInclusiveJetSpectra:
             h = Histogram(VariableType.Jet, hdef["variable"], hobj)
             self.fHistograms[hdef["name"]] = h
 
-        hobj = ROOT.TH1D("PtHard", "PtHard", 1000, 0, 1000)
-        h = Histogram(VariableType.Event, "fPtHard", hobj)
-        self.fHistograms["PtHard"] = h
+        if self.fConfig["train"] != "FastSimOld":
+            hobj = ROOT.TH1D("PtHard", "PtHard", 1000, 0, 1000)
+            h = Histogram(VariableType.Event, "fPtHard", hobj)
+            self.fHistograms["PtHard"] = h
 
     def ProjectTree(self):
         print("Total number of events: {}".format(self.fTree.GetEntries()))
@@ -208,10 +208,10 @@ class ProjectInclusiveJetSpectra:
             self.fWeight = 1
             return
 
-        valNTRIALS = trials.Integral();
-        valXSEC = xsection.GetMean(2);
+        valNTRIALS = trials.Integral()
+        valXSEC = xsection.GetMean(2)
         if valNTRIALS > 0:
-            self.fWeight = valXSEC / valNTRIALS;
+            self.fWeight = valXSEC / valNTRIALS
 
     def RecalculateWeight(self):
         if self.fMergingType == "simple_sum":
@@ -263,12 +263,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Project TTree containing inclusive jet spectra.')
     parser.add_argument('config',
                         help='YAML file')
-    parser.add_argument('--gen', metavar='GEN',
-                        default=None)
-    parser.add_argument('--proc', metavar='PROC',
-                        default=None)
-    parser.add_argument('--ts', metavar='TS',
-                        default=None)
+    parser.add_argument('--gen', metavar='GEN')
+    parser.add_argument('--proc', metavar='PROC')
+    parser.add_argument('--ts', metavar='TS')
     parser.add_argument('--stage', metavar='N',
                         default=-1, type=int)
     parser.add_argument('-e', metavar='N',
