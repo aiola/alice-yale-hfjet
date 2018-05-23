@@ -1,0 +1,37 @@
+input_path: /Volumes/DATA/ALICE/JetResults
+prefix: FastSim_powheg+pythia6_dijet
+file_name: FastSimAnalysis_inclusive_jets.root
+histograms:
+-
+  name: JetPt
+-
+  name: JetPt_Unweighted
+-
+  name: JetPtExtended
+-
+  name: JetPtExtended_Unweighted
+-
+  name: PtHard
+  min: 1
+  max: 150
+-
+  name: PtHard_Unweighted
+  min: 1
+  max: 150
+list:
+-
+  ts: 1524840639
+  file_name: FastSimAnalysis_inclusive_jets_unweighted.root
+  title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 0, UW"
+-
+  ts: 1524748993
+  title: "k_{T} > 0.5 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+-
+  ts: 1524742846
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+-
+  ts: 1524747472
+  title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+-
+  ts: 1524842969
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 5 GeV/#it{c}"
