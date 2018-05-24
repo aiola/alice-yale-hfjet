@@ -1,6 +1,8 @@
 # Load inclusive jet spectrum
 
+import numpy
 import ROOT
+import DMesonJetUtils
 
 def GetCrossSection():
     sigmapp = 73.2  # published x-section in mbarn
@@ -12,14 +14,17 @@ def GetCrossSection():
     if not file or file.IsZombie():
         print("Could not open file {}".format(fname))
         exit(1)
-    hStat = file.Get("hSpecComb")
-    if not hStat:
+    hStat_old = file.Get("hSpecComb")
+    if not hStat_old:
         print("Cannot get inclusive cross section with statistical uncertainty!")
         exit(1)
     file.Close()
 
-    hStat.Scale(sigmapp * triggerEff)
-    hStat.Scale(bin0CorrData)
+    hStat_old.Scale(sigmapp * triggerEff)
+    hStat_old.Scale(bin0CorrData)
+
+    jetptbins = [5, 6, 8, 10, 14, 20, 30]
+    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float64))
 
     fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
