@@ -37,7 +37,7 @@ theory:
   gen: powheg+pythia8
   proc: charm
   ts: 1520018317
-  color: 618 # kMagenta
+  color: 402 # kYellow+2
   line: 2
   inclusive:
     gen: powheg+pythia8

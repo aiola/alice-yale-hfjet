@@ -2,12 +2,12 @@
 # python script to do extract B feed down correction factors
 
 import yaml
+import re
 import IPython
 import ROOT
 import DMesonJetUtils
 import argparse
 import math
-import numpy
 import LoadInclusiveJetSpectrum
 
 globalList = []
@@ -38,6 +38,9 @@ def GetD0JetTheoryCrossSectionAll(config, axis):
         if not t["active"]: continue
         h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
         t["histogram"] = h
+        no_pt_cut_spectrum_name = re.sub("DPt_.", "DPt_0", config["theory_spectrum"])
+        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], no_pt_cut_spectrum_name, axis)
+        t["histogram_no_pt_cut"] = h
 
 
 def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
@@ -80,7 +83,7 @@ def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, file_name):
     return h
 
 
-def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, title, logy, miny, maxy, minr, maxr, legx):
+def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, title, logy, miny, maxy, minr, maxr, legx, no_pt_cut):
     cname = "D0JetVsInclusiveCrossSectionTheoryComp_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 900)
     globalList.append(canvas)
@@ -114,7 +117,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     d0jet_syst_copy.Draw("2")
     d0jet_syst_copy.SetFillStyle(1001)
     d0jet_syst_copy.SetLineWidth(0)
-    d0jet_syst_copy.SetFillColor(ROOT.kRed - 10)
+    d0jet_syst_copy.SetFillColor(ROOT.kGray)
     globalList.append(d0jet_syst_copy)
 
     d0jet_stat_copy = d0jet_stat.DrawCopy("same p e0 x0")
@@ -129,12 +132,12 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     incl_syst_copy.Draw("2")
     incl_syst_copy.SetFillStyle(1001)
     incl_syst_copy.SetLineWidth(0)
-    incl_syst_copy.SetFillColor(ROOT.kCyan - 10)
+    incl_syst_copy.SetFillColor(ROOT.kGray)
 
     incl_stat_copy = incl_stat.DrawCopy("same p e0 x0")
     globalList.append(incl_stat_copy)
-    incl_stat_copy.SetLineColor(ROOT.kBlue + 2)
-    incl_stat_copy.SetMarkerColor(ROOT.kBlue + 2)
+    incl_stat_copy.SetLineColor(ROOT.kMagenta + 2)
+    incl_stat_copy.SetMarkerColor(ROOT.kMagenta + 2)
     incl_stat_copy.SetMarkerStyle(ROOT.kFullSquare)
     incl_stat_copy.SetMarkerSize(1.2)
 
@@ -232,22 +235,22 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
         if not t["inclusive"]: continue
         padMain.cd()
         d0jet_h = t["histogram"].Clone("_".join([t["gen"], t["proc"]]))
-        d0jet_h.Draw("same e0")
+        d0jet_h.Draw("same e0 p x0")
         globalList.append(d0jet_h)
         d0jet_h.SetLineColor(t["color"])
         d0jet_h.SetLineStyle(1)
-        d0jet_h.SetLineWidth(2)
-        d0jet_h.SetMarkerStyle(1)
+        d0jet_h.SetLineWidth(1)
+        d0jet_h.SetMarkerStyle(ROOT.kOpenCircle)
         d0jet_h.SetMarkerColor(t["color"])
         t["histogram_plot"] = d0jet_h
 
         incl_h = t["inclusive_histogram"].Clone("_".join([t["inclusive"]["gen"], t["inclusive"]["proc"]]))
-        incl_h.Draw("same e0")
+        incl_h.Draw("same e0 p x0")
         globalList.append(incl_h)
         incl_h.SetLineColor(t["color"])
-        incl_h.SetLineStyle(2)
-        incl_h.SetLineWidth(2)
-        incl_h.SetMarkerStyle(1)
+        incl_h.SetLineStyle(1)
+        incl_h.SetLineWidth(1)
+        incl_h.SetMarkerStyle(ROOT.kOpenSquare)
         incl_h.SetMarkerColor(t["color"])
         t["inclusive_histogram_plot"] = incl_h
 
@@ -256,6 +259,25 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
         hratio.Divide(incl_h)
         hratio.Draw("same e0")
         t["ratio_histogram"] = hratio
+
+
+        if no_pt_cut:
+            padMain.cd()
+            d0jet_no_pt_cut_h = t["histogram_no_pt_cut"].Clone("_".join([t["gen"], t["proc"]]))
+            d0jet_no_pt_cut_h.Draw("same e0 p x0")
+            globalList.append(d0jet_no_pt_cut_h)
+            d0jet_no_pt_cut_h.SetLineColor(t["color"])
+            d0jet_no_pt_cut_h.SetLineStyle(1)
+            d0jet_no_pt_cut_h.SetLineWidth(1)
+            d0jet_no_pt_cut_h.SetMarkerStyle(ROOT.kOpenTriangleUp)
+            d0jet_no_pt_cut_h.SetMarkerColor(t["color"])
+            t["histogram_no_pt_cut_plot"] = d0jet_no_pt_cut_h
+
+            padRatio.cd()
+            hratio = d0jet_no_pt_cut_h.Clone("_".join([t["gen"], t["proc"], "over", t["inclusive"]["gen"], t["inclusive"]["proc"], "no_pt_cut"]))
+            hratio.Divide(incl_h)
+            hratio.Draw("same e0")
+            t["ratio_no_pt_cut_histogram"] = hratio
 
     padMain.cd()
 
@@ -282,7 +304,8 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
     for t in theory:
-        if "histogram_plot" in t: leg1.AddEntry(t["histogram_plot"], t["title"], "l")
+        if "histogram_plot" in t: leg1.AddEntry(t["histogram_plot"], t["title"], "p")
+        if "histogram_no_pt_cut_plot" in t: leg1.AddEntry(t["histogram_no_pt_cut_plot"], "#it{p}_{T,D} > 0", "p")
     leg1.Draw()
 
     leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
@@ -314,7 +337,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     return canvas
 
 
-def main(config):
+def main(config, no_pt_cut):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
@@ -324,7 +347,8 @@ def main(config):
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
     GetInclusiveJetTheoryCrossSectionAll(config)
     canvas = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, config["theory"], config["title_inclusive"], config["logy"],
-                               config["miny_inclusive"], config["maxy_inclusive"], config["minr_inclusive"], config["maxr_inclusive"], config["legx_inclusive"])
+                               config["miny_inclusive"], config["maxy_inclusive"], config["minr_inclusive"], config["maxr_inclusive"], config["legx_inclusive"],
+                               no_pt_cut)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name_inclusive"]))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name_inclusive"]))
 
@@ -332,6 +356,9 @@ def main(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')
     parser.add_argument('yaml', metavar='conf.yaml')
+    parser.add_argument("--no-pt-cut", action='store_const',
+                        default=False, const=True,
+                        help='Include theory without D pt cut.')
 
     args = parser.parse_args()
 
@@ -339,6 +366,6 @@ if __name__ == '__main__':
     config = yaml.load(f)
     f.close()
 
-    main(config)
+    main(config, args.no_pt_cut)
 
     IPython.embed()
