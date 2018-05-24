@@ -1,16 +1,58 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import yaml
+import math
 import IPython
 import ROOT
 import DMesonJetUtils
-import math
 
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
 
+def GetD0JetCrossSectionTheory(kin_cuts):
+    ts = 1483386026
+    fname = "{input_path}/PromptDJetsPrediction_{ts}.root".format(input_path=input_path, ts=ts)
+    file = ROOT.TFile(fname)
+    if not file or file.IsZombie():
+        print("Could not open file {0}".format(fname))
+        exit(1)
+    hStat = DMesonJetUtils.GetObject(file, "default/JetPtSpectrum{kin_cuts}/GeneratorLevel_JetPtSpectrum".format(kin_cuts=kin_cuts))
+    if not hStat:
+        print("Cannot get theory cross section with statistical uncertainty!")
+        exit(1)
+    hSyst = DMesonJetUtils.GetObject(file, "SystematicUncertainty/JetPtSpectrum{kin_cuts}//GeneratorLevel_JetPtSpectrum/GeneratorLevel_JetPtSpectrum_CentralAsymmSyst".format(kin_cuts=kin_cuts))
+    if not hSyst:
+        print("Cannot get theory cross section lower systematic uncertainty!")
+        exit(1)
+
+    # scale for the bin width and the antiparticle factor
+    hStat.Scale(0.5, "width")
+
+    # scale for antiparticle factor
+    for i in range(0, hSyst.GetN()):
+        hSyst.SetPoint(i, hSyst.GetX()[i], hSyst.GetY()[i] / 2)
+        hSyst.SetPointError(i, hSyst.GetErrorXlow(i), hSyst.GetErrorXhigh(i), hSyst.GetErrorYlow(i) / 2, hSyst.GetErrorYhigh(i) / 2)
+
+    return hStat, hSyst
+
+def GetInclJetCrossSectionTheory():
+    gen = "powheg+pythia6"
+    proc = "dijet"
+    ts = 1524742846
+    file_name = "FastSimAnalysis_inclusive_jets.root"
+    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/{file_name}".format(input_path=input_path, gen=gen, proc=proc, ts=ts, file_name=file_name)
+    file = ROOT.TFile(fname)
+    if not file or file.IsZombie():
+        print("Could not open file {0}".format(fname))
+        exit(1)
+    h_orig = DMesonJetUtils.GetObject(file, "JetPt")
+    if not h_orig:
+        print("Cannot get theory cross section with statistical uncertainty!")
+        exit(1)
+
+    h = h_orig.Clone()
+    return h
 
 def GetD0JetCrossSection():
     fname = "{0}/JetPtSpectrum_DPt_30_Systematics.root".format(input_path)
@@ -100,7 +142,7 @@ def GetInclJetCrossSection():
     return hStat, hSyst
 
 
-def PlotCrossSections(d0Stat, d0Syst, inclStat, inclSyst):
+def PlotCrossSections(d0Stat, d0Syst, inclStat, inclSyst, theory_d0Stat, theory_d0Syst, theory_noptcut_d0Stat, theory_inclStat):
     cname = "D0VsInclJets_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 700)
     globalList.append(canvas)
@@ -135,7 +177,7 @@ def PlotCrossSections(d0Stat, d0Syst, inclStat, inclSyst):
     d0Syst_copy.Draw("2")
     d0Syst_copy.SetFillStyle(1001)
     d0Syst_copy.SetLineWidth(0)
-    d0Syst_copy.SetFillColor(ROOT.kRed - 10)
+    d0Syst_copy.SetFillColor(ROOT.kGray)
 
     d0Stat_copy = d0Stat.DrawCopy("same p e0 x0")
     globalList.append(d0Stat_copy)
@@ -149,19 +191,47 @@ def PlotCrossSections(d0Stat, d0Syst, inclStat, inclSyst):
     inclSyst_copy.Draw("2")
     inclSyst_copy.SetFillStyle(1001)
     inclSyst_copy.SetLineWidth(0)
-    inclSyst_copy.SetFillColor(ROOT.kCyan - 10)
+    inclSyst_copy.SetFillColor(ROOT.kGray)
 
     inclStat_copy = inclStat.DrawCopy("same p e0 x0")
     globalList.append(inclStat_copy)
-    inclStat_copy.SetLineColor(ROOT.kBlue + 2)
-    inclStat_copy.SetMarkerColor(ROOT.kBlue + 2)
+    inclStat_copy.SetLineColor(ROOT.kMagenta + 2)
+    inclStat_copy.SetMarkerColor(ROOT.kMagenta + 2)
     inclStat_copy.SetMarkerStyle(ROOT.kFullSquare)
     inclStat_copy.SetMarkerSize(1.2)
+
+    theory_noptcut_d0Stat_copy = theory_noptcut_d0Stat.DrawCopy("same p e0 x0")
+    globalList.append(theory_noptcut_d0Stat_copy)
+    theory_noptcut_d0Stat_copy.SetLineColor(ROOT.kGray + 3)
+    theory_noptcut_d0Stat_copy.SetMarkerColor(ROOT.kGray + 3)
+    theory_noptcut_d0Stat_copy.SetMarkerStyle(ROOT.kOpenCircle)
+    theory_noptcut_d0Stat_copy.SetMarkerSize(1.3)
+
+    theory_d0Stat_copy = theory_d0Stat.DrawCopy("same p e0 x0")
+    globalList.append(theory_d0Stat_copy)
+    theory_d0Stat_copy.SetLineColor(ROOT.kBlue + 2)
+    theory_d0Stat_copy.SetMarkerColor(ROOT.kBlue + 2)
+    theory_d0Stat_copy.SetMarkerStyle(ROOT.kOpenCircle)
+    theory_d0Stat_copy.SetMarkerSize(1.2)
+
+    theory_d0Syst_copy = theory_d0Syst.Clone("theory_d0_Syst_copy")
+    globalList.append(theory_d0Syst_copy)
+    theory_d0Syst_copy.Draw("2")
+    theory_d0Syst_copy.SetFillStyle(0)
+    theory_d0Syst_copy.SetLineWidth(2)
+    theory_d0Syst_copy.SetLineColor(ROOT.kBlue + 2)
+
+    theory_inclStat_copy = theory_inclStat.DrawCopy("same p e0 x0")
+    globalList.append(theory_inclStat_copy)
+    theory_inclStat_copy.SetLineColor(ROOT.kGreen + 2)
+    theory_inclStat_copy.SetMarkerColor(ROOT.kGreen + 2)
+    theory_inclStat_copy.SetMarkerStyle(ROOT.kOpenSquare)
+    theory_inclStat_copy.SetMarkerSize(1.2)
 
     padRatio.cd()
 
     hRatio = d0Stat_copy.DrawCopy("axis")
-    hRatio.GetYaxis().SetTitle("ratio")
+    hRatio.GetYaxis().SetTitle("D^{0} jets / inclusive")
     hRatio.GetXaxis().SetTitleFont(43)
     hRatio.GetXaxis().SetTitleSize(26)
     hRatio.GetXaxis().SetLabelFont(43)
@@ -296,7 +366,14 @@ def main():
 
     d0Stat, d0Syst = GetD0JetCrossSection()
     inclStat, inclSyst = GetInclJetCrossSection()
-    canvas = PlotCrossSections(d0Stat, d0Syst, inclStat, inclSyst)
+    theory_d0Stat, theory_d0Syst = GetD0JetCrossSectionTheory("_DPt_30")
+    theory_noptcut_d0Stat, theory_noptcut_d0Syst = GetD0JetCrossSectionTheory("")
+    theory_inclStat = GetInclJetCrossSectionTheory()
+    canvas = PlotCrossSections(d0Stat, d0Syst,
+                               inclStat, inclSyst,
+                               theory_d0Stat, theory_d0Syst,
+                               theory_noptcut_d0Stat,
+                               theory_inclStat)
     canvas.SaveAs("{}/{}.pdf".format(input_path, canvas.GetName()))
     canvas.SaveAs("{}/{}.C".format(input_path, canvas.GetName()))
 
