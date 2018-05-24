@@ -1,13 +1,10 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
 
 import argparse
 import yaml
 import IPython
 import ROOT
-import os
 import DMesonJetCompare
-import DMesonJetUtils
 import RawYieldSpectrumLoader
 
 globalList = []
@@ -122,11 +119,11 @@ def CompareSpectra(cmin, cmax, config, meson_name, jet_type, jet_radius, name, n
             globalList.append(obj)
 
     if name:
-        comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasSpectra.GetName()))
-        comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(input_path, comp.fCanvasRatio.GetName()))
+        comp.fCanvasSpectra.SaveAs("{0}/{1}.pdf".format(config["input_path"], comp.fCanvasSpectra.GetName()))
+        comp.fCanvasRatio.SaveAs("{0}/{1}.pdf".format(config["input_path"], comp.fCanvasRatio.GetName()))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
+    parser = argparse.ArgumentParser(description='Compare with inclusive jets.')
     parser.add_argument('yaml',
                         help='YAML configuration file')
     parser.add_argument('--inclusive-train', metavar='TRAIN',
