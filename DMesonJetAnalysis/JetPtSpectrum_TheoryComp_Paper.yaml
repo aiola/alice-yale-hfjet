@@ -29,7 +29,8 @@ theory:
   inclusive:
     gen: powheg+pythia6
     proc: dijet
-    ts: 1520879631
+    ts: 1524742846
+    file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG+PYTHIA 8
   active: no
@@ -42,6 +43,7 @@ theory:
     gen: powheg+pythia8
     proc: dijet
     ts: 1521150255
+    file_name: Jets.root
 -
   title: PYTHIA 6 Perugia-2011
   active: yes
@@ -54,6 +56,7 @@ theory:
     gen: pythia6
     proc: mb
     ts: 1520882421
+    file_name: Jets.root
 -
   title: PYTHIA 8 Monash-2013
   active: no
@@ -66,6 +69,7 @@ theory:
     gen: pythia8
     proc: mb
     ts: 1521277750
+    file_name: Jets.root
 -
   title: PYTHIA 6 LO
   active: no

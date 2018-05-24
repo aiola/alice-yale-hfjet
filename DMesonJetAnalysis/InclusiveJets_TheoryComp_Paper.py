@@ -61,12 +61,12 @@ def GetInclusiveJetTheoryCrossSectionAll(config):
     for t in config["theory"]:
         if not t["active"]: continue
         if not t["inclusive"]: continue
-        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"])
+        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], t["inclusive"]["file_name"])
         t["inclusive_histogram"] = h
 
 
-def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts):
-    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/Jets.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
+def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, file_name):
+    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/{file_name}".format(input_path=input_path, gen=gen, proc=proc, ts=ts, file_name=file_name)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
