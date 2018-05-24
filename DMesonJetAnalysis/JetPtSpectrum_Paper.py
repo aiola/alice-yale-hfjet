@@ -48,7 +48,7 @@ def GetTheoryCrossSection():
         print("Cannot get theory cross section lower systematic uncertainty!")
         exit(1)
     hSyst = DMesonJetUtils.GetObject(file, "SystematicUncertainty/JetPtSpectrum_DPt_30//GeneratorLevel_JetPtSpectrum/GeneratorLevel_JetPtSpectrum_CentralAsymmSyst")
-    if not hSystUp:
+    if not hSyst:
         print("Cannot get theory cross section lower systematic uncertainty!")
         exit(1)
 
