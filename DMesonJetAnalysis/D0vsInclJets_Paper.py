@@ -204,17 +204,17 @@ def PlotCrossSections(d0Stat, d0Syst, inclStat, inclSyst, theory_d0Stat, theory_
     syst_avg_flat2 = 0.0
 
     for ibin in range(0, ratioSyst.GetN()):
-        ratioSyst.SetPoint(ibin, ratioSyst.GetX()[ibin], d0Syst_copy.GetY()[ibin] / inclSyst_copy.GetY()[ibin + 5])
-        syst_erry2 = ((d0Syst_copy.GetErrorY(ibin) / d0Syst_copy.GetY()[ibin]) ** 2 + (inclSyst_copy.GetErrorY(ibin + 5) / inclSyst_copy.GetY()[ibin + 5]) ** 2 - 2 * 0.035 ** 2) * ratioSyst.GetY()[ibin] ** 2
+        ratioSyst.SetPoint(ibin, ratioSyst.GetX()[ibin], d0Syst_copy.GetY()[ibin] / inclSyst_copy.GetY()[ibin])
+        syst_erry2 = ((d0Syst_copy.GetErrorY(ibin) / d0Syst_copy.GetY()[ibin]) ** 2 + (inclSyst_copy.GetErrorY(ibin) / inclSyst_copy.GetY()[ibin]) ** 2 - 2 * 0.035 ** 2) * ratioSyst.GetY()[ibin] ** 2
         syst_erry = math.sqrt(syst_erry2)
         ratioSyst.SetPointError(ibin, ratioSyst.GetErrorX(ibin), ratioSyst.GetErrorX(ibin), syst_erry, syst_erry)
 
-        xsec_incl_tot += inclStat_copy.GetBinContent(ibin + 6)
-        stat_xsec_incl_tot2 += inclStat_copy.GetBinError(ibin + 6) ** 2
-        syst_xsec_incl_tot += inclSyst_copy.GetErrorY(ibin + 5)  # take the weighted average of the rel unc
+        xsec_incl_tot += inclStat_copy.GetBinContent(ibin + 1)
+        stat_xsec_incl_tot2 += inclStat_copy.GetBinError(ibin + 1) ** 2
+        syst_xsec_incl_tot += inclSyst_copy.GetErrorY(ibin)  # take the weighted average of the rel unc
 
-        ratioStat.SetBinContent(ibin + 1, d0Stat_copy.GetBinContent(ibin + 1) / inclStat_copy.GetBinContent(ibin + 6))
-        stat_err_y2 = ((d0Stat_copy.GetBinError(ibin + 1) / d0Stat_copy.GetBinContent(ibin + 1)) ** 2 + (inclStat_copy.GetBinError(ibin + 6) / inclStat_copy.GetBinContent(ibin + 6)) ** 2) * ratioStat.GetBinContent(ibin + 1) ** 2
+        ratioStat.SetBinContent(ibin + 1, d0Stat_copy.GetBinContent(ibin + 1) / inclStat_copy.GetBinContent(ibin + 1))
+        stat_err_y2 = ((d0Stat_copy.GetBinError(ibin + 1) / d0Stat_copy.GetBinContent(ibin + 1)) ** 2 + (inclStat_copy.GetBinError(ibin + 1) / inclStat_copy.GetBinContent(ibin + 1)) ** 2) * ratioStat.GetBinContent(ibin + 1) ** 2
         stat_err_y = math.sqrt(stat_err_y2)
         ratioStat.SetBinError(ibin + 1, stat_err_y)
 
