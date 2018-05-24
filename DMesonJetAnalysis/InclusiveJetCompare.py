@@ -6,6 +6,7 @@ import IPython
 import ROOT
 import DMesonJetCompare
 import yaml
+import LoadInclusiveJetSpectrum
 
 globalList = []
 
@@ -31,6 +32,8 @@ def main(config):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
+    measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection()
+
     histograms = []
     for element in config["list"]:
         if "file_name" in element:
@@ -42,7 +45,11 @@ def main(config):
         hname = element["name"]
         histo_to_compare = [element[hname] for element in histograms if hname in element]
         comp = DMesonJetCompare.DMesonJetCompare(hname)
-        r = comp.CompareSpectra(histo_to_compare[0], histo_to_compare[1:])
+        
+        if "JetPtExtended" in hname:
+            r = comp.CompareSpectra(measured_inclusive_cross_section, histo_to_compare)
+        else:
+            r = comp.CompareSpectra(histo_to_compare[0], histo_to_compare[1:])
         for obj in r:
             globalList.append(obj)
 
