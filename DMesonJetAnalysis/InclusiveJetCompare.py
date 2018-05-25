@@ -32,7 +32,7 @@ def main(config):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection()
+    measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection("original")
 
     histograms = []
     for element in config["list"]:
@@ -44,9 +44,11 @@ def main(config):
     for element in config["histograms"]:
         hname = element["name"]
         histo_to_compare = [element[hname] for element in histograms if hname in element]
+        globalList.extend(histo_to_compare)
         comp = DMesonJetCompare.DMesonJetCompare(hname)
         
         if "JetPtExtended" in hname:
+            globalList.append(measured_inclusive_cross_section)
             r = comp.CompareSpectra(measured_inclusive_cross_section, histo_to_compare)
         else:
             r = comp.CompareSpectra(histo_to_compare[0], histo_to_compare[1:])

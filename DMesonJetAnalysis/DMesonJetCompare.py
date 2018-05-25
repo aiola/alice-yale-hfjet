@@ -296,6 +296,17 @@ class DMesonJetCompare:
                 print("Rebin unsuccessfull!")
                 return
         elif compBinning == DMesonJetUtils.AxisCompare.Contains or compBinning == DMesonJetUtils.AxisCompare.IsContained or compBinning == DMesonJetUtils.AxisCompare.Overlaps:
+            print("Need to rebin.")
+            bins = "["
+            for x in h.GetXaxis().GetXbins(): bins += "{}, ".format(x)
+            bins = bins[:-2]
+            bins += "]"
+            print("Original binning: {}".format(bins))
+            bins = "["
+            for x in self.fBaselineForRatio.GetXaxis().GetXbins(): bins += "{}, ".format(x)
+            bins = bins[:-2]
+            bins += "]"
+            print("Final binning: {}".format(bins))
             print("Trying to fit histogram {0} with function {1}".format(h.GetName(), self.fFitFunction))
             hRatio = self.FitAndMakeConsistent(h, self.fBaselineForRatio)
             if not hRatio:

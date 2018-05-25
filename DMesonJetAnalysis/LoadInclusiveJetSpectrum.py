@@ -4,7 +4,7 @@ import numpy
 import ROOT
 import DMesonJetUtils
 
-def GetCrossSection():
+def GetCrossSection(jetptbins=[5, 6, 8, 10, 14, 20, 30]):
     sigmapp = 73.2  # published x-section in mbarn
     triggerEff = 62.2 / 73.2  # eff of MB OR trigger to be applied to data
     bin0CorrData = 0.91  # ratio event after vertexNcontributors cut to evts after phys selection
@@ -23,8 +23,17 @@ def GetCrossSection():
     hStat_old.Scale(sigmapp * triggerEff)
     hStat_old.Scale(bin0CorrData)
 
-    jetptbins = [5, 6, 8, 10, 14, 20, 30]
-    hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float64))
+    if isinstance(jetptbins, list):
+        return_original = False
+        hStat = DMesonJetUtils.Rebin1D_fromBins(hStat_old, "{}_rebinned".format(hStat_old.GetName()), len(jetptbins) - 1, numpy.array(jetptbins, dtype=numpy.float64))
+    elif jetptbins == "rebinned":
+        return_original = False
+        hStat = hStat_old.Clone("{}_copy".format(hStat_old.GetName()))
+    elif jetptbins == "original":
+        return_original = True
+    else:
+        print("Option '{}' unknown!".format(jetptbins))
+        return None, None
 
     fname = "../obusch/outData_spec_Bayes_combPtH.root"
     file = ROOT.TFile(fname)
@@ -50,6 +59,8 @@ def GetCrossSection():
         print("Cannot get inclusive cross section with systematic uncertainty!")
         exit(1)
     file.Close()
+
+    if return_original: return hStat_orig.Clone(), hSyst_orig.Clone()
 
     hSyst = ROOT.TGraphErrors(hStat.GetNbinsX())
 
