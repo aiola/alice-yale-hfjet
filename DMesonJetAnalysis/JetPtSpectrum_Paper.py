@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
+# python script to make the jet pt spectrum and compare with theory
 
-import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
@@ -9,7 +8,6 @@ import DMesonJetUtils
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
-
 
 def GetMeasuredCrossSection():
     fname = "{0}/JetPtSpectrum_DPt_30_Systematics.root".format(input_path)
@@ -26,7 +24,6 @@ def GetMeasuredCrossSection():
         print("Cannot get measured cross section with systematic uncertainty!")
         exit(1)
     return hStat, hSyst
-
 
 def GetTheoryCrossSection():
     # fname = "{0}/PromptDJetsPrediction_1505317519.root".format(input_path)
@@ -63,7 +60,6 @@ def GetTheoryCrossSection():
         hSyst.SetPointError(i, hSyst.GetErrorXlow(i), hSyst.GetErrorXhigh(i), hSyst.GetErrorYlow(i) / 2, hSyst.GetErrorYhigh(i) / 2)
 
     return hStat, hSystUp, hSystLow, hSyst
-
 
 def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLow, theorySyst):
     cname = "D0JetCrossSection_Paper"
@@ -209,7 +205,6 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
 
     return canvas
 
-
 def main():
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -220,7 +215,6 @@ def main():
     canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
     canvas.SaveAs("{0}/D0JetCrossSection_Paper.pdf".format(input_path))
     canvas.SaveAs("{0}/D0JetCrossSection_Paper.C".format(input_path))
-
 
 if __name__ == '__main__':
     main()

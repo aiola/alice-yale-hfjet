@@ -1,14 +1,17 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
+# python script to compare measured  D0 and inclusive jet cross sections with theory
+# us it with
+# JetPtSpectrum_FullChargeComp_Paper.yaml (compare full/charged)
+# JetPtSpectrum_TheoryComp_Paper.yaml
 
+import argparse
+import math
 import yaml
-import re
 import IPython
 import ROOT
 import DMesonJetUtils
-import argparse
-import math
 import LoadInclusiveJetSpectrum
+import LoadTheoryCrossSections
 
 globalList = []
 
@@ -34,54 +37,10 @@ def GetInclJetCrossSection():
     return LoadInclusiveJetSpectrum.GetCrossSection()
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
-    for t in config["theory"]:
-        if not t["active"]: continue
-        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
-        t["histogram"] = h
-        no_pt_cut_spectrum_name = re.sub("DPt_.", "DPt_0", config["theory_spectrum"])
-        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], no_pt_cut_spectrum_name, axis)
-        t["histogram_no_pt_cut"] = h
-
-
-def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
-    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_ccbar_{gen}_{proc}_{ts}.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
-        exit(1)
-    h_orig = DMesonJetUtils.GetObject(file, "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_{spectrum}/D0_MCTruth_Charged_R040_{spectrum}".format(spectrum=spectrum))
-    if not h_orig:
-        print("Cannot get theory cross section with statistical uncertainty!")
-        exit(1)
-
-    h = DMesonJetUtils.Rebin1D(h_orig, axis)
-    h.Scale(0.5, "width")  # particle/antiparticle
-
-    return h
-
+    return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis, True)
 
 def GetInclusiveJetTheoryCrossSectionAll(config):
-    for t in config["theory"]:
-        if not t["active"]: continue
-        if not t["inclusive"]: continue
-        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], t["inclusive"]["file_name"])
-        t["inclusive_histogram"] = h
-
-
-def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, file_name):
-    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/{file_name}".format(input_path=input_path, gen=gen, proc=proc, ts=ts, file_name=file_name)
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
-        exit(1)
-    h_orig = DMesonJetUtils.GetObject(file, "JetPt")
-    if not h_orig:
-        print("Cannot get theory cross section with statistical uncertainty!")
-        exit(1)
-
-    h = h_orig.Clone()
-    return h
-
+    return LoadTheoryCrossSections.GetInclusiveJetTheoryCrossSectionAll(config)
 
 def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, title, logy, miny, maxy, minr, maxr, legx, no_pt_cut):
     cname = "D0JetVsInclusiveCrossSectionTheoryComp_Paper"
@@ -304,8 +263,9 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
     for t in theory:
+        if "inclusive_histogram_plot" in t: leg1.AddEntry(t["inclusive_histogram_plot"], "Inclusive, {}".format(t["title"]), "p")
         if "histogram_plot" in t: leg1.AddEntry(t["histogram_plot"], t["title"], "p")
-        if "histogram_no_pt_cut_plot" in t: leg1.AddEntry(t["histogram_no_pt_cut_plot"], "#it{p}_{T,D} > 0", "p")
+        if "histogram_no_pt_cut_plot" in t: leg1.AddEntry(t["histogram_no_pt_cut_plot"], "#it{{p}}_{{T,D}} > 0, {}".format(t["title"]), "p")
     leg1.Draw()
 
     leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")

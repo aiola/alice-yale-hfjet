@@ -54,7 +54,7 @@ class ProjectInclusiveJetSpectra:
         self.fMaxEvents = events
 
         self.fCuts = self.fConfig["cuts"]
-        self.fJetBranch = self.fConfig["jet_branch"]
+        self.fJetBranches = self.fConfig["jets"]
 
         if self.fConfig["train"] == "FastSim" or self.fConfig["train"] == "FastSimOld":
             suffix = "_".join([self.fGenerator, self.fProcess, self.fTS])
@@ -86,7 +86,8 @@ class ProjectInclusiveJetSpectra:
             self.fFileName = config["file_name"]
 
     def Terminate(self):
-        for h in self.fHistograms.itervalues(): h.Normalize()
+        for histos in self.fHistograms.itervalues(): 
+            for h in histos.itervalues():  h.Normalize()
 
     def Start(self):
         self.GenerateChain()
@@ -116,15 +117,18 @@ class ProjectInclusiveJetSpectra:
 
     def GenerateHistograms(self):
         self.fHistograms = dict()
-        for hdef in config["histograms"]:
-            hobj = ROOT.TH1D(hdef["name"], hdef["title"], len(hdef["bins"]) - 1, numpy.array(hdef["bins"], dtype=numpy.float32))
-            h = Histogram(VariableType.Jet, hdef["variable"], hobj)
-            self.fHistograms[hdef["name"]] = h
+        for jet_branch in self.fJetBranches:
+            histograms = dict()
+            for hdef in config["histograms"]:
+                hobj = ROOT.TH1D(hdef["name"], hdef["title"], len(hdef["bins"]) - 1, numpy.array(hdef["bins"], dtype=numpy.float32))
+                h = Histogram(VariableType.Jet, hdef["variable"], hobj)
+                histograms[hdef["name"]] = h
 
-        if self.fConfig["train"] != "FastSimOld":
-            hobj = ROOT.TH1D("PtHard", "PtHard", 1000, 0, 1000)
-            h = Histogram(VariableType.Event, "fPtHard", hobj)
-            self.fHistograms["PtHard"] = h
+            if self.fConfig["train"] != "FastSimOld":
+                hobj = ROOT.TH1D("PtHard", "PtHard", 1000, 0, 1000)
+                h = Histogram(VariableType.Event, "fPtHard", hobj)
+                histograms["PtHard"] = h
+            self.fHistograms[jet_branch["name"]] = histograms
 
     def ProjectTree(self):
         print("Total number of events: {}".format(self.fTree.GetEntries()))
@@ -134,22 +138,23 @@ class ProjectInclusiveJetSpectra:
             self.OnFileChange()
             if self.fMergingType == "explicit_weight": self.GetExplicitWeight(entry)
 
-            for h in self.fHistograms.itervalues():
-                if h.fType != VariableType.Event: continue
-                h.Fill(entry.Event, self.fWeight)
-
-            jets = getattr(entry, self.fJetBranch)
-            for jet in jets:
-                bad = False
-                for c in self.fCuts:
-                    v = getattr(jet, c["variable"])
-                    if v > c["min"] or v >= c["max"]:
-                        bad = True
-                        break
-                if bad: break
-                for h in self.fHistograms.itervalues():
-                    if h.fType != VariableType.Jet: continue
-                    h.Fill(jet, self.fWeight)
+            for jet_branch in self.fJetBranches:
+                histograms = self.fHistograms[jet_branch["name"]]
+                for h in histograms.itervalues():
+                    if h.fType != VariableType.Event: continue
+                    h.Fill(entry.Event, self.fWeight)
+                jets = getattr(entry, jet_branch["branch"])
+                for jet in jets:
+                    bad = False
+                    for c in self.fCuts:
+                        v = getattr(jet, c["variable"])
+                        if v > c["min"] or v >= c["max"]:
+                            bad = True
+                            break
+                    if bad: break
+                    for h in histograms.itervalues():
+                        if h.fType != VariableType.Jet: continue
+                        h.Fill(jet, self.fWeight)
 
     def GetExplicitWeight(self, entry):
         event = entry.Event
