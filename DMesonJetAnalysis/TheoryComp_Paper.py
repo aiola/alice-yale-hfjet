@@ -1,14 +1,24 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
+# python script to compare D0 jet spectrum with theory
+# use it with
+# JetPtSpectrum_TheoryComp_Paper.yaml
+# JetPtSpectrum_PowhegComp_Paper.yaml
+# JetPtSpectrum_FullChargedComp_Paper.yaml
+# JetZSpectrum_JetPt_5_15_TheoryComp_Paper.yaml
+# JetZSpectrum_JetPt_5_15_PowhegComp_Paper.yaml
+# JetZSpectrum_JetPt_5_15_FullChargedComp_Paper.yaml
+# JetZSpectrum_JetPt_15_30_TheoryComp_Paper.yaml
+# JetZSpectrum_JetPt_15_30_PowhegComp_Paper.yaml
+# JetZSpectrum_JetPt_15_30_FullChargedComp_Paper.yaml
 
+import argparse
 import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
-import argparse
+import LoadTheoryCrossSections
 
 globalList = []
-
 
 def GetMeasuredCrossSection(input_path, file_name):
     fname = "{}/{}.root".format(input_path, file_name)
@@ -26,34 +36,8 @@ def GetMeasuredCrossSection(input_path, file_name):
         exit(1)
     return hStat, hSyst
 
-
 def GetTheoryCrossSectionAll(config, axis):
-    for t in config["theory"]:
-        h = GetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis, config["normalize"])
-        t["histogram"] = h
-
-
-def GetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis, normalize):
-    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_ccbar_{gen}_{proc}_{ts}.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
-        exit(1)
-    else:
-        print("File {} open".format(fname))
-    h_orig = DMesonJetUtils.GetObject(file, "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_{spectrum}/D0_MCTruth_Charged_R040_{spectrum}".format(spectrum=spectrum))
-    if not h_orig:
-        print("Cannot get theory cross section with statistical uncertainty!")
-        exit(1)
-
-    h = DMesonJetUtils.Rebin1D(h_orig, axis)
-    if normalize:
-        h.Scale(1.0 / h.Integral(1, h.GetNbinsX()), "width")
-    else:
-        h.Scale(0.5, "width")  # particle/antiparticle
-
-    return h
-
+    return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis)
 
 def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr, maxr, legx):
     cname = "D0JetCrossSection_Paper"
@@ -93,6 +77,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     globalList.append(dataStat_copy)
 
     for t in theory:
+        if not t["active"]: continue
         h = t["histogram"].Clone(t["gen"])
         h.Draw("same e0")
         globalList.append(h)
@@ -139,8 +124,13 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
         ratioStat.SetBinContent(ibin + 1, 1.0)
 
     for t in theory:
+        if not t["active"]: continue
         r = t["histogram_plot"].Clone()
         for ibin in range(1, r.GetNbinsX() + 1):
+            if t["histogram_plot"].GetBinContent(ibin) <= 0: 
+                r.SetBinError(ibin, 0)
+                r.SetBinContent(ibin, 0)
+                continue
             r.SetBinError(ibin, t["histogram_plot"].GetBinError(ibin) / t["histogram_plot"].GetBinContent(ibin))
             r.SetBinContent(ibin, t["histogram_plot"].GetBinContent(ibin) / dataStat_copy.GetBinContent(ibin))
         r.SetLineColor(t["color"])
@@ -167,7 +157,9 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    for t in theory: leg1.AddEntry(t["histogram_plot"], t["title"], "l")
+    for t in theory: 
+        if not t["active"]: continue
+        leg1.AddEntry(t["histogram_plot"], t["title"], "l")
     leg1.Draw()
 
     leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")

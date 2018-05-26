@@ -1,17 +1,22 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
+# python script to compare D0 jet rate over inclusive jet vs z with theory
+# us it with
+# D0JetRate_JetPt_5_15_TheoryComp_Paper.yaml
+# D0JetRate_JetPt_15_30_TheoryComp_Paper.yaml
+# D0JetRate_JetPt_5_15_FullChargedComp_Paper.yaml
+# D0JetRate_JetPt_15_30_FullChargedComp_Paper.yaml
 
+import argparse
+import math
+import numpy
 import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
-import argparse
-import math
-import numpy
 import LoadInclusiveJetSpectrum
+import LoadTheoryCrossSections
 
 globalList = []
-
 
 def GetD0JetCrossSection(input_path, file_name):
     fname = "{}/{}.root".format(input_path, file_name)
@@ -33,53 +38,11 @@ def GetD0JetCrossSection(input_path, file_name):
 def GetInclJetCrossSection():
     return LoadInclusiveJetSpectrum.GetCrossSection()
 
-
 def GetD0JetTheoryCrossSectionAll(config, axis):
-    for t in config["theory"]:
-        if not t["active"]: continue
-        h = GetD0JetTheoryCrossSection(config["input_path"], t["gen"], t["proc"], t["ts"], config["theory_spectrum"], axis)
-        t["histogram"] = h
-
-
-def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, spectrum, axis):
-    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_ccbar_{gen}_{proc}_{ts}.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
-        exit(1)
-    h_orig = DMesonJetUtils.GetObject(file, "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_{spectrum}/D0_MCTruth_Charged_R040_{spectrum}".format(spectrum=spectrum))
-    if not h_orig:
-        print("Cannot get theory cross section with statistical uncertainty!")
-        exit(1)
-
-    h = DMesonJetUtils.Rebin1D(h_orig, axis)
-    h.Scale(0.5, "width")  # particle/antiparticle
-
-    return h
-
+    return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis, True)
 
 def GetInclusiveJetTheoryCrossSectionAll(config):
-    for t in config["theory"]:
-        if not t["inclusive"]: continue
-        if not t["active"]: continue
-        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"])
-        t["inclusive_histogram"] = h
-
-
-def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts):
-    fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/Jets.root".format(input_path=input_path, gen=gen, proc=proc, ts=ts)
-    file = ROOT.TFile(fname)
-    if not file or file.IsZombie():
-        print("Could not open file {0}".format(fname))
-        exit(1)
-    h_orig = DMesonJetUtils.GetObject(file, "JetPt")
-    if not h_orig:
-        print("Cannot get theory cross section with statistical uncertainty!")
-        exit(1)
-
-    h = h_orig.Clone()
-    return h
-
+    return LoadTheoryCrossSections.GetInclusiveJetTheoryCrossSectionAll(config)
 
 def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr, legx):
     cname = "D0JetVsInclusiveCrossSectionTheoryComp_Paper"
@@ -303,9 +266,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
-    config = yaml.load(f)
+    yconfig = yaml.load(f)
     f.close()
 
-    main(config)
+    main(yconfig)
 
     IPython.embed()

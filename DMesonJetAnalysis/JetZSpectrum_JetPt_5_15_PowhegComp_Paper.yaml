@@ -2,6 +2,7 @@ name: JetZSpectrum_JetPt_5_15_PowhegComp_Paper
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetZSpectrum_JetPt_5_15_Systematics
 theory_spectrum: JetZSpectrum_DPt_20_JetPt_5_15
+jet_type: Charged_R040
 logy: no
 normalize: yes
 title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T, ch jet} < 15 GeV/#it{c}, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}", "POWHEG+PYTHIA 6"]
@@ -13,6 +14,7 @@ legx: 0.18
 theory:
 -
   title: Central
+  active: yes
   gen: powheg
   proc: charm
   ts: 1483386026
@@ -20,6 +22,7 @@ theory:
   line: 1
 -
   title: "#it{m}_{c} = 1.3 GeV/#it{c}^{2}"
+  active: yes
   gen: powheg
   proc: charm
   ts: 1484078952
@@ -27,6 +30,7 @@ theory:
   line: 2
 -
   title: "#it{m}_{c} = 1.7 GeV/#it{c}^{2}"
+  active: yes
   gen: powheg
   proc: charm
   ts: 1484079666
@@ -34,6 +38,7 @@ theory:
   line: 4
 -
   title: "PDF = MSTW2008nlo68cl" 
+  active: yes
   gen: powheg
   proc: charm
   ts: 1484231826
@@ -41,6 +46,7 @@ theory:
   line: 5
 -
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
+  active: yes
   gen: powheg
   proc: charm
   ts: 1483623768
@@ -48,6 +54,7 @@ theory:
   line: 6
 -
   title: "#mu_{F} = 1.0, #mu_{R} = 0.5"
+  active: yes
   gen: powheg
   proc: charm
   ts: 1483619159

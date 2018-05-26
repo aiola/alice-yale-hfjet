@@ -1,6 +1,7 @@
 input_path: /Volumes/DATA/ALICE/JetResults
 prefix: FastSim_powheg+pythia6_dijet
 file_name: FastSimAnalysis_inclusive_jets.root
+jet_type: Charged_R040
 histograms:
 -
   name: JetPt
@@ -20,12 +21,14 @@ histograms:
   max: 150
 list:
 -
+  ts: 1520882421
+  file_name: FastSimAnalysis_inclusive_jets_unweighted.root
+  prefix: FastSim_pythia6_mb
+  title: "PYTHIA6 Perugia-2011"
+-
   ts: 1524840639
   file_name: FastSimAnalysis_inclusive_jets_unweighted.root
   title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 0, UW"
-#-
-#  ts: 1524840639
-#  title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 0"
 -
   ts: 1524747472
   title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"

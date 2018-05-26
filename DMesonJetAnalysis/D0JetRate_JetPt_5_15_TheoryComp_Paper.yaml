@@ -2,10 +2,11 @@ name: D0JetRate_JetPt_5_15_TheoryComp_Paper
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetZCrossSection_JetPt_5_15_Systematics
 theory_spectrum: JetZSpectrum_DPt_2_JetPt_5_15
+jet_type: Charged_R040
 min_jet_pt: 5
 max_jet_pt: 15
 logy: no
-normalize: yes
+normalize: no
 title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T, ch jet} < 15 GeV/#it{c}, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
 miny: 0.001
 maxy: 0.2
@@ -24,7 +25,8 @@ theory:
   inclusive:
     gen: powheg+pythia6
     proc: dijet
-    ts: 1520879631
+    ts: 1524742846
+    file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG+PYTHIA 8
   active: no
@@ -37,6 +39,8 @@ theory:
     gen: powheg+pythia8
     proc: dijet
     ts: 1521150255
+    jet_type: ""
+    file_name: Jets.root
 -
   title: PYTHIA 6 Perugia-2011
   active: yes
@@ -49,6 +53,7 @@ theory:
     gen: pythia6
     proc: mb
     ts: 1520882421
+    file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
   title: PYTHIA 8 Monash-2013
   active: no
@@ -61,6 +66,8 @@ theory:
     gen: pythia8
     proc: mb
     ts: 1521277750
+    jet_type: ""
+    file_name: Jets.root
 -
   title: PYTHIA 6 LO
   active: yes
@@ -69,7 +76,11 @@ theory:
   ts: 1521276365
   color: 862 # kAzure+2
   line: 6
-  inclusive: no
+  inclusive:
+    gen: pythia6
+    proc: mb
+    ts: 1520882421
+    file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
   title: PYTHIA 8 LO
   active: no
@@ -78,4 +89,9 @@ theory:
   ts: 1521276607
   color: 902 # kPink+2
   line: 7
-  inclusive: no
+  inclusive:
+    gen: pythia8
+    proc: mb
+    ts: 1521277750
+    jet_type: ""
+    file_name: Jets.root

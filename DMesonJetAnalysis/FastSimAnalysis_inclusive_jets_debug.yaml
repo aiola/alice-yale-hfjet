@@ -4,7 +4,13 @@ train: debug
 file_name: ""
 task_name: AliAnalysisTaskEmcalJetTree
 merging_type: explicit_weight
-jet_branch: Jet_AKTChargedR040_mcparticles_pT0000_pt_scheme
+jets: 
+-
+  branch: Jet_AKTChargedR040_mcparticles_pT0000_pt_scheme
+  name: Charged_R040
+-
+  branch: Jet_AKTFullR040_mcparticles_pT0000_pt_scheme
+  name: Full_R040
 cuts: []
 histograms:
 -
