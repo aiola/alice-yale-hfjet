@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-# python script to project TTree containing inclusive jet spectra
+# python script to produce tracking QA plots
+# use it with:
+# train Jets_EMC_pp_MC_1522_1508_1524_1525 (MC)
+# train Jets_EMC_pp_1151_1152_1153_1154 (data)
 
 import argparse
 import IPython
@@ -155,12 +158,20 @@ class EfficiencyHistogram(Histogram):
 class TrackingQA:
 
     def __init__(self, input_path, train):
+        if "_MC_" in train:
+            print("Train '{}' is a MC train.".format(train))
+            self.fIsMC = True
+            self.fHnParticlesName = "fParticlesPhysPrim"
+            self.fHnMatchedName = "fParticlesMatched"
+        else:
+            print("Train '{}' is NOT a MC train.".format(train))
+            self.fIsMC = False
+            self.fHnParticlesName = ""
+            self.fHnMatchedName = ""
         self.fInputPath = input_path
         self.fTrain = train
         self.fTaskName = "AliEmcalTrackingQATask_histos"
         self.fHnTracksName = "fTracks"
-        self.fHnParticlesName = "fParticlesPhysPrim"
-        self.fHnMatchedName = "fParticlesMatched"
         self.fVariables = []
         pt = Variable("Pt", "#it{p}_{T}", "(GeV/#it{c})", True, 0, 0, 3, 0)
         pt.fBins = [0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90,
@@ -212,13 +223,14 @@ class TrackingQA:
             h.SetName("{}_{}".format(h.GetName(), period))
             self.fHnTracks.append(h)
 
-            h = DMesonJetUtils.GetObject(file, "{}/{}".format(self.fTaskName, self.fHnParticlesName))
-            h.SetName("{}_{}".format(h.GetName(), period))
-            self.fHnParticles.append(h)
+            if self.fIsMC:
+                h = DMesonJetUtils.GetObject(file, "{}/{}".format(self.fTaskName, self.fHnParticlesName))
+                h.SetName("{}_{}".format(h.GetName(), period))
+                self.fHnParticles.append(h)
 
-            h = DMesonJetUtils.GetObject(file, "{}/{}".format(self.fTaskName, self.fHnMatchedName))
-            h.SetName("{}_{}".format(h.GetName(), period))
-            self.fHnMatched.append(h)
+                h = DMesonJetUtils.GetObject(file, "{}/{}".format(self.fTaskName, self.fHnMatchedName))
+                h.SetName("{}_{}".format(h.GetName(), period))
+                self.fHnMatched.append(h)
 
             h = DMesonJetUtils.GetObject(file, "{}/{}".format(self.fTaskName, "fHistEventCount"))
             events = h.GetBinContent(1)
@@ -233,30 +245,34 @@ class TrackingQA:
             matched_particle_histogram = ParticleHistogram(var, True)
             for hn in self.fHnTracks:
                 track_histogram.Add(hn, self.fTrackTypeAxis)
-            for hn in self.fHnParticles:
-                particle_histogram.Add(hn, self.fParticleFindableAxis)
-            for hn in self.fHnMatched:
-                matched_track_histogram.Add(hn, self.MatchedTrackTypeAxis)
-                matched_particle_histogram.Add(hn, self.MatchedTrackTypeAxis)
             track_histogram.MergeHistograms()
-            particle_histogram.MergeHistograms()
-            matched_track_histogram.MergeHistograms()
-            matched_particle_histogram.MergeHistograms()
             track_histogram.NormalizeHistogram(self.fTotEvents)
-            particle_histogram.NormalizeHistogram(self.fTotEvents)
-            matched_track_histogram.NormalizeHistogram(self.fTotEvents)
-            matched_particle_histogram.NormalizeHistogram(self.fTotEvents)
             self.fTrackHistograms[var.fName] = track_histogram
-            self.fParticleHistograms[var.fName] = particle_histogram
-            self.fMatchedTracksHistograms[var.fName] = matched_track_histogram
-            self.fMatchedParticleHistograms[var.fName] = matched_particle_histogram
+
+            if self.fIsMC:
+                for hn in self.fHnParticles:
+                    particle_histogram.Add(hn, self.fParticleFindableAxis)
+                particle_histogram.MergeHistograms()
+                particle_histogram.NormalizeHistogram(self.fTotEvents)
+                self.fParticleHistograms[var.fName] = particle_histogram
+
+                for hn in self.fHnMatched:
+                    matched_track_histogram.Add(hn, self.MatchedTrackTypeAxis)
+                    matched_particle_histogram.Add(hn, self.MatchedTrackTypeAxis)
+                matched_track_histogram.MergeHistograms()
+                matched_particle_histogram.MergeHistograms()
+                matched_track_histogram.NormalizeHistogram(self.fTotEvents)
+                matched_particle_histogram.NormalizeHistogram(self.fTotEvents)
+                self.fMatchedTracksHistograms[var.fName] = matched_track_histogram
+                self.fMatchedParticleHistograms[var.fName] = matched_particle_histogram
 
     def Plot(self):
         self.PlotSpectra("Tracks", self.fTrackHistograms)
-        self.PlotSpectra("MatchedTracks", self.fMatchedTracksHistograms)
-        self.PlotSpectra("MatchedParticles", self.fMatchedParticleHistograms)
+        if self.fIsMC:
+            self.PlotSpectra("MatchedTracks", self.fMatchedTracksHistograms)
+            self.PlotSpectra("MatchedParticles", self.fMatchedParticleHistograms)
 
-        self.PlotEfficiency()
+            self.PlotEfficiency()
 
     def PlotSpectra(self, name, histograms):
         for var in self.fVariables:
@@ -304,6 +320,7 @@ class TrackingQA:
                 globalList.append(r)
 
     def CalculateEfficiency(self):
+        if not self.fIsMC: return
         for var in self.fVariables:
             efficiencies = EfficiencyHistogram(var, True)
             efficiencies.Generate(self.fParticleHistograms[var.fName], self.fMatchedParticleHistograms[var.fName])
