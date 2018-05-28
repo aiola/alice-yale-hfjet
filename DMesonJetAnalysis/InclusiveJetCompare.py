@@ -31,15 +31,16 @@ def LoadHistograms(config, ts, file_name, prefix, title, jet_type):
         globalList.append(result[hname])
     return result
 
-def main(config):
+def main(config, measured):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection("original")
+    if measured: measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection("original")
 
     histograms = []
     for element in config["list"]:
+        if not element["active"]: continue
         if "file_name" in element:
             file_name = element["file_name"]
         else:
@@ -54,6 +55,7 @@ def main(config):
             jet_type = config["jet_type"]
         histograms.append(LoadHistograms(config, element["ts"], file_name, prefix, element["title"], jet_type))
     for element in config["histograms"]:
+        if not element["active"]: continue
         if "jet_type" in element:
             jet_type = element["jet_type"]
         else:
@@ -64,7 +66,7 @@ def main(config):
         globalList.extend(histo_to_compare)
         comp = DMesonJetCompare.DMesonJetCompare(hname)
 
-        if "JetPtExtended" in hname:
+        if measured and "JetPtExtended" in hname:
             if len(histo_to_compare) == 0:
                 print("No histograms to compare!")
                 continue
@@ -82,12 +84,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compare inclusive jet spectra.')
     parser.add_argument('config',
                         help='YAML file')
+    parser.add_argument('--measured', action='store_const',
+                        default=False, const=True)
     args = parser.parse_args()
 
     f = open(args.config, 'r')
     yconfig = yaml.load(f)
     f.close()
 
-    main(yconfig)
+    main(yconfig, args.measured)
 
     IPython.embed()

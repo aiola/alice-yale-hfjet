@@ -22,12 +22,31 @@ histograms:
 list:
 -
   ts: 1520882421
+  active: no
   file_name: FastSimAnalysis_inclusive_jets_unweighted.root
   prefix: FastSim_pythia6_mb
   title: "PYTHIA6 Perugia-2011"
 -
   ts: 1524842969
+  active: yes
   title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 5 GeV/#it{c}"
 -
+  ts: 0
+  active: yes
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 10 GeV/#it{c}"
+-
   ts: 1524742846
+  active: yes
   title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+-
+  ts: 1527104254
+  active: yes
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 40 GeV/#it{c}"
+-
+  ts: 1527252990
+  active: yes
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
+-
+  ts: 1527178339
+  active: yes
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 90 GeV/#it{c}"
