@@ -21,6 +21,14 @@ def ResetTHnFilters(hn):
     for iaxis in range(0, hn.GetNdimensions()):
         hn.GetAxis(iaxis).SetRange(0, -1)
 
+class Variable2D:
+    def __init__(self, varx, vary, plotsigma):
+        self.fVariableX = varx
+        self.fVariableY = vary
+        self.fPlotSigma = plotsigma
+    
+    def GetName(self):
+        return "{}vs{}".format(self.fVariableY.fName, self.fVariableX.fName)
 
 class Variable:
 
@@ -35,13 +43,26 @@ class Variable:
         self.fLogy = logy
         self.fLogx = False
         self.fBins = None
+    
+    def GetName(self):
+        return self.fName
 
+    def GetAxisTitle(self):
+        axis_title = self.fTitle
+        if self.fUnits: axis_title += " " + self.fUnits
+        return axis_title
+
+class HistogramType(Enum):
+    Track = 1
+    Particle = 2
+    MatchedTrack = 3
+    MatchedParticle = 4
 
 class Histogram:
 
-    def __init__(self, variable, matched):
+    def __init__(self, variable, htype):
         self.fVariable = variable
-        self.fMatched = matched
+        self.fHistogramType = htype
         self.fHistograms = dict()
         self.fNormHistograms = dict()
         self.fTrackTypes = { 1 : "Global tracks", 2 : "Constrained tracks w/ ITS refit", 3 : "Constrained tracks w/o ITS refit"}
@@ -65,6 +86,7 @@ class Histogram:
                 yaxis_title = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}} {units}^{{-1}}".format(var=self.fVariable.fTitle, units=self.fVariable.fUnits)
             else:
                 yaxis_title = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d#it{{N}}}}{{d{var}}}".format(var=self.fVariable.fTitle)
+            hnorm.GetYaxis().SetTitle(yaxis_title)
             self.fNormHistograms[tt] = hnorm
 
     def GetFullHistogram(self, normalized=True):
@@ -80,27 +102,71 @@ class Histogram:
             l = self.fHistograms
         return [obj for k, obj in l.iteritems() if not k == "all"]
 
+class Histogram2D(Histogram):
     def RebinIfNeeded(self, h):
-        if not self.fVariable.fBins: return h
-        hrebinned = DMesonJetUtils.Rebin1D_fromBins(h, h.GetName(), len(self.fVariable.fBins) - 1, numpy.array(self.fVariable.fBins, dtype=numpy.float64), True)
+        if not self.fVariable.fVariableX.fBins and not self.fVariable.fVariableY.fBins: 
+            return h
+        else:
+            if self.fVariable.fVariableX.fBins:
+                nxbins = len(self.fVariable.fVariableX.fBins) - 1
+                xbins = numpy.array(self.fVariable.fVariableX.fBins, dtype=numpy.float64)
+            else:
+                nxbins = h.GetXaxis().GetNbins()
+                xbins = h.GetXaxis().GetXbins().GetArray()
+            if self.fVariable.fVariableY.fBins:
+                nybins = len(self.fVariable.fVariableY.fBins) - 1
+                ybins = numpy.array(self.fVariable.fVariableY.fBins, dtype=numpy.float64)
+            else:
+                nybins = h.GetYaxis().GetNbins()
+                ybins = h.GetYaxis().GetXbins().GetArray()
+
+            hrebinned = DMesonJetUtils.Rebin2D_fromBins(h, h.GetName(), nxbins, xbins, nybins, ybins, False)
         return hrebinned
 
+    def GenerateProfiles(self):
+        self.fProfiles = dict()
+        for k, h in self.fHistograms.iteritems():
+            if self.fVariable.fPlotSigma:
+                p = h.ProfileX("{}_Profile".format(h.GetName()), 1, -1, "s")
+                hname = "{}_Sigma".format(h.GetName())
+                if h.GetXaxis().GetXbins():
+                    s = ROOT.TH1D(hname, h.GetTitle(), h.GetXaxis().GetNbins(), h.GetXaxis().GetXbins().GetArray())
+                else:
+                    s = ROOT.TH1D(hname, h.GetTitle(), h.GetXaxis().GetNbins(), h.GetXaxis().GetXmin(), h.GetXaxis().GetXmax())
+                for ibin in range(0, p.GetNbinsX() + 2):
+                    s.SetBinContent(ibin, p.GetBinError(ibin))
+                    s.SetBinError(ibin, 0)
+                self.fProfiles[k] = s
+            else:
+                p = h.ProfileX("{}_Profile".format(h.GetName()), 1, -1, "i")
+                self.fProfiles[k] = p
 
-class TrackHistogram(Histogram):
+    def GetFullProfile(self):
+        return self.fProfiles["all"]
+
+    def GetPartialProfiles(self, normalized=True):
+        return [obj for k, obj in self.fProfiles.iteritems() if not k == "all"]
+
+class Histogram1D(Histogram):
+    def RebinIfNeeded(self, h):
+        if not self.fVariable.fBins: return h
+        hrebinned = DMesonJetUtils.Rebin1D_fromBins(h, h.GetName(), len(self.fVariable.fBins) - 1, numpy.array(self.fVariable.fBins, dtype=numpy.float64), False)
+        return hrebinned
+
+class TrackHistogram(Histogram1D):
 
     def Add(self, hn, track_type_axis):
         print("Adding histogram '{}' (variable '{}')...".format(hn.GetName(), self.fVariable.fName))
         for track_type, track_type_title in self.fTrackTypes.iteritems():
             hn.GetAxis(track_type_axis).SetRange(track_type, track_type)
-            if self.fMatched:
+            if self.fHistogramType == HistogramType.MatchedTrack:
                 h = self.RebinIfNeeded(hn.Projection(self.fVariable.fMatchedTracksAxis, "A"))
                 hname = "MatchedTracks{}_{}".format(self.fVariable.fName, track_type)
             else:
                 h = self.RebinIfNeeded(hn.Projection(self.fVariable.fTracksAxis, "A"))
                 hname = "Tracks{}_{}".format(self.fVariable.fName, track_type)
             hn.GetAxis(track_type_axis).SetRange(0, -1)
-            xaxis_title = self.fVariable.fTitle
-            if self.fVariable.fUnits: xaxis_title += " " + self.fVariable.fUnits
+            xaxis_title = self.fVariable.GetAxisTitle()
             h.SetName(hname)
             h.SetTitle(track_type_title)
             h.GetXaxis().SetTitle(xaxis_title)
@@ -112,15 +178,15 @@ class TrackHistogram(Histogram):
                 self.fHistograms[track_type] = h
 
 
-class ParticleHistogram(Histogram):
+class ParticleHistogram(Histogram1D):
 
     def Add(self, hn, track_type_axis):
-        if self.fMatched:
+        if self.fHistogramType == HistogramType.MatchedParticle:
             track_types = self.fTrackTypes
         else:
             track_types = { "all" : "Hybrid tracks" }
         for track_type, track_type_title in track_types.iteritems():
-            if self.fMatched:
+            if self.fHistogramType == HistogramType.MatchedParticle:
                 hn.GetAxis(track_type_axis).SetRange(track_type, track_type)
                 h = self.RebinIfNeeded(hn.Projection(self.fVariable.fMatchedParticlesAxis, "A"))
                 hn.GetAxis(track_type_axis).SetRange(0, -1)
@@ -130,8 +196,7 @@ class ParticleHistogram(Histogram):
                 h = self.RebinIfNeeded(hn.Projection(self.fVariable.fParticlesAxis, "A"))
                 hn.GetAxis(track_type_axis).SetRange(0, -1)
                 hname = "Particles{}".format(self.fVariable.fName)
-            xaxis_title = self.fVariable.fTitle
-            if self.fVariable.fUnits: xaxis_title += " " + self.fVariable.fUnits
+            xaxis_title = self.fVariable.GetAxisTitle()
             h.SetName(hname)
             h.SetTitle(track_type_title)
             h.GetXaxis().SetTitle(xaxis_title)
@@ -142,6 +207,31 @@ class ParticleHistogram(Histogram):
             else:
                 self.fHistograms[track_type] = h
 
+class TrackHistogram2D(Histogram2D):
+
+    def Add(self, hn, track_type_axis):
+        print("Adding histogram '{}' (variable '{}':'{}')...".format(hn.GetName(), self.fVariable.fVariableX.fName, self.fVariable.fVariableY.fName))
+        for track_type, track_type_title in self.fTrackTypes.iteritems():
+            hn.GetAxis(track_type_axis).SetRange(track_type, track_type)
+            if self.fHistogramType == HistogramType.MatchedTrack:
+                h = self.RebinIfNeeded(hn.Projection(self.fVariable.fVariableY.fMatchedTracksAxis, self.fVariable.fVariableX.fMatchedTracksAxis, "A"))
+                hname = "MatchedTracks{}_{}".format(self.fVariable.GetName(), track_type)
+            else:
+                h = self.RebinIfNeeded(hn.Projection(self.fVariable.fVariableY.fTracksAxis, self.fVariable.fVariableX.fTracksAxis, "A"))
+                hname = "Tracks{}_{}".format(self.fVariable.GetName(), track_type)
+            hn.GetAxis(track_type_axis).SetRange(0, -1)
+            xaxis_title = self.fVariable.fVariableX.GetAxisTitle()
+            yaxis_title = self.fVariable.fVariableY.GetAxisTitle()
+            h.SetName(hname)
+            h.SetTitle(track_type_title)
+            h.GetXaxis().SetTitle(xaxis_title)
+            h.GetYaxis().SetTitle(yaxis_title)
+            h.GetZaxis().SetTitle("counts")
+            h.Sumw2()
+            if track_type in self.fHistograms:
+                self.fHistograms[track_type].Add(h)
+            else:
+                self.fHistograms[track_type] = h
 
 class EfficiencyHistogram(Histogram):
 
@@ -179,14 +269,22 @@ class TrackingQA:
                     3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0,
                     15, 20, 30, 40]
         pt.fLogx = True
+        eta = Variable("Eta", "#eta", "", True, 1, 1, 4, 1)
+        phi = Variable("Phi", "#phi", "", True, 2, 2, 5, 2)
+        sigmapt = Variable("SigmaPt", "#sigma(#it{p}_{T}) / #it{p}_{T}", "", True, 5, -1, -1, -1)
+        reldiffpt = Variable("RelDiffPt", "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{det}", "", True, -1, -1, 7, -1)
         self.fVariables.append(pt)
-        self.fVariables.append(Variable("Eta", "#eta", "", True, 1, 1, 4, 1))
-        self.fVariables.append(Variable("Phi", "#phi", "", True, 2, 2, 5, 2))
+        self.fVariables.append(eta)
+        self.fVariables.append(phi)
+        self.fVariables.append(Variable2D(pt, sigmapt, False))
+        self.fVariables.append(Variable2D(eta, sigmapt, False))
+        self.fVariables.append(Variable2D(phi, sigmapt, False))
+        self.fVariables.append(Variable2D(pt, reldiffpt, True))
+        self.fVariables.append(Variable2D(eta, reldiffpt, True))
+        self.fVariables.append(Variable2D(phi, reldiffpt, True))
         self.fTrackTypeAxis = 4
-        self.fTrackMomResAxis = 5
         self.fParticleFindableAxis = 4
-        self.MatchedTrackTypeAxis = 6
-        self.MatchedTrackMomRelDiffAxis = 7
+        self.fMatchedTrackTypeAxis = 6
         self.fTrackHistograms = dict()
         self.fParticleHistograms = dict()
         self.fMatchedTracksHistograms = dict()
@@ -237,45 +335,84 @@ class TrackingQA:
             self.fNEvents.append(events)
             self.fTotEvents += events
 
+    def ProjetHistogram1D(self, var):
+        track_histogram = TrackHistogram(var, HistogramType.Track)
+        for hn in self.fHnTracks:
+            track_histogram.Add(hn, self.fTrackTypeAxis)
+        track_histogram.MergeHistograms()
+        track_histogram.NormalizeHistogram(self.fTotEvents)
+        self.fTrackHistograms[var.fName] = track_histogram
+
+        if self.fIsMC:
+            particle_histogram = ParticleHistogram(var, HistogramType.Particle)
+            for hn in self.fHnParticles:
+                particle_histogram.Add(hn, self.fParticleFindableAxis)
+            particle_histogram.MergeHistograms()
+            particle_histogram.NormalizeHistogram(self.fTotEvents)
+            self.fParticleHistograms[var.fName] = particle_histogram
+
+            matched_track_histogram = TrackHistogram(var, HistogramType.MatchedTrack)
+            matched_particle_histogram = ParticleHistogram(var, HistogramType.MatchedParticle)
+            for hn in self.fHnMatched:
+                matched_track_histogram.Add(hn, self.fMatchedTrackTypeAxis)
+                matched_particle_histogram.Add(hn, self.fMatchedTrackTypeAxis)
+            matched_track_histogram.MergeHistograms()
+            matched_particle_histogram.MergeHistograms()
+            matched_track_histogram.NormalizeHistogram(self.fTotEvents)
+            matched_particle_histogram.NormalizeHistogram(self.fTotEvents)
+            self.fMatchedTracksHistograms[var.fName] = matched_track_histogram
+            self.fMatchedParticleHistograms[var.fName] = matched_particle_histogram
+
+    def DoProjetHistogram2D(self, histogram, hns, track_type_axis):
+        for hn in hns: histogram.Add(hn, track_type_axis)
+        histogram.MergeHistograms()
+        histogram.GenerateProfiles()
+        return histogram
+
+    def ProjetHistogram2D(self, var):
+        print("Working on variable '{}'".format(var.GetName()))
+        if var.fVariableY.fTracksAxis >= 0:
+            print("Histogram type is track.")
+            track_histogram = TrackHistogram2D(var, HistogramType.Track)
+            self.fTrackHistograms[var.GetName()] = self.DoProjetHistogram2D(track_histogram, self.fHnTracks, self.fTrackTypeAxis)
+        
+        if self.fIsMC:
+            if var.fVariableY.fMatchedTracksAxis >= 0:
+                print("Histogram type is matched track.")
+                matched_track_histogram = TrackHistogram2D(var, HistogramType.MatchedTrack)
+                self.fMatchedTracksHistograms[var.GetName()] = self.DoProjetHistogram2D(matched_track_histogram, self.fHnMatched, self.fMatchedTrackTypeAxis)
+
     def ProjectHistograms(self):
         for var in self.fVariables:
-            track_histogram = TrackHistogram(var, False)
-            particle_histogram = ParticleHistogram(var, False)
-            matched_track_histogram = TrackHistogram(var, True)
-            matched_particle_histogram = ParticleHistogram(var, True)
-            for hn in self.fHnTracks:
-                track_histogram.Add(hn, self.fTrackTypeAxis)
-            track_histogram.MergeHistograms()
-            track_histogram.NormalizeHistogram(self.fTotEvents)
-            self.fTrackHistograms[var.fName] = track_histogram
-
-            if self.fIsMC:
-                for hn in self.fHnParticles:
-                    particle_histogram.Add(hn, self.fParticleFindableAxis)
-                particle_histogram.MergeHistograms()
-                particle_histogram.NormalizeHistogram(self.fTotEvents)
-                self.fParticleHistograms[var.fName] = particle_histogram
-
-                for hn in self.fHnMatched:
-                    matched_track_histogram.Add(hn, self.MatchedTrackTypeAxis)
-                    matched_particle_histogram.Add(hn, self.MatchedTrackTypeAxis)
-                matched_track_histogram.MergeHistograms()
-                matched_particle_histogram.MergeHistograms()
-                matched_track_histogram.NormalizeHistogram(self.fTotEvents)
-                matched_particle_histogram.NormalizeHistogram(self.fTotEvents)
-                self.fMatchedTracksHistograms[var.fName] = matched_track_histogram
-                self.fMatchedParticleHistograms[var.fName] = matched_particle_histogram
+            if isinstance(var, Variable): 
+                self.ProjetHistogram1D(var)
+            elif isinstance(var, Variable2D): 
+                self.ProjetHistogram2D(var)
 
     def Plot(self):
         self.PlotSpectra("Tracks", self.fTrackHistograms)
+        self.Plot2DHistograms("Tracks", self.fTrackHistograms)
+        self.Plot2DHistograms("MatchedTracks", self.fMatchedTracksHistograms)
+        self.PlotProfiles()
         if self.fIsMC:
             self.PlotSpectra("MatchedTracks", self.fMatchedTracksHistograms)
             self.PlotSpectra("MatchedParticles", self.fMatchedParticleHistograms)
-
             self.PlotEfficiency()
+
+    def Plot2DHistograms(self, name, histograms):
+        for var in self.fVariables:
+            if not isinstance(var, Variable2D): continue
+            if not var.GetName() in histograms: continue
+            cname = "{}_{}".format(name, var.GetName())
+            h = histograms[var.GetName()].GetFullHistogram(False)
+            c = ROOT.TCanvas(cname, cname)
+            h.Draw("colz")
+            globalList.append(c)
 
     def PlotSpectra(self, name, histograms):
         for var in self.fVariables:
+            if not isinstance(var, Variable): continue
+            if not var.fName in histograms: continue
             comp_name = "{}_{}".format(name, var.fName)
             comp = DMesonJetCompare.DMesonJetCompare(comp_name)
             comp.fDoRatioPlot = "logy"
@@ -300,6 +437,7 @@ class TrackingQA:
 
     def PlotEfficiency(self):
         for var in self.fVariables:
+            if not isinstance(var, Variable): continue
             comp_name = "Efficiency_{}".format(var.fName)
             comp = DMesonJetCompare.DMesonJetCompare(comp_name)
             comp.fDoRatioPlot = False
@@ -310,8 +448,8 @@ class TrackingQA:
             comp.fOptSpectrum = "hist"
             comp.fOptSpectrumBaseline = "hist"
             comp.fGridySpectrum = True
-            baseline = self.fEfficiencyHistograms[var.fName].GetFullHistogram()
-            histos = self.fEfficiencyHistograms[var.fName].GetPartialHistograms()
+            baseline = self.fEfficiencyHistograms[var.GetName()].GetFullHistogram()
+            histos = self.fEfficiencyHistograms[var.GetName()].GetPartialHistograms()
             results = comp.CompareSpectra(baseline, histos)
             for r in results:
                 if isinstance(r, ROOT.TCanvas):
@@ -319,9 +457,41 @@ class TrackingQA:
                     self.fCanvases.append(r)
                 globalList.append(r)
 
+    def PlotProfiles(self):
+        for var in self.fVariables:
+            if not isinstance(var, Variable2D): continue
+            if var.fVariableY.fTracksAxis >= 0:
+                histograms = self.fTrackHistograms
+            elif var.fVariableY.fMatchedTracksAxis >= 0:
+                histograms = self.fMatchedTracksHistograms
+            else:
+                continue
+            if not var.GetName() in histograms: continue
+            comp_name = "Profile_{}".format(var.GetName())
+            comp = DMesonJetCompare.DMesonJetCompare(comp_name)
+            comp.fDoRatioPlot = False
+            comp.fDoSpectraPlot = "lineary"
+            comp.fX1LegSpectrum = 0.15
+            comp.fX2LegSpectrum = 0.50
+            comp.fLinUpperSpace = 0.4
+            comp.fOptSpectrum = "hist"
+            comp.fOptSpectrumBaseline = "hist"
+            comp.fGridySpectrum = True
+
+            baseline = histograms[var.GetName()].GetFullProfile()
+            histos = histograms[var.GetName()].GetPartialProfiles()
+            results = comp.CompareSpectra(baseline, histos)
+            if comp.fMainHistogram.GetMaximum() > 0.3:
+                comp.fMainHistogram.GetYaxis().SetRangeUser(0, 0.3)
+            for r in results:
+                if isinstance(r, ROOT.TCanvas):
+                    self.fCanvases.append(r)
+                globalList.append(r)
+
     def CalculateEfficiency(self):
         if not self.fIsMC: return
         for var in self.fVariables:
+            if not isinstance(var, Variable): continue
             efficiencies = EfficiencyHistogram(var, True)
             efficiencies.Generate(self.fParticleHistograms[var.fName], self.fMatchedParticleHistograms[var.fName])
             self.fEfficiencyHistograms[var.fName] = efficiencies
