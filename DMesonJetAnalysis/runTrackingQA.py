@@ -244,6 +244,18 @@ class EfficiencyHistogram(Histogram):
             self.fHistograms[track_type] = eff
         self.fNormHistograms = self.fHistograms
 
+class FakeRateHistogram(Histogram):
+
+    def Generate(self, all_histograms, matched_histograms):
+        for track_type, hmatched in matched_histograms.fHistograms.iteritems():
+            hall = all_histograms.fHistograms[track_type]
+            fr = hmatched.Clone("{}_FakeRate".format(hmatched.GetName()))
+            fr.Divide(hall)
+            for ibin in range(0, fr.GetNbinsX()):
+                fr.SetBinContent(ibin, 1 - fr.GetBinContent(ibin))
+            fr.GetYaxis().SetTitle("Fake Rate")
+            self.fHistograms[track_type] = fr
+        self.fNormHistograms = self.fHistograms
 
 class TrackingQA:
 
@@ -398,6 +410,7 @@ class TrackingQA:
             self.PlotSpectra("MatchedTracks", self.fMatchedTracksHistograms)
             self.PlotSpectra("MatchedParticles", self.fMatchedParticleHistograms)
             self.PlotEfficiency()
+            self.PlotFakeRate()
 
     def Plot2DHistograms(self, name, histograms):
         for var in self.fVariables:
@@ -457,6 +470,29 @@ class TrackingQA:
                     self.fCanvases.append(r)
                 globalList.append(r)
 
+    def PlotFakeRate(self):
+        for var in self.fVariables:
+            if not isinstance(var, Variable): continue
+            if not var.GetName() in self.fFakeRateHistograms: continue
+            comp_name = "FakeRate_{}".format(var.fName)
+            comp = DMesonJetCompare.DMesonJetCompare(comp_name)
+            comp.fDoRatioPlot = False
+            comp.fDoSpectraPlot = "lineary"
+            comp.fX1LegSpectrum = 0.15
+            comp.fX2LegSpectrum = 0.50
+            comp.fLinUpperSpace = 0.4
+            comp.fOptSpectrum = "hist"
+            comp.fOptSpectrumBaseline = "hist"
+            comp.fGridySpectrum = True
+            baseline = self.fFakeRateHistograms[var.GetName()].GetFullHistogram()
+            histos = self.fFakeRateHistograms[var.GetName()].GetPartialHistograms()
+            results = comp.CompareSpectra(baseline, histos)
+            for r in results:
+                if isinstance(r, ROOT.TCanvas):
+                    if var.fLogx: r.SetLogx()
+                    self.fCanvases.append(r)
+                globalList.append(r)
+
     def PlotProfiles(self):
         for var in self.fVariables:
             if not isinstance(var, Variable2D): continue
@@ -492,9 +528,19 @@ class TrackingQA:
         if not self.fIsMC: return
         for var in self.fVariables:
             if not isinstance(var, Variable): continue
+            if not var.fName in self.fParticleHistograms or not var.fName in self.fMatchedParticleHistograms: continue
             efficiencies = EfficiencyHistogram(var, True)
             efficiencies.Generate(self.fParticleHistograms[var.fName], self.fMatchedParticleHistograms[var.fName])
             self.fEfficiencyHistograms[var.fName] = efficiencies
+
+    def CalculateFakeRate(self):
+        if not self.fIsMC: return
+        for var in self.fVariables:
+            if not isinstance(var, Variable): continue
+            if not var.fName in self.fTrackHistograms or not var.fName in self.fMatchedTracksHistograms: continue
+            fake_rates = FakeRateHistogram(var, True)
+            fake_rates.Generate(self.fTrackHistograms[var.fName], self.fMatchedTracksHistograms[var.fName])
+            self.fFakeRateHistograms[var.fName] = fake_rates
 
     def SaveCanvases(self):
         for c in self.fCanvases:
@@ -512,6 +558,7 @@ def main(input_path, train):
     qa.LoadHns()
     qa.ProjectHistograms()
     qa.CalculateEfficiency()
+    qa.CalculateFakeRate()
     qa.Plot()
     qa.SaveCanvases()
 
