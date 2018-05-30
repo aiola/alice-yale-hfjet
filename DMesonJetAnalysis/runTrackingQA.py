@@ -136,9 +136,13 @@ class Histogram2D(Histogram):
                 for ibin in range(0, p.GetNbinsX() + 2):
                     s.SetBinContent(ibin, p.GetBinError(ibin))
                     s.SetBinError(ibin, 0)
+                s.GetXaxis().SetTitle(h.GetXaxis().GetTitle())
+                s.GetYaxis().SetTitle("#sigma({})".format(h.GetYaxis().GetTitle()))
                 self.fProfiles[k] = s
             else:
                 p = h.ProfileX("{}_Profile".format(h.GetName()), 1, -1, "i")
+                p.GetXaxis().SetTitle(h.GetXaxis().GetTitle())
+                p.GetYaxis().SetTitle("<{}>".format(h.GetYaxis().GetTitle()))
                 self.fProfiles[k] = p
 
     def GetFullProfile(self):
