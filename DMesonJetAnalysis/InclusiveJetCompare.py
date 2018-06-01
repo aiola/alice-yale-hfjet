@@ -2,11 +2,13 @@
 # python script to compare inclusive jet spectra
 # us it with
 # InclusiveJetCompare.yaml
-# InclusiveJetCompareKTCut.yaml
+# InclusiveJetCompareKTCutSuppFact20.yaml
+# InclusiveJetCompareKTCutSuppFact60.yaml
 # InclusiveJetCompareSuppFactKT1.yaml
 # InclusiveJetCompareSuppFactKT10.yaml
 
 import argparse
+import numpy
 import yaml
 import IPython
 import ROOT
@@ -19,11 +21,15 @@ globalList = []
 def LoadHistograms(config, ts, file_name, prefix, title, jet_type):
     result = dict()
     full_file_name = "{}/{}_{}/{}".format(config["input_path"], prefix, ts, file_name)
-    file = ROOT.TFile(full_file_name, "read")
+    myfile = ROOT.TFile(full_file_name, "read")
     for element in config["histograms"]:
         hname = "{}/{}".format(jet_type, element["name"])
-        h = DMesonJetUtils.GetObject(file, hname)
-        if not h: continue
+        h = DMesonJetUtils.GetObject(myfile, hname)
+        if not h: 
+            continue
+        if "bins" in element:
+            h_orig = h
+            h = DMesonJetUtils.Rebin1D_fromBins(h_orig, "{}_rebinned".format(h_orig.GetName()), len(element["bins"])-1, numpy.array(element["bins"], dtype=numpy.float64))
         if "max" in element and "min" in element:
             h.GetXaxis().SetRangeUser(element["min"], element["max"])
         h.SetTitle(title)
@@ -40,7 +46,8 @@ def main(config, measured):
 
     histograms = []
     for element in config["list"]:
-        if not element["active"]: continue
+        if not element["active"]: 
+            continue
         if "file_name" in element:
             file_name = element["file_name"]
         else:
@@ -63,9 +70,15 @@ def main(config, measured):
         histo_to_compare = [element[hname] for element in histograms if hname in element]
         globalList.extend(histo_to_compare)
         comp = DMesonJetCompare.DMesonJetCompare(hname)
+        comp.fX1LegRatio = 0.40
+        comp.fX2LegRatio = 0.90
+        comp.fX1LegSpectrum = 0.40
+        comp.fX2LegSpectrum = 0.90
+        comp.fLogUpperSpace = 50
+        comp.fLinUpperSpace = 0.4
 
         if measured and "JetPtExtended" in hname:
-            if len(histo_to_compare) == 0:
+            if not histo_to_compare:
                 print("No histograms to compare!")
                 continue
             globalList.append(measured_inclusive_cross_section)
