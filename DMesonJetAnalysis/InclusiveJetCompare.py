@@ -42,7 +42,8 @@ def main(config, measured):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    if measured: measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection("original")
+    if measured: 
+        measured_inclusive_cross_section, _ = LoadInclusiveJetSpectrum.GetCrossSection("original")
 
     histograms = []
     for element in config["list"]:
