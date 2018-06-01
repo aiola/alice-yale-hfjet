@@ -55,14 +55,12 @@ def main(config, measured):
             jet_type = config["jet_type"]
         histograms.append(LoadHistograms(config, element["ts"], file_name, prefix, element["title"], jet_type))
     for element in config["histograms"]:
-        if not element["active"]: continue
         if "jet_type" in element:
             jet_type = element["jet_type"]
         else:
             jet_type = config["jet_type"]
         hname = "{}/{}".format(jet_type, element["name"])
         histo_to_compare = [element[hname] for element in histograms if hname in element]
-        print(histo_to_compare)
         globalList.extend(histo_to_compare)
         comp = DMesonJetCompare.DMesonJetCompare(hname)
 
