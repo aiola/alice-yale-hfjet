@@ -196,6 +196,9 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
         ratioTheorySyst.SetPoint(ibin - 1, ratioTheorySyst.GetX()[ibin - 1], ratioTheorySyst.GetY()[ibin - 1] / theoryStat_copy.GetBinContent(ibin))
         ratioTheorySyst.SetPointEYlow(ibin - 1, ratioTheorySyst.GetErrorYlow(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
         ratioTheorySyst.SetPointEYhigh(ibin - 1, ratioTheorySyst.GetErrorYhigh(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
+        tot_err = math.sqrt(ratioTheorySyst.GetErrorXhigh(ibin - 1) ** 2 + ratioSyst.GetErrorXhigh(ibin - 1) ** 2 + ratioStat.GetBinError(ibin) ** 2)
+        diff_sigma = math.fabs(ratioStat.GetBinContent(ibin) - 1) / tot_err
+        print("Bin {}, discrepancy {} sigma".format(ibin, diff_sigma))
 
     padMain.cd()
     leg1 = ROOT.TLegend(0.50, 0.39, 0.80, 0.65, "", "NB NDC")
