@@ -1,0 +1,7 @@
+year: 2017
+meta_dataset: yes
+children: ["", "child_5", "child_6", "child_7", "child_8", "child_9", "child_10", "child_11"]
+datasets: [all, LHC17h, LHC17i, LHC17j, LHC17k, LHC17l, LHC17m, LHC17o]
+train: Jets_EMC_pp
+MC: no
+pt_hard_bins: no

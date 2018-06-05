@@ -11,14 +11,28 @@ import MergeFiles
 import ScaleResults
 
 def GetFullTrainNumber(SearchPath, TrainName, TrainNumber):
-    cmd = ["alien_find", "-d", SearchPath, "{0}/{1}_201".format(TrainName, TrainNumber)]
+    TrainNumbers = GetFullTrainNumbers(SearchPath, TrainName, TrainNumber)
+    if len(TrainNumbers) != 1:
+        print("Error: was expecting 1 train number and I found {}".format(len(TrainNumbers)))
+        print(TrainNumbers)
+        exit(1)
+    return TrainNumbers[0]
+
+def GetFullTrainNumbers(SearchPath, TrainName, TrainNumber):
+    cmd = ["alien_find", "-d", SearchPath, "{0}/{1}_201*/lego_train.jdl".format(TrainName, TrainNumber)]
     print(cmd)
     output = subprocess.check_output(cmd, universal_newlines=True)
     print(output)
-    i = output.rfind("{0}_201".format(TrainNumber))
-    j = len(str(TrainNumber)) + 14 + i
-    FullTrainNumber = output[i:j]
-    return FullTrainNumber
+    lines = output.splitlines()
+    FullTrainNumbers = []
+    for line in lines:
+        if not line: continue
+        i = line.rfind("{0}_201".format(TrainNumber))
+        if i < 0: continue
+        j = line.find("/", i + 1)
+        FullTrainNumber = line[i:j]
+        FullTrainNumbers.append(FullTrainNumber)
+    return FullTrainNumbers
 
 def GetMergeLists(SearchPath):
     cmd = ["alien_find", "-d", SearchPath, "merge"]
@@ -40,21 +54,44 @@ def GetMergeLists(SearchPath):
 
     return set(resList)
 
-def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite, FileName):
-    for Dataset, TrainNumber in zip(Datasets, TrainNumbers):
-        SearchPath = "/alice/cern.ch/user/a/alitrain/PWGJE/"
-        FullTrainNumber = GetFullTrainNumber(SearchPath, TrainName, TrainNumber)
-        print("The full train number is {0}". format(FullTrainNumber))
-        mergeLists = GetMergeLists("{0}/{1}/{2}".format(SearchPath, TrainName, FullTrainNumber))
+def StartDownloadMetadataset(LocalPath, Datasets, Children, TrainNumber, TrainName, Overwrite, FileName, DryRun):
+    SearchPath = "/alice/cern.ch/user/a/alitrain/PWGJE/"
+    FullTrainNumbers = GetFullTrainNumbers(SearchPath, TrainName, TrainNumber)
+    for FullTrainNumber in FullTrainNumbers:
+        print("The full train number is '{}'". format(FullTrainNumber))
+        ichild = FullTrainNumber.rfind("_", 0, FullTrainNumber.rfind("_") - 1)
+        if ichild < 6:
+            child = ""
+        else:
+            child = FullTrainNumber[ichild+1:]
+        print("The child name is '{}'".format(child))
+        Dataset = Datasets[Children.index(child)]
+        print("The datatset name is '{}'".format(Dataset))
+        mergeLists = GetMergeLists("{0}/{1}/{2}/".format(SearchPath, TrainName, FullTrainNumber))
         for mergeList in mergeLists:
             AlienPath = "alien://{0}/{1}/{2}/{3}/{4}".format(SearchPath, TrainName, FullTrainNumber, mergeList, FileName)
-            DestPath = "{0}/{1}/{2}".format(LocalPath, Dataset, mergeList)
-            if not os.path.isdir(DestPath): os.makedirs(DestPath)
+            DestPath = "{}/{}_{}/{}".format(LocalPath, Dataset, FullTrainNumber, mergeList)
+            if not DryRun and not os.path.isdir(DestPath): os.makedirs(DestPath)
             DestPath += "/{0}".format(FileName)
             print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
-            subprocess.call(["alien_cp", AlienPath, DestPath])
+            if not DryRun: subprocess.call(["alien_cp", AlienPath, DestPath])
 
-def main(TrainNumbers, config, FileName, Overwrite=0):
+def StartDownload(LocalPath, Datasets, TrainNumbers, TrainName, Overwrite, FileName, DryRun):
+    SearchPath = "/alice/cern.ch/user/a/alitrain/PWGJE/"
+    for Dataset, TrainNumber in zip(Datasets, TrainNumbers):
+        FullTrainNumber = GetFullTrainNumber(SearchPath, TrainName, TrainNumber)
+        print("The full train number is '{}'". format(FullTrainNumber))
+        print("The datatset name is '{}'".format(Dataset))
+        mergeLists = GetMergeLists("{0}/{1}/{2}/".format(SearchPath, TrainName, FullTrainNumber))
+        for mergeList in mergeLists:
+            AlienPath = "alien://{0}/{1}/{2}/{3}/{4}".format(SearchPath, TrainName, FullTrainNumber, mergeList, FileName)
+            DestPath = "{}/{}_{}/{}".format(LocalPath, Dataset, FullTrainNumber, mergeList)
+            if not DryRun and not os.path.isdir(DestPath): os.makedirs(DestPath)
+            DestPath += "/{0}".format(FileName)
+            print "Copying from alien location '{0}' to local location '{1}'".format(AlienPath, DestPath)
+            if not DryRun: subprocess.call(["alien_cp", AlienPath, DestPath])
+
+def main(TrainNumbers, Config, FileName, Overwrite, DryRun):
     try:
         rootPath = subprocess.check_output(["which", "root"]).rstrip()
         alirootPath = subprocess.check_output(["which", "aliroot"]).rstrip()
@@ -84,9 +121,17 @@ def main(TrainNumbers, config, FileName, Overwrite=0):
             print "Error: could not create the token!"
             exit()
 
-    Datasets = config["datasets"]
+    Datasets = Config["datasets"]
 
-    if (len(Datasets) != len(TrainNumbers)):
+    Metadataset = False
+    if "meta_dataset" in Config and Config["meta_dataset"]:
+        Metadataset = True
+
+    if Metadataset and len(TrainNumbers) != 1:
+        print("For a metadataset expected one and only one train number!")
+        exit()
+
+    if not Metadataset and (len(Datasets) != len(TrainNumbers)):
         print "The number of datasets {0} must be the same as the number of trains {1}.".format(len(Datasets), len(TrainNumbers))
         print "Datasets are"
         print Datasets
@@ -94,22 +139,25 @@ def main(TrainNumbers, config, FileName, Overwrite=0):
         print TrainNumbers
         exit()
 
-    LocalPath = "{0}/{1}".format(JetResults, config["train"])
+    LocalPath = "{0}/{1}".format(JetResults, Config["train"])
 
     for TrainNumber in TrainNumbers:
         LocalPath = "{0}_{1}".format(LocalPath, TrainNumber)
 
-    print "Train: " + config["train"]
+    print "Train: " + Config["train"]
     print "Local path: " + LocalPath
     print "Overwrite mode: {0}".format(Overwrite)
     print "Train numbers are: "
     print TrainNumbers
 
-    if not os.path.isdir(LocalPath):
+    if not DryRun and not os.path.isdir(LocalPath):
         print "Creating directory " + LocalPath
         os.makedirs(LocalPath)
 
-    StartDownload(LocalPath, Datasets, TrainNumbers, config["train"], Overwrite, FileName)
+    if Metadataset:
+        StartDownloadMetadataset(LocalPath, Datasets, Config["children"], TrainNumbers[0], Config["train"], Overwrite, FileName, DryRun)
+    else:
+        StartDownload(LocalPath, Datasets, TrainNumbers, Config["train"], Overwrite, FileName, DryRun)
 
 if __name__ == '__main__':
     # FinalMergeLocal.py executed as script
@@ -125,16 +173,19 @@ if __name__ == '__main__':
     parser.add_argument('--file-name', metavar='AnalysisResults.root',
                         default='AnalysisResults.root',
                         help='Output file name')
+    parser.add_argument('--dry-run', action='store_const',
+                        default=False, const=True,
+                        help='Dry run')
     args = parser.parse_args()
 
-    TrainNumberList = args.trainNumber.split(",")
-    TrainNumbers = []
-    for TrainNumberRange in TrainNumberList:
-        Range = TrainNumberRange.split(":")
-        TrainNumbers.extend(range(int(Range[0]), int(Range[len(Range) - 1]) + 1))
+    trainNumberList = args.trainNumber.split(",")
+    trainNumbers = []
+    for trainNumberRange in trainNumberList:
+        myrange = trainNumberRange.split(":")
+        trainNumbers.extend(range(int(myrange[0]), int(myrange[len(myrange) - 1]) + 1))
 
     f = open(args.yaml, 'r')
     config = yaml.load(f)
     f.close()
 
-    main(TrainNumbers, config, args.file_name, args.overwrite)
+    main(trainNumbers, config, args.file_name, args.overwrite, args.dry_run)
