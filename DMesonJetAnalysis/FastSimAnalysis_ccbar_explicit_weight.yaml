@@ -1,11 +1,11 @@
-# Selects only b or bbar
-name: FastSimAnalysis_bbbar
+# Selects only c or cbar
+name: FastSimAnalysis_ccbar
 input_path: /Volumes/DATA/ALICE/JetResults
-train: FastSimOld
+train: FastSim
 file_name: ""
 task_name: AliAnalysisTaskDmesonJets
-tree_type: simple
-merging_type: average
+tree_type: extended
+merging_type: explicit_weight
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
 - 
@@ -26,7 +26,7 @@ analysis:
     radius: R060
     title: "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.6"
   -
-    active: no
+    active: yes
     type: Full
     radius: R040
     title: "Full Jets, Anti-#it{k}_{T}, #it{R} = 0.4"
@@ -49,7 +49,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetPtDPtSpectrum
@@ -79,7 +79,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetZDPtSpectrum_JetPt_5_15
@@ -109,7 +109,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetZDPtSpectrum_JetPt_15_30
@@ -138,7 +138,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: DPtSpectrum_JetPt_5_30
@@ -166,7 +166,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetPtSpectrum_DPt_2
@@ -194,7 +194,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetPtSpectrum_DPt_3
@@ -227,7 +227,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetZSpectrum_DPt_2_JetPt_5_15
@@ -260,7 +260,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetZSpectrum_DPt_6_JetPt_15_30
@@ -284,7 +284,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: DPtSpectrum_JetPt_0
@@ -308,7 +308,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetPtSpectrum_DPt_0
@@ -337,7 +337,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetZSpectrum_DPt_0_JetPt_5_15
@@ -366,7 +366,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: JetZSpectrum_DPt_0_JetPt_15_30
@@ -390,7 +390,7 @@ analysis:
     -
       object: d
       variable: fPartonType
-      include: 5
+      include: 4
     spectra:
     -
       name: DPtSpectrum

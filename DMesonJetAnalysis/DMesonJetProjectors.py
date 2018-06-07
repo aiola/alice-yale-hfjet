@@ -14,7 +14,7 @@ import DetectorResponseLoader
 
 class DMesonJetProjector:
 
-    def __init__(self, inputPath, train, fileName, taskName, merging_type, norm_factor, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, tree_type, merging_type, norm_factor, maxEvents):
         self.fInputPath = inputPath
         self.fTrain = train
         self.fFileName = fileName
@@ -26,87 +26,32 @@ class DMesonJetProjector:
         self.fCurrentTreeNumber = -1
         self.fPeriod = None
         self.fPtHardBin = None
+        self.fWeights = dict()
         self.fWeight = 1
         self.fNFiles = 0
+        self.fTreeType = tree_type
         self.fMergingType = merging_type
         self.fHistEvents = None
         self.fNormFactor = norm_factor
         self.fDoNotAsk = True
+        self.fFilePaths = None
 
     def GenerateChain(self, treeName):
         self.fChain = ROOT.TChain(treeName)
         path = "{0}/{1}".format(self.fInputPath, self.fTrain)
 
         print("Looking for file {0} in path {1}".format(self.fFileName, path))
-        files = DMesonJetUtils.find_file(path, self.fFileName)
+        self.fFilePaths = list(DMesonJetUtils.find_file(path, self.fFileName))
+        self.fNFiles = len(self.fFilePaths)
 
-        for file in files:
-            print("Adding file {0}...".format(file))
-            self.fChain.Add(file)
-            self.fNFiles += 1
+        for myfile in self.fFilePaths:
+            print("Adding file {0}...".format(myfile))
+            self.fChain.Add(myfile)
 
-    def ExtractWeightFromHistogramListOld(self, hlist):
-        xsection = hlist.FindObject("fHistXsection")
-        trials = hlist.FindObject("fHistTrials")
-
-        if not trials or not xsection:
-            print("Could not find trial and x-section information!")
-            hlist.Print()
-            self.fWeight = 1
-            return
-
-        valNTRIALS = trials.GetBinContent(self.fPtHardBin + 1);
-        valXSEC = xsection.GetBinContent(self.fPtHardBin + 1);
-        if valNTRIALS > 0:
-            self.fWeight = valXSEC / valNTRIALS;
-
-    def ExtractWeightFromHistogramList(self, hlist):
-        xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
-        trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
-
-        if not trials or not xsection:
-            print("Falling back to secondary method for x-section and trials...")
-            xsection = hlist.FindObject("fHistXsectionAfterSel")
-            trials = hlist.FindObject("fHistTrialsAfterSel")
-
-        if not trials or not xsection:
-            print("Could not find trial and x-section information (not necessarily a bad thing)!")
-            hlist.Print()
-            self.fWeight = 1
-            return
-
-        valNTRIALS = trials.Integral();
-        valXSEC = xsection.GetMean(2);
-        if valNTRIALS > 0:
-            self.fWeight = valXSEC / valNTRIALS;
-
-    def RecalculateWeight(self, trigger):
-        if self.fMergingType == "simple_sum":
-            self.fWeight = 1
-        else:
-            if trigger:
-                listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
-            else:
-                listName = "{0}_histos".format(self.fTaskName)
-            hlist = self.fChain.GetCurrentFile().Get(listName)
-
-            if not hlist:
-                print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
-                self.fWeight = 1
-
-            if "weighted_sum_old" in self.fMergingType:
-                self.ExtractWeightFromHistogramListOld(hlist)
-            else:
-                self.ExtractWeightFromHistogramList(hlist)
-
-            if self.fMergingType == "average":
-                averageFactor = 1. / self.fNFiles
-                totEvents = self.fChain.GetEntries()
-                if self.fMaxEvents > 0 and self.fMaxEvents < totEvents:
-                    averageFactor *= totEvents / self.fMaxEvents
-                self.fWeight *= averageFactor
-            else:
-                self.fWeight *= self.fNormFactor
+    def ExtractCurrentFileInfo(self):
+        self.fCurrentRootFile = self.fChain.GetCurrentFile()
+        self.fCurrentFileName = self.fCurrentRootFile.GetName()
+        self.GetInfoFromFileName(self.fCurrentFileName)
 
     def GetInfoFromFileName(self, fname):
         lastSlash = fname.rfind('/')
@@ -119,10 +64,68 @@ class DMesonJetProjector:
             self.fPtHardBin = -1
         self.fPeriod = fname[thirdLastSlash + 1:secondLastSlash]
 
-    def ExtractCurrentFileInfo(self):
-        self.fCurrentRootFile = self.fChain.GetCurrentFile()
-        self.fCurrentFileName = self.fCurrentRootFile.GetName()
-        self.GetInfoFromFileName(self.fCurrentFileName)
+    def InitAnalysis(self, trigger, DMesonDef, DMesonDefSuffix):
+        if trigger:
+            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+        else:
+            listName = "{0}_histos".format(self.fTaskName)
+
+        for myfilename in self.fFilePaths:
+            print("Extracting weights from file: '{}'.".format(myfilename))
+            myfile = ROOT.TFile(myfilename, "read")
+
+            if not myfile:
+                print("Could not open file '{}'".format(myfilename))
+                return 1
+
+            self.CalculateEvents(myfile, trigger, DMesonDef, DMesonDefSuffix)
+
+            if self.fMergingType != "explicit_weight": 
+                weight = self.CalculateWeight(myfile, trigger)
+                self.fWeights[myfilename] = weight
+                print("Weight: {} (merging type = {})".format(self.fWeight, self.fMergingType))
+
+        self.CalculateNormalizedEvents()
+
+    def CalculateEvents(self, myfile, trigger, DMesonDef, DMesonDefSuffix):
+        if trigger:
+            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+            subListName = "histos{0}_{1}".format(self.fTaskName, trigger)
+        else:
+            listName = "{0}_histos".format(self.fTaskName)
+            subListName = "histos{0}".format(self.fTaskName)
+
+        if DMesonDefSuffix:
+            subSubListName = "{}_{}".format(DMesonDef, DMesonDefSuffix)
+        else:
+            subSubListName = DMesonDef
+
+        hlist = myfile.Get(listName)
+
+        if not hlist:
+            print("Could not get list '{0}' from file '{1}'".format(listName, myfile.GetName()))
+            myfile.ls()
+            return
+
+        hSubList = hlist.FindObject(subListName)
+
+        if not hSubList:
+            print("Could not get list '{0}' from list '{1}'".format(subListName, listName))
+            hlist.Print()
+            return
+
+        hSubSubList = hSubList.FindObject(subSubListName)
+
+        if not hSubSubList:
+            print("Could not get list '{0}' from list '{1}'".format(subSubListName, subListName))
+            hSubList.Print()
+            return
+
+        print("Calculating events for file: '{}'".format(myfile.GetName()))
+        events = self.ExtractEventsFromHistogramList(hSubSubList)
+
+        if self.fHistEvents: self.fHistEvents.Add(events)
+        else: self.fHistEvents = events
 
     def ExtractEventsFromHistogramList(self, hlist):
         accEventsHist = hlist.FindObject("fHistNEvents")
@@ -151,6 +154,7 @@ class DMesonJetProjector:
 
     def CalculateNormalizedEvents(self):
         if not self.fHistEvents: return
+
         self.fAcceptedEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("Accepted"))
         self.fZVtxOutFidEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("ZVtxOutFid"))
         self.fNoVertEvents = self.fHistEvents.GetBinContent(self.fHistEvents.GetXaxis().FindBin("NoVert"))
@@ -158,79 +162,80 @@ class DMesonJetProjector:
         nRecoVert = self.fAcceptedEvents + self.fZVtxOutFidEvents
         self.fNormalizedEvents = self.fAcceptedEvents + self.fNoVertEvents * (1 - self.fZVtxOutFidEvents / nRecoVert)
         self.fHistEvents.Fill("Normalized", self.fNormalizedEvents)
+
+        print("Calculation of the normalized events. Summary.")
         print("Total number of accepted events with reconstructed vertex Vz < 10 cm: {0:e}".format(self.fAcceptedEvents))
         print("Total number of rejected events with reconstructed vertex Vz > 10 cm: {0:e}".format(self.fZVtxOutFidEvents))
         print("Total number of rejected events without reconstructed vertex: {0:e}".format(self.fNoVertEvents))
         print("Correction factor: {}".format(self.fNormalizedEvents / self.fAcceptedEvents))
         print("Total number of normalized events: {0:e}".format(self.fNormalizedEvents))
 
-    def OnFileChange(self, DMesonDef, DMesonDefSuffix, trigger):
-        if self.fCurrentTreeNumber == self.fChain.GetTreeNumber(): return
-
-        self.fCurrentTreeNumber = self.fChain.GetTreeNumber()
-        oldPtHardBin = self.fPtHardBin
-        oldPeriod = self.fPeriod
-
-        self.ExtractCurrentFileInfo()
-
-        if oldPtHardBin == self.fPtHardBin and oldPeriod == self.fPeriod:
-            return
-
-        if trigger:
-            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+    def CalculateWeight(self, myfile, trigger):
+        if self.fMergingType == "simple_sum":
+            weight = 1
         else:
-            listName = "{0}_histos".format(self.fTaskName)
+            if trigger:
+                listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
+            else:
+                listName = "{0}_histos".format(self.fTaskName)
+            hlist = myfile.Get(listName)
 
-        hlist = self.fChain.GetCurrentFile().Get(listName)
+            if not hlist:
+                print("Could not get list '{0}' from file '{1}'".format(listName, myfile.GetName()))
+                weight = 1
 
-        if not hlist:
-            print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
+            if "weighted_sum_old" in self.fMergingType:
+                weight = self.ExtractWeightFromHistogramListOld(hlist)
+            else:
+                weight = self.ExtractWeightFromHistogramList(hlist)
+
+            if self.fMergingType == "average":
+                averageFactor = 1. / self.fNFiles
+                totEvents = self.fChain.GetEntries()
+                if self.fMaxEvents > 0 and self.fMaxEvents < totEvents:
+                    averageFactor *= totEvents / self.fMaxEvents
+                weight *= averageFactor
+            else:
+                weight *= self.fNormFactor
+        return weight
+
+    def ExtractWeightFromHistogramListOld(self, hlist):
+        xsection = hlist.FindObject("fHistXsection")
+        trials = hlist.FindObject("fHistTrials")
+
+        if not trials or not xsection:
+            print("Could not find trial and x-section information!")
+            hlist.Print()
             return 1
 
-        self.RecalculateEvents(DMesonDef, DMesonDefSuffix, trigger)
-        self.RecalculateWeight(trigger)
+        valNTRIALS = trials.GetBinContent(self.fPtHardBin + 1)
+        valXSEC = xsection.GetBinContent(self.fPtHardBin + 1)
+        if valNTRIALS > 0:
+            return valXSEC / valNTRIALS
 
-        print("File: {}\nPeriod: {}\nPt hard bin: {}\nWeight: {} (merging type = {})".format(self.fCurrentFileName, self.fPeriod, self.fPtHardBin, self.fWeight, self.fMergingType))
+    def ExtractWeightFromHistogramList(self, hlist):
+        xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
+        trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
-    def RecalculateEvents(self, DMesonDef, DMesonDefSuffix, trigger):
-        if trigger:
-            listName = "{0}_{1}_histos".format(self.fTaskName, trigger)
-            subListName = "histos{0}_{1}".format(self.fTaskName, trigger)
-        else:
-            listName = "{0}_histos".format(self.fTaskName)
-            subListName = "histos{0}".format(self.fTaskName)
+        if not trials or not xsection:
+            print("Falling back to secondary method for x-section and trials...")
+            xsection = hlist.FindObject("fHistXsectionAfterSel")
+            trials = hlist.FindObject("fHistTrialsAfterSel")
 
-        if DMesonDefSuffix:
-            subSubListName = "{}_{}".format(DMesonDef, DMesonDefSuffix)
-        else:
-            subSubListName = DMesonDef
-
-        hlist = self.fChain.GetCurrentFile().Get(listName)
-
-        if not hlist:
-            print("Could not get list '{0}' from file '{1}'".format(listName, self.fChain.GetCurrentFile().GetName()))
-            self.fChain.GetCurrentFile().ls()
-            return
-
-        hSubList = hlist.FindObject(subListName)
-
-        if not hSubList:
-            print("Could not get list '{0}' from list '{1}'".format(subListName, listName))
+        if not trials or not xsection:
+            print("Could not find trial and x-section information (not necessarily a bad thing)!")
             hlist.Print()
-            return
+            return 1
 
-        hSubSubList = hSubList.FindObject(subSubListName)
+        valNTRIALS = trials.Integral()
+        valXSEC = xsection.GetMean(2)
+        if valNTRIALS > 0:
+            return valXSEC / valNTRIALS
 
-        if not hSubSubList:
-            print("Could not get list '{0}' from list '{1}'".format(subSubListName, subListName))
-            hSubList.Print()
-            return
-
-        print("Calculating events for period: {}".format(self.fPeriod))
-        events = self.ExtractEventsFromHistogramList(hSubSubList)
-
-        if self.fHistEvents: self.fHistEvents.Add(events)
-        else: self.fHistEvents = events
+    def GetExplicitWeight(self, entry):
+        event = entry.Event
+        self.fWeight = event.fWeight / self.fNormalizedEvents
+        # print("w = {:e}".format(self.fWeight))
 
     def StartProjection(self, trigger, DMesonDef, DMesonDefSuffix, output, norm=1.0):
         treeName = "_".join([obj for obj in [self.fTaskName, trigger, DMesonDef, DMesonDefSuffix] if obj])
@@ -244,18 +249,59 @@ class DMesonJetProjector:
 
         self.fHistEvents = None
         self.GenerateChain(treeName)
+        self.InitAnalysis(trigger, DMesonDef, DMesonDefSuffix)
 
         print("Total number of entries is {}".format(self.fChain.GetEntries()))
         if self.fMaxEvents > 0:
             print("The analysis will stop at the {0} entry.".format(self.fMaxEvents))
 
+        if self.fTreeType == "simple":
+            self.DoProjectionSimple(trigger, DMesonDef, DMesonDefSuffix, output, norm)
+        elif self.fTreeType == "extended":
+            self.DoProjectionExtended(trigger, DMesonDef, DMesonDefSuffix, output, norm)
+        else:
+            print("Tree type '{}' not recognized.".format(self.fTreeType))
+            exit(1)
+
+    def DoProjectionExtended(self, trigger, DMesonDef, DMesonDefSuffix, output, norm):
+        class DMesonEvent:
+            pass
+        jet_branch_names = output.GetJetBranches()
+        dmesonEvent = DMesonEvent()
+        for i, event in enumerate(self.fChain):
+            if i % 10000 == 0:
+                print("D meson candidate n. {0}".format(i))
+                if self.fMaxEvents > 0 and i >= self.fMaxEvents:
+                    print("Stopping the analysis.")
+                    break
+            self.OnFileChange()
+            self.GetExplicitWeight(event)
+            jet_branches = [getattr(event, jet_branch_name) for jet_branch_name in jet_branch_names]
+            for dmeson_and_jets in zip(event.Dmesons, *jet_branches):
+                dmeson = dmeson_and_jets[0]
+                jets = dmeson_and_jets[1:]
+                dmesonEvent.DmesonJet = dmeson
+                for jet, jet_branch_name in zip(jets, jet_branch_names):
+                    setattr(dmesonEvent, jet_branch_name, jet)
+                output.Fill(dmesonEvent, self.fWeight * norm)
+
+    def DoProjectionSimple(self, trigger, DMesonDef, DMesonDefSuffix, output, norm):
         for i, dmesonEvent in enumerate(self.fChain):
             if i % 10000 == 0:
                 print("D meson candidate n. {0}".format(i))
                 if self.fMaxEvents > 0 and i >= self.fMaxEvents:
                     print("Stopping the analysis.")
                     break
-            self.OnFileChange(DMesonDef, DMesonDefSuffix, trigger)
+            self.OnFileChange()
             output.Fill(dmesonEvent, self.fWeight * norm)
 
-        self.CalculateNormalizedEvents()
+    def OnFileChange(self):
+        if self.fCurrentTreeNumber == self.fChain.GetTreeNumber():
+            return
+
+        self.fCurrentTreeNumber = self.fChain.GetTreeNumber()
+        self.ExtractCurrentFileInfo()
+
+        if self.fMergingType != "explicit_weight":
+            self.fWeight = self.fWeights[self.fCurrentFileName]
+            print("File: {}\nPeriod: {}\nPt hard bin: {}\nWeight: {} (merging type = {})".format(self.fCurrentFileName, self.fPeriod, self.fPtHardBin, self.fWeight, self.fMergingType))

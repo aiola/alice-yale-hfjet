@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # python script to run the D meson jet analysis on 2010 pp data
 
+import argparse
+import subprocess
+import yaml
+import IPython
+import DMesonJetProjectors
+import DMesonJetAnalysis
 import ROOT
 print("ROOT {} imported".format(ROOT.gROOT.GetVersionInt()))
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-import argparse
-import yaml
-import IPython
-import DMesonJetAnalysis
-import DMesonJetProjectors
-import subprocess
 
 globalList = []
 
@@ -17,7 +17,7 @@ globalList = []
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
 
-def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
+def main(config, maxEvents, fmt, gen, proc, ts, stage, ask, bg):
     if bg: ROOT.gROOT.SetBatch(True)
 
     ROOT.TH1.AddDirectory(False)
@@ -27,17 +27,18 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
 
-    if config["train"] == "FastSim":
+    if config["train"] == "FastSim" or config["train"] == "FastSimOld":
         suffix = "{0}_{1}_{2}".format(gen, proc, ts)
 
         if gen == "powheg":
-            collision = "POWHEG+PYTHIA6 "
+            collision = "POWHEG+PYTHIA6"
         else:
             collision = ""
         if proc == "charm":
-            collision += "(c#bar{c}) "
+            collision += " (c#bar{c})"
         elif proc == "beauty":
-            collision += "(b#bar{b}) "
+            collision += " (b#bar{b})"
+        collision += " "
         collision += config["collision_system"]
 
         name = "{0}_{1}".format(config["name"], suffix)
@@ -46,7 +47,10 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
 
         if stage >= 0:
             input_path += "stage_{0}/output".format(stage)
-            file_name = "AnalysisResults_FastSim_{0}.root".format(suffix)
+            if config["train"] == "FastSimOld":
+                file_name = "AnalysisResults_FastSim_{0}.root".format(suffix)
+            else:
+                file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
         else:
             input_path += "output"
             file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
@@ -67,8 +71,13 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
     else:
         norm_factor = 1
 
+    if "tree_type" in config:
+        tree_type = config["tree_type"]
+    else:
+        tree_type = "simple"
+
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], config["merging_type"], norm_factor, maxEvents)
+    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], tree_type, config["merging_type"], norm_factor, maxEvents)
     projector.fDoNotAsk = not ask
     ana.SetProjector(projector)
 
@@ -76,7 +85,7 @@ def main(config, maxEvents, format, gen, proc, ts, stage, ask, bg):
         ana.StartAnalysis(collision, reflection_templates, anaConfig)
 
     ana.SaveRootFile("{0}/{1}".format(output_path, train))
-    ana.SavePlots("{0}/{1}".format(output_path, train), format)
+    ana.SavePlots("{0}/{1}".format(output_path, train), fmt)
     ana.SavePlots("{0}/{1}".format(output_path, train), "C")
 
 
@@ -104,9 +113,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
-    config = yaml.load(f)
+    yconfig = yaml.load(f)
     f.close()
 
-    main(config, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.a, args.b)
+    main(yconfig, args.events, args.format, args.gen, args.proc, args.ts, args.stage, args.a, args.b)
 
     IPython.embed()

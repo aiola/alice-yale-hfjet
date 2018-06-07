@@ -1,9 +1,10 @@
 # Selects only c or cbar
 name: FastSimAnalysis_ccbar
 input_path: /Volumes/DATA/ALICE/JetResults
-train: FastSim
+train: FastSimOld
 file_name: ""
 task_name: AliAnalysisTaskDmesonJets
+tree_type: simple
 merging_type: average
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
 analysis:
