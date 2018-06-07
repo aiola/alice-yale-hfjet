@@ -120,7 +120,7 @@ class ProjectInclusiveJetSpectra:
         for jet_branch in self.fJetBranches:
             histograms = dict()
             for hdef in config["histograms"]:
-                hobj = ROOT.TH1D(hdef["name"], hdef["title"], len(hdef["bins"]) - 1, numpy.array(hdef["bins"], dtype=numpy.float32))
+                hobj = ROOT.TH1D(hdef["name"], hdef["title"], len(hdef["bins"]) - 1, numpy.array(hdef["bins"], dtype=numpy.float))
                 h = Histogram(VariableType.Jet, hdef["variable"], hobj)
                 histograms[hdef["name"]] = h
 

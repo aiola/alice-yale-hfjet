@@ -20,12 +20,25 @@ maxr_inclusive: 0.0659
 legx_inclusive: 0.50
 theory:
 -
-  title: POWHEG+PYTHIA 6
+  title: POWHEG+PYTHIA 6 (ccbar)
   active: yes
   gen: powheg+pythia6
   proc: charm
   ts: 1520017218
   color: 602 # kBlue+2
+  line: 1
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet
+    ts: 1527178339 #1524742846
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG+PYTHIA 6 (dijet)
+  active: yes
+  gen: powheg+pythia6
+  proc: dijet
+  ts: 1527178339
+  color: 802 # kOrange+2
   line: 1
   inclusive:
     gen: powheg+pythia6

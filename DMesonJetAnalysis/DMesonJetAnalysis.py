@@ -29,12 +29,20 @@ class DMesonJetContainer:
         self.fYieldAxisTitle = "counts"
         self.fTrigger = trigger
 
+    def GetJetBranches(self):
+        jet_branches = []
+        for (jtype, jradius) in self.fBinMultiSets.iterkeys():
+            if jtype and jradius:
+                jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
+                jet_branches.append(jetName)
+        return jet_branches
+
     def Fill(self, event, eventWeight):
         dmeson = event.DmesonJet
         if hasattr(dmeson, "fInvMass") and (dmeson.fInvMass < self.fMinMass or dmeson.fInvMass >= self.fMaxMass): return
 
         for (jtype, jradius), binMultiSet in self.fBinMultiSets.iteritems():
-            if jtype or jradius:
+            if jtype and jradius:
                 jetName = "Jet_AKT{0}{1}_pt_scheme".format(jtype, jradius)
                 jet = getattr(event, jetName)
                 if jet.fPt == 0:
