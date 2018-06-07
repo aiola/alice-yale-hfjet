@@ -6,15 +6,15 @@ theory_spectrum: JetPtSpectrum_DPt_3
 jet_type: Charged_R040
 logy: yes
 normalize: no
-title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}"]
+title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}"]
 miny: 6.0e-6
 maxy: 1.0e+2
 minr: 0.0
 maxr: 2.99
 legx: 0.50
-title_inclusive: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5"]
+title_inclusive: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5"]
 miny_inclusive: 6.0e-6
-maxy_inclusive: 1.0e+2
+maxy_inclusive: 5.0e+2
 minr_inclusive: 0.005
 maxr_inclusive: 0.0659
 legx_inclusive: 0.50
@@ -25,12 +25,12 @@ theory:
   gen: powheg+pythia6
   proc: charm
   ts: 1520017218
-  color: 418 # kGreen+2
+  color: 602 # kBlue+2
   line: 1
   inclusive:
     gen: powheg+pythia6
     proc: dijet
-    ts: 1524742846
+    ts: 1527178339 #1524742846
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG+PYTHIA 8
@@ -48,11 +48,11 @@ theory:
     file_name: Jets.root
 -
   title: PYTHIA 6 Perugia-2011
-  active: yes
+  active: no
   gen: pythia6
   proc: charm
   ts: 1520422008
-  color: 602 # kBlue+2
+  color: 418 # kGreen+2
   line: 5
   inclusive:
     gen: pythia6
@@ -76,7 +76,7 @@ theory:
     file_name: Jets.root
 -
   title: PYTHIA 6 LO
-  active: yes
+  active: no
   gen: pythia6
   proc: charm_lo
   ts: 1521276365

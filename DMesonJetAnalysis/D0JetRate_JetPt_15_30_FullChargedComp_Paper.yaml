@@ -11,7 +11,9 @@ title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.
 miny: 1.0e-4
 maxy: 0.22
 minr: 0.001
-maxr: 3.99
+maxr: 2.49
+minx: 0.4
+maxx: 1.0
 legx: 0.18
 theory:
 -
@@ -25,7 +27,7 @@ theory:
   inclusive:
     gen: powheg+pythia6
     proc: dijet
-    ts: 1524742846
+    ts: 1527178339 #1524742846
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG+PYTHIA 6 Full
