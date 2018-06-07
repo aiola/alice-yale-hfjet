@@ -95,8 +95,8 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
 
     incl_stat_copy = incl_stat.DrawCopy("same p e0 x0")
     globalList.append(incl_stat_copy)
-    incl_stat_copy.SetLineColor(ROOT.kMagenta + 2)
-    incl_stat_copy.SetMarkerColor(ROOT.kMagenta + 2)
+    incl_stat_copy.SetLineColor(ROOT.kRed + 2)
+    incl_stat_copy.SetMarkerColor(ROOT.kRed + 2)
     incl_stat_copy.SetMarkerStyle(ROOT.kFullSquare)
     incl_stat_copy.SetMarkerSize(1.2)
 
@@ -198,8 +198,9 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
         globalList.append(d0jet_h)
         d0jet_h.SetLineColor(t["color"])
         d0jet_h.SetLineStyle(1)
-        d0jet_h.SetLineWidth(1)
+        d0jet_h.SetLineWidth(2)
         d0jet_h.SetMarkerStyle(ROOT.kOpenCircle)
+        d0jet_h.SetMarkerSize(1.2)
         d0jet_h.SetMarkerColor(t["color"])
         t["histogram_plot"] = d0jet_h
 
@@ -208,15 +209,16 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
         globalList.append(incl_h)
         incl_h.SetLineColor(t["color"])
         incl_h.SetLineStyle(1)
-        incl_h.SetLineWidth(1)
+        incl_h.SetLineWidth(2)
         incl_h.SetMarkerStyle(ROOT.kOpenSquare)
+        incl_h.SetMarkerSize(1.2)
         incl_h.SetMarkerColor(t["color"])
         t["inclusive_histogram_plot"] = incl_h
 
         padRatio.cd()
         hratio = d0jet_h.Clone("_".join([t["gen"], t["proc"], "over", t["inclusive"]["gen"], t["inclusive"]["proc"]]))
         hratio.Divide(incl_h)
-        hratio.Draw("same e0")
+        hratio.Draw("same p e0 x0")
         t["ratio_histogram"] = hratio
 
 
@@ -225,17 +227,17 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
             d0jet_no_pt_cut_h = t["histogram_no_pt_cut"].Clone("_".join([t["gen"], t["proc"]]))
             d0jet_no_pt_cut_h.Draw("same e0 p x0")
             globalList.append(d0jet_no_pt_cut_h)
-            d0jet_no_pt_cut_h.SetLineColor(t["color"])
+            d0jet_no_pt_cut_h.SetLineColor(ROOT.kGray+2)
             d0jet_no_pt_cut_h.SetLineStyle(1)
-            d0jet_no_pt_cut_h.SetLineWidth(1)
+            d0jet_no_pt_cut_h.SetLineWidth(2)
             d0jet_no_pt_cut_h.SetMarkerStyle(ROOT.kOpenTriangleUp)
-            d0jet_no_pt_cut_h.SetMarkerColor(t["color"])
+            d0jet_no_pt_cut_h.SetMarkerColor(ROOT.kGray+2)
             t["histogram_no_pt_cut_plot"] = d0jet_no_pt_cut_h
 
             padRatio.cd()
             hratio = d0jet_no_pt_cut_h.Clone("_".join([t["gen"], t["proc"], "over", t["inclusive"]["gen"], t["inclusive"]["proc"], "no_pt_cut"]))
             hratio.Divide(incl_h)
-            hratio.Draw("same e0")
+            hratio.Draw("same e0 p x0")
             t["ratio_no_pt_cut_histogram"] = hratio
 
     padMain.cd()
@@ -247,25 +249,31 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(22)
-    paveALICE.SetTextAlign(13)
+    paveALICE.SetTextAlign(12)
     for line in title: paveALICE.AddText(line)
     paveALICE.Draw()
 
-    y1 = y2 - 0.036 * len(t) / 2
-    if y1 < 0.1: y1 = 0.1
+    y2 += 0.01
+    active_t = len([t for t in theory if "inclusive_histogram_plot" in t or "histogram_plot" in t or "histogram_no_pt_cut_plot" in t])
+    y1 = y2 - 0.15 *  active_t
+    #if y1 < 0.1: y1 = 0.1
     leg1 = ROOT.TLegend(0.18, y1, 0.85, y2, "", "NB NDC")
-    leg1.SetNColumns(2)
     globalList.append(leg1)
+    leg1.SetNColumns(1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
-    leg1.SetMargin(0.2)
+    leg1.SetMargin(0.08)
+    active_t = 0
     for t in theory:
-        if "inclusive_histogram_plot" in t: leg1.AddEntry(t["inclusive_histogram_plot"], "Inclusive, {}".format(t["title"]), "p")
-        if "histogram_plot" in t: leg1.AddEntry(t["histogram_plot"], t["title"], "p")
-        if "histogram_no_pt_cut_plot" in t: leg1.AddEntry(t["histogram_no_pt_cut_plot"], "#it{{p}}_{{T,D}} > 0, {}".format(t["title"]), "p")
+        if "inclusive_histogram_plot" in t: 
+            leg1.AddEntry(t["inclusive_histogram_plot"], "Inclusive Jets, {}".format(t["title"]), "p")
+        if "histogram_plot" in t:
+            leg1.AddEntry(t["histogram_plot"], "D^{{0}} Jets, #it{{p}}_{{T,D}} > 3 GeV/#it{{c}}, {}".format(t["title"]), "p")
+        if "histogram_no_pt_cut_plot" in t:
+            leg1.AddEntry(t["histogram_no_pt_cut_plot"], "D^{{0}} Jets, #it{{p}}_{{T,D}} > 0, {}".format(t["title"]), "p")
     leg1.Draw()
 
     leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
@@ -273,7 +281,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, theory, titl
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
-    leg1.SetTextSize(23)
+    leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
     entry = leg1.AddEntry(None, "D^{0} Jets, #it{p}_{T,D} > 3 GeV/#it{c}", "pf")

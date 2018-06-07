@@ -44,7 +44,7 @@ def GetD0JetTheoryCrossSectionAll(config, axis):
 def GetInclusiveJetTheoryCrossSectionAll(config):
     return LoadTheoryCrossSections.GetInclusiveJetTheoryCrossSectionAll(config)
 
-def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr, legx):
+def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr, minx, maxx, legx):
     cname = "D0JetVsInclusiveCrossSectionTheoryComp_Paper"
     canvas = ROOT.TCanvas(cname, cname, 700, 900)
     globalList.append(canvas)
@@ -63,22 +63,30 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
-    h = dataStat.DrawCopy("axis")
+    h = ROOT.TH1C("h", "h", 100, 0, 1)
+    h.Draw("axis")
     h.GetYaxis().SetRangeUser(miny, maxy)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
     h.GetYaxis().SetTitleOffset(1.6)
-    # h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]")
-    # h.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    h.GetYaxis().SetTitle(dataStat.GetYaxis().GetTitle())
+    globalList.append(h)
 
     dataSyst_copy = dataSyst.Clone("{0}_copy".format(dataSyst.GetName()))
     dataSyst_copy.Draw("2")
     globalList.append(dataSyst_copy)
+    if maxx > minx:
+        points_to_be_removed = set()
+        for ipoint in range(0, dataSyst_copy.GetN()):
+            if dataSyst_copy.GetX()[ipoint] > maxx or dataSyst_copy.GetX()[ipoint] < minx:
+                points_to_be_removed.add(ipoint)
+        for ipoint in points_to_be_removed: dataSyst_copy.RemovePoint(ipoint)
 
     dataStat_copy = dataStat.DrawCopy("same p e0 x0")
     globalList.append(dataStat_copy)
+    if maxx > minx: dataStat_copy.GetXaxis().SetRangeUser(minx, maxx)
 
     for t in theory:
         if not t["active"]: continue
@@ -90,11 +98,13 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
         h.SetLineWidth(2)
         h.SetMarkerStyle(1)
         h.SetMarkerColor(t["color"])
+        if maxx > minx: h.GetXaxis().SetRangeUser(minx, maxx)
         t["histogram_plot"] = h
 
     padRatio.cd()
 
-    hRatio = dataStat_copy.DrawCopy("axis")
+    hRatio = ROOT.TH1C("hratio", "hratio", 100, 0, 1)
+    hRatio.Draw("axis")
     hRatio.GetYaxis().SetTitle("theory / data")
     hRatio.GetXaxis().SetTitleFont(43)
     hRatio.GetXaxis().SetTitleSize(26)
@@ -108,10 +118,13 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     hRatio.GetXaxis().SetTitleOffset(2.9)
     hRatio.GetYaxis().SetRangeUser(minr, maxr)
     hRatio.GetYaxis().SetNdivisions(509)
+    hRatio.GetXaxis().SetTitle(dataStat_copy.GetXaxis().GetTitle())
+    globalList.append(hRatio)
 
     ratioSyst = dataSyst_copy.Clone("ratioSyst")
     globalList.append(ratioSyst)
     ratioSyst.Draw("2")
+    if maxx > minx: ratioSyst.GetXaxis().SetRangeUser(minx, maxx)
 
     ratioStat = dataStat_copy.Clone("ratioStat")
     globalList.append(ratioStat)
@@ -119,13 +132,16 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     # ratioStat.Draw("same e2")
     ratioStat.SetFillStyle(0)
     # ratioStat.SetMarkerSize(0)
+    if maxx > minx: ratioStat.GetXaxis().SetRangeUser(minx, maxx)
 
     for ibin in range(0, ratioSyst.GetN()):
         ratioSyst.SetPointEYlow(ibin, ratioSyst.GetErrorYlow(ibin) / ratioSyst.GetY()[ibin])
         ratioSyst.SetPointEYhigh(ibin , ratioSyst.GetErrorYhigh(ibin) / ratioSyst.GetY()[ibin])
         ratioSyst.SetPoint(ibin, ratioSyst.GetX()[ibin], 1.0)
-        ratioStat.SetBinError(ibin + 1, ratioStat.GetBinError(ibin + 1) / ratioStat.GetBinContent(ibin + 1))
-        ratioStat.SetBinContent(ibin + 1, 1.0)
+
+    for ibin in range(1, ratioStat.GetNbinsX()+1):
+        ratioStat.SetBinError(ibin, ratioStat.GetBinError(ibin) / ratioStat.GetBinContent(ibin))
+        ratioStat.SetBinContent(ibin, 1.0)
 
     for t in theory:
         if not t["active"]: continue
@@ -139,6 +155,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
         r.SetMarkerStyle(20)
         r.SetMarkerSize(0)
         r.Draw("same e0")
+        if maxx > minx: r.GetXaxis().SetRangeUser(minx, maxx)
         globalList.append(r)
         t["ratio"] = r
 
@@ -253,8 +270,13 @@ def main(config):
     GetInclusiveJetTheoryCrossSectionAll(config)
     NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst)
     NormalizeTheory(config)
+    minx = 0
+    maxx = 0
+    if "minx" in config and "maxx" in config:
+        minx = config["minx"]
+        maxx = config["maxx"]
     canvas = PlotCrossSections(d0jet_stat, d0jet_syst, config["theory"], config["title"],
-                               config["miny"], config["maxy"], config["minr"], config["maxr"], config["legx"])
+                               config["miny"], config["maxy"], config["minr"], config["maxr"], minx, maxx, config["legx"])
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name"]))
 

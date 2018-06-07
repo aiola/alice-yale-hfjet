@@ -12,6 +12,8 @@ miny: 0.001
 maxy: 0.2
 minr: 0.001
 maxr: 2.49
+minx: 0.2
+maxx: 1.0
 legx: 0.18
 theory:
 -
@@ -25,7 +27,7 @@ theory:
   inclusive:
     gen: powheg+pythia6
     proc: dijet
-    ts: 1524742846
+    ts: 1527178339 #1524742846
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG+PYTHIA 8
@@ -70,7 +72,7 @@ theory:
     file_name: Jets.root
 -
   title: PYTHIA 6 LO
-  active: yes
+  active: no
   gen: pythia6
   proc: charm_lo
   ts: 1521276365
