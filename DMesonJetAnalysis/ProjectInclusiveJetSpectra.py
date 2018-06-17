@@ -225,11 +225,12 @@ class ProjectInclusiveJetSpectra:
         trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
         if not trials or not xsection:
+            print("Falling back to secondary method for x-section and trials...")
             xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
             trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
         if not trials or not xsection:
-            print("Falling back to secondary method for x-section and trials...")
+            print("Falling back to tertiary method for x-section and trials...")
             xsection = hlist.FindObject("fHistXsectionAfterSel")
             trials = hlist.FindObject("fHistTrialsAfterSel")
 

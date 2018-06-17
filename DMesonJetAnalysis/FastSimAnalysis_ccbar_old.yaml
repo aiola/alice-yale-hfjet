@@ -1,7 +1,7 @@
 # Selects only c or cbar
 name: FastSimAnalysis_ccbar
 input_path: /Volumes/DATA/ALICE/JetResults
-train: FastSim
+train: FastSimOld
 file_name: ""
 task_name: AliAnalysisTaskDmesonJets
 tree_type: simple
