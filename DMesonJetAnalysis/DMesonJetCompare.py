@@ -27,6 +27,7 @@ class DMesonJetCompare:
         self.fLegendSpectra = None
         self.fLegendRatio = None
         self.fBaselineRatio = None
+        self.fMarkerSize = 1.2
         self.fColors = [ROOT.kBlack, ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
         self.fMarkers = [ROOT.kOpenCircle, ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullTriangleUp, ROOT.kFullTriangleDown, ROOT.kFullDiamond, ROOT.kFullStar, ROOT.kStar, ROOT.kFullCross, ROOT.kMultiply, ROOT.kPlus]
         self.fLines = [1, 2, 9, 5, 7, 10, 4, 3, 6, 8]
@@ -128,7 +129,7 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetMarkerColor(self.fColors[0])
             self.fBaselineHistogram.SetLineColor(self.fColors[0])
             self.fBaselineHistogram.SetMarkerStyle(self.fMarkers[0])
-            self.fBaselineHistogram.SetMarkerSize(1.2)
+            self.fBaselineHistogram.SetMarkerSize(self.fMarkerSize)
             if self.fDoSpectrumLegend:
                 self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
                 if self.fDoSpectrumLegend == "stat": self.AddStat(self.fBaselineHistogram)
@@ -249,7 +250,7 @@ class DMesonJetCompare:
             h.SetMarkerColor(color)
             h.SetLineColor(color)
             h.SetMarkerStyle(marker)
-            h.SetMarkerSize(1.2)
+            h.SetMarkerSize(self.fMarkerSize)
             if self.fDoSpectrumLegend:
                 self.fLegendSpectra.AddEntry(h, h.GetTitle(), "pe")
                 if self.fDoSpectrumLegend == "stat": self.AddStat(h)
@@ -331,7 +332,7 @@ class DMesonJetCompare:
             hRatio.SetMarkerColor(color)
             hRatio.SetLineColor(color)
             hRatio.SetMarkerStyle(marker)
-            hRatio.SetMarkerSize(1.2)
+            hRatio.SetMarkerSize(self.fMarkerSize)
             if self.fDoRatioLegend: self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "pe")
         self.fRatios.append(hRatio)
         hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
