@@ -105,7 +105,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     h.SetMaximum(maxy)
     h.SetMinimum(miny)
 
-    h.GetYaxis().SetTitle("counts / 6 MeV/#it{c}^{2}")
+    h.GetYaxis().SetTitle("Counts / 6 MeV/#it{c}^{2}")
     h.GetXaxis().SetTitle("#it{M}(K#pi) (GeV/#it{c}^{2})")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(2.2)
@@ -211,7 +211,7 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
     subHist_copy.SetMarkerStyle(ROOT.kOpenDiamond)
     subHist_copy.SetMarkerSize(1.7)
 
-    h.GetYaxis().SetTitle("counts / (efficiency #times acceptance)")
+    h.GetYaxis().SetTitle("Counts / (Efficiency #times Acceptance)")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(2.2)
     h.GetXaxis().SetTitleSize(19)
@@ -247,7 +247,6 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
         leg.AddEntry(sbHist_copy, "Side Bands (SB)", "p")
         leg.AddEntry(subHist_copy, "PR - SB", "p")
         leg.Draw()
-
 
 def SideBandPlot():
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")
@@ -290,7 +289,7 @@ def SideBandPlot():
     htitle.SetTextSize(17)
     htitle.SetTextAlign(11)
     htitle.AddText("Charged Jets Anti-#it{k}_{T}, #it{R} = 0.4, |#it{#eta}_{jet}| < 0.5")
-    htitle.AddText("D^{0} #rightarrow K^{#pm}#pi^{#mp} and charge conj.")
+    htitle.AddText("D^{0} #rightarrow K^{#font[122]{-}}#pi^{+} and charge conj.")
     htitle.Draw()
 
     canvas.cd(4)
@@ -303,7 +302,6 @@ def SideBandPlot():
     paveALICE.SetTextAlign(13)
     paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
-
 
 def main():
     ROOT.TH1.AddDirectory(False)
