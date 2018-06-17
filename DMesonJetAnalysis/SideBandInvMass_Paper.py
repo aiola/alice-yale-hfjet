@@ -61,7 +61,7 @@ def SideBandPlot():
     htitle.AddText("Charged Jets")
     htitle.AddText("Anti-#it{k}_{T}, #it{R} = 0.4")
     htitle.AddText("|#it{#eta}_{jet}| < 0.5")
-    htitle.AddText("with D^{0} #rightarrow K^{#pm}#pi^{#mp}")
+    htitle.AddText("with D^{0} #rightarrow K^{#font[122]{-}}#pi^{+}")
     htitle.AddText("and charge conj.")
     htitle.Draw()
 

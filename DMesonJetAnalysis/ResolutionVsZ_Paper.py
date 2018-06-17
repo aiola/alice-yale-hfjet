@@ -55,7 +55,7 @@ def ResolutionComparison(config):
 
     h = comp.fMainHistogram
 
-    h.GetYaxis().SetTitle("probability density")
+    h.GetYaxis().SetTitle("Probability Density")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleSize(26)
     h.GetXaxis().SetLabelFont(43)

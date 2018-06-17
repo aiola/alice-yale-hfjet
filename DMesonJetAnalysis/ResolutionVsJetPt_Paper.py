@@ -57,7 +57,7 @@ def ResolutionComparison(config):
 
     h = comp.fMainHistogram
 
-    h.GetYaxis().SetTitle("probability density")
+    h.GetYaxis().SetTitle("Probability Density")
     h.GetXaxis().SetTitle("(#it{p}_{T,det jet}^{ch} #font[122]{-} #it{p}_{T,gen jet}^{ch}) / #it{p}_{T,gen jet}^{ch}")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleSize(26)
