@@ -16,7 +16,6 @@ globalList = []
 # To mimic ROOT5 behavior
 if ROOT.gROOT.GetVersionInt() >= 60000: ROOT.ROOT.Math.IntegratorOneDimOptions.SetDefaultIntegrator("Gauss")
 
-
 def main(config, maxEvents, fmt, gen, proc, ts, stage, ask, bg):
     if bg: ROOT.gROOT.SetBatch(True)
 
