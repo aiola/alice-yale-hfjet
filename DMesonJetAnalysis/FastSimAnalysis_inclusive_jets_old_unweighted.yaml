@@ -8,18 +8,26 @@ jets:
 -
   branch: Jet_AKTChargedR040_mcparticles_pT0000_pt_scheme
   name: Charged_R040
+  eta_acceptance: 1.0
 -
   branch: Jet_AKTFullR040_mcparticles_pT0000_pt_scheme
   name: Full_R040
+  eta_acceptance: 1.0
 cuts: []
 histograms:
 -
   name: JetPt
-  title: "JetPt;#it{p}_{T,ch jet} (GeV/#it{c});#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]"
+  type: Jet
+  variable_title: "#it{p}_{T,jet}"
+  units: "GeV/#it{c}"
+  eta_diff: yes
   bins: [5, 6, 8, 10, 14, 20, 30]
   variable: fPt
 -
   name: JetPtExtended
-  title: "JetPt;#it{p}_{T,ch jet} (GeV/#it{c});#frac{d^{2}#sigma}{d#it{p}_{T}d#eta} [mb (GeV/#it{c})^{-1}]"
+  type: Jet
+  variable_title: "#it{p}_{T,jet}"
+  units: "GeV/#it{c}"
+  eta_diff: yes
   bins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 24.0, 28.0, 32.0, 38.0, 44.0, 50.0, 58.0, 66.0, 76.0, 86.0, 100.0, 120.0, 150.0, 200.0]
   variable: fPt

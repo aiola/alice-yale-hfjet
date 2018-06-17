@@ -4,8 +4,10 @@
 # InclusiveJetCompare.yaml
 # InclusiveJetCompareKTCutSuppFact20.yaml
 # InclusiveJetCompareKTCutSuppFact60.yaml
+# InclusiveJetCompareKTCutSuppFact90.yaml
 # InclusiveJetCompareSuppFactKT1.yaml
 # InclusiveJetCompareSuppFactKT10.yaml
+# InclusiveJetCompareSuppFactKT20.yaml
 
 import argparse
 import numpy
