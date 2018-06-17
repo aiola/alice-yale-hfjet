@@ -32,10 +32,9 @@ def ResolutionComparison(config):
 
     cname = "ResolutionVsJetPt_Paper"
     comp = DMesonJetCompare.DMesonJetCompare(cname)
-    # comp.fOptSpectrum = "hist"
-    # comp.fOptSpectrumBaseline = "hist"
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = None
+    comp.fMarkerSize = 1.5
     comp.fX1LegSpectrum = 0.14
     comp.fX2LegSpectrum = 0.41
     comp.fY1LegSpectrum = 0.53

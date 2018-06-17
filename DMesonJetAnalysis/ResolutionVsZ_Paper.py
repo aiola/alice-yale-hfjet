@@ -37,6 +37,7 @@ def ResolutionComparison(config):
     comp.fDoRatioPlot = None
     comp.fDoSpectrumLegend = False
     comp.fLinUpperSpace = 0.50
+    comp.fMarkerSize = 1.5
     comp.fColors = [ROOT.kBlue + 2, ROOT.kRed + 2, ROOT.kGreen + 2,
                     ROOT.kRed + 2, ROOT.kGreen + 2]
     comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullDiamond,
