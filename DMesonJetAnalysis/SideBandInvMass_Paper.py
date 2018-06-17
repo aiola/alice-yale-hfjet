@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import yaml
+import subprocess
 import IPython
 import ROOT
-import DMesonJetUtils
 import RawYieldSpectrumLoader
 import SideBandInvMass_Pt_Paper
 import SideBandInvMass_Z_Paper
-import subprocess
 
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
-
 
 def SideBandPlot():
     loader_pt = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")
@@ -54,17 +51,16 @@ def SideBandPlot():
     SideBandInvMass_Z_Paper.PlotSBSpectra(canvas.cd(6), loader_high.fDMeson, "DPt_60_JetPt_15_30", 6, 12, sbList_high, "_DoubleGaus", True)
 
     canvas.cd(5)
-    htitle = ROOT.TPaveText(0.44, 0.53, 0.92, 0.90, "NB NDC")
+    htitle = ROOT.TPaveText(0.44, 0.51, 0.92, 0.90, "NB NDC")
     globalList.append(htitle)
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
-    htitle.SetTextSize(20)
+    htitle.SetTextSize(19)
     htitle.SetTextAlign(11)
     htitle.AddText("Charged Jets")
     htitle.AddText("Anti-#it{k}_{T}, #it{R} = 0.4")
-    htitle.AddText("|#eta_{jet}| < 0.5")
-    # htitle.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
+    htitle.AddText("|#it{#eta}_{jet}| < 0.5")
     htitle.AddText("with D^{0} #rightarrow K^{#pm}#pi^{#mp}")
     htitle.AddText("and charge conj.")
     htitle.Draw()
@@ -77,8 +73,7 @@ def SideBandPlot():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
 
 

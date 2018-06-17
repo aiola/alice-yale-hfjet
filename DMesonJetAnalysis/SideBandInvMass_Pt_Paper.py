@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import yaml
+import subprocess
 import IPython
 import ROOT
-import DMesonJetUtils
 import RawYieldSpectrumLoader
-import subprocess
 
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
-
 
 def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinList, refl, plotleg1=False, plotleg2=False):
     pad.SetTicks(1, 1)
@@ -26,6 +23,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
         sbList.ls()
         exit(1)
     h = sbHist.DrawCopy("axis")
+    h.GetXaxis().SetRangeUser(1.709, 2.07)
 
     minbin_l = 0
     maxbin_l = 0
@@ -126,24 +124,24 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     h.GetYaxis().SetLabelSize(23)
 
     if jetptmax and jetptmin:
-        htitle = ROOT.TPaveText(0.22, 0.80, 0.98, 0.92, "NB NDC")
+        htitle = ROOT.TPaveText(0.22, 0.78, 0.98, 0.93, "NB NDC")
     else:
         htitle = ROOT.TPaveText(0.22, 0.86, 0.98, 0.92, "NB NDC")
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
-    htitle.SetTextSize(20)
+    htitle.SetTextSize(19)
     htitle.SetTextAlign(22)
     binTitle = "{0:.0f} < #it{{p}}_{{T,D}} < {1:.0f} GeV/#it{{c}}".format(ptmin, ptmax)
     htitle.AddText(binTitle)
     if jetptmax and jetptmin:
-        binTitle2 = "{0:.0f} < #it{{p}}_{{T,ch jet}} < {1:.0f} GeV/#it{{c}}".format(jetptmin, jetptmax)
+        binTitle2 = "{0:.0f} < #it{{p}}_{{T,jet}}^{{ch}} < {1:.0f} GeV/#it{{c}}".format(jetptmin, jetptmax)
         htitle.AddText(binTitle2)
     htitle.Draw()
     globalList.append(htitle)
 
     if jetptmax and jetptmin:
-        fitInfo = ROOT.TPaveText(0.25, 0.70, 0.58, 0.79, "NB NDC")
+        fitInfo = ROOT.TPaveText(0.25, 0.68, 0.58, 0.77, "NB NDC")
     else:
         fitInfo = ROOT.TPaveText(0.25, 0.76, 0.58, 0.85, "NB NDC")
     fitInfo.SetBorderSize(0)
@@ -158,7 +156,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
 
     if plotleg1:
         if jetptmax and jetptmin:
-            leg = ROOT.TLegend(0.25, 0.48, 0.58, 0.67, "", "NB NDC")
+            leg = ROOT.TLegend(0.25, 0.475, 0.58, 0.665, "", "NB NDC")
         else:
             leg = ROOT.TLegend(0.25, 0.54, 0.58, 0.73, "", "NB NDC")
         globalList.append(leg)
@@ -188,6 +186,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
         leg.AddEntry(sbHist_copy_l, "Side Bands", "f")
         leg.Draw()
 
+    pad.RedrawAxis()
 
 def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
     pad.SetTicks(1, 1)
@@ -198,7 +197,11 @@ def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
     pad.SetBottomMargin(0.13)
 
     sbHist = sbList.FindObject("{}_Charged_R040_JetPtSpectrum_DPt_30_SideBand{}_SideBandWindow_DPt_{:.0f}_{:.0f}".format(dmeson, refl, ptmin * 100, ptmax * 100))
-    h = sbHist.DrawCopy("axis")
+    h = ROOT.TH1I("myaxis", "myaxis", 50, 0, 50)
+    h.Draw("axis")
+    h.GetYaxis().SetTitle(sbHist.GetYaxis().GetTitle())
+    h.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch} (GeV/#it{c})")
+    h.GetXaxis().SetRangeUser(4, 31)
     globalList.append(h)
 
     sbHist_copy = sbHist.DrawCopy("p0 same")
@@ -298,7 +301,7 @@ def SideBandPlot():
     htitle.SetTextAlign(11)
     htitle.AddText("Charged Jets")
     htitle.AddText("Anti-#it{k}_{T}, #it{R} = 0.4")
-    htitle.AddText("|#eta_{jet}| < 0.5")
+    htitle.AddText("|#it{#eta}_{jet}| < 0.5")
     # htitle.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
     htitle.AddText("with D^{0} #rightarrow K^{#pm}#pi^{#mp}")
     htitle.AddText("and charge conj.")
