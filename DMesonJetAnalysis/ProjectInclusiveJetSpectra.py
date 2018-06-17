@@ -23,6 +23,7 @@ class Histogram:
         self.fType = VariableType[hdef["type"]]
         self.fEtaAcceptance = eta_acceptance
         self.fVariable = hdef["variable"]
+        self.fEtaDiff = hdef["eta_diff"]
         self.GenerateHistograms(hdef)
 
     def GenerateHistograms(self, hdef):
@@ -53,7 +54,7 @@ class Histogram:
 
     def Normalize(self, nevents):
         scale_factor = 1.0
-        if hdef["eta_diff"]:
+        if self.fEtaDiff:
             scale_factor /= self.fEtaAcceptance
         self.fHistogram.Scale(scale_factor, "width")
         scale_factor /= nevents
