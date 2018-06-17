@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
+import array
 import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
 import DMesonJetCompare
-import array
 
 globalList = []
-
 
 def EfficiencyComparison(config_c, config_b):
     fname = "{0}/{1}/{2}.root".format(config_c["input_path"], config_c["train"], config_c["name"])
@@ -48,10 +47,10 @@ def EfficiencyComparison(config_c, config_b):
     bTruth = h.Rebin(len(DPtBins) - 1, "{0}_b_rebin".format(truthName_b), array.array('d', DPtBins))
     c_hist_Ratio = cRecoTruth.Clone(recoTruthName_c.replace("RecontructedTruth", "Efficiency"))
     c_hist_Ratio.Divide(cTruth)
-    c_hist_Ratio.SetTitle("D^{0}, Prompt")
+    c_hist_Ratio.SetTitle("Prompt")
     b_hist_Ratio = bRecoTruth.Clone(recoTruthName_b.replace("RecontructedTruth", "Efficiency"))
     b_hist_Ratio.Divide(bTruth)
-    b_hist_Ratio.SetTitle("D^{0}, Non-Prompt")
+    b_hist_Ratio.SetTitle("Non-Prompt")
     globalList.append(c_hist_Ratio)
     globalList.append(b_hist_Ratio)
 
@@ -90,10 +89,9 @@ def EfficiencyComparison(config_c, config_b):
     h.GetXaxis().SetLabelSize(22)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
+    h.GetYaxis().SetTitleOffset(1.1)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
-    h.GetYaxis().SetTitleOffset(0.9)
-    # h.GetYaxis().SetRangeUser(0, 0.59)
 
     paveALICE = ROOT.TPaveText(0.14, 0.60, 0.53, 0.95, "NB NDC")
     globalList.append(paveALICE)
@@ -102,12 +100,12 @@ def EfficiencyComparison(config_c, config_b):
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
+    paveALICE.AddText("ALICE")
+    paveALICE.AddText("PYTHIA 6, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("D^{0} #rightarrow K^{#font[122]{-}}#pi^{+} and charge conj.")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
-    paveALICE.AddText("5 < #it{p}_{T,ch jet} < 30 GeV/#it{c}")
-    paveALICE.AddText("|#eta_{jet}| < 0.5")
+    paveALICE.AddText("5 < #it{p}_{T, jet}^{ch} < 30 GeV/#it{c}")
+    paveALICE.AddText("|#it{#eta}_{jet}| < 0.5")
     paveALICE.Draw()
 
     return canvas
