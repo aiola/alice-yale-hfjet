@@ -13,29 +13,51 @@ from enum import Enum
 
 globalList = []
 
-
 class VariableType(Enum):
     Jet = 0
     Event = 1
 
-
 class Histogram:
 
-    def __init__(self, type, var, h):
-        self.fType = type
-        self.fVariable = var
-        self.fHistogram = h
-        self.fHistogramUnweighted = h.Clone("{}_Unweighted".format(h.GetName()))
+    def __init__(self, eta_acceptance, hdef):
+        self.fType = VariableType[hdef["type"]]
+        self.fEtaAcceptance = eta_acceptance
+        self.fVariable = hdef["variable"]
+        self.GenerateHistograms(hdef)
+
+    def GenerateHistograms(self, hdef):
+        if isinstance(hdef["bins"], dict):
+            bins = range(hdef["bins"]["min"], hdef["bins"]["max"] + hdef["bins"]["step"], hdef["bins"]["step"])
+        else:
+            bins = hdef["bins"]
+        self.fHistogram = ROOT.TH1D(hdef["name"], hdef["name"], len(bins) - 1, numpy.array(bins, dtype=numpy.float))
+        xaxis_title = "{} ({})".format(hdef["variable_title"], hdef["units"])
+        if hdef["eta_diff"]:
+            yaxis_title = "#frac{{d^{{2}}#sigma}}{{d{}#it{{d#eta}}}} [mb ({})^{{-1}}]".format(hdef["variable_title"], hdef["units"])
+        else:
+            yaxis_title = "#frac{{d#sigma}}{{d{}}} [mb ({})^{{-1}}]".format(hdef["variable_title"], hdef["units"])
+        self.fHistogram.GetXaxis().SetTitle(xaxis_title)
+        self.fHistogram.GetYaxis().SetTitle(yaxis_title)
+        self.fHistogramUnweighted = ROOT.TH1D("{}_Unweighted".format(hdef["name"]), "{}_Unweighted".format(hdef["name"]), len(bins) - 1, numpy.array(bins, dtype=numpy.float))
+        if hdef["eta_diff"]:
+            yaxis_title = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{d^{{2}}N}}{{d{}d#it{{#eta}}}} ({})^{{-1}}".format(hdef["variable_title"], hdef["units"])
+        else:
+            yaxis_title = "#frac{{1}}{{#it{{N}}_{{evt}}}} #frac{{dN}}{{d{}}} ({})^{{-1}}".format(hdef["variable_title"], hdef["units"])
+        self.fHistogramUnweighted.GetXaxis().SetTitle(xaxis_title)
+        self.fHistogramUnweighted.GetYaxis().SetTitle(yaxis_title)
 
     def Fill(self, obj, w):
         v = getattr(obj, self.fVariable)
         self.fHistogram.Fill(v, w)
         self.fHistogramUnweighted.Fill(v)
 
-    def Normalize(self):
-        self.fHistogram.Scale(1.0, "width")
-        self.fHistogramUnweighted.Scale(1.0, "width")
-
+    def Normalize(self, nevents):
+        scale_factor = 1.0
+        if hdef["eta_diff"]:
+            scale_factor /= self.fEtaAcceptance
+        self.fHistogram.Scale(scale_factor, "width")
+        scale_factor /= nevents
+        self.fHistogramUnweighted.Scale(scale_factor, "width")
 
 class ProjectInclusiveJetSpectra:
 
@@ -87,7 +109,8 @@ class ProjectInclusiveJetSpectra:
 
     def Terminate(self):
         for histos in self.fHistograms.itervalues(): 
-            for h in histos.itervalues():  h.Normalize()
+            for h in histos.itervalues():
+                h.Normalize(self.fEvents)
 
     def Start(self):
         self.GenerateChain()
@@ -120,28 +143,31 @@ class ProjectInclusiveJetSpectra:
         for jet_branch in self.fJetBranches:
             histograms = dict()
             for hdef in config["histograms"]:
-                hobj = ROOT.TH1D(hdef["name"], hdef["title"], len(hdef["bins"]) - 1, numpy.array(hdef["bins"], dtype=numpy.float))
-                h = Histogram(VariableType.Jet, hdef["variable"], hobj)
+                h = Histogram(jet_branch["eta_acceptance"], hdef)
                 histograms[hdef["name"]] = h
 
-            if self.fConfig["train"] != "FastSimOld":
-                hobj = ROOT.TH1D("PtHard", "PtHard", 1000, 0, 1000)
-                h = Histogram(VariableType.Event, "fPtHard", hobj)
-                histograms["PtHard"] = h
             self.fHistograms[jet_branch["name"]] = histograms
 
     def ProjectTree(self):
         print("Total number of events: {}".format(self.fTree.GetEntries()))
+        if self.fMaxEvents > 0 and self.fMaxEvents < self.fTree.GetEntries():
+            self.fEvents = self.fMaxEvents
+        else:
+            self.fEvents = self.fTree.GetEntries()
         for i, entry in enumerate(self.fTree):
-            if self.fMaxEvents > 0 and i > self.fMaxEvents: break
-            if i % 10000 == 0: print("Event #{}".format(i))
+            if self.fMaxEvents > 0 and i > self.fMaxEvents: 
+                break
+            if i % 10000 == 0: 
+                print("Event #{}".format(i))
             self.OnFileChange()
-            if self.fMergingType == "explicit_weight": self.GetExplicitWeight(entry)
+            if self.fMergingType == "explicit_weight": 
+                self.GetExplicitWeight(entry)
 
             for jet_branch in self.fJetBranches:
                 histograms = self.fHistograms[jet_branch["name"]]
                 for h in histograms.itervalues():
-                    if h.fType != VariableType.Event: continue
+                    if h.fType != VariableType.Event: 
+                        continue
                     h.Fill(entry.Event, self.fWeight)
                 jets = getattr(entry, jet_branch["branch"])
                 for jet in jets:
@@ -158,7 +184,7 @@ class ProjectInclusiveJetSpectra:
 
     def GetExplicitWeight(self, entry):
         event = entry.Event
-        self.fWeight = event.fWeight / self.fTree.GetEntries()
+        self.fWeight = event.fWeight / self.fEvents
         # print("w = {:e}".format(self.fWeight))
 
     def AddToTCollection(self, container, objects):

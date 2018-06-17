@@ -29,7 +29,7 @@ histograms:
 list:
 -
   ts: 1528403356
-  active: no
+  active: yes
   title: "k_{T} > 20 GeV/#it{c}, k_{T,supp} = 90 GeV/#it{c}"
 -
   ts: 1528208710
