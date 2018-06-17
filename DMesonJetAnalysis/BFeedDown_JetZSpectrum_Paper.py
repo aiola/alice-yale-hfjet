@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import yaml
 import IPython
 import ROOT
-import DMesonJetUtils
 import RawYieldSpectrumLoader
 
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
-
 
 def GetBFeedDownSpectra(kincuts):
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")
@@ -41,19 +38,21 @@ def PrepareRatio(h, hFD, hFDsyst, marker, color, fillstyle, opt, minX, maxX):
     ratio.SetLineWidth(2)
     globalList.append(ratio)
 
-    ratio.GetYaxis().SetTitle("B Feed-Down Fraction")
-    ratio.GetXaxis().SetTitle("#it{z}_{||,D}^{ch jet}")
+    ratio.GetXaxis().SetRangeUser(minX, maxX)
+    ratio.GetXaxis().SetTitle("#it{z}_{||}^{ch}")
     ratio.GetXaxis().SetTitleFont(43)
     ratio.GetXaxis().SetTitleSize(26)
     ratio.GetXaxis().SetLabelFont(43)
-    ratio.GetXaxis().SetLabelSize(22)
+    ratio.GetXaxis().SetLabelSize(20)
+    ratio.GetXaxis().SetLabelOffset(0.012)
+    ratio.GetYaxis().SetTitle("B Feed-Down Fraction")
     ratio.GetYaxis().SetTitleFont(43)
     ratio.GetYaxis().SetTitleSize(26)
-    ratio.GetYaxis().SetLabelFont(43)
-    ratio.GetYaxis().SetLabelSize(22)
     ratio.GetYaxis().SetTitleOffset(0.9)
-    ratio.GetYaxis().SetRangeUser(0.0001, 1.6)
-    ratio.GetXaxis().SetRangeUser(minX, maxX)
+    ratio.GetYaxis().SetLabelFont(43)
+    ratio.GetYaxis().SetLabelSize(20)
+    ratio.GetYaxis().SetLabelOffset(0.012)
+    ratio.GetYaxis().SetRangeUser(0, 1.6)
 
     ratioSyst = hFDsyst.Clone("ratioSyst")
     globalList.append(ratioSyst)
@@ -105,16 +104,15 @@ def PlotBFeedDown():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
+    paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#it{#eta}_{jet}| < 0.5")
+    paveALICE.AddText("with D^{0} #rightarrow K^{#font[122]{-}}#pi^{+} and charge conj.")
     # paveALICE.AddText("Raw B Feed-Down Fraction from POWHEG+PYTHIA6")
     # paveALICE.AddText("Not corrected for reconstruction efficiency and")
     # paveALICE.AddText("jet momentum resolution")
     paveALICE.Draw()
 
-    leg1 = ROOT.TLegend(0.17, 0.52, 0.56, 0.72, "", "NB NDC")
+    leg1 = ROOT.TLegend(0.17, 0.50, 0.56, 0.72, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
@@ -122,14 +120,12 @@ def PlotBFeedDown():
     leg1.SetTextSize(21)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    leg1.AddEntry(ratio_low, "5 < #it{p}_{T,ch jet} < 15 GeV/#it{c}, #it{p}_{T,D} > 2 GeV/#it{c}", "p")
-    leg1.AddEntry(ratio_high, "15 < #it{p}_{T,ch jet} < 30 GeV/#it{c}, #it{p}_{T,D} > 6 GeV/#it{c}", "p")
+    leg1.AddEntry(ratio_low, "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, #it{p}_{T,D} > 2 GeV/#it{c}", "p")
+    leg1.AddEntry(ratio_high, "15 < #it{p}_{T,jet}^{ch} < 30 GeV/#it{c}, #it{p}_{T,D} > 6 GeV/#it{c}", "p")
     entry = leg1.AddEntry(None, "Syst. Unc. from POWHEG+PYTHIA6", "f")
     entry.SetLineColor(ROOT.kBlack)
     entry.SetLineWidth(2)
     entry.SetFillStyle(0)
-    # entry.SetFillColor(ROOT.kBlack)
-    # entry.SetFillStyle(3244)
     leg1.Draw()
 
     return canvas
@@ -141,9 +137,9 @@ def main():
     ROOT.gStyle.SetOptStat(0)
 
     canvas = PlotBFeedDown()
-    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.pdf".format(input_path))
-    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.C".format(input_path))
-    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_QM18.eps".format(input_path))
+    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_Paper.pdf".format(input_path))
+    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_Paper.C".format(input_path))
+    canvas.SaveAs("{0}/BFeedDown_JetZSpectrum_Paper.eps".format(input_path))
 
 
 if __name__ == '__main__':

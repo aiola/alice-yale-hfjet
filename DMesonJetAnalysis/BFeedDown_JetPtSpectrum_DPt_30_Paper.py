@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import yaml
 import IPython
 import ROOT
-import DMesonJetUtils
 import RawYieldSpectrumLoader
 
 globalList = []
@@ -111,17 +109,19 @@ def PlotBFeedDown():
     ratio_down.Divide(h_copy)
 
     ratio.GetYaxis().SetTitle("ratio")
-    ratio.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    ratio.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch} (GeV/#it{c})")
     ratio.GetXaxis().SetTitleFont(43)
     ratio.GetXaxis().SetTitleSize(26)
+    ratio.GetXaxis().SetTitleOffset(2.9)
     ratio.GetXaxis().SetLabelFont(43)
-    ratio.GetXaxis().SetLabelSize(22)
+    ratio.GetXaxis().SetLabelSize(20)
+    ratio.GetXaxis().SetLabelOffset(0.012)
     ratio.GetYaxis().SetTitleFont(43)
     ratio.GetYaxis().SetTitleSize(26)
-    ratio.GetYaxis().SetLabelFont(43)
-    ratio.GetYaxis().SetLabelSize(22)
     ratio.GetYaxis().SetTitleOffset(1.4)
-    ratio.GetXaxis().SetTitleOffset(2.9)
+    ratio.GetYaxis().SetLabelFont(43)
+    ratio.GetYaxis().SetLabelSize(20)
+    ratio.GetYaxis().SetLabelOffset(0.012)
     ratio.GetYaxis().SetRangeUser(0, 0.99)
 
     padMain.cd()
@@ -154,7 +154,7 @@ def PlotBFeedDown():
     globalList.append(ratio2)
 
     ratio2.GetYaxis().SetTitle("B Feed-Down Fraction")
-    ratio2.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
+    ratio2.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch} (GeV/#it{c})")
     ratio2.GetXaxis().SetTitleFont(43)
     ratio2.GetXaxis().SetTitleSize(26)
     ratio2.GetXaxis().SetLabelFont(43)
@@ -185,10 +185,9 @@ def PlotBFeedDown():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
-    paveALICE.AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj., #it{p}_{T,D} > 3 GeV/#it{c}")
+    paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#it{#eta}_{jet}| < 0.5")
+    paveALICE.AddText("with D^{0} #rightarrow K^{#font[122]{-}}#pi^{+} and charge conj., #it{p}_{T,D} > 3 GeV/#it{c}")
     # paveALICE.AddText("Raw B Feed-Down Fraction from POWHEG+PYTHIA6")
     # paveALICE.AddText("Not corrected for reconstruction efficiency and")
     # paveALICE.AddText("jet momentum resolution")
@@ -203,7 +202,7 @@ def PlotBFeedDown():
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
     leg1.AddEntry(ratio2, "Raw B Feed-Down Fraction", "p")
-    leg1.AddEntry(ratio2Syst, "Systematic Uncertainty", "f")
+    leg1.AddEntry(ratio2Syst, "Syst. Unc. from POWHEG+PYTHIA6", "f")
     leg1.Draw()
 
     return canvas1, canvas2

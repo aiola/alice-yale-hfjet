@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
+import array
 import yaml
 import IPython
 import ROOT
 import DMesonJetUtils
 import DMesonJetCompare
-import array
 
 globalList = []
-
 
 def EfficiencyComparison(config):
     fname = "{0}/{1}/{2}.root".format(config["input_path"], config["train"], config["name"])
@@ -36,7 +35,7 @@ def EfficiencyComparison(config):
         truth = h.Rebin(len(DPtBins) - 1, "{0}_rebin".format(truthName), array.array('d', DPtBins))
         hist_Ratio = recoTruth.Clone(recoTruthName.replace("RecontructedTruth", "Efficiency"))
         hist_Ratio.Divide(truth)
-        hist_Ratio.SetTitle("{} < #it{{p}}_{{T,ch jet}} < {} GeV/#it{{c}}".format(minJetPt, maxJetPt))
+        hist_Ratio.SetTitle("{} < #it{{p}}_{{T,jet}}^{{ch}} < {} GeV/#it{{c}}".format(minJetPt, maxJetPt))
         globalList.append(hist_Ratio)
         histos.append(hist_Ratio)
 
@@ -75,11 +74,10 @@ def EfficiencyComparison(config):
     h.GetXaxis().SetLabelSize(22)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
+    h.GetYaxis().SetTitleOffset(1.1)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
-    h.GetYaxis().SetTitleOffset(0.9)
-    # h.GetYaxis().SetRangeUser(0, 0.59)
-
+    
     paveALICE = ROOT.TPaveText(0.14, 0.63, 0.53, 0.95, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
@@ -87,11 +85,11 @@ def EfficiencyComparison(config):
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(21)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("PYTHIA6, pp, #sqrt{#it{s}} = 7 TeV")
-    paveALICE.AddText("Prompt D^{0} #rightarrow K^{-}#pi^{+} and charge conj.")
+    paveALICE.AddText("ALICE")
+    paveALICE.AddText("PYTHIA 6, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("Prompt D^{0} #rightarrow K^{#font[122]{-}}#pi^{+} and charge conj.")
     paveALICE.AddText("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4")
-    paveALICE.AddText("|#eta_{jet}| < 0.5")
+    paveALICE.AddText("|#it{#eta}_{jet}| < 0.5")
     paveALICE.Draw()
 
     return canvas
