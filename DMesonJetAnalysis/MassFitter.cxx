@@ -403,7 +403,7 @@ Double_t MassFitter::GetChisquareW() const
 TString MassFitter::GetSignalString() const
 {
   TString r = GetValueString(fSignal, fSignalError);
-  r.Prepend("S=");
+  r.Prepend("S = ");
   return r;
 }
 
@@ -435,7 +435,7 @@ TString MassFitter::GetValueString(Double_t value, Double_t err)
   Double_t sigErrLog10 = TMath::Log10(err_red);
   Int_t sigPrec = TMath::CeilNint(-sigErrLog10);
   if (sigPrec == 0) sigPrec = 1;
-  r = Form("%%.%df#pm%%.%df", sigPrec, sigPrec);
+  r = Form("%%.%df #pm %%.%df", sigPrec, sigPrec);
   r = Form(r.Data(), value_red, err_red);
 
   if (np != 0) r = Form("(%s)#times10^{%d}", r.Data(), np);
@@ -450,7 +450,7 @@ TString MassFitter::GetBackgroundString() const
   Double_t bkgErr = 0;
   Double_t bkg = GetBackgroundAndError(bkgErr, fDefaultNSigmas);
   TString r = GetValueString(bkg, bkgErr);
-  r.Prepend(Form("B(%.0f#sigma)=", fDefaultNSigmas));
+  r.Prepend(Form("B(%.0f#sigma) = ", fDefaultNSigmas));
   return r;
 }
 
@@ -464,7 +464,7 @@ TString MassFitter::GetSignalOverBackgroundString() const
   if (vlog10 > -1) vlog10 = -1;
   
   Int_t prec = TMath::CeilNint(-vlog10);
-  r = Form("S/B(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
+  r = Form("S/B(%.0f#sigma) = %%.%df", fDefaultNSigmas, prec);
   r = Form(r.Data(), v);
 
   return r;
@@ -480,7 +480,7 @@ TString MassFitter::GetSignificanceString() const
   if (vlog10 > -1) vlog10 = -1;
 
   Int_t prec = TMath::CeilNint(-vlog10);
-  r = Form("S/#sqrt{S+B}(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
+  r = Form("S/#sqrt{S + B}(%.0f#sigma) = %%.%df", fDefaultNSigmas, prec);
   r = Form(r.Data(), v);
 
   return r;
@@ -496,7 +496,7 @@ TString MassFitter::GetSignificanceWString() const
   if (vlog10 > -1) vlog10 = -1;
 
   Int_t prec = TMath::CeilNint(-vlog10);
-  r = Form("S/#sqrt{#DeltaS^{2}+#DeltaB^{2}}(%.0f#sigma)=%%.%df", fDefaultNSigmas, prec);
+  r = Form("S/#sqrt{#DeltaS^{2} + #DeltaB^{2}}(%.0f#sigma) = %%.%df", fDefaultNSigmas, prec);
   r = Form(r.Data(), v);
 
   return r;
@@ -531,11 +531,11 @@ TString MassFitter::GetSignalMeanString() const
   
   if (vErrLog10 < 0) {
     Int_t vPrec = TMath::CeilNint(-vErrLog10);
-    r = Form("#mu=%%.%df#pm%%.%df GeV/#it{c}^{2}", vPrec, vPrec);
+    r = Form("#mu = %%.%df #pm %%.%df GeV/#it{c}^{2}", vPrec, vPrec);
     r = Form(r.Data(), v, vErr);
   }
   else {
-    r = Form("#mu=%.0f#pm%.0f GeV/#it{c}^{2}", v, vErr);
+    r = Form("#mu = %.0f #pm %.0f GeV/#it{c}^{2}", v, vErr);
   }
 
   return r;
@@ -570,11 +570,11 @@ TString MassFitter::GetSignalWidthString() const
   
   if (vErrLog10 < 0) {
     Int_t vPrec = TMath::CeilNint(-vErrLog10);
-    r = Form("#sigma=%%.%df#pm%%.%df %s", vPrec, vPrec, unit.Data());
+    r = Form("#sigma = %%.%df #pm %%.%df %s", vPrec, vPrec, unit.Data());
     r = Form(r.Data(), v, vErr);
   }
   else {
-    r = Form("#sigma=%.0f#pm%.0f %s", v, vErr, unit.Data());
+    r = Form("#sigma = %.0f #pm %.0f %s", v, vErr, unit.Data());
   }
 
   return r;
@@ -592,11 +592,11 @@ TString MassFitter::GetBkgPar1String() const
     Double_t vErrLog10 = vErr > 0 ? TMath::Log10(vErr) : 0;
     if (vErrLog10 < 0) {
       Int_t vPrec = TMath::CeilNint(-vErrLog10);
-      r = Form("b=%%.%df#pm%%.%df", vPrec, vPrec);
+      r = Form("b = %%.%df #pm %%.%df", vPrec, vPrec);
       r = Form(r.Data(), v, vErr);
     }
     else {
-      r = Form("b=%.0f#pm%.0f", v, vErr);
+      r = Form("b = %.0f #pm %.0f", v, vErr);
     }
   }
 
@@ -615,11 +615,11 @@ TString MassFitter::GetBkgPar2String() const
     Double_t vErrLog10 = vErr > 0 ? TMath::Log10(vErr) : 0;
     if (vErrLog10 < 0) {
       Int_t vPrec = TMath::CeilNint(-vErrLog10);
-      r = Form("c=%%.%df#pm%%.%df", vPrec, vPrec);
+      r = Form("c = %%.%df #pm %%.%df", vPrec, vPrec);
       r = Form(r.Data(), v, vErr);
     }
     else {
-      r = Form("c=%.0f#pm%.0f", v, vErr);
+      r = Form("c = %.0f #pm %.0f", v, vErr);
     }
   }
 
@@ -632,7 +632,7 @@ TString MassFitter::GetTotalEntriesString() const
   Double_t nentries = 0, err = 0;
   nentries = GetTotalEntriesAndError(err);
   TString r = GetValueString(nentries, err);
-  r.Prepend("N=");
+  r.Prepend("N = ");
   return r;
 }
 
@@ -642,7 +642,7 @@ TString MassFitter::GetChisquareString() const
   TString r;
   
   Double_t v = GetChisquare();
-  r = Form("#chi^{2}/NdF=%.2f", v);
+  r = Form("#chi^{2}/NdF = %.2f", v);
 
   return r;
 }
@@ -653,7 +653,7 @@ TString MassFitter::GetChisquareWString() const
   TString r;
 
   Double_t v = GetChisquareW();
-  r = Form("#chi^{2}_{w}/NdF=%.2f", v);
+  r = Form("#chi^{2}_{w}/NdF = %.2f", v);
 
   return r;
 }
@@ -664,7 +664,7 @@ TString MassFitter::GetReflOverSignString() const
   TString r;
 
   Double_t v = GetReflOverSign();
-  r = Form("R/S=%.3f", v);
+  r = Form("R/S = %.3f", v);
 
   return r;
 }

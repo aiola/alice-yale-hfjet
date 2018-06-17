@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # python script to do extract B feed down correction factors
 
-import yaml
+import subprocess
 import IPython
 import ROOT
-import DMesonJetUtils
 import RawYieldSpectrumLoader
-import subprocess
 
 globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
-
 
 def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinList, refl, plotleg1=False, plotleg2=False):
     pad.SetTicks(1, 1)
@@ -26,6 +23,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
         sbList.ls()
         exit(1)
     h = sbHist.DrawCopy("axis")
+    h.GetXaxis().SetRangeUser(1.709, 2.07)
 
     minbin_l = 0
     maxbin_l = 0
@@ -123,19 +121,19 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     h.GetYaxis().SetLabelSize(23)
 
     binTitle = "{0:.0f} < #it{{p}}_{{T,D}} < {1:.0f} GeV/#it{{c}}".format(ptmin, ptmax)
-    binTitle2 = "{0:.0f} < #it{{p}}_{{T,ch jet}} < {1:.0f} GeV/#it{{c}}".format(jetptmin, jetptmax)
-    htitle = ROOT.TPaveText(0.22, 0.80, 0.98, 0.92, "NB NDC")
+    binTitle2 = "{0:.0f} < #it{{p}}_{{T,jet}}^{{ch}} < {1:.0f} GeV/#it{{c}}".format(jetptmin, jetptmax)
+    htitle = ROOT.TPaveText(0.22, 0.78, 0.98, 0.93, "NB NDC")
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
-    htitle.SetTextSize(20)
+    htitle.SetTextSize(19)
     htitle.SetTextAlign(22)
     htitle.AddText(binTitle)
     htitle.AddText(binTitle2)
     htitle.Draw()
     globalList.append(htitle)
 
-    fitInfo = ROOT.TPaveText(0.25, 0.70, 0.58, 0.79, "NB NDC")
+    fitInfo = ROOT.TPaveText(0.25, 0.68, 0.58, 0.77, "NB NDC")
     fitInfo.SetBorderSize(0)
     fitInfo.SetFillStyle(0)
     fitInfo.SetTextFont(43)
@@ -171,7 +169,8 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
         leg.AddEntry(sigHist_copy, "Peak Region", "f")
         leg.AddEntry(sbHist_copy_l, "Side Bands", "f")
         leg.Draw()
-
+    
+    pad.RedrawAxis()
 
 def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=False):
     pad.SetTicks(1, 1)
@@ -185,6 +184,7 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
     print(objname)
     sbHist = sbList.FindObject(objname)
     h = sbHist.DrawCopy("axis")
+    h.GetXaxis().SetTitle("#it{z}_{||}^{ch}")
     globalList.append(h)
 
     sbHist_copy = sbHist.DrawCopy("p0 same")
@@ -289,7 +289,7 @@ def SideBandPlot():
     htitle.SetTextFont(43)
     htitle.SetTextSize(17)
     htitle.SetTextAlign(11)
-    htitle.AddText("Charged Jets Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5")
+    htitle.AddText("Charged Jets Anti-#it{k}_{T}, #it{R} = 0.4, |#it{#eta}_{jet}| < 0.5")
     htitle.AddText("D^{0} #rightarrow K^{#pm}#pi^{#mp} and charge conj.")
     htitle.Draw()
 
@@ -301,8 +301,7 @@ def SideBandPlot():
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(13)
-    # paveALICE.AddText("ALICE Preliminary")
-    paveALICE.AddText("pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
 
 
