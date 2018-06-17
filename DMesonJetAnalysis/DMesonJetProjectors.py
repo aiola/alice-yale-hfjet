@@ -214,11 +214,16 @@ class DMesonJetProjector:
             return valXSEC / valNTRIALS
 
     def ExtractWeightFromHistogramList(self, hlist):
-        xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
+        xsection = hlist.FindObject("fHistXsectionNoSel")
         trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
 
         if not trials or not xsection:
             print("Falling back to secondary method for x-section and trials...")
+            xsection = hlist.FindObject("fHistXsectionVsPtHardNoSel")
+            trials = hlist.FindObject("fHistTrialsVsPtHardNoSel")
+
+        if not trials or not xsection:
+            print("Falling back to tertiary method for x-section and trials...")
             xsection = hlist.FindObject("fHistXsectionAfterSel")
             trials = hlist.FindObject("fHistTrialsAfterSel")
 
