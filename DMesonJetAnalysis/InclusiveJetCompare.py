@@ -25,7 +25,11 @@ def LoadHistograms(config, ts, file_name, prefix, title, jet_type):
     full_file_name = "{}/{}_{}/{}".format(config["input_path"], prefix, ts, file_name)
     myfile = ROOT.TFile(full_file_name, "read")
     for element in config["histograms"]:
-        hname = "{}/{}".format(jet_type, element["name"])
+        if jet_type:
+            hname = "{}/{}".format(jet_type, element["name"])
+        else:
+            hname = element["name"]
+            jet_type = "Charged_R040"
         h = DMesonJetUtils.GetObject(myfile, hname)
         if not h: 
             continue
@@ -35,8 +39,9 @@ def LoadHistograms(config, ts, file_name, prefix, title, jet_type):
         if "max" in element and "min" in element:
             h.GetXaxis().SetRangeUser(element["min"], element["max"])
         h.SetTitle(title)
-        result[hname] = h.Clone(hname)
-        globalList.append(result[hname])
+        hname_result = "{}/{}".format(jet_type, element["name"])
+        result[hname_result] = h.Clone(hname_result)
+        globalList.append(result[hname_result])
     return result
 
 def main(config):
