@@ -30,6 +30,7 @@ theory:
   color: 418 # kGreen+2
   line: 1
   inclusive:
+    color: 617 # kMagenta+1
     gen: pythia6
     proc: mb
     ts: 1520882421
@@ -41,11 +42,11 @@ theory:
   gen: pythia6
   proc: charm_lo
   ts: 1521276365
-  color: 801 # kOrange+1
+  color: 418 # kGreen+2
   line: 2
   inclusive:
     title: PYTHIA 6 Perugia-2011
-    color: 418 # kGreen+2
+    color: 617 # kMagenta+1
     gen: pythia6
     proc: mb
     ts: 1520882421
@@ -59,13 +60,13 @@ theory:
   ts: 1520017218
   color: 602 # kBlue+2
   line: 1
-  inclusive:
-    color: 617 # kMagenta+1
-    title: POWHEG (dijet) + PYTHIA 6 
-    gen: powheg+pythia6
-    proc: dijet
-    ts: 1527252990
-    file_name: FastSimAnalysis_inclusive_jets.root
+  inclusive: no
+  #  color: 617 # kMagenta+1
+  #  title: POWHEG (dijet) + PYTHIA 6 
+  #  gen: powheg+pythia6
+  #  proc: dijet
+  #  ts: 1527252990
+  #  file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG LO (ccbar) + PYTHIA 6 
   active: yes
@@ -75,35 +76,10 @@ theory:
   color: 602 # kBlue+2
   line: 2
   inclusive: no
+  #  color: 802 # kOrange+2
   #  title: POWHEG LO (dijet) + PYTHIA 6 
   #  gen: powheg+pythia6
   #  proc: dijet_lo
   #  ts: 1529262323
   #  file_name: FastSimAnalysis_inclusive_jets.root
--
-  title: POWHEG (dijet) + PYTHIA 6 
-  active: yes
-  gen: powheg+pythia6
-  proc: dijet
-  ts: 1527252990
-  color: 617 # kMagenta+1
-  line: 1
-  inclusive:
-    color: 617 # kMagenta+1
-    gen: powheg+pythia6
-    proc: dijet
-    ts: 1527252990
-    file_name: FastSimAnalysis_inclusive_jets.root
--
-  title: POWHEG LO (dijet) + PYTHIA 6 
-  active: yes
-  gen: powheg+pythia6
-  proc: dijet_lo
-  ts: 1528977551 #1529262323
-  color: 617 # kMagenta+1
-  line: 2
-  inclusive: no
-  #  gen: powheg+pythia6
-  #  proc: dijet_lo
-  #  ts: 1529262323
-  #  file_name: FastSimAnalysis_inclusive_jets.root
+

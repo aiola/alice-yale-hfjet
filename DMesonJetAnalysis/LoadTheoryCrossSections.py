@@ -70,6 +70,8 @@ def GetInclusiveJetTheoryCrossSectionAll(config):
             t["inclusive"]["color"] = t["color"]
         if not "title" in t["inclusive"] and "title" in t:
             t["inclusive"]["title"] = t["title"]
+        if not "line" in t["inclusive"] and "line" in t:
+            t["inclusive"]["line"] = t["line"]
         h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], scale, t["inclusive"]["file_name"], jet_type)
         t["inclusive"]["histogram"] = h
         inclusive_jet_cross_sections[t["inclusive"]["ts"]] = t["inclusive"]
