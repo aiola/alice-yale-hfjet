@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # python script to compare D0 jet spectrum with theory
 # use it with
+# JetPtSpectrum_ComparePYTHIA6vs8.yaml
+# JetPtSpectrum_CompareHerwig.yaml
 # JetPtSpectrum_TheoryComp_Paper.yaml
 # JetPtSpectrum_PowhegComp_Paper.yaml
 # JetPtSpectrum_FullChargedComp_Paper.yaml
@@ -39,9 +41,17 @@ def GetMeasuredCrossSection(input_path, file_name):
 def GetTheoryCrossSectionAll(config, axis):
     return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis)
 
-def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr, maxr, legx):
-    cname = "D0JetCrossSection_Paper"
-    canvas = ROOT.TCanvas(cname, cname, 700, 900)
+def PlotCrossSections(dataStat, dataSyst, config):
+    cname = config["name"]
+    if "canvas_h" in config:
+        canvas_h = config["canvas_h"]
+    else:
+        canvas_h = 900
+    if "canvas_w" in config:
+        canvas_w = config["canvas_w"]
+    else:
+        canvas_w = 700
+    canvas = ROOT.TCanvas(cname, cname, canvas_w, canvas_h)
     globalList.append(canvas)
     canvas.Divide(1, 2)
     padMain = canvas.cd(1)
@@ -58,9 +68,9 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
-    if logy: padMain.SetLogy()
+    if config["logy"]: padMain.SetLogy()
     h = dataStat.DrawCopy("axis")
-    h.GetYaxis().SetRangeUser(miny, maxy)
+    h.GetYaxis().SetRangeUser(config["miny"], config["maxy"])
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
@@ -76,7 +86,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     dataStat_copy = dataStat.DrawCopy("same p e0 x0")
     globalList.append(dataStat_copy)
 
-    for t in theory:
+    for t in config["theory"]:
         if not t["active"]: continue
         h = t["histogram"].Clone(t["gen"])
         h.Draw("same e0")
@@ -102,7 +112,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(minr, maxr)
+    hRatio.GetYaxis().SetRangeUser(config["minr"], config["maxr"])
     hRatio.GetYaxis().SetNdivisions(509)
 
     ratioSyst = dataSyst_copy.Clone("ratioSyst")
@@ -112,9 +122,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     ratioStat = dataStat_copy.Clone("ratioStat")
     globalList.append(ratioStat)
     ratioStat.Draw("same p e0 x0")
-    # ratioStat.Draw("same e2")
     ratioStat.SetFillStyle(0)
-    # ratioStat.SetMarkerSize(0)
 
     for ibin in range(0, ratioSyst.GetN()):
         ratioSyst.SetPointEYlow(ibin, ratioSyst.GetErrorYlow(ibin) / ratioSyst.GetY()[ibin])
@@ -123,7 +131,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
         ratioStat.SetBinError(ibin + 1, ratioStat.GetBinError(ibin + 1) / ratioStat.GetBinContent(ibin + 1))
         ratioStat.SetBinContent(ibin + 1, 1.0)
 
-    for t in theory:
+    for t in config["theory"]:
         if not t["active"]: continue
         r = t["histogram_plot"].Clone()
         for ibin in range(1, r.GetNbinsX() + 1):
@@ -145,7 +153,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     padMain.cd()
 
     y2 = 0.66
-    if len(title) > 3: y2 = 0.66 - 0.06 * (len(title) - 3)
+    if len(config["title"]) > 3: y2 = 0.66 - 0.06 * (len(config["title"]) - 3)
     y1 = y2 - 0.036 * len(t) / 2
     if y1 < 0.1: y1 = 0.1
     leg1 = ROOT.TLegend(0.18, y1, 0.85, y2, "", "NB NDC")
@@ -157,12 +165,12 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    for t in theory: 
+    for t in config["theory"]: 
         if not t["active"]: continue
         leg1.AddEntry(t["histogram_plot"], t["title"], "l")
     leg1.Draw()
 
-    leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
+    leg1 = ROOT.TLegend(config["legx"], y1 - 0.12, config["legx"] + 0.30, y1, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
@@ -175,14 +183,14 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
     leg1.Draw()
 
     padMain.cd()
-    paveALICE = ROOT.TPaveText(0.16, 0.90 - 0.07 * len(title), 0.55, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.16, 0.90 - 0.07 * len(config["title"]), 0.55, 0.90, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(22)
     paveALICE.SetTextAlign(13)
-    for line in title: paveALICE.AddText(line)
+    for line in config["title"]: paveALICE.AddText(line)
     paveALICE.Draw()
 
     padRatio.RedrawAxis("g")
@@ -191,7 +199,6 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, logy, miny, maxy, minr,
 
     return canvas
 
-
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -199,11 +206,9 @@ def main(config):
 
     dataStat, dataSyst = GetMeasuredCrossSection(config["input_path"], config["data"])
     GetTheoryCrossSectionAll(config, dataStat.GetXaxis())
-    canvas = PlotCrossSections(dataStat, dataSyst, config["theory"], config["title"], config["logy"],
-                               config["miny"], config["maxy"], config["minr"], config["maxr"], config["legx"])
+    canvas = PlotCrossSections(dataStat, dataSyst, config)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name"]))
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')
