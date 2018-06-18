@@ -1,5 +1,5 @@
-name: JetPtSpectrum_TheoryComp_Paper
-name_inclusive: D0JetRateVsJetPt_TheoryComp_Paper
+name: JetPtSpectrum_ComparePYTHIA6vs8
+name_inclusive: D0JetRateVsJetPt_ComparePYTHIA6vs8
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetPtSpectrum_DPt_30_Systematics
 theory_spectrum: JetPtSpectrum_DPt_3
@@ -17,10 +17,32 @@ miny_inclusive: 6.0e-6
 maxy_inclusive: 5.0e+2
 minr_inclusive: 0.005
 maxr_inclusive: 0.0659
-legx_inclusive: 0.64
+legx_inclusive: 0.63
 canvas_w: 900
 canvas_h: 900
 theory:
+-
+  title: POWHEG + PYTHIA 6
+  active: yes
+  gen: powheg+pythia6
+  proc: charm
+  ts: 1520017218
+  color: 602 # kBlue+2
+  line: 1
+  inclusive: no
+#    gen: powheg+pythia6
+#    proc: dijet
+#    ts: 1527252990
+#    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG + PYTHIA 8
+  active: yes
+  gen: powheg+pythia8
+  proc: charm
+  ts: 1520018317
+  color: 634 # kRed+2
+  line: 2
+  inclusive: no
 -
   title: PYTHIA 6 Perugia-2011
   active: yes
@@ -36,31 +58,16 @@ theory:
     jet_type: ""
     file_name: Jets.root
 -
-  title: POWHEG (ccbar) + PYTHIA 6 
+  title: PYTHIA 8 Monash-2013
   active: yes
-  gen: powheg+pythia6
+  gen: pythia8
   proc: charm
-  ts: 1520017218
-  color: 602 # kBlue+2
-  line: 1
+  ts: 1520426239
+  color: 802 # kOrange+2
+  line: 2
   inclusive:
-    color: 617 # kMagenta+1
-    title: POWHEG (dijet) + PYTHIA 6 
-    gen: powheg+pythia6
-    proc: dijet
-    ts: 1527252990
-    file_name: FastSimAnalysis_inclusive_jets.root
--
-  title: POWHEG (dijet) + PYTHIA 6 
-  active: yes
-  gen: powheg+pythia6
-  proc: dijet
-  ts: 1527252990
-  color: 617 # kMagenta+1
-  line: 1
-  inclusive:
-    color: 617 # kMagenta+1
-    gen: powheg+pythia6
-    proc: dijet
-    ts: 1527252990
-    file_name: FastSimAnalysis_inclusive_jets.root
+    gen: pythia8
+    proc: mb
+    ts: 1521277750
+    jet_type: ""
+    file_name: Jets.root
