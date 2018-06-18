@@ -88,11 +88,17 @@ def main(config):
         comp.fLinUpperSpace = 0.4
 
         if measured_inclusive_cross_section and hdef["measured"]:
-            if not histo_to_compare:
+            if not histo_to_compare or len(histo_to_compare) < 1:
                 print("No histograms to compare!")
                 continue
-            globalList.append(measured_inclusive_cross_section)
-            r = comp.CompareSpectra(measured_inclusive_cross_section, histo_to_compare)
+            if "bins" in hdef:
+                measured_inclusive_cross_section_copy = DMesonJetUtils.Rebin1D_fromBins(measured_inclusive_cross_section, "measured_inclusive_cross_section_copy", len(hdef["bins"])-1, numpy.array(hdef["bins"], dtype=numpy.float))
+            else:
+                measured_inclusive_cross_section_copy = measured_inclusive_cross_section.Clone("measured_inclusive_cross_section_copy")
+            measured_inclusive_cross_section_copy.GetXaxis().SetTitle(histo_to_compare[0].GetXaxis().GetTitle())
+            measured_inclusive_cross_section_copy.GetYaxis().SetTitle(histo_to_compare[0].GetYaxis().GetTitle())
+            globalList.append(measured_inclusive_cross_section_copy)
+            r = comp.CompareSpectra(measured_inclusive_cross_section_copy, histo_to_compare)
         else:
             if len(histo_to_compare) <= 1:
                 print("No histograms to compare!")

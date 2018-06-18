@@ -242,7 +242,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
             d0jet_no_pt_cut_h.SetLineColor(ROOT.kGray+2)
             d0jet_no_pt_cut_h.SetLineStyle(t["line"])
             d0jet_no_pt_cut_h.SetLineWidth(2)
-            d0jet_no_pt_cut_h.SetMarkerStyle(ROOT.kOpenTriangleUp)
+            #d0jet_no_pt_cut_h.SetMarkerStyle(ROOT.kOpenTriangleUp)
             d0jet_no_pt_cut_h.SetMarkerColor(ROOT.kGray+2)
             t["histogram_no_pt_cut_plot"] = d0jet_no_pt_cut_h
 
