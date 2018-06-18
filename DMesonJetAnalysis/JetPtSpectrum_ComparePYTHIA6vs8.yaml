@@ -40,7 +40,7 @@ theory:
   gen: powheg+pythia8
   proc: charm
   ts: 1520018317
-  color: 634 # kRed+2
+  color: 617 # kMagenta+1
   line: 2
   inclusive: no
 -
@@ -53,6 +53,7 @@ theory:
   line: 1
   inclusive:
     gen: pythia6
+    color: 617 # kMagenta+1
     proc: mb
     ts: 1520882421
     jet_type: ""
@@ -66,6 +67,7 @@ theory:
   color: 802 # kOrange+2
   line: 2
   inclusive:
+    color: 602 # kBlue+2
     gen: pythia8
     proc: mb
     ts: 1521277750

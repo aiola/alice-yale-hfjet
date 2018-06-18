@@ -30,6 +30,8 @@ theory:
   color: 418 # kGreen+2
   line: 1
   inclusive:
+    line: 1
+    color: 802 # kOrange+2
     gen: pythia6
     proc: mb
     ts: 1520882421
@@ -42,9 +44,10 @@ theory:
   proc: charm
   ts: 1520017218
   color: 602 # kBlue+2
-  line: 1
+  line: 9
   inclusive:
-    color: 617 # kMagenta+1
+    line: 2
+    color: 433 # kCyan+1
     title: POWHEG (dijet) + PYTHIA 6 
     gen: powheg+pythia6
     proc: dijet
@@ -57,9 +60,9 @@ theory:
   proc: dijet
   ts: 1527252990
   color: 617 # kMagenta+1
-  line: 1
+  line: 2
   inclusive:
-    color: 617 # kMagenta+1
+    color: 433 # kCyan+1
     gen: powheg+pythia6
     proc: dijet
     ts: 1527252990
