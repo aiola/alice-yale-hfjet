@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # python script to compare D0 jet rate over inclusive jet vs z with theory
 # us it with
-# D0JetRate_JetPt_5_15_TheoryComp_Paper.yaml
-# D0JetRate_JetPt_15_30_TheoryComp_Paper.yaml
-# D0JetRate_JetPt_5_15_FullChargedComp_Paper.yaml
-# D0JetRate_JetPt_15_30_FullChargedComp_Paper.yaml
+# D0JetRateVsZ_JetPt_5_15_CompareFullVsCharged.yaml
+# D0JetRateVsZ_JetPt_5_15_CompareTheory.yaml
+# D0JetRateVsZ_JetPt_15_30_CompareFullVsCharged.yaml
+# D0JetRateVsZ_JetPt_15_30_CompareTheory.yaml
 
 import argparse
 import math
-import numpy
 import yaml
 import IPython
 import ROOT
@@ -34,19 +33,26 @@ def GetD0JetCrossSection(input_path, file_name):
         exit(1)
     return hStat, hSyst
 
-
 def GetInclJetCrossSection():
     return LoadInclusiveJetSpectrum.GetCrossSection()
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
-    return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis, True)
+    return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis)
 
 def GetInclusiveJetTheoryCrossSectionAll(config):
     return LoadTheoryCrossSections.GetInclusiveJetTheoryCrossSectionAll(config)
 
-def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr, minx, maxx, legx):
-    cname = "D0JetVsInclusiveCrossSectionTheoryComp_Paper"
-    canvas = ROOT.TCanvas(cname, cname, 700, 900)
+def PlotCrossSections(dataStat, dataSyst, config):
+    cname = "{}_{}".format(config["name_prefix"], config["name"])
+    if "canvas_h" in config:
+        canvas_h = config["canvas_h"]
+    else:
+        canvas_h = 900
+    if "canvas_w" in config:
+        canvas_w = config["canvas_w"]
+    else:
+        canvas_w = 700
+    canvas = ROOT.TCanvas(cname, cname, canvas_w, canvas_h)
     globalList.append(canvas)
     canvas.Divide(1, 2)
     padMain = canvas.cd(1)
@@ -63,32 +69,48 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
-    h = ROOT.TH1C("h", "h", 100, 0, 1)
+    if "minx" in config:
+        minx = config["minx"]
+    else:
+        minx = dataStat.GetXaxis().GetXmin()
+
+    if "maxx" in config:
+        maxx = config["maxx"]
+    else:
+        maxx = dataStat.GetXaxis().GetXmax()
+
+    h = ROOT.TH1I("h", "h", 1000, minx, maxx)
     h.Draw("axis")
-    h.GetYaxis().SetRangeUser(miny, maxy)
+    globalList.append(h)
+    h.GetYaxis().SetRangeUser(config["miny"], config["maxy"])
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
     h.GetYaxis().SetTitleOffset(1.6)
     h.GetYaxis().SetTitle(dataStat.GetYaxis().GetTitle())
-    globalList.append(h)
+    if "y_axis_title" in config:
+        h.GetYaxis().SetTitle(config["y_axis_title"])
+    else:
+        h.GetYaxis().SetTitle(dataStat.GetYaxis().GetTitle())
 
     dataSyst_copy = dataSyst.Clone("{0}_copy".format(dataSyst.GetName()))
     dataSyst_copy.Draw("2")
     globalList.append(dataSyst_copy)
-    if maxx > minx:
-        points_to_be_removed = set()
-        for ipoint in range(0, dataSyst_copy.GetN()):
-            if dataSyst_copy.GetX()[ipoint] > maxx or dataSyst_copy.GetX()[ipoint] < minx:
-                points_to_be_removed.add(ipoint)
-        for ipoint in points_to_be_removed: dataSyst_copy.RemovePoint(ipoint)
 
     dataStat_copy = dataStat.DrawCopy("same p e0 x0")
     globalList.append(dataStat_copy)
-    if maxx > minx: dataStat_copy.GetXaxis().SetRangeUser(minx, maxx)
 
-    for t in theory:
+    if "data_minx" in config and "data_maxx" in config:
+        points_to_be_removed = set()
+        for ipoint in range(0, dataSyst_copy.GetN()):
+            if dataSyst_copy.GetX()[ipoint] < config["data_minx"] or dataSyst_copy.GetX()[ipoint] > config["data_maxx"]:
+                points_to_be_removed.add(ipoint)
+        for ipoint in points_to_be_removed:
+            dataSyst_copy.RemovePoint(ipoint)
+        dataStat_copy.GetXaxis().SetRangeUser(config["data_minx"], config["data_maxx"])
+
+    for t in config["theory"]:
         if not t["active"]: continue
         h = t["histogram"].Clone(t["gen"])
         h.Draw("same e0")
@@ -98,14 +120,15 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
         h.SetLineWidth(2)
         h.SetMarkerStyle(1)
         h.SetMarkerColor(t["color"])
-        if maxx > minx: h.GetXaxis().SetRangeUser(minx, maxx)
+        if "data_minx" in config and "data_maxx" in config:
+            h.GetXaxis().SetRangeUser(config["data_minx"], config["data_maxx"])
         t["histogram_plot"] = h
 
     padRatio.cd()
 
     hRatio = ROOT.TH1C("hratio", "hratio", 100, 0, 1)
     hRatio.Draw("axis")
-    hRatio.GetYaxis().SetTitle("theory / data")
+    hRatio.GetYaxis().SetTitle("MC / Data")
     hRatio.GetXaxis().SetTitleFont(43)
     hRatio.GetXaxis().SetTitleSize(26)
     hRatio.GetXaxis().SetLabelFont(43)
@@ -116,7 +139,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(minr, maxr)
+    hRatio.GetYaxis().SetRangeUser(config["minr"], config["maxr"])
     hRatio.GetYaxis().SetNdivisions(509)
     hRatio.GetXaxis().SetTitle(dataStat_copy.GetXaxis().GetTitle())
     globalList.append(hRatio)
@@ -124,15 +147,13 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     ratioSyst = dataSyst_copy.Clone("ratioSyst")
     globalList.append(ratioSyst)
     ratioSyst.Draw("2")
-    if maxx > minx: ratioSyst.GetXaxis().SetRangeUser(minx, maxx)
 
     ratioStat = dataStat_copy.Clone("ratioStat")
     globalList.append(ratioStat)
     ratioStat.Draw("same p e0 x0")
-    # ratioStat.Draw("same e2")
     ratioStat.SetFillStyle(0)
-    # ratioStat.SetMarkerSize(0)
-    if maxx > minx: ratioStat.GetXaxis().SetRangeUser(minx, maxx)
+    if "data_minx" in config and "data_maxx" in config:
+        ratioStat.GetXaxis().SetRangeUser(config["data_minx"], config["data_maxx"])
 
     for ibin in range(0, ratioSyst.GetN()):
         ratioSyst.SetPointEYlow(ibin, ratioSyst.GetErrorYlow(ibin) / ratioSyst.GetY()[ibin])
@@ -143,7 +164,7 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
         ratioStat.SetBinError(ibin, ratioStat.GetBinError(ibin) / ratioStat.GetBinContent(ibin))
         ratioStat.SetBinContent(ibin, 1.0)
 
-    for t in theory:
+    for t in config["theory"]:
         if not t["active"]: continue
         r = t["histogram_plot"].Clone()
         for ibin in range(1, r.GetNbinsX() + 1):
@@ -155,31 +176,78 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
         r.SetMarkerStyle(20)
         r.SetMarkerSize(0)
         r.Draw("same e0")
-        if maxx > minx: r.GetXaxis().SetRangeUser(minx, maxx)
+        if "data_minx" in config and "data_maxx" in config:
+            r.GetXaxis().SetRangeUser(config["data_minx"], config["data_maxx"])
         globalList.append(r)
         t["ratio"] = r
 
     padMain.cd()
 
-    y2 = 0.66
-    if len(title) > 3: y2 = 0.66 - 0.06 * (len(title) - 3)
-    y1 = y2 - 0.036 * len(t) / 2
-    if y1 < 0.1: y1 = 0.1
-    leg1 = ROOT.TLegend(0.18, y1, 0.85, y2, "", "NB NDC")
-    leg1.SetNColumns(2)
+    y1 = 0.87
+    y2 = y1 - 0.07 * len(config["title"])
+    padMain.cd()
+    paveALICE = ROOT.TPaveText(0.16, y1, 0.55, y2, "NB NDC")
+    globalList.append(paveALICE)
+    paveALICE.SetBorderSize(0)
+    paveALICE.SetFillStyle(0)
+    paveALICE.SetTextFont(43)
+    paveALICE.SetTextSize(22)
+    paveALICE.SetTextAlign(12)
+    for line in config["title"]: paveALICE.AddText(line)
+    paveALICE.Draw()
+
+    if "theory_legend" in config and "n_columns" in config["theory_legend"]:
+        n_leg_columns = config["theory_legend"]["n_columns"]
+    else:
+        max_length = 0
+        for t in config["theory"]: 
+            if not t["active"]:
+                continue
+            if len(t["title"]) > max_length:
+                max_length = len(t["title"])
+
+        if max_length > 40:
+            n_leg_columns = 1
+        else:
+            n_leg_columns = 2
+
+    if "theory_legend" in config and "y" in config["theory_legend"]:
+        y1 = config["theory_legend"]["y"]
+    else:
+        y1 = y2 - 0.03
+    active_t = len([t for t in config["theory"] if "histogram_plot" in t])
+    y2 = y1 - 0.06 * active_t / n_leg_columns
+    if "theory_legend" in config and "x" in config["theory_legend"]:
+        x1 = config["theory_legend"]["x"]
+    else:
+        x1 = 0.16
+    x2 = 0.45
+
+    leg1 = ROOT.TLegend(x1, y1, x2, y2, "", "NB NDC")
+    leg1.SetNColumns(n_leg_columns)
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
     leg1.SetTextSize(19)
     leg1.SetTextAlign(12)
-    leg1.SetMargin(0.2)
-    for t in theory:
+    leg1.SetMargin(0.1)
+    for t in config["theory"]:
         if not t["active"]: continue
         leg1.AddEntry(t["histogram_plot"], t["title"], "l")
     leg1.Draw()
 
-    leg1 = ROOT.TLegend(legx, y1 - 0.12, legx + 0.30, y1, "", "NB NDC")
+    if "data_legend" in config and "y" in config["data_legend"]:
+        y1 = config["data_legend"]["y"]
+    else:
+        y1 = y2 - 0.02
+    y2 = y1 - 0.12
+    if "data_legend" in config and "x" in config["data_legend"]:
+        x1 = config["data_legend"]["x"]
+    else:
+        x1 = 0.16
+    x2 = x1 + 0.30
+    leg1 = ROOT.TLegend(x1, y1, x2, y2, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
@@ -191,23 +259,11 @@ def PlotCrossSections(dataStat, dataSyst, theory, title, miny, maxy, minr, maxr,
     leg1.AddEntry(dataSyst_copy, "Syst. Unc. (data)", "f")
     leg1.Draw()
 
-    padMain.cd()
-    paveALICE = ROOT.TPaveText(0.16, 0.90 - 0.07 * len(title), 0.55, 0.90, "NB NDC")
-    globalList.append(paveALICE)
-    paveALICE.SetBorderSize(0)
-    paveALICE.SetFillStyle(0)
-    paveALICE.SetTextFont(43)
-    paveALICE.SetTextSize(22)
-    paveALICE.SetTextAlign(13)
-    for line in title: paveALICE.AddText(line)
-    paveALICE.Draw()
-
     padRatio.RedrawAxis("g")
     padRatio.RedrawAxis()
     padMain.RedrawAxis()
 
     return canvas
-
 
 def NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst):
     xsec_tot, stat_xsec_tot, syst_xsec_tot = GetTotalCrossSection(incl_stat, incl_syst, config["min_jet_pt"], config["max_jet_pt"])
@@ -239,7 +295,6 @@ def NormalizeTheory(config):
         h.GetYaxis().SetTitle("R(#it{p}_{T, ch jet},#it{z}) / #Delta#it{z}")
         h.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
 
-
 def GetTotalCrossSection(stat, syst, minpt, maxpt):
     xsec_tot = 0
     stat_xsec_tot2 = 0
@@ -258,7 +313,6 @@ def GetTotalCrossSection(stat, syst, minpt, maxpt):
 
     return xsec_tot, stat_xsec_tot, syst_xsec_tot
 
-
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -270,16 +324,10 @@ def main(config):
     GetInclusiveJetTheoryCrossSectionAll(config)
     NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst)
     NormalizeTheory(config)
-    minx = 0
-    maxx = 0
-    if "minx" in config and "maxx" in config:
-        minx = config["minx"]
-        maxx = config["maxx"]
-    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, config["theory"], config["title"],
-                               config["miny"], config["maxy"], config["minr"], config["maxr"], minx, maxx, config["legx"])
-    canvas.SaveAs("{}/{}.pdf".format(config["input_path"], config["name"]))
-    canvas.SaveAs("{}/{}.C".format(config["input_path"], config["name"]))
 
+    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, config)
+    canvas.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
+    canvas.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')
