@@ -1,16 +1,34 @@
-name: JetPtSpectrum_PowhegComp_Paper
+# use it with
+# CompareCrossSectionDataVsTheory.py
+name: ComparePowheg
+
+# General
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetPtSpectrum_DPt_30_Systematics
 theory_spectrum: JetPtSpectrum_DPt_3
 jet_type: "Charged_R040"
 logy: yes
+canvas_w: 900
+canvas_h: 900
+x_axis_title: "#it{p}_{T,jet}^{ch} (GeV/#it{c})"
+y_axis_title: "#frac{d^{2}#sigma}{d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{-1}]"
+
+# Specific to cross section plot (CompareCrossSectionDataVsTheory.py)
+name_prefix: JetPtSpectrum
+title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "POWHEG+PYTHIA 6", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}"]
 normalize: no
-title: ["pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, |#eta_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "POWHEG+PYTHIA 6"]
 miny: 6.0e-6
-maxy: 1.0e+2
+maxy: 1.0e+0
 minr: 0.0
 maxr: 2.99
-legx: 0.50
+theory_legend:
+  x: 0.59
+  y: 0.85
+  n_columns: 1
+data_legend:
+  x: 0.64
+
+# Specific to D0-jet rate (CompareD0JetRateVsJetPtDataVsTheory.py)
 theory:
 -
   title: Central

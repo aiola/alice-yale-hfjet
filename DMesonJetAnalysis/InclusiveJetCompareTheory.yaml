@@ -1,5 +1,5 @@
 input_path: /Volumes/DATA/ALICE/JetResults
-name: CompareDijetSimulations
+name: InclusiveJetCompareTheory
 prefix: FastSim_powheg+pythia6_dijet
 file_name: FastSimAnalysis_inclusive_jets.root
 jet_type: Charged_R040

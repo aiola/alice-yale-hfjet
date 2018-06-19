@@ -1,0 +1,103 @@
+# use it with
+# CompareD0JetRateVsZDataVsTheory.py
+name: CompareTheory
+
+# General
+input_path: /Volumes/DATA/ALICE/JetResults
+data: JetZCrossSection_JetPt_15_30_Systematics
+theory_spectrum: JetZSpectrum_DPt_6_JetPt_15_30
+jet_type: Charged_R040
+min_jet_pt: 5
+max_jet_pt: 15
+canvas_w: 900
+canvas_h: 900
+x_axis_title: "#it{z}_{||}^{ch}"
+y_axis_title: "#frac{#it{R}(#it{z}_{||}^{ch})}{#Delta#it{p}_{T,jet}^{ch}#Delta#it{z}_{||}^{ch}} (GeV/#it{c})^{-1}"
+
+# Specific to cross section plot (CompareD0JetRateVsZDataVsTheory.py)
+name_prefix: D0JetRateVsZ_JetPt_15_30
+title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "15 < #it{p}_{T, ch jet} < 30 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}"]
+normalize: no
+data_minx: 0.4
+data_maxx: 1.0
+minx: 0
+maxx: 1
+miny: 0.000001
+maxy: 0.01
+minr: 0.001
+maxr: 5.49
+theory_legend:
+  x: 0.18
+  y: 0.59
+  n_columns: 1
+data_legend:
+  x: 0.6
+  y: 0.84
+
+# MC definitions
+theory:
+-
+  title: POWHEG (ccbar) + PYTHIA 6 
+  active: yes
+  gen: powheg+pythia6
+  proc: charm
+  ts: 1520017218
+  color: 802 # kOrange+2
+  line: 1
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet
+    ts: 1527252990
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG (LO, ccbar) + PYTHIA 6
+  active: yes
+  gen: powheg+pythia6
+  proc: charm_lo
+  ts: 1528976386
+  color: 617 # kMagenta+1
+  line: 2
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet
+    ts: 1527252990
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG (dijet) + PYTHIA 6
+  active: yes
+  gen: powheg+pythia6
+  proc: dijet
+  ts: 1527252990
+  color: 418 # kGreen+2
+  line: 1
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet
+    ts: 1527252990
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: PYTHIA 6 (Perugia-2011)
+  active: yes
+  gen: pythia6
+  proc: charm
+  ts: 1520422008
+  color: 602 # kBlue+2
+  line: 1
+  inclusive:
+    gen: pythia6
+    proc: mb
+    ts: 1520882421
+    file_name: FastSimAnalysis_inclusive_jets_unweighted.root
+-
+  title: PYTHIA 6 (LO, Perugia-2011)
+  active: yes
+  gen: pythia6
+  proc: charm_lo
+  ts: 1521276365
+  color: 862 # kAzure+2
+  line: 2
+  inclusive:
+    gen: pythia6
+    proc: mb
+    ts: 1520882421
+    file_name: FastSimAnalysis_inclusive_jets_unweighted.root

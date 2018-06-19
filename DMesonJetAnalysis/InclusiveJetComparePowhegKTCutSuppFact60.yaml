@@ -1,5 +1,5 @@
 input_path: /Volumes/DATA/ALICE/JetResults
-name: CompareKTCutSuppFact20
+name: InclusiveJetComparePowhegKTCutSuppFact60
 prefix: FastSim_powheg+pythia6_dijet
 file_name: FastSimAnalysis_inclusive_jets.root
 jet_type: Charged_R040
@@ -20,7 +20,7 @@ histograms:
   name: PtHard
   measured: no
   bins: [3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200]
-  min_ratio: 0.8
+  min_ratio: 0.9
   max_ratio: 1.1
 -
   name: PtHard_Unweighted
@@ -28,32 +28,26 @@ histograms:
   bins: [3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200]
 list:
 -
-  ts: 1520882421
-  active: no
-  file_name: FastSimAnalysis_inclusive_jets_unweighted.root
-  prefix: FastSim_pythia6_mb
-  title: "PYTHIA6 Perugia-2011"
--
-  ts: 1524748993
+  ts: 1528204255
   active: yes
-  title: "k_{T} > 0.5 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+  title: "k_{T} > 0.5 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
 -
-  ts: 1524742846
+  ts: 1527252990
   active: yes
-  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+  title: "k_{T} > 1 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
 -
-  ts: 1524749866
+  ts: 1527328283
   active: yes
-  title: "k_{T} > 5 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+  title: "k_{T} > 5 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
 -
-  ts: 1524747472
+  ts: 1527324009
   active: yes
-  title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+  title: "k_{T} > 10 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
 -
-  ts: 1527095787
+  ts: 1528208710
   active: yes
-  title: "k_{T} > 20 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+  title: "k_{T} > 20 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
 -
-  ts: 1527251558
+  ts: 1528213823
   active: yes
-  title: "k_{T} > 40 GeV/#it{c}, k_{T,supp} = 20 GeV/#it{c}"
+  title: "k_{T} > 40 GeV/#it{c}, k_{T,supp} = 60 GeV/#it{c}"
