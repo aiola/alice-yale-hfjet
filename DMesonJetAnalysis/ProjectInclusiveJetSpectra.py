@@ -143,7 +143,7 @@ class ProjectInclusiveJetSpectra:
         self.fHistograms = dict()
         for jet_branch in self.fJetBranches:
             histograms = dict()
-            for hdef in config["histograms"]:
+            for hdef in self.fConfig["histograms"]:
                 h = Histogram(jet_branch["eta_acceptance"], hdef)
                 histograms[hdef["name"]] = h
 
@@ -186,7 +186,6 @@ class ProjectInclusiveJetSpectra:
     def GetExplicitWeight(self, entry):
         event = entry.Event
         self.fWeight = event.fWeight / self.fEvents
-        # print("w = {:e}".format(self.fWeight))
 
     def AddToTCollection(self, container, objects):
         for objName, obj in objects.iteritems():
@@ -306,9 +305,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     f = open(args.config, 'r')
-    config = yaml.load(f)
+    yconfig = yaml.load(f)
     f.close()
 
-    main(config, args.gen, args.proc, args.ts, args.stage, args.e)
+    main(yconfig, args.gen, args.proc, args.ts, args.stage, args.e)
 
     IPython.embed()
