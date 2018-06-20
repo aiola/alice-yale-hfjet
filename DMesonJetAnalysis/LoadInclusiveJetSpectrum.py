@@ -1,5 +1,6 @@
 # Load inclusive jet spectrum
 
+import math
 import numpy
 import ROOT
 import DMesonJetUtils
@@ -150,7 +151,11 @@ def GetCrossSection(jetptbins=[5, 6, 8, 10, 14, 20, 30]):
     return hStat, hSyst
 
 def FitAndRebin(hstat, new_axis):
-    fit_func = ROOT.TF1("myfit", "expo(0)+expo(2)+expo(4)", new_axis.GetBinLowEdge(1)-2, new_axis.GetBinUpEdge(new_axis.GetNbins())+2)
+    xmin = new_axis.GetBinLowEdge(1) - 5
+    if xmin < 5:
+        xmin = 5
+    xmax = new_axis.GetBinUpEdge(new_axis.GetNbins()) + 5
+    fit_func = ROOT.TF1("myfit", "expo(0)+expo(2)", xmin, xmax)
     globalList.append(fit_func)
     cname = "Fit_{}".format(hstat.GetName())
     canvas = ROOT.TCanvas(cname, cname)
@@ -160,21 +165,16 @@ def FitAndRebin(hstat, new_axis):
     hcopy.GetXaxis().SetRangeUser(new_axis.GetBinLowEdge(1), new_axis.GetBinUpEdge(new_axis.GetNbins()))
     globalList.append(hcopy)
     fit_func.SetParameter(0, 1)
-    fit_func.SetParameter(1, -0.9)
-    fit_func.SetParameter(2, 0)
+    fit_func.SetParameter(1, -1)
+    fit_func.SetParameter(2, -99999999)
     fit_func.SetParameter(3, 0)
-    fit_func.SetParameter(4, 0)
-    fit_func.SetParameter(5, 0)
-    fit_func.SetParameter(0, 1. / fit_func.Eval(new_axis.GetBinCenter(1)))
+    fit_func.SetParameter(0, 1 + math.log(hstat.GetBinContent(hstat.GetXaxis().FindBin(xmin)) / fit_func.Eval(xmin)))
     fit_func.SetParameter(2, 1)
-    fit_func.SetParameter(3, -0.16)
-    fit_func.SetParameter(2, 1. / fit_func.Eval(new_axis.GetBinCenter(int(new_axis.GetNbins() / 3.0))))
-    fit_func.SetParameter(4, 1)
-    fit_func.SetParameter(5, -0.4)
-    fit_func.SetParameter(4, 1. / fit_func.Eval(new_axis.GetBinCenter(int(new_axis.GetNbins() * 2.0 / 3.0))))
-    fitR = hcopy.Fit(fit_func, "S", "", new_axis.GetBinLowEdge(1)-2, new_axis.GetBinUpEdge(new_axis.GetNbins())+2)
+    fit_func.SetParameter(3, -0.5)
+    fit_func.SetParameter(2, 1 + math.log(hstat.GetBinContent(hstat.GetXaxis().FindBin((xmax - xmin) / 2)) / fit_func.Eval((xmax - xmin) / 2)))
+    fitR = hcopy.Fit(fit_func, "S", "", xmin, xmax)
     fitOk = int(fitR)
-    if not fitOk == 0:
+    if fitOk != 0:
         print("The fit was unsuccessfull!")
         return None
     h_fit = ROOT.TH1D("{}_rebinned".format(hstat.GetName()), hstat.GetTitle(), new_axis.GetNbins(), new_axis.GetXbins().GetArray())
