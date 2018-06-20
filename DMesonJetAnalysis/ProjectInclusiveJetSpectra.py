@@ -57,7 +57,8 @@ class Histogram:
         if self.fEtaDiff:
             scale_factor /= self.fEtaAcceptance
         self.fHistogram.Scale(scale_factor, "width")
-        scale_factor /= nevents
+        if nevents > 0:
+            scale_factor /= nevents
         self.fHistogramUnweighted.Scale(scale_factor, "width")
 
 class ProjectInclusiveJetSpectra:
