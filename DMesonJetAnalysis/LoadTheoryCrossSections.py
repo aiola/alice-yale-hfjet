@@ -103,7 +103,7 @@ def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, scale, file_nam
         print("Could not open file {0}".format(fname))
         exit(1)
     if jet_type:
-        objname = "{jet_type}/{spectrum_name}}".format(jet_type=jet_type, spectrum_name=spectrum_name)
+        objname = "{jet_type}/{spectrum_name}".format(jet_type=jet_type, spectrum_name=spectrum_name)
     else:
         objname = spectrum_name
     h_orig = DMesonJetUtils.GetObject(file, objname)
