@@ -61,6 +61,10 @@ def GetD0JetTheoryCrossSection(input_path, gen, proc, ts, scale, spectrum, jet_t
 
 def GetInclusiveJetTheoryCrossSectionAll(config):
     inclusive_jet_cross_sections = dict()
+    if "inclusive_theory_spectrum" in config:
+        spectrum_name = config["inclusive_theory_spectrum"]
+    else:
+        spectrum_name = "JetPt"
     for t in config["theory"]:
         if not t["active"]: continue
         if not t["inclusive"]: continue
@@ -87,21 +91,21 @@ def GetInclusiveJetTheoryCrossSectionAll(config):
             t["inclusive"] = inclusive_jet_cross_sections[jet_key]
             continue
 
-        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], scale, t["inclusive"]["file_name"], jet_type)
+        h = GetInclusiveJetTheoryCrossSection(config["input_path"], t["inclusive"]["gen"], t["inclusive"]["proc"], t["inclusive"]["ts"], scale, t["inclusive"]["file_name"], jet_type, spectrum_name)
         t["inclusive"]["histogram"] = h
         inclusive_jet_cross_sections[jet_key] = t["inclusive"]
     return inclusive_jet_cross_sections
 
-def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, scale, file_name, jet_type):
+def GetInclusiveJetTheoryCrossSection(input_path, gen, proc, ts, scale, file_name, jet_type, spectrum_name):
     fname = "{input_path}/FastSim_{gen}_{proc}_{ts}/{file_name}".format(input_path=input_path, gen=gen, proc=proc, ts=ts, file_name=file_name)
     file = ROOT.TFile(fname)
     if not file or file.IsZombie():
         print("Could not open file {0}".format(fname))
         exit(1)
     if jet_type:
-        objname = "{jet_type}/JetPt".format(jet_type=jet_type)
+        objname = "{jet_type}/{spectrum_name}}".format(jet_type=jet_type, spectrum_name=spectrum_name)
     else:
-        objname = "JetPt"
+        objname = spectrum_name
     h_orig = DMesonJetUtils.GetObject(file, objname)
     if not h_orig:
         print("Cannot get theory cross section with statistical uncertainty!")

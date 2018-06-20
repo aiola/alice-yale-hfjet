@@ -6,6 +6,7 @@ name: CompareFullVsCharged
 input_path: /Volumes/DATA/ALICE/JetResults
 data: JetZCrossSection_JetPt_5_15_Systematics
 theory_spectrum: JetZSpectrum_DPt_2_JetPt_5_15
+inclusive_theory_spectrum: JetPtTwoBins
 jet_type: Charged_R040
 min_jet_pt: 5
 max_jet_pt: 15

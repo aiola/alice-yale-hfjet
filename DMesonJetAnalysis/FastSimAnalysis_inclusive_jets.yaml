@@ -32,6 +32,14 @@ histograms:
   bins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 24.0, 28.0, 32.0, 38.0, 44.0, 50.0, 58.0, 66.0, 76.0, 86.0, 100.0, 120.0, 150.0, 200.0]
   variable: fPt
 -
+  name: JetPtTwoBins
+  type: Jet
+  variable_title: "#it{p}_{T,jet}"
+  units: "GeV/#it{c}"
+  eta_diff: yes
+  bins: [5.0, 15.0, 30.0]
+  variable: fPt
+-
   name: PtHard
   type: Event
   variable_title: "#it{p}_{T,hard}"

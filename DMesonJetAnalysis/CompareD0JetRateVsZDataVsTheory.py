@@ -33,8 +33,8 @@ def GetD0JetCrossSection(input_path, file_name):
         exit(1)
     return hStat, hSyst
 
-def GetInclJetCrossSection():
-    return LoadInclusiveJetSpectrum.GetCrossSection()
+def GetInclJetCrossSection(bins):
+    return LoadInclusiveJetSpectrum.GetCrossSection(bins)
 
 def GetD0JetTheoryCrossSectionAll(config, axis):
     return LoadTheoryCrossSections.GetD0JetTheoryCrossSectionAll(config, axis)
@@ -325,7 +325,7 @@ def main(config):
     ROOT.gStyle.SetOptStat(0)
 
     d0jet_stat, d0jet_syst = GetD0JetCrossSection(config["input_path"], config["data"])
-    incl_stat, incl_syst = GetInclJetCrossSection()
+    incl_stat, incl_syst = GetInclJetCrossSection([config["min_jet_pt"], config["max_jet_pt"]])
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
     GetInclusiveJetTheoryCrossSectionAll(config)
     NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst)
