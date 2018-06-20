@@ -58,13 +58,13 @@ def PlotCrossSections(dataStat, dataSyst, config):
     padMain = canvas.cd(1)
     padMain.SetPad(0, 0.35, 1, 1)
     padMain.SetBottomMargin(0)
-    padMain.SetLeftMargin(0.15)
+    padMain.SetLeftMargin(0.16)
     padMain.SetTicks(1, 1)
     padRatio = canvas.cd(2)
     padRatio.SetPad(0, 0., 1, 0.35)
     padRatio.SetTopMargin(0)
     padRatio.SetBottomMargin(0.27)
-    padRatio.SetLeftMargin(0.15)
+    padRatio.SetLeftMargin(0.16)
     padRatio.SetGridy()
     padRatio.SetTicks(1, 1)
 
@@ -87,7 +87,7 @@ def PlotCrossSections(dataStat, dataSyst, config):
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
-    h.GetYaxis().SetTitleOffset(1.6)
+    h.GetYaxis().SetTitleOffset(1.9)
     h.GetYaxis().SetTitle(dataStat.GetYaxis().GetTitle())
     if "y_axis_title" in config:
         h.GetYaxis().SetTitle(config["y_axis_title"])
@@ -186,7 +186,7 @@ def PlotCrossSections(dataStat, dataSyst, config):
     y1 = 0.87
     y2 = y1 - 0.07 * len(config["title"])
     padMain.cd()
-    paveALICE = ROOT.TPaveText(0.16, y1, 0.55, y2, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.17, y1, 0.55, y2, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)

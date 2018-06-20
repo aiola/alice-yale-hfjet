@@ -27,7 +27,7 @@ maxy: 0.006
 minr: 0.001
 maxr: 5.49
 theory_legend:
-  x: 0.18
+  x: 0.19
   n_columns: 1
 data_legend:
   x: 0.18

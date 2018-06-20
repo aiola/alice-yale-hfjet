@@ -35,13 +35,12 @@ list:
   title: "POWHEG+PYTHIA6"
 -
   ts: 1529262323
-  active: no
+  active: yes
+  prefix: FastSim_powheg+pythia6_dijet_lo
   title: "POWHEG(LO)+PYTHIA6"
 -
   ts: 1529264639
-  active: no
+  active: yes
+  file_name: FastSimAnalysis_inclusive_jets_unweighted.root
+  prefix: FastSim_herwig_dijet_lo
   title: "HERWIG7"
--
-  ts: 0
-  active: no
-  title: "POWHEG+PYTHIA8"
