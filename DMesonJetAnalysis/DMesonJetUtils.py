@@ -51,6 +51,9 @@ class AxisCompare(Enum):
             if axis1.GetBinLowEdge(ibin1) != axis2.GetBinLowEdge(ibin2):
                 sameBinning = False
                 break
+            if axis1.GetBinUpEdge(ibin1) != axis2.GetBinUpEdge(ibin2):
+                sameBinning = False
+                break
             ibin1 += 1
             ibin2 += 1
 
