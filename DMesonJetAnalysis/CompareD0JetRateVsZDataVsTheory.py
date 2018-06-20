@@ -311,6 +311,7 @@ def GetTotalCrossSection(stat, syst, minpt, maxpt):
         stat_xsec_tot2 += (stat.GetBinError(ibin) * binw) ** 2
         if syst:
             syst_xsec_tot += syst.GetErrorY(ibin - 1) * binw  # take the weighted average of the rel unc
+        print("Cross section in bin [{}, {}] is {} +/- {}".format(stat.GetXaxis().GetBinLowEdge(ibin), stat.GetXaxis().GetBinUpEdge(ibin), xsec, stat.GetBinError(ibin)))
 
     stat_xsec_tot = math.sqrt(stat_xsec_tot2)
 

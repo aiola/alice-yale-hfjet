@@ -7,8 +7,8 @@ input_path: /Volumes/DATA/ALICE/JetResults
 data: JetZCrossSection_JetPt_15_30_Systematics
 theory_spectrum: JetZSpectrum_DPt_6_JetPt_15_30
 jet_type: Charged_R040
-min_jet_pt: 5
-max_jet_pt: 15
+min_jet_pt: 15
+max_jet_pt: 30
 canvas_w: 900
 canvas_h: 900
 x_axis_title: "#it{z}_{||}^{ch}"
@@ -22,8 +22,8 @@ data_minx: 0.4
 data_maxx: 1.0
 minx: 0
 maxx: 1
-miny: -0.0001
-maxy: 0.0045
+miny: -0.009
+maxy: 0.15
 minr: 0.001
 maxr: 3.99
 theory_legend:
