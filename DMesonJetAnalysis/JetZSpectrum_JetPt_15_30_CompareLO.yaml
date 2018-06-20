@@ -15,22 +15,21 @@ y_axis_title: "Probability Density"
 
 # Specific to cross section plot (CompareCrossSectionDataVsTheory.py)
 name_prefix: JetZSpectrum_JetPt_15_30
-title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "15 < #it{p}_{T,jet}^{ch} < 30 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}"]
+title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, 15 < #it{p}_{T,jet}^{ch} < 30 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}"]
 normalize: yes
 data_minx: 0.4
 data_maxx: 1.0
 minx: 0
 maxx: 1
 miny: 0.001
-maxy: 4.5
+maxy: 5.5
 minr: 0.0
 maxr: 4.49
 theory_legend:
   x: 0.18
   n_columns: 1
 data_legend:
-  x: 0.59
-  y: 0.85
+  x: 0.18
 
 # MC definitions
 theory:
@@ -40,7 +39,7 @@ theory:
   gen: pythia6
   proc: charm
   ts: 1520422008
-  color: 418 # kGreen+2
+  color: 617 # kMagenta+1
   line: 1
 -
   title: PYTHIA 6 LO
@@ -48,7 +47,7 @@ theory:
   gen: pythia6
   proc: charm_lo
   ts: 1521276365
-  color: 418 # kGreen+2
+  color: 888 # kViolet+8
   line: 2
 -
   title: POWHEG (ccbar) + PYTHIA 6 
@@ -64,6 +63,21 @@ theory:
   gen: powheg+pythia6
   proc: charm_lo
   ts: 1528976386
-  color: 602 # kBlue+2
+  color: 867 # kAzure+7
   line: 2
-
+-
+  title: POWHEG (dijet) + PYTHIA 6 
+  active: yes
+  gen: powheg+pythia6
+  proc: dijet
+  ts: 1527252990
+  color: 434 # kCyan+2
+  line: 1
+-
+  title: POWHEG LO (dijet) + PYTHIA 6 
+  active: yes
+  gen: powheg+pythia6
+  proc: dijet_lo
+  ts: 1529262323
+  color: 842 # kTeal+2
+  line: 2

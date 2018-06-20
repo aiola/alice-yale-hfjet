@@ -27,7 +27,8 @@ maxy: 0.35
 minr: 0.001
 maxr: 4.49
 theory_legend:
-  x: 0.18
+  x: 0.19
+  y: 0.58
   n_columns: 1
 data_legend:
   x: 0.6
@@ -58,8 +59,8 @@ theory:
   line: 2
   inclusive:
     gen: powheg+pythia6
-    proc: dijet
-    ts: 1527252990
+    proc: dijet_lo
+    ts: 1529262323
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG (dijet) + PYTHIA 6
@@ -73,6 +74,19 @@ theory:
     gen: powheg+pythia6
     proc: dijet
     ts: 1527252990
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG (LO, dijet) + PYTHIA 6
+  active: yes
+  gen: powheg+pythia6
+  proc: dijet_lo
+  ts: 1529262323
+  color: 839 # kTeal-1
+  line: 2
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet_lo
+    ts: 1529262323
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: PYTHIA 6 (Perugia-2011)

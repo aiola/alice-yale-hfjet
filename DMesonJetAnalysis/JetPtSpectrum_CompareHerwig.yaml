@@ -83,7 +83,6 @@ theory:
   ts: 1529169979
   color: 617 # kMagenta+1
   line: 1
-  scale: 1.0e+3
   inclusive:
     gen: herwig
     proc: dijet_lo
@@ -97,7 +96,6 @@ theory:
   ts: 1529264639
   color: 801 # kOrange+1
   line: 1
-  scale: 1.0e+3
   inclusive:
     gen: herwig
     proc: dijet_lo
