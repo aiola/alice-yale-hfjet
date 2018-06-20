@@ -173,7 +173,16 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
 
     # Done with all the preparations, now plotting
 
-    hAxis = ROOT.TH1I("axis", "axis", 1000, d0jet_stat_copy.GetXaxis().GetBinLowEdge(1), d0jet_stat_copy.GetXaxis().GetBinUpEdge(d0jet_stat_copy.GetXaxis().GetNbins()))
+    # First plot the cross section + ratio panel
+    canvas = DrawTwoPanelCanvas(config, d0jet_stat_copy, d0jet_syst_copy, incl_stat_copy, incl_syst_copy, ratioSyst, ratioStat, inclusive_jet_cross_sections)
+
+    # Now plot the ratio only
+    canvas_ratio = DrawRatioCanvas(config, ratioSyst, ratioStat)
+
+    return canvas, canvas_ratio
+
+def GenerateHistogramAxis(config, xmin, xmax):
+    hAxis = ROOT.TH1I("axis", "axis", 1000, xmin, xmax)
     hAxis.GetYaxis().SetTitleFont(43)
     hAxis.GetYaxis().SetTitleSize(23)
     hAxis.GetYaxis().SetLabelFont(43)
@@ -182,25 +191,30 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
     hAxis.GetYaxis().SetRangeUser(config["D0JetRate"]["miny"], config["D0JetRate"]["maxy"])
     if "y_axis_title" in config:
         hAxis.GetYaxis().SetTitle(config["y_axis_title"])
+    return hAxis
 
-    hAxisRatio = ROOT.TH1I("axis", "axis", 1000, d0jet_stat_copy.GetXaxis().GetBinLowEdge(1), d0jet_stat_copy.GetXaxis().GetBinUpEdge(d0jet_stat_copy.GetXaxis().GetNbins()))
-    hAxisRatio.GetYaxis().SetTitle("#frac{#it{R}(#it{p}_{T,jet}^{ch})}{#Delta#it{p}_{T,jet}^{ch}} (GeV/#it{c})^{-1}")
+def GenerateHistogramRatioAxis(config, xmin, xmax):
+    hAxisRatio = ROOT.TH1I("axis", "axis", 1000, xmin, xmax)
     hAxisRatio.GetXaxis().SetTitleFont(43)
     hAxisRatio.GetXaxis().SetTitleSize(23)
+    hAxisRatio.GetXaxis().SetTitleOffset(2.9)
     hAxisRatio.GetXaxis().SetLabelFont(43)
-    hAxisRatio.GetXaxis().SetLabelSize(22)
+    hAxisRatio.GetYaxis().SetTitle("#frac{#it{R}(#it{p}_{T,jet}^{ch})}{#Delta#it{p}_{T,jet}^{ch}} (GeV/#it{c})^{-1}")
     hAxisRatio.GetYaxis().SetTitleFont(43)
     hAxisRatio.GetYaxis().SetTitleSize(23)
+    hAxisRatio.GetYaxis().SetTitleOffset(1.9)
+    hAxisRatio.GetYaxis().SetRangeUser(config["D0JetRate"]["minr"], config["D0JetRate"]["maxr"])
+    hAxisRatio.GetXaxis().SetLabelSize(22)
     hAxisRatio.GetYaxis().SetLabelFont(43)
     hAxisRatio.GetYaxis().SetLabelSize(22)
-    hAxisRatio.GetYaxis().SetTitleOffset(1.9)
-    hAxisRatio.GetXaxis().SetTitleOffset(2.9)
-    hAxisRatio.GetYaxis().SetRangeUser(config["D0JetRate"]["minr"], config["D0JetRate"]["maxr"])
     hAxisRatio.GetYaxis().SetNdivisions(509)
     if "x_axis_title" in config:
         hAxisRatio.GetXaxis().SetTitle(config["x_axis_title"])
+    return hAxisRatio
 
-    # First plot the cross section + ratio panel
+def DrawTwoPanelCanvas(config, d0jet_stat_copy, d0jet_syst_copy, incl_stat_copy, incl_syst_copy, ratioSyst, ratioStat, inclusive_jet_cross_sections):
+    hAxis = GenerateHistogramAxis(config, d0jet_stat_copy.GetXaxis().GetBinLowEdge(1), d0jet_stat_copy.GetXaxis().GetBinUpEdge(d0jet_stat_copy.GetXaxis().GetNbins()))
+    hAxisRatio = GenerateHistogramRatioAxis(config, d0jet_stat_copy.GetXaxis().GetBinLowEdge(1), d0jet_stat_copy.GetXaxis().GetBinUpEdge(d0jet_stat_copy.GetXaxis().GetNbins()))
 
     cname = "{}_{}".format(config["D0JetRate"]["name_prefix"], config["name"])
     if "canvas_h" in config:
@@ -229,8 +243,8 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
-    hAxisCopy = hAxis.DrawCopy("axis")
-    globalList.append(hAxisCopy)
+    hAxis.Draw("axis")
+    globalList.append(hAxis)
 
     d0jet_syst_copy.Draw("2")
     d0jet_stat_copy.Draw("same p x0 e0")
@@ -248,8 +262,8 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
         d0jet_h.Draw("same e0")
 
     padRatio.cd()
-    hAxisRatioCopy = hAxisRatio.DrawCopy("axis")
-    globalList.append(hAxisRatioCopy)
+    hAxisRatio.Draw("axis")
+    globalList.append(hAxisRatio)
 
     ratioSyst.Draw("2")
     ratioStat.Draw("same p x0 e0")
@@ -359,6 +373,100 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
 
     return canvas
 
+def DrawRatioCanvas(config, ratioSyst, ratioStat):
+    hAxisRatio = GenerateHistogramRatioAxis(config, ratioStat.GetXaxis().GetBinLowEdge(1), ratioStat.GetXaxis().GetBinUpEdge(ratioStat.GetXaxis().GetNbins()))    
+
+    cname = "{}_{}_Ratio".format(config["D0JetRate"]["name_prefix"], config["name"])
+    if "canvas_h" in config:
+        canvas_h = config["canvas_h"]
+    else:
+        canvas_h = 600
+    if "canvas_w" in config:
+        canvas_w = config["canvas_w"]
+    else:
+        canvas_w = 600
+    canvas_ratio = ROOT.TCanvas(cname, cname, canvas_w, canvas_h)
+    globalList.append(canvas_ratio)
+    canvas_ratio.SetTicks(1, 1)
+    canvas_ratio.SetLeftMargin(0.15)
+    canvas_ratio.SetRightMargin(0.05)
+
+    canvas_ratio.cd()
+    hAxisRatio.Draw("axis")
+    hAxisRatio.GetXaxis().SetTitleOffset(1.2)
+    hAxisRatio.GetYaxis().SetRangeUser(0, 0.075)
+    globalList.append(hAxisRatio)
+
+    ratioSyst.Draw("2")
+    ratioStat_copy = ratioStat.DrawCopy("same p e0 x0")
+
+    line_styles = [2, 4, 7, 3, 5, 6, 8, 9]
+    for t, line_style in zip(config["theory"], line_styles):
+        if not t["active"]: continue
+        if not t["inclusive"]: continue
+        hratio = t["ratio_histogram"]
+        hratio_copy = hratio.DrawCopy("same")
+        hratio_copy.SetLineStyle(line_style)
+        hratio_copy.SetLineWidth(3)
+        t["ratio_copy_histogram"] = hratio_copy
+
+    # Now plotting labels
+
+    y1 = 0.87
+    y2 = y1 - 0.06 * (len(config["D0JetRate"]["title"]) + 1)
+    paveALICE = ROOT.TPaveText(0.16, y1, 0.55, y2, "NB NDC")
+    globalList.append(paveALICE)
+    paveALICE.SetBorderSize(0)
+    paveALICE.SetFillStyle(0)
+    paveALICE.SetTextFont(43)
+    paveALICE.SetTextSize(22)
+    paveALICE.SetTextAlign(12)
+    for line in config["D0JetRate"]["title"]: 
+        paveALICE.AddText(line)
+    paveALICE.AddText("with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}")
+    paveALICE.Draw()
+
+    n_leg_columns = 1
+    y1 = 0.25
+    active_t = len([t for t in config["theory"] if "histogram_plot" in t])
+    y2 = y1 - 0.04 * active_t / n_leg_columns
+    x1 = 0.35
+    x2 = 0.80
+
+    leg1 = ROOT.TLegend(x1, y1, x2, y2, "", "NB NDC")
+    globalList.append(leg1)
+    leg1.SetNColumns(n_leg_columns)
+    leg1.SetBorderSize(0)
+    leg1.SetFillStyle(0)
+    leg1.SetTextFont(43)
+    leg1.SetTextSize(22)
+    leg1.SetTextAlign(12)
+    leg1.SetMargin(0.08)
+    for t in config["theory"]:
+        if "histogram_plot" in t:
+            leg1.AddEntry(t["ratio_copy_histogram"], t["title"], "l")
+    leg1.Draw()
+
+    y1 = 0.85
+    y2 = y1 - 0.09
+    x1 = 0.62
+    x2 = x1 + 0.30
+    leg1 = ROOT.TLegend(x1, y1, x2, y2, "", "NB NDC")
+    globalList.append(leg1)
+    leg1.SetBorderSize(0)
+    leg1.SetFillStyle(0)
+    leg1.SetTextFont(43)
+    leg1.SetTextSize(22)
+    leg1.SetTextAlign(12)
+    leg1.SetMargin(0.2)
+    entry = leg1.AddEntry(ratioStat, "Data", "pe")
+    entry = leg1.AddEntry(ratioSyst, "Systematic Uncertainty", "f")
+    leg1.Draw()
+
+    canvas_ratio.RedrawAxis()
+
+    return canvas_ratio
+
 def main(config):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -368,9 +476,11 @@ def main(config):
     incl_stat, incl_syst = GetInclJetCrossSection()
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
     inclusive_jet_cross_sections = GetInclusiveJetTheoryCrossSectionAll(config)
-    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_jet_cross_sections, config)
+    canvas, canvas_ratio = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_jet_cross_sections, config)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
+    canvas_ratio.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
+    canvas_ratio.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')
