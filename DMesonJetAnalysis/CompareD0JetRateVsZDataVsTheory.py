@@ -280,12 +280,13 @@ def NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst):
     d0jet_stat.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
     d0jet_syst.GetXaxis().SetTitle("#it{z}_{||}^{ch jet}")
 
-
 def NormalizeTheory(config):
     for t in config["theory"]:
-        if not t["active"]: continue
-        if not "inclusive_histogram" in t or not "histogram" in t: continue
-        xsec_tot, stat_xsec_tot, _ = GetTotalCrossSection(t["inclusive_histogram"], None, config["min_jet_pt"], config["max_jet_pt"])
+        if not t["active"]:
+            continue
+        if not "inclusive" in t or not "histogram" in t["inclusive"] or not "histogram" in t:
+            continue
+        xsec_tot, stat_xsec_tot, _ = GetTotalCrossSection(t["inclusive"]["histogram"], None, config["min_jet_pt"], config["max_jet_pt"])
         h = t["histogram"]
         for ibin in range(1, h.GetNbinsX() + 1):
             y = h.GetBinContent(ibin) / xsec_tot
@@ -300,12 +301,16 @@ def GetTotalCrossSection(stat, syst, minpt, maxpt):
     stat_xsec_tot2 = 0
     syst_xsec_tot = 0
     for ibin in range(1, stat.GetNbinsX() + 1):
-        if stat.GetXaxis().GetBinCenter(ibin) < minpt: continue
-        if stat.GetXaxis().GetBinCenter(ibin) > maxpt: break
+        if stat.GetXaxis().GetBinCenter(ibin) < minpt:
+            continue
+        if stat.GetXaxis().GetBinCenter(ibin) > maxpt:
+            break
         binw = stat.GetXaxis().GetBinWidth(ibin)
-        xsec_tot += stat.GetBinContent(ibin) * binw
+        xsec = stat.GetBinContent(ibin)
+        xsec_tot += xsec * binw
         stat_xsec_tot2 += (stat.GetBinError(ibin) * binw) ** 2
-        if syst: syst_xsec_tot += syst.GetErrorY(ibin - 1) * binw  # take the weighted average of the rel unc
+        if syst:
+            syst_xsec_tot += syst.GetErrorY(ibin - 1) * binw  # take the weighted average of the rel unc
 
     stat_xsec_tot = math.sqrt(stat_xsec_tot2)
 

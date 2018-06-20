@@ -12,27 +12,27 @@ max_jet_pt: 15
 canvas_w: 900
 canvas_h: 900
 x_axis_title: "#it{z}_{||}^{ch}"
-y_axis_title: "#frac{#it{R}(#it{z}_{||}^{ch})}{#Delta#it{p}_{T,jet}^{ch}#Delta#it{z}_{||}^{ch}} (GeV/#it{c})^{-1}"
+y_axis_title: "#frac{#it{R}(#it{z}_{||}^{ch})}{#Delta#it{z}_{||}^{ch}} (GeV/#it{c})^{-1}"
 
 # Specific to cross section plot (CompareD0JetRateVsZDataVsTheory.py)
 name_prefix: D0JetRateVsZ_JetPt_5_15
-title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
+title: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, 5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
 normalize: no
 data_minx: 0.2
 data_maxx: 1.0
 minx: 0
 maxx: 1
-miny: 0.001
-maxy: 0.35
-minr: 0.001
-maxr: 4.49
+miny: -0.009
+maxy: 0.14
+minr: 0
+maxr: 2.2
 theory_legend:
   x: 0.19
-  y: 0.58
+  y: 0.65
   n_columns: 1
 data_legend:
-  x: 0.6
-  y: 0.87
+  x: 0.58
+  y: 0.65
 
 # MC definitions
 theory:
@@ -82,7 +82,7 @@ theory:
   proc: dijet_lo
   ts: 1529262323
   color: 839 # kTeal-1
-  line: 2
+  line: 4
   inclusive:
     gen: powheg+pythia6
     proc: dijet_lo
@@ -108,7 +108,7 @@ theory:
   proc: charm_lo
   ts: 1521276365
   color: 862 # kAzure+2
-  line: 2
+  line: 7
   inclusive:
     gen: pythia6
     proc: mb
