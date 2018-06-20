@@ -24,7 +24,7 @@ data_maxx: 1.0
 minx: 0
 maxx: 1
 miny: -0.009
-maxy: 0.15
+maxy: 0.18
 minr: 0.001
 maxr: 3.99
 theory_legend:
