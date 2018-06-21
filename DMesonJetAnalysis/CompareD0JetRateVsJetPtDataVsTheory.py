@@ -187,7 +187,7 @@ def GenerateHistogramAxis(config, xmin, xmax):
     hAxis.GetYaxis().SetTitleSize(23)
     hAxis.GetYaxis().SetLabelFont(43)
     hAxis.GetYaxis().SetLabelSize(22)
-    hAxis.GetYaxis().SetTitleOffset(1.6)
+    hAxis.GetYaxis().SetTitleOffset(1.7)
     hAxis.GetYaxis().SetRangeUser(config["D0JetRate"]["miny"], config["D0JetRate"]["maxy"])
     if "y_axis_title" in config:
         hAxis.GetYaxis().SetTitle(config["y_axis_title"])
@@ -199,7 +199,7 @@ def GenerateHistogramRatioAxis(config, xmin, xmax):
     hAxisRatio.GetXaxis().SetTitleSize(23)
     hAxisRatio.GetXaxis().SetTitleOffset(2.9)
     hAxisRatio.GetXaxis().SetLabelFont(43)
-    hAxisRatio.GetYaxis().SetTitle("#frac{#it{R}(#it{p}_{T,jet}^{ch})}{#Delta#it{p}_{T,jet}^{ch}} (GeV/#it{c})^{-1}")
+    hAxisRatio.GetYaxis().SetTitle("#it{R}(#it{p}_{T,jet}^{ch})")
     hAxisRatio.GetYaxis().SetTitleFont(43)
     hAxisRatio.GetYaxis().SetTitleSize(23)
     hAxisRatio.GetYaxis().SetTitleOffset(1.9)
@@ -375,6 +375,7 @@ def DrawTwoPanelCanvas(config, d0jet_stat_copy, d0jet_syst_copy, incl_stat_copy,
 
 def DrawRatioCanvas(config, ratioSyst, ratioStat):
     hAxisRatio = GenerateHistogramRatioAxis(config, ratioStat.GetXaxis().GetBinLowEdge(1), ratioStat.GetXaxis().GetBinUpEdge(ratioStat.GetXaxis().GetNbins()))    
+    hAxisRatio.GetYaxis().SetTitleOffset(1.3)
 
     cname = "{}_{}_Ratio".format(config["D0JetRate"]["name_prefix"], config["name"])
     if "canvas_h" in config:
@@ -388,7 +389,8 @@ def DrawRatioCanvas(config, ratioSyst, ratioStat):
     canvas_ratio = ROOT.TCanvas(cname, cname, canvas_w, canvas_h)
     globalList.append(canvas_ratio)
     canvas_ratio.SetTicks(1, 1)
-    canvas_ratio.SetLeftMargin(0.15)
+    canvas_ratio.SetLeftMargin(0.10)
+    canvas_ratio.SetTopMargin(0.05)
     canvas_ratio.SetRightMargin(0.05)
 
     canvas_ratio.cd()
@@ -412,9 +414,9 @@ def DrawRatioCanvas(config, ratioSyst, ratioStat):
 
     # Now plotting labels
 
-    y1 = 0.87
+    y1 = 0.90
     y2 = y1 - 0.06 * (len(config["D0JetRate"]["title"]) + 1)
-    paveALICE = ROOT.TPaveText(0.16, y1, 0.55, y2, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.14, y1, 0.55, y2, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -447,7 +449,7 @@ def DrawRatioCanvas(config, ratioSyst, ratioStat):
             leg1.AddEntry(t["ratio_copy_histogram"], t["title"], "l")
     leg1.Draw()
 
-    y1 = 0.85
+    y1 = 0.90
     y2 = y1 - 0.09
     x1 = 0.62
     x2 = x1 + 0.30
@@ -479,8 +481,8 @@ def main(config):
     canvas, canvas_ratio = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_jet_cross_sections, config)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
-    canvas_ratio.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
-    canvas_ratio.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
+    canvas_ratio.SaveAs("{}/{}.pdf".format(config["input_path"], canvas_ratio.GetName()))
+    canvas_ratio.SaveAs("{}/{}.C".format(config["input_path"], canvas_ratio.GetName()))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')

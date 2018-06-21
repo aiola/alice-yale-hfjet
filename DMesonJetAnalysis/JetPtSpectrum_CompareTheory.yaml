@@ -69,7 +69,7 @@ theory:
   proc: dijet
   ts: 1527252990
   color: 418 # kGreen+2
-  line: 1
+  line: 2
   inclusive:
     line: 6
     color: 802 # kOrange+2
@@ -84,7 +84,7 @@ theory:
   proc: charm
   ts: 1520422008
   color: 602 # kBlue+2
-  line: 1
+  line: 5
   inclusive:
     line: 2
     gen: pythia6
@@ -92,3 +92,12 @@ theory:
     ts: 1520882421
     jet_type: ""
     file_name: Jets.root
+-
+  title: PYTHIA 8 Monash-2013
+  active: yes
+  gen: pythia8
+  proc: charm
+  ts: 1520426239
+  color: 617 # kMagenta+1
+  line: 7
+  inclusive: no
