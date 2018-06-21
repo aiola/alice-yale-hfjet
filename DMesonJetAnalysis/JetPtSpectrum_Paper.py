@@ -61,33 +61,39 @@ def GetTheoryCrossSection():
 
     return hStat, hSystUp, hSystLow, hSyst
 
-def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLow, theorySyst):
+def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySyst):
     cname = "D0JetCrossSection_Paper"
-    canvas = ROOT.TCanvas(cname, cname, 700, 700)
+    canvas = ROOT.TCanvas(cname, cname, 700, 750)
     globalList.append(canvas)
     canvas.Divide(1, 2)
     padMain = canvas.cd(1)
     padMain.SetPad(0, 0.35, 1, 1)
+    padMain.SetTopMargin(0.05)
     padMain.SetBottomMargin(0)
     padMain.SetLeftMargin(0.17)
+    padMain.SetRightMargin(0.05)
     padMain.SetTicks(1, 1)
     padRatio = canvas.cd(2)
     padRatio.SetPad(0, 0., 1, 0.35)
     padRatio.SetTopMargin(0)
     padRatio.SetBottomMargin(0.27)
     padRatio.SetLeftMargin(0.17)
+    padRatio.SetRightMargin(0.05)
     padRatio.SetGridy()
     padRatio.SetTicks(1, 1)
 
     padMain.cd()
     padMain.SetLogy()
-    h = dataStat.DrawCopy("axis")
-    h.GetYaxis().SetRangeUser(2e-5, 7e-1)
+    h = ROOT.TH1I("axis", "axis", 1000, 0, 50)
+    h.Draw("axis")
+    globalList.append(h)
+    h.GetXaxis().SetRangeUser(5, 30)
+    h.GetYaxis().SetRangeUser(2e-5, 2e-2)
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
-    h.GetYaxis().SetTitleOffset(1.8)
+    h.GetYaxis().SetTitleOffset(1.9)
     h.GetYaxis().SetTitle("#frac{d^{2}#sigma}{d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{-1}]")
 
     dataSyst_copy = dataSyst.Clone("{0}_copy".format(dataSyst.GetName()))
@@ -112,25 +118,44 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     theorySyst_copy.SetLineWidth(2)
     theorySyst_copy.SetLineColor(ROOT.kBlue + 2)
 
-#     theorySystUp_copy = theoryStat.DrawCopy("same hist l")
-#     globalList.append(theorySystUp_copy)
-#     theorySystUp_copy.Add(theorySystUp, 1)
-#     theorySystUp_copy.SetLineColor(ROOT.kBlue + 2)
-#     theorySystUp_copy.SetLineWidth(1)
-#
-#     theorySystLow_copy = theoryStat.DrawCopy("same hist l")
-#     globalList.append(theorySystLow_copy)
-#     theorySystLow_copy.Add(theorySystLow, -1)
-#     theorySystLow_copy.SetLineColor(ROOT.kBlue + 2)
-#     theorySystLow_copy.SetLineWidth(1)
+    # Calculate ratio
+
+    ratioDataSyst = dataSyst_copy.Clone("ratioDataSyst")
+    globalList.append(ratioDataSyst)
+    
+    ratioDataStat = dataStat_copy.Clone("ratioDataStat")
+    globalList.append(ratioDataStat)
+
+    ratioTheorySyst = theorySyst_copy.Clone("ratioTheorySyst")
+    globalList.append(ratioTheorySyst)
+    
+    ratioTheoryStat = theoryStat_copy.Clone("ratioTheorySyst")
+    globalList.append(ratioTheoryStat)
+
+    for ibin in range(1, ratioDataStat.GetNbinsX() + 1):
+        ratioTheorySyst.SetPointEYlow(ibin - 1, ratioTheorySyst.GetErrorYlow(ibin - 1) / ratioDataStat.GetBinContent(ibin))
+        ratioTheorySyst.SetPointEYhigh(ibin - 1, ratioTheorySyst.GetErrorYhigh(ibin - 1) / ratioDataStat.GetBinContent(ibin))
+        ratioTheorySyst.SetPoint(ibin - 1, ratioTheorySyst.GetX()[ibin - 1], ratioTheorySyst.GetY()[ibin - 1] / ratioDataStat.GetBinContent(ibin))
+
+        ratioDataSyst.SetPointEYlow(ibin - 1, ratioDataSyst.GetErrorYlow(ibin - 1) / ratioDataStat.GetBinContent(ibin))
+        ratioDataSyst.SetPointEYhigh(ibin - 1, ratioDataSyst.GetErrorYhigh(ibin - 1) / ratioDataStat.GetBinContent(ibin))
+        ratioDataSyst.SetPoint(ibin - 1, ratioDataSyst.GetX()[ibin - 1], 1.0)
+
+        ratioTheoryStat.SetBinError(ibin, ratioTheoryStat.GetBinError(ibin) / ratioDataStat.GetBinContent(ibin))
+        ratioTheoryStat.SetBinContent(ibin, ratioTheoryStat.GetBinContent(ibin) / ratioDataStat.GetBinContent(ibin))
+
+        ratioDataStat.SetBinError(ibin, ratioDataStat.GetBinError(ibin) / ratioDataStat.GetBinContent(ibin))
+        ratioDataStat.SetBinContent(ibin, 1.0)
+
+    # Plotting ratio
 
     padRatio.cd()
 
-    ratioSyst = dataSyst_copy.Clone("ratioSyst")
-    globalList.append(ratioSyst)
-
-    hRatio = dataStat_copy.DrawCopy("axis")
-    hRatio.GetYaxis().SetTitle("Data / Theory")
+    hRatio = ROOT.TH1I("axis", "axis", 1000, 0, 50)
+    hRatio.GetXaxis().SetRangeUser(5, 30)
+    hRatio.Draw("axis")
+    globalList.append(hRatio)
+    hRatio.GetYaxis().SetTitle("MC / Data")
     hRatio.GetXaxis().SetTitleFont(43)
     hRatio.GetXaxis().SetTitleSize(26)
     hRatio.GetXaxis().SetLabelFont(43)
@@ -141,53 +166,49 @@ def PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystLo
     hRatio.GetYaxis().SetLabelSize(22)
     hRatio.GetYaxis().SetTitleOffset(1.4)
     hRatio.GetXaxis().SetTitleOffset(2.9)
-    hRatio.GetYaxis().SetRangeUser(0, 2.49)
+    hRatio.GetYaxis().SetRangeUser(0, 2.99)
     hRatio.GetYaxis().SetNdivisions(509)
     hRatio.GetXaxis().SetTitle("#it{p}_{T,jet}^{ch} (GeV/#it{c})")
 
-    ratioSyst.Draw("2")
-    ratioStat = dataStat_copy.DrawCopy("same p e0 x0")
-    globalList.append(ratioStat)
+    ratioDataSyst.Draw("2")
+    ratioDataStat.Draw("same p e0 x0")
 
-    ratioTheorySyst = theorySyst_copy.Clone("ratioTheorySyst")
-    globalList.append(ratioTheorySyst)
     ratioTheorySyst.Draw("2")
+    ratioTheoryStat.Draw("same p e0 x0")
 
-#     ratioTheorySystUp = theorySystUp_copy.DrawCopy("same hist l")
-#     globalList.append(ratioTheorySystUp)
-#     ratioTheorySystLow = theorySystLow_copy.DrawCopy("same hist l")
-#     globalList.append(ratioTheorySystLow)
-
-    for ibin in range(1, ratioStat.GetNbinsX() + 1):
-        ratioSyst.SetPoint(ibin - 1, ratioSyst.GetX()[ibin - 1], ratioSyst.GetY()[ibin - 1] / theoryStat_copy.GetBinContent(ibin))
-        ratioSyst.SetPointEYlow(ibin - 1, ratioSyst.GetErrorYlow(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
-        ratioSyst.SetPointEYhigh(ibin - 1, ratioSyst.GetErrorYhigh(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
-        ratioStat.SetBinContent(ibin, ratioStat.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
-        ratioStat.SetBinError(ibin, ratioStat.GetBinError(ibin) / theoryStat_copy.GetBinContent(ibin))
-        # ratioTheorySystUp.SetBinContent(ibin, ratioTheorySystUp.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
-        # ratioTheorySystLow.SetBinContent(ibin, ratioTheorySystLow.GetBinContent(ibin) / theoryStat_copy.GetBinContent(ibin))
-        ratioTheorySyst.SetPoint(ibin - 1, ratioTheorySyst.GetX()[ibin - 1], ratioTheorySyst.GetY()[ibin - 1] / theoryStat_copy.GetBinContent(ibin))
-        ratioTheorySyst.SetPointEYlow(ibin - 1, ratioTheorySyst.GetErrorYlow(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
-        ratioTheorySyst.SetPointEYhigh(ibin - 1, ratioTheorySyst.GetErrorYhigh(ibin - 1) / theoryStat_copy.GetBinContent(ibin))
+    # Plotting labels
 
     padMain.cd()
-    leg1 = ROOT.TLegend(0.50, 0.39, 0.80, 0.65, "", "NB NDC")
+    leg1 = ROOT.TLegend(0.19, 0.26, 0.54, 0.06, "", "NB NDC")
     globalList.append(leg1)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0)
     leg1.SetTextFont(43)
-    leg1.SetTextSize(23)
+    leg1.SetTextSize(20)
     leg1.SetTextAlign(12)
     leg1.SetMargin(0.2)
-    leg1.AddEntry(dataStat_copy, "Data", "p")
-    leg1.AddEntry(dataSyst_copy, "Syst. Unc. (data)", "f")
-    leg1.AddEntry(theoryStat_copy, "POWHEG+PYTHIA 6", "p")
-    # leg1.AddEntry(theorySystUp_copy, "Systematic Uncertainty (theory)", "l")
-    leg1.AddEntry(theorySyst_copy, "Syst. Unc. (theory)", "f")
+    entry = leg1.AddEntry(None, "Data", "pf")
+    entry.SetFillColor(dataSyst_copy.GetFillColor())
+    entry.SetFillStyle(dataSyst_copy.GetFillStyle())
+    entry.SetLineWidth(0)
+    entry.SetMarkerColor(dataStat_copy.GetMarkerColor())
+    entry.SetMarkerStyle(dataStat_copy.GetMarkerStyle())
+    entry = leg1.AddEntry(None, "POWHEG (ccbar) + PYTHIA 6", "pf")
+    entry.SetFillColor(theorySyst_copy.GetFillColor())
+    entry.SetLineColor(theorySyst_copy.GetLineColor())
+    entry.SetLineWidth(theorySyst_copy.GetLineWidth())
+    entry.SetMarkerColor(theoryStat_copy.GetMarkerColor())
+    entry.SetMarkerStyle(theoryStat_copy.GetMarkerStyle())
+    entry = leg1.AddEntry(None, "POWHEG (dijet) + PYTHIA 6", "pf")
+    entry.SetFillColor(ROOT.kGreen + 2)
+    entry.SetLineColor(ROOT.kGreen + 2)
+    entry.SetLineWidth(theorySyst_copy.GetLineWidth())
+    entry.SetMarkerColor(ROOT.kGreen + 2)
+    entry.SetMarkerStyle(ROOT.kOpenSquare)
     leg1.Draw()
 
     padMain.cd()
-    paveALICE = ROOT.TPaveText(0.16, 0.64, 0.55, 0.90, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.36, 0.72, 0.71, 0.92, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -211,8 +232,8 @@ def main():
     ROOT.gStyle.SetOptStat(0)
 
     dataStat, dataSyst = GetMeasuredCrossSection()
-    theoryStat, theorySystUp, theorySystDown, theorySyst = GetTheoryCrossSection()
-    canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySystUp, theorySystDown, theorySyst)
+    theoryStat, _, _, theorySyst = GetTheoryCrossSection()
+    canvas = PlotCrossSections(dataStat, dataSyst, theoryStat, theorySyst)
     canvas.SaveAs("{0}/D0JetCrossSection_Paper.pdf".format(input_path))
     canvas.SaveAs("{0}/D0JetCrossSection_Paper.C".format(input_path))
 
