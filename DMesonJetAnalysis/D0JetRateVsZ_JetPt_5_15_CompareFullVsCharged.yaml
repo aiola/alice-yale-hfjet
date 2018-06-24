@@ -10,7 +10,7 @@ inclusive_theory_spectrum: JetPtTwoBins
 jet_type: Charged_R040
 min_jet_pt: 5
 max_jet_pt: 15
-canvas_w: 900
+canvas_w: 800
 canvas_h: 900
 x_axis_title: "#it{z}_{||}^{ch}"
 y_axis_title: "#frac{#it{R}(#it{z}_{||}^{ch})}{#Delta#it{z}_{||}^{ch}} (GeV/#it{c})^{-1}"

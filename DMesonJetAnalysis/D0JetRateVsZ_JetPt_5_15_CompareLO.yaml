@@ -1,6 +1,6 @@
 # use it with
 # CompareD0JetRateVsZDataVsTheory.py
-name: CompareTheory
+name: CompareLO
 
 # General
 input_path: /Volumes/DATA/ALICE/JetResults
@@ -44,11 +44,24 @@ theory:
   proc: charm
   ts: 1520017218
   color: 802 # kOrange+2
-  line: 2
+  line: 1
   inclusive:
     gen: powheg+pythia6
     proc: dijet
     ts: 1527252990
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG (LO, ccbar) + PYTHIA 6
+  active: yes
+  gen: powheg+pythia6
+  proc: charm_lo
+  ts: 1528976386
+  color: 617 # kMagenta+1
+  line: 2
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet_lo
+    ts: 1529262323
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: POWHEG (dijet) + PYTHIA 6
@@ -57,11 +70,24 @@ theory:
   proc: dijet
   ts: 1527252990
   color: 418 # kGreen+2
-  line: 4
+  line: 1
   inclusive:
     gen: powheg+pythia6
     proc: dijet
     ts: 1527252990
+    file_name: FastSimAnalysis_inclusive_jets.root
+-
+  title: POWHEG (LO, dijet) + PYTHIA 6
+  active: yes
+  gen: powheg+pythia6
+  proc: dijet_lo
+  ts: 1529262323
+  color: 839 # kTeal-1
+  line: 4
+  inclusive:
+    gen: powheg+pythia6
+    proc: dijet_lo
+    ts: 1529262323
     file_name: FastSimAnalysis_inclusive_jets.root
 -
   title: PYTHIA 6 (Perugia-2011)
@@ -70,23 +96,22 @@ theory:
   proc: charm
   ts: 1520422008
   color: 602 # kBlue+2
-  line: 7
+  line: 1
   inclusive:
     gen: pythia6
     proc: mb
     ts: 1520882421
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
-  title: PYTHIA 8 Monash-2013
+  title: PYTHIA 6 (LO, Perugia-2011)
   active: yes
-  gen: pythia8
-  proc: charm
-  ts: 1520426239
-  color: 617 # kMagenta+1
-  line: 9
+  gen: pythia6
+  proc: charm_lo
+  ts: 1521276365
+  color: 862 # kAzure+2
+  line: 7
   inclusive:
-    gen: pythia8
+    gen: pythia6
     proc: mb
-    ts: 1521277750
-    jet_type: ""
+    ts: 1520882421
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
