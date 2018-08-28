@@ -728,7 +728,7 @@ double MassFitter::FunctionBkgNoRefl(double *x, double *p)
       }
       r = p[0] * TMath::Sqrt(x[0] - fPionMass) * TMath::Exp(-p[1] * (x[0] - fPionMass));
       // normalization
-      r /= TMath::Sqrt(p[1]*p[1]*p[1]) * TMath::Gamma(1.5) * (TMath::Gamma(3/2, p[1]*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, p[1]*(fMinMass-fPionMass)));
+      r /= TMath::Sqrt(p[1]*p[1]*p[1]) * TMath::Gamma(1.5) * (TMath::Gamma(1.5, p[1]*(fMaxMass-fPionMass)) - TMath::Gamma(1.5, p[1]*(fMinMass-fPionMass)));
       break;
     }
   default:
