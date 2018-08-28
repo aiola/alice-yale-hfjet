@@ -1,0 +1,42 @@
+# use it with
+# CompareCrossSectionDataVsTheory.py
+name: Thesis
+
+# General
+input_path: /Volumes/DATA/ALICE/JetResults
+data: JetZCrossSection_JetPt_5_15_Systematics
+jet_type: Charged_R040
+logy: no
+canvas_w: 550
+canvas_h: 600
+left_margin: 0.19
+bottom_margin: 0.1
+
+data_systematics_style: "02"
+
+name_prefix: JetZCrossSection_JetPt_5_15
+normalization: CrossSection
+scale: 0.1  # jet pt acceptance 1 / 10
+data_minx: 0.2
+data_maxx: 1.0
+minx: 0
+maxx: 1
+miny: -0.001
+maxy: 0.03
+title:
+  text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}", "#it{This Thesis}"]
+  font_size: 18
+  x: 0.21
+  y: 0.87
+axis:
+  x_title: "#it{z}_{||}^{ch}"
+  y_title:  "#frac{d^{3}#sigma}{d#it{z}_{||}^{ch}d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{-1}]"
+  x_offset: 1
+  y_offset: 2.1
+  font_size: 20
+data_legend:
+  font_size: 16
+  combine_syst: no
+  x: 0.23
+
+functions: []

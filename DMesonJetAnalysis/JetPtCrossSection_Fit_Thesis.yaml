@@ -1,0 +1,66 @@
+# use it with
+# PlotCrossSectionData.py
+name: Fit_Thesis
+
+# General
+input_path: /Volumes/DATA/ALICE/JetResults
+data: JetPtCrossSection_DPt_30_Systematics
+jet_type: Charged_R040
+logy: yes
+canvas_w: 550
+canvas_h: 600
+left_margin: 0.19
+bottom_margin: 0.27
+
+data_systematics_style: "02"
+
+name_prefix: JetPtCrossSection
+normalization: CrossSection
+miny: 2.0e-5
+maxy: 5.0e-2
+minr: 0.0
+maxr: 2.49
+title:
+  text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "|#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 3 GeV/#it{c}", "#it{This Thesis}"]
+  font_size: 19
+  x: 0.48
+  y: 0.89
+axis:
+  x_title: "#it{p}_{T,jet}^{ch} (GeV/#it{c})"
+  y_title: "#frac{d^{2}#sigma}{d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{-1}]"
+  x_offset: 2.8
+  y_offset: 2.1
+  font_size: 20
+theory_legend:
+  font_size: 19
+  n_columns: 1
+  x: 0.215
+  y: 0.2
+data_legend:
+  font_size: 19
+  combine_syst: no
+  x: 0.215
+  y: 0.34
+
+# Fit function definitions
+functions:
+-
+  name: modified_power_law
+  title: "C #it{p}_{T}^{-a} e^{#frac{-ab}{#it{p}_{T}}}"
+  active: yes
+  formula: "[2] * x^(-[0]) * exp(-[0]*[1] / x)"
+  color: 602 # kBlue+2
+  line: 2
+  parameter_names: ["PowerLawIndex", "LocalMax", "Constant"]
+  parameter_fixed_values: [null, null, null]
+  parameter_init_values: [5.0, 3.0, 3.0e+3]
+-
+  name: power_law
+  title: "C #it{p}_{T}^{-a}"
+  active: yes
+  formula: "[1] * x^(-[0])"
+  color: 418 # kGreen+2
+  line: 7
+  parameter_names: ["PowerLawIndex", "Constant"]
+  parameter_fixed_values: [null, null]
+  parameter_init_values: [15.0, 3.5]
