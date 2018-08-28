@@ -3,6 +3,8 @@ input_path: /Volumes/DATA/ALICE/JetResults
 normalization: cross_section
 xmin: 0.2
 xmax: 1.0
+scale: 0.1  # jet pt acceptance 1 / 10
+legend: two_cols
 default:
   title: "Central Values"
   input_name: Unfolding_LHC10_Train1116_LHC15i2_Train1399_efficiency_mt_refl_DoubleGaus

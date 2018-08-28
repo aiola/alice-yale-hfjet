@@ -31,13 +31,13 @@ def main(config):
     if "JetZ" in config["name"]:
         xaxis_title = "#it{z}_{||}^{ch}"
         if config["normalization"] == "cross_section":
-            yaxis_title = "#frac{d^{2}#sigma}{d#it{z}_{||}^{ch}d#it{#eta}} (mb)"
+            yaxis_title = "#frac{d^{3}#sigma}{d#it{z}_{||}^{ch}d#it{p}_{T,jet}^{ch}d#it{#eta}} [mb (GeV/#it{c})^{-1}]"
         elif config["normalization"] == "distribution":
             yaxis_title = "Probability Density"
         else:
             print("Normalization option '{}' invalid".format(config["normalization"]))
             exit(1)
-    elif "JetPtSpectrum" in config["name"]:
+    elif "JetPtCrossSection" in config["name"]:
         xaxis_title = "#it{p}_{T,jet}^{ch} (GeV/#it{c})"
         if config["normalization"] == "cross_section":
             yaxis_title = "#frac{d^{2}#sigma}{d#it{p}_{T,jet}^{ch}d#it{#eta}} [mb (GeV/#it{c})^{-1}]"
@@ -49,7 +49,7 @@ def main(config):
 
     results = Start(config)
 
-    PlotSystematicUncertaintySummary(config["name"], results)
+    PlotSystematicUncertaintySummary(config["name"], results, config["legend"])
 
     output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
     print("Storing results in {0}".format(output_file_name))
@@ -70,7 +70,11 @@ def Start(config):
     results = dict()
     results["Variations"] = CompareVariations(config, histograms)
     results["Uncertainties"] = GenerateUncertainties(config, histograms)
-    results["FinalSpectrum"] = PlotSpectrumStatAndSyst(config["name"], results)
+    if "scale" in config:
+        scale = config["scale"]
+    else:
+        scale = None
+    results["FinalSpectrum"] = PlotSpectrumStatAndSyst(config["name"], results, scale)
     return results
 
 def LoadHistograms(config):
@@ -388,7 +392,7 @@ def GenerateUncertainties(config, histograms):
               centralSystUnc.GetName() : centralSystUnc}
     return result
 
-def PlotSystematicUncertaintySummary(name, results):
+def PlotSystematicUncertaintySummary(name, results, legend_position):
     sourcesUp = []
     sourcesLow = []
     colorsUp = []
@@ -446,27 +450,39 @@ def PlotSystematicUncertaintySummary(name, results):
     print("\\hline")
     print("Normalization (BR \& lumi) & \\multicolumn{{{0}}}{{c}}{{{1:.1f}}} \\\\".format(tot_unc_up.GetNbinsX(), results["Uncertainties"]["fixed_syst_unc"] * 100))
     print("\\hline")
-    print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
-    print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")
+    #print(" & ".join(["\multirow{2}{*}{Total Systematic Uncertainty}"] + ["+{0:.1f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
+    #print(" & ".join([" "] + ["-{0:.1f}".format(tot_rel_syst_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_low.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join(["Total Systematic Uncertainty"] + ["{0:.0f}".format(tot_rel_syst_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_rel_syst_unc_up.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
-    print(" & ".join([stat_unc.GetTitle()] + ["{0:.1f}".format(stat_unc.GetBinContent(ibin) * 100) for ibin in range(1, stat_unc.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join([stat_unc.GetTitle()] + ["{0:.0f}".format(stat_unc.GetBinContent(ibin) * 100) for ibin in range(1, stat_unc.GetNbinsX() + 1)]) + "\\\\")
     print("\\hline")
-    print(" & ".join(["\multirow{2}{*}{Total Uncertainty}"] + ["+{0:.1f}".format(tot_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\")
-    print(" & ".join([" "] + ["-{0:.1f}".format(tot_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_low.GetNbinsX() + 1)]) + "\\\\")
+    #print(" & ".join(["\multirow{2}{*}{Total Uncertainty}"] + ["+{0:.1f}".format(tot_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\")
+    #print(" & ".join([" "] + ["-{0:.1f}".format(tot_unc_low.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_low.GetNbinsX() + 1)]) + "\\\\")
+    print(" & ".join(["Total Uncertainty"] + ["{0:.0f}".format(tot_unc_up.GetBinContent(ibin) * 100) for ibin in range(1, tot_unc_up.GetNbinsX() + 1)]) + "\\\\")
 
     globalList.extend(sourcesUp)
     globalList.extend(sourcesLow)
     comp = DMesonJetCompare.DMesonJetCompare("CompareUncertainties_{0}".format(name))
     comp.fOptSpectrum = "hist"
     comp.fOptSpectrumBaseline = "hist"
-    comp.fX1LegSpectrum = 0.15
-    comp.fX2LegSpectrum = 0.55
-    comp.fLegLineHeight = 0.05
-    comp.fLinUpperSpace = 1.5
+    if legend_position == "left":
+        comp.fX1LegSpectrum = 0.13
+        comp.fX2LegSpectrum = 0.55
+        comp.fLinUpperSpace = 0.1
+    elif legend_position == "right":
+        comp.fX1LegSpectrum = 0.35
+        comp.fX2LegSpectrum = 0.75
+        comp.fLinUpperSpace = 1.5
+    elif legend_position == "two_cols":
+        comp.fX1LegSpectrum = 0.15
+        comp.fX2LegSpectrum = 0.88
+        comp.fNColsLegSpectrum = 2
+        comp.fLinUpperSpace = 0.6
+    comp.fLegTextSize = 19
+    comp.fLegLineHeight = 0.04
     comp.fDoSpectraPlot = "lineary"
     comp.fDoRatioPlot = False
     comp.fColors = colorsUp
-    comp.fLines = [1] * len(colorsUp)
     r = comp.CompareSpectra(sourcesUp[0], sourcesUp[1:])
     for obj in r:
         globalList.append(obj)
@@ -477,8 +493,10 @@ def PlotSystematicUncertaintySummary(name, results):
     r = comp.CompareSpectra(sourcesLow[0], sourcesLow[1:])
     for obj in r:
         globalList.append(obj)
+        if isinstance(obj, ROOT.TLegend):
+            obj.SetMargin(0.1)
 
-def PlotSpectrumStatAndSyst(name, results):
+def PlotSpectrumStatAndSyst(name, results, scale):
     stat = results["Variations"]["default"]
     syst = results["Uncertainties"]["central_syst_unc"]
     canvas = ROOT.TCanvas(name, name)
@@ -496,12 +514,12 @@ def PlotSpectrumStatAndSyst(name, results):
         h.GetXaxis().SetRangeUser(0.2, 1.0)
         if "JetPt_15_30" in name:
             if "CrossSection" in name:
-                h.GetYaxis().SetRangeUser(-0.001, 0.016)
+                h.GetYaxis().SetRangeUser(-0.00007, 0.001)
             elif "Distr" in name:
                 h.GetYaxis().SetRangeUser(0, 5.0)
         else:
             if "CrossSection" in name:
-                h.GetYaxis().SetRangeUser(-0.02, 0.36)
+                h.GetYaxis().SetRangeUser(-0.002, 0.036)
             elif "Distr" in name:
                 h.GetYaxis().SetRangeUser(0, 3.5)
 
@@ -516,6 +534,21 @@ def PlotSpectrumStatAndSyst(name, results):
     stat_copy.SetLineColor(ROOT.kRed + 2)
     stat_copy.SetMarkerStyle(ROOT.kFullCircle)
     stat_copy.SetMarkerSize(0.9)
+
+    syst_copy_copy = syst_copy.Clone("CentralPointsSystematicUncertainty")
+    stat_copy_copy = stat_copy.Clone("CentralPointsStatisticalUncertainty")
+    result = dict()
+    result["CentralPointsSystematicUncertainty"] = syst_copy_copy
+    result["CentralPointsStatisticalUncertainty"] = stat_copy_copy
+    result["FinalSpectrumCanvas"] = canvas
+
+    if scale:
+        stat_copy.Scale(scale)
+        for ipoint in range(0, syst_copy.GetN()):
+            syst_copy.SetPointEYlow(ipoint, syst_copy.GetErrorYlow(ipoint) * scale)
+            syst_copy.SetPointEYhigh(ipoint, syst_copy.GetErrorYhigh(ipoint) * scale)
+            syst_copy.SetPoint(ipoint, syst_copy.GetX()[ipoint], syst_copy.GetY()[ipoint] * scale)
+
     leg = ROOT.TLegend(0.35, 0.71, 0.89, 0.89, "NB")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
@@ -529,12 +562,7 @@ def PlotSpectrumStatAndSyst(name, results):
     globalList.append(stat_copy)
     globalList.append(leg)
     globalList.append(canvas)
-    result = dict()
-    syst_copy_copy = syst_copy.Clone("CentralPointsSystematicUncertainty")
-    stat_copy_copy = stat_copy.Clone("CentralPointsStatisticalUncertainty")
-    result["CentralPointsSystematicUncertainty"] = syst_copy_copy
-    result["CentralPointsStatisticalUncertainty"] = stat_copy_copy
-    result["FinalSpectrumCanvas"] = canvas
+
     return result
 
 def SaveCanvases(input_path):
