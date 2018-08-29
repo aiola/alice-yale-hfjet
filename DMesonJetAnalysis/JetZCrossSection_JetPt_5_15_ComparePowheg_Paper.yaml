@@ -33,7 +33,7 @@ title:
   y: 0.885
 axis:
   x_title: "#it{z}_{||}^{ch}"
-  y_title:  "#frac{d^{3}#sigma}{d#it{z}_{||}^{ch}d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{-1}]"
+  y_title:  "#frac{d^{3}#sigma}{d#it{z}_{||}^{ch}d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{ #font[122]{-}1}]"
   x_offset: 2.8
   y_offset: 2.1
   font_size: 20
