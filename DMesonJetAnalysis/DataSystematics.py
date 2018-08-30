@@ -49,7 +49,11 @@ def main(config):
 
     results = Start(config)
 
-    PlotSystematicUncertaintySummary(config["name"], results, config["legend"])
+    if "legend" in config:
+        leg_pos = config["legend"]
+    else:
+        leg_pos = "left"
+    PlotSystematicUncertaintySummary(config["name"], results, leg_pos)
 
     output_file_name = "{0}/{1}.root".format(config["input_path"], config["name"])
     print("Storing results in {0}".format(output_file_name))
