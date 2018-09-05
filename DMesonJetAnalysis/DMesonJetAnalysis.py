@@ -1006,7 +1006,7 @@ class DMesonJetAnalysisEngine:
         if mass_fitter is None or not mass_fitter.FitSuccessfull():
             return
 
-        mass_fitter.Draw("same");
+        mass_fitter.Draw("same")
 
         w = bin.IsWeighted()
 
