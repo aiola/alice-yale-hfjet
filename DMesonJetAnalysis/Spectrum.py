@@ -30,6 +30,7 @@ class Spectrum:
         self.fMass = None
         self.fMassWidth = None
         self.fBackground = None
+        self.fSignificance = None
         self.fAxis = []
         self.fSideBandWindowInvMassHistos = dict()
         self.fSignalWindowInvMassHistos = dict()
@@ -132,6 +133,8 @@ class Spectrum:
             rlist.Add(self.fMassWidth)
         if self.fBackground:
             rlist.Add(self.fBackground)
+        if self.fSignificance:
+            rlist.Add(self.fSignificance)
         if self.fAnalysisType == AnalysisType.SideBand and self.fSideBandHistograms and self.fSignalHistograms:
             SBlist = ROOT.TList()
             SBlist.SetName("SideBandAnalysis")
@@ -217,8 +220,8 @@ class Spectrum:
 
     def BuildHistograms(self):
         if len(self.fAxis) == 1:
-            self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "counts")
-            self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "relative statistical uncertainty")
+            self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "#it{S}")
+            self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "#Delta#it{S} / #it{S}")
             if self.fAnalysisType == AnalysisType.SideBand:
                 self.fSideBandHistograms = []
                 self.fSideBandLeftHistograms = []
@@ -226,38 +229,39 @@ class Spectrum:
                 self.fSignalHistograms = []
                 self.fMass = None
                 self.fMassWidth = None
-                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(self.fBinCountSignalSigmas)))
-                self.fSideBandWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SideBandWindowTotal".format(self.fName), "counts")
-                self.fSignalWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SignalWindowTotal".format(self.fName), "counts")
+                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "#it{{B}}_{{{}}}".format(int(self.fBinCountSignalSigmas)))
+                self.fSideBandWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SideBandWindowTotal".format(self.fName), "#it{N}^{SB}")
+                self.fSignalWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SignalWindowTotal".format(self.fName), "#it{N}^{PR}")
             elif self.fAnalysisType == AnalysisType.LikeSign:
                 self.fLikeSignHistograms = []
                 self.fUnlikeSignHistograms = []
                 self.fMass = None
                 self.fMassWidth = None
-                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(self.fBinCountSignalSigmas)))
-                self.fLikeSignTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_LikeSignTotal".format(self.fName), "counts")
-                self.fUnlikeSignTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_UnlikeSignTotal".format(self.fName), "counts")
+                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "#it{{B}}_{{{}}}".format(int(self.fBinCountSignalSigmas)))
+                self.fLikeSignTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_LikeSignTotal".format(self.fName), "#it{N}^{LS}")
+                self.fUnlikeSignTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_UnlikeSignTotal".format(self.fName), "#it{N}^{US}")
             elif self.fAnalysisType == AnalysisType.InvMassFit or self.fAnalysisType == AnalysisType.LikeSignFit:
-                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "D^{0} mass (GeV/#it{c}^{2})")
-                self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "D^{0} mass width (GeV/#it{c}^{2})")
-                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 2#sigma")
+                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "#it{m}_{0} (GeV/#it{c}^{2})")
+                self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "#sigma_{0} (GeV/#it{c}^{2})")
+                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "#it{B}_{3}")
+                self.fSignificance = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Significance".format(self.fName), "#it{S} / #sqrt{#it{S}+#it{B}_{3}}")
             elif self.fAnalysisType == AnalysisType.Truth and self.fDMeson in self.fBinSet.fNeedInvMass:
-                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "D^{0} mass (GeV/#it{c}^{2})")
-                self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "D^{0} mass width (GeV/#it{c}^{2})")
+                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "#it{m}_{0} (GeV/#it{c}^{2})")
+                self.fMassWidth = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_MassWidth".format(self.fName), "#sigma_{0} (GeV/#it{c}^{2})")
         elif len(self.fAxis) == 2:
-            self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "counts")
-            self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "relative statistical uncertainty")
+            self.fHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, self.fName, "#it{S}")
+            self.fUncertainty = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Unc".format(self.fName), "#Delta#it{S} / #it{S}")
             if self.fAnalysisType == AnalysisType.SideBand:
                 self.fSideBandHistograms = []
                 self.fSignalHistograms = []
                 self.fMass = None
                 self.fMassWidth = None
-                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{{m}} - <#it{{m}}>| < {0}#sigma".format(int(self.fBinCountSignalSigmas)))
-                self.fSideBandWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SideBandWindowTotal".format(self.fName), "counts")
-                self.fSignalWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SignalWindowTotal".format(self.fName), "counts")
+                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "#it{N}^{SB}".format(int(self.fBinCountSignalSigmas)))
+                self.fSideBandWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SideBandWindowTotal".format(self.fName), "#it{N}^{SB}")
+                self.fSignalWindowTotalHistogram = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_SignalWindowTotal".format(self.fName), "#it{N}^{PR}")
             elif self.fAnalysisType == AnalysisType.InvMassFit:
-                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "mass")
-                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "background |#it{m} - <#it{m}>| < 3#sigma")
+                self.fMass = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Mass".format(self.fName), "#it{m}_{0}")
+                self.fBackground = DMesonJetUtils.BuildHistogram(self.fAxis, "{0}_Bkg".format(self.fName), "#it{B}_{3}")
         else:
             print("Cannot handle spectra with more than two axis!")
             return

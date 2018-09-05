@@ -111,7 +111,8 @@ def InvMassPlot(config, var, kincuts, index_list):
         print("Could not open file '{}'".format(file_name))
         exit(1)
     
-    list_name = "AnyINT_D0_D0toKpiCuts/Charged_R040/D0_D0toKpiCuts_Charged_R040_{var}Bins_{kincuts}".format(var=var, kincuts=kincuts)
+    jet_def = "Charged_R040_pt_scheme"
+    list_name = "AnyINT_D0_D0toKpiCuts/{jet_def}/D0_D0toKpiCuts_{jet_def}_{var}Bins_{kincuts}".format(var=var, kincuts=kincuts, jet_def=jet_def)
     root_list = DMesonJetUtils.GetObject(root_file, list_name)
 
     if not root_list:

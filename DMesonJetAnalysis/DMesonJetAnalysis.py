@@ -732,14 +732,19 @@ class DMesonJetAnalysisEngine:
 
         if mass_fitter:
             if s.fBackground:
-                s.fBackground.SetBinContent(xbin, mass_fitter.GetBackground(2))
-                s.fBackground.SetBinError(xbin, mass_fitter.GetBackgroundError(2))
+                s.fBackground.SetBinContent(xbin, mass_fitter.GetBackground(3))
+                s.fBackground.SetBinError(xbin, mass_fitter.GetBackgroundError(3))
             if s.fMass:
                 s.fMass.SetBinContent(xbin, mass_fitter.GetSignalMean())
                 s.fMass.SetBinError(xbin, mass_fitter.GetSignalMeanError())
             if s.fMassWidth:
                 s.fMassWidth.SetBinContent(xbin, mass_fitter.GetSignalWidth())
                 s.fMassWidth.SetBinError(xbin, mass_fitter.GetSignalWidthError())
+            if s.fSignificance:
+                if bin.IsWeighted():
+                    s.fSignificance.SetBinContent(xbin, mass_fitter.GetSignificanceW())
+                else:
+                    s.fSignificance.SetBinContent(xbin, mass_fitter.GetSignificance())
 
     def GenerateInvMassWidonws(self, invMassHisto, binSBL_1, binSBL_2, binSBR_1, binSBR_2, binSig_1, binSig_2):
         print("Generating invariant mass windows for {0}".format(invMassHisto.GetName()))

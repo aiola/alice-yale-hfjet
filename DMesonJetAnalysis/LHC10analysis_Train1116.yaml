@@ -50,7 +50,7 @@ analysis:
       title: "Side Band, #it{p}_{T,D} > 3 GeV/#it{c}"
       efficiency: no
       compare: [DPtBinWidthDPt3, DPtCutSideBand, MethodDPt3]
-      comp_titles: ["Small #it{p}_{T,D} bins", "#it{p}_{T,D} > 3 GeV/#it{c} (Side Band)", "Side Band (#it{p}_{T,D} > 3 GeV/#it{c})"]
+      comp_titles: ["Small #it{p}_{T,D} bins", "#it{p}_{T,D} > 3 GeV/#it{c} (Side Band)", "Side Band"]
       type: side_band
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
@@ -250,7 +250,7 @@ analysis:
       suffix: InvMassFit
       title: "Inv.Mass Fit, #it{p}_{T,D} > 3 GeV/#it{c}"
       compare: [DPtCutInvMassFit, MethodDPt3]
-      comp_titles: ["#it{p}_{T,D} > 3 GeV/#it{c} (Inv.Mass Fit)", "Inv.Mass Fit (#it{p}_{T,D} > 3 GeV/#it{c})"]
+      comp_titles: ["#it{p}_{T,D} > 3 GeV/#it{c} (Inv.Mass Fit)", "Inv.Mass Fit"]
       type: inv_mass_fit
       active_mesons: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]
       multitrial: [D0_D0toKpiCuts, D0_D0toKpiCuts_D0JetOptimLowJetPtv4]

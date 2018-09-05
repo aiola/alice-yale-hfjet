@@ -9,6 +9,8 @@ globalList = []
 
 input_path = "/Volumes/DATA/ALICE/JetResults"
 
+jet_def = "Charged_R040_pt_scheme"
+
 def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinList, refl, plotleg1=False, plotleg2=False):
     pad.SetTicks(1, 1)
     pad.SetLeftMargin(0.22)
@@ -179,7 +181,7 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
     pad.SetTopMargin(0.04)
     pad.SetBottomMargin(0.13)
 
-    objname = "{}_Charged_R040_JetZSpectrum_{}_SideBand{}_SideBandWindow_DPt_{:.0f}_{:.0f}".format(dmeson, kincuts, refl, ptmin * 100, ptmax * 100)
+    objname = "{}_{}_JetZSpectrum_{}_SideBand{}_SideBandWindow_DPt_{:.0f}_{:.0f}".format(dmeson, jet_def, kincuts, refl, ptmin * 100, ptmax * 100)
     print(objname)
     sbHist = sbList.FindObject(objname)
     h = sbHist.DrawCopy("axis")
@@ -193,7 +195,7 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
     sbHist_copy.SetMarkerStyle(ROOT.kOpenCircle)
     sbHist_copy.SetMarkerSize(1.3)
 
-    sigHist = sbList.FindObject("{}_Charged_R040_JetZSpectrum_{}_SideBand{}_SignalWindow_DPt_{:.0f}_{:.0f}".format(dmeson, kincuts, refl, ptmin * 100, ptmax * 100))
+    sigHist = sbList.FindObject("{}_{}_JetZSpectrum_{}_SideBand{}_SignalWindow_DPt_{:.0f}_{:.0f}".format(dmeson, jet_def, kincuts, refl, ptmin * 100, ptmax * 100))
 
     sigHist_copy = sigHist.DrawCopy("p0 same")
     globalList.append(sigHist_copy)
@@ -210,7 +212,7 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
     subHist_copy.SetMarkerStyle(ROOT.kOpenDiamond)
     subHist_copy.SetMarkerSize(1.7)
 
-    h.GetYaxis().SetTitle("Counts / (Efficiency #times Acceptance)")
+    h.GetYaxis().SetTitle("raw yield")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(2.2)
     h.GetXaxis().SetTitleSize(19)
@@ -248,23 +250,24 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
         leg.Draw()
 
 def SideBandPlot():
-    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")
+    loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116")
     loader.fDMeson = "D0_D0toKpiCuts"
     loader.fJetType = "Charged"
     loader.fJetRadius = "R040"
+    loader.fJetRecoScheme = "pt_scheme"
     loader.fVariableName = "JetZ"
     loader.fRawYieldMethod = "SideBand"
     loader.fUseReflections = True
 
     loader.fKinematicCuts = "DPt_20_JetPt_5_15"
     loader.LoadDataListFromDMesonJetAnalysis()
-    dptbinList_low = loader.fDataJetList.FindObject("{}_Charged_R040_DPtBins_JetPt_5_15".format(loader.fDMeson))
+    dptbinList_low = loader.fDataJetList.FindObject("{}_{}_DPtBins_JetPt_5_15".format(loader.fDMeson, jet_def))
     spectrumList_low = loader.fDataSpectrumList
     sbList_low = spectrumList_low.FindObject("SideBandAnalysis")
 
     loader.fKinematicCuts = "DPt_60_JetPt_15_30"
     loader.LoadDataListFromDMesonJetAnalysis()
-    dptbinList_high = loader.fDataJetList.FindObject("{}_Charged_R040_DPtBins_JetPt_15_30".format(loader.fDMeson))
+    dptbinList_high = loader.fDataJetList.FindObject("{}_{}_DPtBins_JetPt_15_30".format(loader.fDMeson, jet_def))
     spectrumList_high = loader.fDataSpectrumList
     sbList_high = spectrumList_high.FindObject("SideBandAnalysis")
 
@@ -292,7 +295,7 @@ def SideBandPlot():
     htitle.Draw()
 
     canvas.cd(4)
-    paveALICE = ROOT.TPaveText(0.30, 0.80, 0.66, 0.92, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.32, 0.75, 0.66, 0.92, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
@@ -300,6 +303,7 @@ def SideBandPlot():
     paveALICE.SetTextSize(20)
     paveALICE.SetTextAlign(13)
     paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
+    paveALICE.AddText("#it{This Thesis}")
     paveALICE.Draw()
 
 def main():

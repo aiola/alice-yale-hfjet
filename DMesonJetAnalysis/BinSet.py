@@ -228,7 +228,7 @@ class BinSet:
         self.AddBinsRecursive(self.fLimitSetList, limits)
 
         if reflections:
-            if scheme != "pt_scheme":
+            if scheme and scheme != "pt_scheme":
                 print("BinSet.Initialize: Error! Reflections have only been implemented for the pt scheme!")
                 print("************* CONTINUE AT YOUR OWN RISK! *******************")
                 #exit(1)
