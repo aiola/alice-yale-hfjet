@@ -1,19 +1,16 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
 
+import argparse
+import math
 import yaml
 import IPython
 import ROOT
-import DMesonJetUtils
-import argparse
-import math
 
 globalList = []
 
 InvMassRange = [1.72, 2.014]
 
-
-def PlotReflections(config, var, reflFit):
+def PlotReflections(config, index_list, var, reflFit):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(False)
     ROOT.gStyle.SetOptStat(0)
@@ -46,24 +43,30 @@ def PlotReflections(config, var, reflFit):
     globalList.extend(signHist)
     globalList.extend(reflHist)
 
-    n = len(reflHist)
+    if len(index_list) == 0:
+        n = len(reflHist)
+    else:
+        n = len(index_list)
     ncols = int(math.ceil((math.sqrt(n))))
     nrows = int(math.floor((n / ncols)))
 
     cname = "ReflectionTemplates_{var}_{fit}".format(var=var, fit=reflFit)
-    canvas = ROOT.TCanvas(cname, cname, 1200, 800)
+    canvas = ROOT.TCanvas(cname, cname, ncols*350, nrows*350)
     globalList.append(canvas)
     canvas.Divide(ncols, nrows)
 
+    icanvas = 1
     for i, (hSig, hRef, hRefFit) in enumerate(zip(signHist.itervalues(), reflHist.itervalues(), reflFitHist.itervalues())):
-        pad = canvas.cd(i + 1)
+        if len(index_list) > 0 and not i in index_list:
+            continue
+        pad = canvas.cd(icanvas)
         pad.SetTicks(1, 1)
         pad.SetLeftMargin(0.22)
         pad.SetRightMargin(0.02)
         pad.SetTopMargin(0.13)
         pad.SetBottomMargin(0.15)
         h = hRef.DrawCopy("axis")
-        h.GetYaxis().SetRangeUser(0, 0.13)
+        h.GetYaxis().SetRangeUser(0, 0.16)
         h.GetYaxis().SetTitle("arb. units")
         h.GetXaxis().SetTitleFont(43)
         h.GetXaxis().SetTitleOffset(2.6)
@@ -86,20 +89,6 @@ def PlotReflections(config, var, reflFit):
         hRef_copy.SetMarkerStyle(ROOT.kFullCircle)
         hRef_copy.SetMarkerSize(1.0)
 
-#         hSig_copy = hSig.DrawCopy("p0 x0 same")
-#         globalList.append(hSig_copy)
-#         hSig_copy.SetLineColor(ROOT.kGray)
-#         hSig_copy.SetMarkerColor(ROOT.kGray)
-#         hSig_copy.SetMarkerStyle(ROOT.kOpenCircle)
-#         hSig_copy.SetMarkerSize(1.2)
-
-        hRefFit_copy = hRefFit.DrawCopy("p0 x0 same")
-        globalList.append(hRefFit_copy)
-        hRefFit_copy.SetLineColor(ROOT.kGray)
-        hRefFit_copy.SetMarkerColor(ROOT.kGray)
-        hRefFit_copy.SetMarkerStyle(ROOT.kOpenCircle)
-        hRefFit_copy.SetMarkerSize(1.2)
-
         refIntErr = ROOT.Double(0)
         sigIntErr = ROOT.Double(0)
 
@@ -117,13 +106,13 @@ def PlotReflections(config, var, reflFit):
 
         print("Bin {0} (full range): ros = {1:.3f} #pm {2:.3f}".format(i, ros, rosErr))
 
-        rosPave = ROOT.TPaveText(0.61, 0.68, 0.96, 0.78, "NB NDC")
+        rosPave = ROOT.TPaveText(0.25, 0.77, 0.57, 0.87, "NB NDC")
         rosPave.SetBorderSize(0)
         rosPave.SetFillStyle(0)
         rosPave.SetTextFont(43)
         rosPave.SetTextSize(18)
-        rosPave.SetTextAlign(31)
-        rosPave.AddText("R/S = {0:.3f} #pm {1:.3f}".format(ros, rosErr))
+        rosPave.SetTextAlign(13)
+        rosPave.AddText("#it{{R}}_{{f}} = {0:.2f} #pm {1:.2f}".format(ros, rosErr))
         rosPave.Draw()
         globalList.append(rosPave)
 
@@ -139,8 +128,10 @@ def PlotReflections(config, var, reflFit):
         htitle.Draw()
         globalList.append(htitle)
 
+        icanvas += 1
+
     canvas.cd(1)
-    leg = ROOT.TLegend(0.25, 0.65, 0.58, 0.81, "", "NB NDC")
+    leg = ROOT.TLegend(0.25, 0.61, 0.58, 0.75, "", "NB NDC")
     globalList.append(leg)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
@@ -149,25 +140,37 @@ def PlotReflections(config, var, reflFit):
     leg.SetTextAlign(13)
     leg.AddEntry(hRef_copy, "Reflections", "pe")
     leg.AddEntry(hRef_copy.GetListOfFunctions()[0], "Fit", "l")
-    leg.AddEntry(hRefFit_copy, "Histogram from fit", "pe")
     leg.Draw()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot reflections.')
     parser.add_argument('yaml', metavar='config.yaml',
                         help='YAML configuration file')
+    parser.add_argument('--plot', nargs='*', type=int)
+    parser.add_argument('--var', type=str, default="DPt")
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
-    config = yaml.load(f)
+    yconfig = yaml.load(f)
     f.close()
 
-    PlotReflections(config, "D0toKpiCuts_DPt_Charged_R040_DPtBins_JetPt_5_30", "DoubleGaus")
-    PlotReflections(config, "D0toKpiCuts_JetPt_Charged_R040_JetPtBins_DPt_30", "DoubleGaus")
+    if args.var == "DPt":
+        name = "D0toKpiCuts_DPt_Charged_R040_DPtBins_JetPt_5_30"
+    elif args.var == "JetPt":
+        name = "D0toKpiCuts_JetPt_Charged_R040_JetPtBins_DPt_30"
+    else:
+        print("Error: var '{}' not known!".format(args.var))
+        exit(1)
+    
+    if args.plot:
+        index_list = args.plot
+    else:
+        index_list = []
+
+    PlotReflections(yconfig, index_list, name, "DoubleGaus")
 
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
-            obj.SaveAs("{input_path}/{train}/{ana}/reflTemp/{name}.pdf".format(input_path=config["input_path"], train=config["train"], ana=config["name"], name=obj.GetName()))
+            obj.SaveAs("{input_path}/{train}/{ana}/reflTemp/{name}.pdf".format(input_path=yconfig["input_path"], train=yconfig["train"], ana=yconfig["name"], name=obj.GetName()))
 
     IPython.embed()
