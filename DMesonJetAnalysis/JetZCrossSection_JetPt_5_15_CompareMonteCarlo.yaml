@@ -1,0 +1,92 @@
+# use it with
+# CompareCrossSectionDataVsTheory.py
+name: CompareMonteCarlo
+
+# General
+input_path: /Volumes/DATA/ALICE/JetResults
+data: JetZCrossSection_JetPt_5_15_Systematics
+theory_spectrum: JetZSpectrum_DPt_2_JetPt_5_15
+jet_type: Charged_R040
+logy: no
+canvas_w: 550
+canvas_h: 600
+left_margin: 0.19
+bottom_margin: 0.27
+
+data_systematics_style: "0[]"
+
+name_prefix: JetZCrossSection_JetPt_5_15
+normalization: CrossSection
+scale: 0.1  # jet pt acceptance 1 / 10
+data_minx: 0.2
+data_maxx: 1.0
+minx: 0
+maxx: 1
+miny: -0.001
+maxy: 0.07
+minr: 0.0
+maxr: 3.49
+title:
+  text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
+  font_size: 18
+  x: 0.21
+  y: 0.87
+axis:
+  x_title: "#it{z}_{||}^{ch}"
+  y_title:  "#frac{d^{3}#sigma}{d#it{z}_{||}^{ch}d#it{p}_{T,jet}^{ch}d#it{#eta}_{jet}} [mb (GeV/#it{c})^{ #font[122]{-}1}]"
+  x_offset: 2.8
+  y_offset: 2.1
+  font_size: 20
+theory_legend:
+  font_size: 16
+  n_columns: 1
+  x: 0.23
+#  y: 0.53
+data_legend:
+  font_size: 16
+  combine_syst: no
+  x: 0.23
+#  y: 0.53
+
+# MC definitions
+theory:
+-
+  title: PYTHIA 6 Perugia-2011
+  active: yes
+  gen: pythia6
+  proc: charm
+  ts: 1520422008
+  color: 857 # kAzure-3
+  line: 2
+-
+  title: PYTHIA 8 Monash-2013
+  active: yes
+  gen: pythia8
+  proc: charm
+  ts: 1520426239
+  color: 839 # kTeal-1
+  line: 6
+-
+  title: Herwig++ 7 MEPP2QQ
+  active: yes
+  gen: herwig
+  proc: charm_lo
+  ts: 1531075164
+  color: 903 # kPink+3
+  line: 4
+-
+  title: Herwig++ 7 MEMinBias
+  active: yes
+  gen: herwig
+  proc: mb
+  ts: 1531819153
+  color: 797 # kOrange-3
+  line: 5
+-
+  title: Herwig++ 7 MEQCD2to2
+  active: no
+  gen: herwig
+  proc: dijet_lo
+  ts: 1531074150
+  color: 882 # kViolet+2
+  line: 8
