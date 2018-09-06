@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# python script to do extract B feed down correction factors
 
 import argparse
 import yaml
@@ -18,7 +17,6 @@ xaxisTitle = ""
 yaxisTitle = ""
 do_spectra_plot = "logy"
 
-
 def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     global do_spectra_plot
 
@@ -34,6 +32,7 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fInputPath = config["input_path"]
     wrap.fTrain = config["train"]
     wrap.fAnalysisName = config["name"]
+    wrap.fJetRecoScheme = "pt_scheme"
 
     comp = DMesonJetCompare.DMesonJetCompare("AverageRawYieldVsDefault")
     comp.fDoSpectraPlot = do_spectra_plot
@@ -119,26 +118,26 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
     comp = DMesonJetCompare.DMesonJetCompare("SideBandReflectionVariationComparison")
     comp.fDoSpectraPlot = do_spectra_plot
     comp.fX1LegRatio = 0.15
-    comp.fX1LegSpectrum = 0.20
-    comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+    comp.fX1LegSpectrum = 0.35
+    comp.fLogUpperSpace = 4  # this factor will be used to adjust the y axis in log scale
     comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
     comp.fLinUpperSpace = 0.8  # this factor will be used to adjust the y axis in linear scale
     comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
     comp.fGridyRatio = True
     comp.fNoErrorInBaseline = True
-    reflections_raw_yield(comp, "SideBand", config, meson_name, jet_type, jet_radius, var, kincuts)
+    reflections_raw_yield(comp, "SideBand", meson_name, jet_type, jet_radius, var, kincuts)
 
     if var == "JetPt":
         comp = DMesonJetCompare.DMesonJetCompare("InvMassFitReflectionVariationComparison")
         comp.fX1LegRatio = 0.15
-        comp.fX1LegSpectrum = 0.20
-        comp.fLogUpperSpace = 2  # this factor will be used to adjust the y axis in log scale
+        comp.fX1LegSpectrum = 0.35
+        comp.fLogUpperSpace = 4  # this factor will be used to adjust the y axis in log scale
         comp.fLogLowerSpace = 2  # this factor will be used to adjust the y axis in log scale
         comp.fLinUpperSpace = 0.8  # this factor will be used to adjust the y axis in linear scale
         comp.fLinLowerSpace = 0.4  # this factor will be used to adjust the y axis in linear scale
         comp.fGridyRatio = True
         comp.fNoErrorInBaseline = True
-        reflections_raw_yield(comp, "InvMassFit", config, meson_name, jet_type, jet_radius, var, kincuts)
+        reflections_raw_yield(comp, "InvMassFit", meson_name, jet_type, jet_radius, var, kincuts)
 
     SideBandRawYieldUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts, "SideBand")
     SideBandRawYieldReflUnc(config["input_path"], config["train"], config["name"], var, meson_name, kincuts, "SideBand")
@@ -151,7 +150,6 @@ def main(config, meson_name, jet_type, jet_radius, var, kincuts):
             fname = "{0}/{1}.pdf".format(outputPath, obj.GetName())
             print("Saving '{}'".format(obj.GetName()))
             obj.SaveAs(fname)
-
 
 def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts, refl):
     wrap.fDMeson = meson_name
@@ -184,7 +182,8 @@ def default_vs_default_mt(comp, method, config, meson_name, jet_type, jet_radius
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
-
+        if isinstance(obj, ROOT.TLegend):
+            obj.SetMargin(0.12)
 
 def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
@@ -212,7 +211,8 @@ def default_vs_default_mt_unc(comp, method, config, meson_name, jet_type, jet_ra
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
-
+        if isinstance(obj, ROOT.TLegend):
+            obj.SetMargin(0.12)
 
 def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
@@ -238,9 +238,10 @@ def default_vs_average_raw_yield(comp, method, config, meson_name, jet_type, jet
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
+        if isinstance(obj, ROOT.TLegend):
+            obj.SetMargin(0.12)
 
-
-def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius, var, kincuts):
+def reflections_raw_yield(comp, method, meson_name, jet_type, jet_radius, var, kincuts):
     wrap.fDMeson = meson_name
     wrap.fJetType = jet_type
     wrap.fJetRadius = jet_radius
@@ -253,7 +254,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fReflectionFit = "DoubleGaus"
     wrap.fReflectionRoS = 0
     default_spectrum_wrefl_DoubleGaus = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
-    default_spectrum_wrefl_DoubleGaus.SetTitle("Trial Expo Free Sigma w/ refl double gaus, {0}".format(method))
+    default_spectrum_wrefl_DoubleGaus.SetTitle("Refl = double Gaussian")
     globalList.append(default_spectrum_wrefl_DoubleGaus)
     # histos.append(default_spectrum_wrefl_DoubleGaus)
 
@@ -261,7 +262,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fReflectionFit = "DoubleGaus"
     wrap.fReflectionRoS = 5
     default_spectrum_wrefl_DoubleGaus_5 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
-    default_spectrum_wrefl_DoubleGaus_5.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 0.5 R/S, {0}".format(method))
+    default_spectrum_wrefl_DoubleGaus_5.SetTitle("Refl = double Gaussian, #it{R}_{f} #times 0.5")
     globalList.append(default_spectrum_wrefl_DoubleGaus_5)
     histos.append(default_spectrum_wrefl_DoubleGaus_5)
 
@@ -269,7 +270,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fReflectionFit = "DoubleGaus"
     wrap.fReflectionRoS = 15
     default_spectrum_wrefl_DoubleGaus_15 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
-    default_spectrum_wrefl_DoubleGaus_15.SetTitle("Trial Expo Free Sigma w/ refl double gaus, 1.5 R/S, {0}".format(method))
+    default_spectrum_wrefl_DoubleGaus_15.SetTitle("Refl = double Gaussian, #it{R}_{f} #times 1.5")
     globalList.append(default_spectrum_wrefl_DoubleGaus_15)
     histos.append(default_spectrum_wrefl_DoubleGaus_15)
 
@@ -277,7 +278,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fReflectionFit = "gaus"
     wrap.fReflectionRoS = 0
     default_spectrum_wrefl_gaus = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
-    default_spectrum_wrefl_gaus.SetTitle("Trial Expo Free Sigma w/ refl gaus, {0}".format(method))
+    default_spectrum_wrefl_gaus.SetTitle("Refl = Gaussian")
     globalList.append(default_spectrum_wrefl_gaus)
     histos.append(default_spectrum_wrefl_gaus)
 
@@ -285,7 +286,7 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fReflectionFit = "pol3"
     wrap.fReflectionRoS = 0
     default_spectrum_wrefl_pol3 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
-    default_spectrum_wrefl_pol3.SetTitle("Trial Expo Free Sigma w/ refl pol3, {0}".format(method))
+    default_spectrum_wrefl_pol3.SetTitle("Refl = 3rd order polynomial")
     globalList.append(default_spectrum_wrefl_pol3)
     histos.append(default_spectrum_wrefl_pol3)
 
@@ -293,13 +294,13 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     wrap.fReflectionFit = "pol6"
     wrap.fReflectionRoS = 0
     default_spectrum_wrefl_pol6 = wrap.GetDefaultSpectrumFromMultiTrial(False, 0, 0)
-    default_spectrum_wrefl_pol6.SetTitle("Trial Expo Free Sigma w/ refl pol6, {0}".format(method))
+    default_spectrum_wrefl_pol6.SetTitle("Refl = 6th order polynomial")
     globalList.append(default_spectrum_wrefl_pol6)
     histos.append(default_spectrum_wrefl_pol6)
 
     wrap.fUseReflections = False
     default_spectrum_worefl = wrap.GetAverageSpectrumFromMultiTrial(False, 0)
-    default_spectrum_worefl.SetTitle("Trial Expo Free Sigma w/o refl, {0}".format(method))
+    default_spectrum_worefl.SetTitle("No Refl")
     default_spectrum_worefl.GetXaxis().SetTitle(xaxisTitle)
     default_spectrum_worefl.GetYaxis().SetTitle(yaxisTitle)
     globalList.append(default_spectrum_worefl)
@@ -311,7 +312,8 @@ def reflections_raw_yield(comp, method, config, meson_name, jet_type, jet_radius
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
-
+        if isinstance(obj, ROOT.TLegend):
+            obj.SetMargin(0.09)
 
 def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suffix):
     var = var.replace("Z", "z")
@@ -359,17 +361,14 @@ def SideBandFinalRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suff
     comp = DMesonJetCompare.DMesonJetCompare(cname)
     comp.fDoSpectraPlot = do_spectra_plot
     comp.fOptRatio = "hist"
-    comp.fNColsLegRatio = 3
-    comp.fNColsLegSpectrum = 3
-    comp.fX1LegRatio = 0.15
-    comp.fX1LegSpectrum = 0.15
+    comp.fLinUpperSpace = 0.2
+    comp.fLogUpperSpace = 2
     comp.fDoSpectrumLegend = False
     comp.fDoRatioLegend = False
     r = comp.CompareSpectra(baseline_copy, histos)
     for obj in r:
         if not obj in globalList:
             globalList.append(obj)
-
 
 def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suffix):
     var = var.replace("Z", "z")
@@ -415,18 +414,15 @@ def SideBandRawYieldUnc(input_path, train, ana, var, dmeson, kin_cuts, suffix):
         cname = "CompareRawYieldUncVariations_{0}".format(ibin)
         comp = DMesonJetCompare.DMesonJetCompare(cname)
         comp.fDoSpectraPlot = do_spectra_plot
+        comp.fLinUpperSpace = 0.2
+        comp.fLogUpperSpace = 2
         comp.fDoSpectrumLegend = False
         comp.fDoRatioLegend = False
         comp.fOptRatio = "hist"
-        comp.fNColsLegRatio = 3
-        comp.fNColsLegSpectrum = 3
-        comp.fX1LegRatio = 0.15
-        comp.fX1LegSpectrum = 0.15
         r = comp.CompareSpectra(baseline_copy, histos)
         for obj in r:
             if not obj in globalList:
                 globalList.append(obj)
-
 
 def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts, suffix):
     variable = variable.replace("Z", "z")
@@ -446,7 +442,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts, 
                 print("Could not find histogram {} in file {}".format(hname, fname))
                 exit(1)
             h_copy = h.Clone("bin{0}_var{1}".format(ibin, variation))
-            h_copy.SetTitle("TrialExpoFreeS, refl={0}".format(variation))
+            h_copy.SetTitle("Refl = {0}".format(variation))
             if variable == "JetPt":
                 h_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
             elif variable == "Jetz":
@@ -464,7 +460,7 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts, 
             exit(1)
 
         baseline_copy = baseline.Clone("bin{0}_baseline".format(ibin))
-        baseline_copy.SetTitle("TrialExpoFreeS, refl=DoubleGaus")
+        baseline_copy.SetTitle("Refl = DoubleGaus")
         if variable == "JetPt":
             baseline_copy.GetXaxis().SetTitle("#it{p}_{T,ch jet} (GeV/#it{c})")
         elif variable == "Jetz":
@@ -483,7 +479,8 @@ def SideBandRawYieldReflUnc(input_path, train, ana, variable, dmeson, kin_cuts, 
         for obj in r:
             if not obj in globalList:
                 globalList.append(obj)
-
+            if isinstance(obj, ROOT.TLegend):
+                obj.SetMargin(0.09)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Raw Yield Uncertainty.')
@@ -502,9 +499,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     f = open(args.yaml, 'r')
-    config = yaml.load(f)
+    yconfig = yaml.load(f)
     f.close()
 
-    main(config, args.meson, args.jet_type, args.jet_radius, args.variable, args.kincuts)
+    main(yconfig, args.meson, args.jet_type, args.jet_radius, args.variable, args.kincuts)
 
     IPython.embed()
