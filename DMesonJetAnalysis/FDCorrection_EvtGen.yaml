@@ -82,10 +82,10 @@ variations:
   # downloaded
   # analyzed
 -
-  name: PDF_MSTW2008nlo68cl
+  name: PDF_MSTW2008nlo68cl # 21200
   active: yes
   systematic: yes
-  title: "PDF = MSTW2008nlo68cl (21200)" 
+  title: "PDF = MSTW2008nlo68cl" 
   ts: 1516799554
   # merge 1, 2
   # downloaded

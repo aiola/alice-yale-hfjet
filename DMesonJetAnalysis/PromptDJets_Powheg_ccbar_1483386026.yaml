@@ -142,10 +142,10 @@ variations:
   inclusive_ts: 1527252990
   #stage: 2
 -
-  name: PDF_MSTW2008nlo68cl
+  name: PDF_MSTW2008nlo68cl #21200
   active: yes
   systematic: yes
-  title: "PDF = MSTW2008nlo68cl (21200)" 
+  title: "PDF = MSTW2008nlo68cl" 
   ts: 1484231826
   inclusive_ts: 1530009737
   #stage: 2

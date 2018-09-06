@@ -74,10 +74,10 @@ variations:
   title: "#it{m}_{b} = 5.0 GeV/#it{c}^{2}"
   ts: 1505318474
 -
-  name: PDF_MSTW2008nlo68cl
+  name: PDF_MSTW2008nlo68cl # 21200
   active: yes
   systematic: yes
-  title: "PDF = MSTW2008nlo68cl (21200)" 
+  title: "PDF = MSTW2008nlo68cl" 
   ts: 1505395218
 -
   name: PDF_cteq6l1

@@ -133,7 +133,7 @@ def GenerateSpectrumNames(spectra, do_unfolding):
         if do_unfolding and spectrum["normalization"] == "cross_section":
             format_spectra_names.extend(efficiency_spectra)
             if spectrum["variable_name"] != "DPt":
-                format_spectra_names.extend(unfolding)
+                format_spectra_names.extend(unfolding_spectra)
         spectra_names.extend([(sname.format(variable=spectrum["variable_name"], kin_cuts=kin_cuts, normalization=HistogramNormalizator.NormalizationType.from_string(spectrum["normalization"]).name), spectrum["normalization"]) for sname in format_spectra_names])
 
     return spectra_names
@@ -150,23 +150,27 @@ def PlotFSspectraAndSyst(spectra, results):
         canvas.SetLeftMargin(0.13)
         canvas.cd()
         syst_copy = syst.Clone()
-        syst_copy.SetFillColor(ROOT.kCyan + 1)
-        syst_copy.SetMarkerColor(ROOT.kCyan + 1)
-        syst_copy.GetYaxis().SetTitleOffset(1.5)
+        syst_copy.SetFillColor(ROOT.kCyan - 10)
+        syst_copy.SetMarkerColor(ROOT.kCyan - 10)
+        syst_copy.GetYaxis().SetTitleOffset(1.8)
+        syst_copy.GetXaxis().SetTitleOffset(1.2)
         syst_copy.Draw("a e2")
         stat_copy = stat.DrawCopy("same p e0 x0")
         stat_copy.SetMarkerColor(ROOT.kBlue + 1)
         stat_copy.SetMarkerStyle(ROOT.kFullCircle)
-        stat_copy.SetMarkerSize(0.6)
+        stat_copy.SetMarkerSize(0.8)
         stat_copy.SetLineColor(ROOT.kBlue + 1)
         if "JetZ" in name:
-            leg = ROOT.TLegend(0.15, 0.71, 0.70, 0.89, "NB")
+            leg = ROOT.TLegend(0.15, 0.76, 0.70, 0.94, "NB")
+            xtot_range = syst_copy.GetHistogram().GetMaximum() - syst_copy.GetHistogram().GetMinimum()
+            syst_copy.GetHistogram().SetMaximum(syst_copy.GetHistogram().GetMaximum() + xtot_range * 0.2)
         else:
-            leg = ROOT.TLegend(0.35, 0.71, 0.89, 0.89, "NB")
+            leg = ROOT.TLegend(0.35, 0.76, 0.89, 0.94, "NB")
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(43)
         leg.SetTextSize(20)
+        leg.SetMargin(0.12)
         leg.AddEntry(stat_copy, "Central values with stat. unc.", "pe")
         leg.AddEntry(syst_copy, "Systematic uncertainty", "f")
         leg.Draw()
@@ -212,7 +216,10 @@ def CompareVariationsForSpectrum(comp_template, variations, results, name, norma
             spectra_syst.append(h_copy)
         else:
             spectra_syst_add.append(h_copy)
-    comp.CompareSpectra(baseline, spectra)
+    r = comp.CompareSpectra(baseline, spectra)
+    for obj in r:
+        if isinstance(obj, ROOT.TLegend):
+            obj.SetMargin(0.09)
     globalList.append(baseline)
     globalList.extend(spectra)
     globalList.extend(comp.fResults)
@@ -344,7 +351,7 @@ def CompareVariations(variations, spectra, results):
     comp_template.fOptRatio = "hist"
     comp_template.fLogUpperSpace = 3
     comp_template.fNColsLegRatio = 2
-    comp_template.fX1LegRatio = 0.2
+    comp_template.fX1LegRatio = 0.13
 
     result = OrderedDict()
 
