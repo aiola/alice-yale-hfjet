@@ -346,6 +346,7 @@ class DMesonJetUnfoldingEngine:
         baselineId = self.fDefaultPrior
         baseline = self.fBinByBinCorrectionFactors[baselineId].Clone("{0}_copy".format(self.fBinByBinCorrectionFactors[baselineId].GetName()))
         baseline.SetTitle(self.fDefaultPrior)
+        baseline.GetXaxis().SetTitleOffset(1)
         globalList.append(baseline)
         spectra = []
         for priorIt, corrFact in self.fBinByBinCorrectionFactors.iteritems():
@@ -358,8 +359,15 @@ class DMesonJetUnfoldingEngine:
         if len(spectra) < 1:
             return
         comp = DMesonJetCompare.DMesonJetCompare("{0}_BinByBinCorrectionFactors".format(self.fName))
+        comp.fX1LegSpectrum = 0.12
+        comp.fX2LegSpectrum = 0.50
+        comp.fLogUpperSpace = 5
+        comp.fX1LegRatio = 0.12
+        comp.fX2LegRatio = 0.50
+        comp.fLinUpperSpace = 0.5
         comp.fOptSpectrum = "hist"
         comp.fOptRatio = "hist"
+        comp.fOptSpectrumBaseline = "hist"
         comp.fYaxisRatio = "Prior x / {0}".format(self.fDefaultPrior)
         comp.fDoSpectraPlot = "lineary"
         comp.fDoRatioPlot = "lineary"
@@ -400,14 +408,19 @@ class DMesonJetUnfoldingEngine:
         if len(spectra) < 1:
             return
         comp = DMesonJetCompare.DMesonJetCompare("{0}_Priors".format(self.fName))
-        if self.fName.startswith("JetZ"):
-            comp.fX1LegRatio = 0.15
-            comp.fX2LegRatio = 0.50
+        comp.fX1LegSpectrum = 0.20
+        comp.fX2LegSpectrum = 0.90
+        comp.fLogUpperSpace = 5
+        comp.fX1LegRatio = 0.20
+        comp.fX2LegRatio = 0.90
+        comp.fLinUpperSpace = 0.5
         comp.fOptSpectrum = "hist"
         comp.fOptRatio = "hist"
         comp.fYaxisRatio = yaxisRatio
-        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
-        else: comp.fDoSpectraPlot = "logy"
+        if self.fVariableName == "JetZ":
+            comp.fDoSpectraPlot = "lineary"
+        else:
+            comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
@@ -720,12 +733,20 @@ class DMesonJetUnfoldingEngine:
         c.cd()
         globalList.append(c)
 
-        leg = ROOT.TLegend(0.55, 0.70, 0.85, 0.87)
+        leg_x_min = 0.28
+        leg_x_max = 0.64
+        leg_y_min = 0.71
+        leg_y_max = 0.88
+
+        leg = ROOT.TLegend(leg_x_min, leg_y_min, leg_x_max, leg_y_max)
         globalList.append(leg)
         leg.SetFillStyle(0)
         leg.SetBorderSize(0)
         leg.SetTextFont(43)
-        leg.SetTextSize(16)
+        leg.SetTextSize(19)
+        leg.SetMargin(0.1)
+
+        logy = False
 
         if self.fTruthSpectrum:
             truth = self.fTruthSpectrum.DrawCopy("hist")
@@ -738,7 +759,9 @@ class DMesonJetUnfoldingEngine:
             truth.SetFillStyle(1001)
             truth.SetLineColor(ROOT.kOrange + 2)
             leg.AddEntry(truth, "Truth", "f")
-            if self.fTruthSpectrum.GetMinimum() > 0 and self.fVariableName != "JetZ": c.SetLogy()
+            if self.fTruthSpectrum.GetMinimum() > 0 and self.fVariableName != "JetZ":
+                c.SetLogy()
+                logy = True
         else:
             truth = None
 
@@ -746,9 +769,12 @@ class DMesonJetUnfoldingEngine:
             meas = self.fInputSpectrum.DrawCopy("same")
         else:
             meas = self.fInputSpectrum.DrawCopy()
-            if self.fInputSpectrum.GetMinimum() > 0 and self.fVariableName != "JetZ": c.SetLogy()
+            if self.fInputSpectrum.GetMinimum() > 0 and self.fVariableName != "JetZ":
+                c.SetLogy()
+                logy = True
         globalList.append(meas)
         meas.SetName("{0}_{1}_{2}_{3}".format(meas, method, reg, prior))
+        meas.GetYaxis().SetTitle("yield")
         meas.SetMarkerStyle(ROOT.kFullCircle)
         meas.SetMarkerColor(ROOT.kRed + 2)
         meas.SetMarkerSize(0.9)
@@ -764,6 +790,59 @@ class DMesonJetUnfoldingEngine:
         unfolded.SetLineColor(ROOT.kBlue + 2)
         leg.AddEntry(unfolded, "{0}, reg={1}, prior={2}".format(method, reg, prior), "pe")
 
+        print("check here")
+        def relative_position(ibin):
+            tot_x_range = meas.GetXaxis().GetXmax() - meas.GetXaxis().GetXmin()
+            print("tot_x_range = {}".format(tot_x_range))
+ 
+            rel_pos_in_axis_low = (meas.GetXaxis().GetBinLowEdge(ibin) - meas.GetXaxis().GetXmin()) / tot_x_range
+            print("rel_pos_in_axis_low = {}".format(rel_pos_in_axis_low))
+            rel_pos_in_canvas_low = rel_pos_in_axis_low * (1 - (ROOT.gPad.GetLeftMargin() + ROOT.gPad.GetRightMargin())) + ROOT.gPad.GetLeftMargin()
+            print("rel_pos_in_canvas_low = {}".format(rel_pos_in_canvas_low))
+
+            rel_pos_in_axis_up = (meas.GetXaxis().GetBinUpEdge(ibin) - meas.GetXaxis().GetXmin()) / tot_x_range
+            print("rel_pos_in_axis_up = {}".format(rel_pos_in_axis_up))
+            rel_pos_in_canvas_up = rel_pos_in_axis_up * (1 - (ROOT.gPad.GetLeftMargin() + ROOT.gPad.GetRightMargin())) + ROOT.gPad.GetLeftMargin()
+            print("rel_pos_in_canvas_up = {}".format(rel_pos_in_canvas_up))
+
+            return rel_pos_in_canvas_low, rel_pos_in_canvas_up
+        
+        ymax = None
+        ymin = None
+        for ibin in range(1,meas.GetNbinsX()+1):
+            if not ymin or meas.GetBinContent(ibin) - meas.GetBinError(ibin) < ymin:
+                if not logy or meas.GetBinContent(ibin) - meas.GetBinError(ibin) > 0:
+                    ymin = meas.GetBinContent(ibin) - meas.GetBinError(ibin)
+            if not ymin or unfolded.GetBinContent(ibin) - unfolded.GetBinError(ibin) < ymin:
+                if not logy or unfolded.GetBinContent(ibin) - unfolded.GetBinError(ibin) > 0:
+                    ymin = unfolded.GetBinContent(ibin) - unfolded.GetBinError(ibin)
+
+            rel_pos_in_axis_low, rel_pos_in_axis_up = relative_position(ibin)
+            if rel_pos_in_axis_up < leg_x_min or rel_pos_in_axis_low > leg_x_max:
+                continue
+            if not ymax or meas.GetBinContent(ibin) + meas.GetBinError(ibin) > ymax:
+                ymax = meas.GetBinContent(ibin) + meas.GetBinError(ibin)
+            if not ymax or unfolded.GetBinContent(ibin) + unfolded.GetBinError(ibin) > ymax:
+                ymax = unfolded.GetBinContent(ibin) + unfolded.GetBinError(ibin)
+        
+        if ymax and ymin and ymax > ymin:
+            print("ymax = {}".format(ymax))
+            rel_leg_h = (1 - leg_y_min + 0.05) / (1 - (ROOT.gPad.GetTopMargin() + ROOT.gPad.GetBottomMargin()))
+            print("rel_leg_h = {}".format(rel_leg_h))
+            if logy:
+                print("math.log10(ymax) = {}".format(math.log10(ymax)))
+                print("math.log10(ymin) = {}".format(math.log10(ymin)))
+                frame_h = (math.log10(ymax) - math.log10(ymin)) * (1 + rel_leg_h)
+                print("frame_h = {}".format(frame_h))
+                new_ymax = 10 ** (frame_h + math.log10(ymin))
+                print("new_ymax = {}".format(new_ymax))
+            else:
+                frame_h = (ymax - ymin) * (1 + rel_leg_h)
+                print("frame_h = {}".format(frame_h))
+                new_ymax = frame_h + ymin
+                print("new_ymax = {}".format(new_ymax))
+            if new_ymax > meas.GetMaximum():
+                meas.SetMaximum(new_ymax)
         refolded = self.fRefoldedSpectra[(method, reg, prior)].DrawCopy("same")
         globalList.append(refolded)
         refolded.SetName("{0}_{1}_{2}_{3}".format(refolded.GetName(), method, reg, prior))
@@ -845,8 +924,15 @@ class DMesonJetUnfoldingEngine:
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingMethod".format(self.fName))
         comp.fYaxisRatio = yaxisRatio
+        comp.fX1LegSpectrum = 0.30
+        comp.fX2LegSpectrum = 0.90
+        comp.fLogUpperSpace = 5
+        comp.fX1LegRatio = 0.25
+        comp.fX2LegRatio = 0.90
+        comp.fLinUpperSpace = 0.5
         comp.fOptRatio = "hist"
-        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
+        if self.fVariableName == "JetZ":
+            comp.fDoSpectraPlot = "lineary"
         else: comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
@@ -870,6 +956,7 @@ class DMesonJetUnfoldingEngine:
             reg = self.GetDefaultRegularization(method, self.fDefaultPrior)
             baselineId = (method, reg, self.fDefaultPrior)
             baseline = self.fUnfoldedSpectra[baselineId].Clone("{0}_copy".format(self.fUnfoldedSpectra[baselineId].GetName()))
+            baseline.SetTitle(self.fDefaultPrior)
             yaxisRatio = "Prior = x / Prior = {0}".format(self.fDefaultPrior)
         globalList.append(baseline)
         spectra = []
@@ -879,20 +966,26 @@ class DMesonJetUnfoldingEngine:
             if id == baselineId:
                 continue
             h = self.fUnfoldedSpectra[id].Clone("{0}_copy".format(self.fUnfoldedSpectra[id].GetName()))
+            h.SetTitle(prior)
             spectra.append(h)
             globalList.append(h)
 
         comp = DMesonJetCompare.DMesonJetCompare("{0}_UnfoldingPrior_{1}".format(self.fName, method))
-        if self.fName.startswith("JetZ"):
-            comp.fX1LegRatio = 0.15
-            comp.fX2LegRatio = 0.50
+        comp.fX1LegSpectrum = 0.30
+        comp.fX2LegSpectrum = 0.90
+        comp.fLogUpperSpace = 5
+        comp.fX1LegRatio = 0.20
+        comp.fX2LegRatio = 0.90
+        comp.fLinUpperSpace = 0.5
         comp.fYaxisRatio = yaxisRatio
         comp.fOptRatio = "hist"
         comp.fColors = comp.fColors[1:]
         comp.fLines = comp.fLines[1:]
         comp.fMarkers = comp.fMarkers[1:]
-        if self.fVariableName == "JetZ": comp.fDoSpectraPlot = "lineary"
-        else: comp.fDoSpectraPlot = "logy"
+        if self.fVariableName == "JetZ":
+            comp.fDoSpectraPlot = "lineary"
+        else:
+            comp.fDoSpectraPlot = "logy"
         comp.fDoRatioPlot = "lineary"
         r = comp.CompareSpectra(baseline, spectra)
         for obj in r:
@@ -910,8 +1003,8 @@ class DMesonJetUnfoldingEngine:
                 unfolded = unfold.Hreco()
                 if not prior in self.fSvdDvectors.keys():
                     dvector = unfold.Impl().GetD().Clone("{0}_SvdDvector_Prior{1}".format(self.fName, prior))
-                    dvector.GetXaxis().SetTitle("k")
-                    dvector.GetYaxis().SetTitle("d")
+                    dvector.GetXaxis().SetTitle("#it{k}")
+                    dvector.GetYaxis().SetTitle("#it{d}")
                     self.fSvdDvectors[prior] = dvector
 
                 unfolded.SetName("{0}_UnfoldedSpectrum_{1}_Reg{2}_Prior{3}".format(self.fName, "Svd", reg, prior))
@@ -1017,6 +1110,7 @@ class DMesonJetUnfoldingEngine:
             binBybinCorrFactors = resp.fResponse.ProjectionY("{0}_BinByBinCorrectionFactors_Prior{1}".format(self.fName, prior))
             binBybinCorrFactors.SetTitle("{0} Correction Factors, prior={1}".format("BinByBin", prior))
             binBybinCorrFactors.Divide(resp.fResponse.ProjectionX())
+            binBybinCorrFactors.GetYaxis().SetTitle("#it{F}")
             self.fBinByBinCorrectionFactors[prior] = binBybinCorrFactors
 
             unfold = ROOT.RooUnfoldBinByBin(resp.fRooUnfoldResponse, self.fInputSpectrum)
@@ -1142,6 +1236,7 @@ class DMesonJetUnfoldingEngine:
             priorHist = self.GetCustomPrior(prior)
             axisCompare = DMesonJetUtils.AxisCompare.CheckConsistency(priorHist.GetXaxis(), self.fDetectorTrainTruth.GetXaxis())
 
+        priorHist.GetYaxis().SetTitle("arb. units")
         return priorHist, axisCompare
 
     def NormalizeResponseMatrix(self, prior):
