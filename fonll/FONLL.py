@@ -83,9 +83,14 @@ class MCGEN:
         if not mesonlist:
             print("Could not get list {0} from file {1}".format(mesonlistname, self.file_name))
             return
-        spectrum = mesonlist.FindObject(self.spectrum_name)
+        spectrumlist = mesonlist.FindObject(self.spectrum_name)
+        if not spectrumlist:
+            print("Could not get list {0} from list {1} in file {2}".format(self.spectrum_name, mesonlistname, self.file_name))
+            return
+        spectrum = spectrumlist.FindObject(self.spectrum_name + "_Normalized")
         if not spectrum:
-            print("Could not get histogram {0} from list {1} in file {2}".format(self.spectrum_name, mesonlistname, self.file_name))
+            print("Could not get histogram {} from list {}/{} in file {}".format(self.spectrum_name + "_Normalized", mesonlistname, self.spectrum_name, self.file_name))
+            mesonlist.Print()
             return
         self.spectrum = spectrum.Clone(self.name)
         self.spectrum.SetTitle(self.title)
@@ -209,9 +214,10 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         g.Draw("A3")
     elif compare == "fastsim":
         print("Compare with fastsim")
-        file_name = " /Volumes/DATA/ALICE/JetResults/FastSim_{gen}_{proc}_{ts}/stage_1/output/FastSimAnalysis_{gen}_{proc}_{ts}.root".format(gen=gen, proc=proc, ts=ts)
+        file_name = " /Volumes/DATA/ALICE/JetResults/FastSim_{gen}_{proc}_{ts}/FastSimAnalysis_bbbar_{gen}_{proc}_{ts}.root".format(gen=gen, proc=proc, ts=ts)
         MCGEN_data = MCGEN("POWHEG_7TeV", "POWHEG_7TeV", file_name, spectrum)
         h = MCGEN_data.spectrum
+        print(h.GetBinContent(10))
         globalList.append(h)
 
         h_new = GenerateGraphFromHist(h)
@@ -225,7 +231,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         g_new.SetMarkerSize(0.9)
         g_new.SetMarkerColor(ROOT.kBlue+2)
         g_new.SetLineColor(ROOT.kBlue+2)
-        g_new.SetFillColor(ROOT.kCyan+1)
+        g_new.SetFillColor(ROOT.kCyan - 10)
         h_new.SetMarkerStyle(ROOT.kOpenCircle)
         h_new.SetMarkerSize(0.9)
         h_new.SetMarkerColor(ROOT.kRed+2)
@@ -254,7 +260,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         unc_g.SetMarkerSize(0.9)
         unc_g.SetMarkerColor(ROOT.kBlue+2)
         unc_g.SetLineColor(ROOT.kBlue+2)
-        unc_g.SetFillColor(ROOT.kCyan+1)
+        unc_g.SetFillColor(ROOT.kCyan - 10)
         ratio_h.SetMarkerStyle(ROOT.kOpenCircle)
         ratio_h.SetMarkerSize(0.9)
         ratio_h.SetMarkerColor(ROOT.kRed+2)
@@ -277,7 +283,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         g_new.SetMarkerSize(0.9)
         g_new.SetMarkerColor(ROOT.kBlue+2)
         g_new.SetLineColor(ROOT.kBlue+2)
-        g_new.SetFillColor(ROOT.kCyan+1)
+        g_new.SetFillColor(ROOT.kCyan - 10)
         g2.SetMarkerStyle(ROOT.kOpenCircle)
         g2.SetMarkerSize(0.9)
         g2.SetMarkerColor(ROOT.kRed+2)
@@ -307,7 +313,7 @@ def main(fonll_file, spectrum, gen, proc, ts, compare, fonll_file_2):
         unc_g.SetMarkerSize(0.9)
         unc_g.SetMarkerColor(ROOT.kBlue+2)
         unc_g.SetLineColor(ROOT.kBlue+2)
-        unc_g.SetFillColor(ROOT.kCyan+1)
+        unc_g.SetFillColor(ROOT.kCyan - 10)
         ratio_g2.SetMarkerStyle(ROOT.kOpenCircle)
         ratio_g2.SetMarkerSize(0.9)
         ratio_g2.SetMarkerColor(ROOT.kRed+2)
@@ -325,7 +331,7 @@ if __name__ == '__main__':
     parser.add_argument("--compare", metavar='COMP',
                         default=None)
     parser.add_argument('--spectrum', metavar='spectrum',
-                        default="D0_MCTruth_D_Pt_Spectrum_Normalized")
+                        default="D0_MCTruth_DPtSpectrum")
     parser.add_argument('--gen', metavar='GEN',
                         default="powheg")
     parser.add_argument('--proc', metavar='PROC',
