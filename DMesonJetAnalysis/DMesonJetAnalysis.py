@@ -71,7 +71,7 @@ class DMesonJetAnalysisEngine:
         self.fMaxMass = maxMass
         self.fCanvases = []
         self.fEvents = 0
-        self.fIsWeighted = not (self.fProjector.fWeight == 1)
+        self.fIsWeighted = (self.fProjector.fMergingType != "simple_sum")
 
         for jetDef in self.fJetDefinitions:
             if "active" in jetDef and not jetDef["active"]:
