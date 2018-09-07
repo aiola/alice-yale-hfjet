@@ -16,7 +16,6 @@ from enum import Enum
 
 globalList = []
 
-
 def ResetTHnFilters(hn):
     for iaxis in range(0, hn.GetNdimensions()):
         hn.GetAxis(iaxis).SetRange(0, -1)
@@ -423,6 +422,7 @@ class TrackingQA:
             cname = "{}_{}".format(name, var.GetName())
             h = histograms[var.GetName()].GetFullHistogram(False)
             c = ROOT.TCanvas(cname, cname)
+            c.SetLogz()
             h.Draw("colz")
             globalList.append(c)
 
@@ -435,6 +435,12 @@ class TrackingQA:
             comp.fDoRatioPlot = "logy"
             comp.fX1LegRatio = 0.15
             comp.fX2LegRatio = 0.50
+            comp.fX1LegSpectrum = 0.15
+            comp.fX2LegSpectrum = 0.50
+            if "Pt" in comp_name:
+                comp.fY1LegSpectrum = 0.33
+            else:
+                comp.fY1LegSpectrum = 0.87
             if var.fLogy:
                 comp.fDoSpectraPlot = "logy"
             else:
@@ -521,8 +527,8 @@ class TrackingQA:
             baseline = histograms[var.GetName()].GetFullProfile()
             histos = histograms[var.GetName()].GetPartialProfiles()
             results = comp.CompareSpectra(baseline, histos)
-            if comp.fMainHistogram.GetMaximum() > 0.3:
-                comp.fMainHistogram.GetYaxis().SetRangeUser(0, 0.3)
+            #if comp.fMainHistogram.GetMaximum() > 0.3:
+            #    comp.fMainHistogram.GetYaxis().SetRangeUser(0, 0.3)
             for r in results:
                 if isinstance(r, ROOT.TCanvas):
                     self.fCanvases.append(r)
@@ -551,7 +557,6 @@ class TrackingQA:
             fname = "{}/{}/{}.pdf".format(self.fInputPath, self.fTrain, c.GetName())
             c.SaveAs(fname)
 
-
 def main(input_path, train):
     ROOT.TH1.AddDirectory(False)
     ROOT.gStyle.SetOptTitle(0)
@@ -565,7 +570,6 @@ def main(input_path, train):
     qa.CalculateFakeRate()
     qa.Plot()
     qa.SaveCanvases()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Tracking QA.')
