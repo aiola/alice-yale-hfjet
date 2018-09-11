@@ -160,12 +160,13 @@ def PlotFSspectraAndSyst(spectra, results):
         stat_copy.SetMarkerStyle(ROOT.kFullCircle)
         stat_copy.SetMarkerSize(0.8)
         stat_copy.SetLineColor(ROOT.kBlue + 1)
-        if "JetZ" in name:
+        if "JetZ" in name or ("JetPt" in name and "Ratio" in name):
             leg = ROOT.TLegend(0.15, 0.76, 0.70, 0.94, "NB")
             xtot_range = syst_copy.GetHistogram().GetMaximum() - syst_copy.GetHistogram().GetMinimum()
             syst_copy.GetHistogram().SetMaximum(syst_copy.GetHistogram().GetMaximum() + xtot_range * 0.2)
         else:
             leg = ROOT.TLegend(0.35, 0.76, 0.89, 0.94, "NB")
+
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(43)
@@ -317,28 +318,10 @@ def GenerateSystematicUncertainty(baseline, spectra, normalization, spectra_add)
     asymmetricTotUncGraph.SetName("{0}_CentralTotAsymmSyst".format(hname))
     asymmetricTotUncGraph.GetXaxis().SetTitle(baseline.GetXaxis().GetTitle())
 
-    if "it{p}" in baseline.GetXaxis().GetTitle():
-        if normalization == "cross_section":
-            symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-            asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-            symmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-            asymmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{p}_{T}} [(mb) (GeV/#it{c})^{-1}]")
-        elif normalization == "distribution":
-            symmetricUncGraph.GetYaxis().SetTitle("Probability Density (GeV/#it{c})^{-1}")
-            asymmetricUncGraph.GetYaxis().SetTitle("Probability Density (GeV/#it{c})^{-1}")
-            symmetricTotUncGraph.GetYaxis().SetTitle("Probability Density (GeV/#it{c})^{-1}")
-            asymmetricTotUncGraph.GetYaxis().SetTitle("Probability Density (GeV/#it{c})^{-1}")
-    elif "it{z}" in baseline.GetXaxis().GetTitle():
-        if normalization == "cross_section":
-            symmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||}^{ch}} (mb)")
-            asymmetricUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||}^{ch}} (mb)")
-            symmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||}^{ch}} (mb)")
-            asymmetricTotUncGraph.GetYaxis().SetTitle("#frac{d#sigma}{d#it{z}_{||}^{ch}} (mb)")
-        elif normalization == "distribution":
-            symmetricUncGraph.GetYaxis().SetTitle("Probability Density")
-            asymmetricUncGraph.GetYaxis().SetTitle("Probability Density")
-            symmetricTotUncGraph.GetYaxis().SetTitle("Probability Density")
-            asymmetricTotUncGraph.GetYaxis().SetTitle("Probability Density")
+    symmetricUncGraph.GetYaxis().SetTitle(baseline.GetYaxis().GetTitle())
+    asymmetricUncGraph.GetYaxis().SetTitle(baseline.GetYaxis().GetTitle())
+    symmetricTotUncGraph.GetYaxis().SetTitle(baseline.GetYaxis().GetTitle())
+    asymmetricTotUncGraph.GetYaxis().SetTitle(baseline.GetYaxis().GetTitle())
 
     result[symmetricUncGraph.GetName()] = symmetricUncGraph
     result[asymmetricUncGraph.GetName()] = asymmetricUncGraph
