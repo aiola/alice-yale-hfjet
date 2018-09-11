@@ -908,12 +908,23 @@ def LoadFDHistogram(file_name, spectra, scaling_factor):
             print("File {0} open".format(file_name))
         dlist = file.Get("D0_MCTruth")
         jlist = dlist.FindObject("Charged_R040")
-        slist = jlist.FindObject("D0_MCTruth_Charged_R040_{}".format(spectrum_name))
+        jet_def = "Charged_R040"
+        if not jlist:
+            jlist = dlist.FindObject("Charged_R040_pt")
+            jet_def = "Charged_R040_pt_scheme"
+        if not jlist:
+            jlist = dlist.FindObject("Charged_R040_pt_scheme")
+            jet_def = "Charged_R040_pt_scheme"
+        if not jlist:
+            print("MCSimulationSystematics.LoadFDHistogram: was not able to load jet list!")
+            exit(1)
+
+        slist = jlist.FindObject("D0_MCTruth_{}_{}".format(jet_def, spectrum_name))
         if not slist:
             print("Could not find list '{}' ({})!".format(spectrum_name, jet_var_name))
             jlist.Print()
             exit(1)
-        jet_hist = slist.FindObject("D0_MCTruth_Charged_R040_{}".format(spectrum_name))
+        jet_hist = slist.FindObject("D0_MCTruth_{}_{}".format(jet_def, spectrum_name))
         if not jet_hist:
             print("Could not find FD histogram '{}' ({})!".format(spectrum_name, jet_var_name))
             slist.Print()
