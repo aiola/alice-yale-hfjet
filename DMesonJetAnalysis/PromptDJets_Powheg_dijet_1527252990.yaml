@@ -122,8 +122,8 @@ variations:
   active: yes
   systematic: yes
   title: "Central Values"
-  ts: 1527252990
-  inclusive_ts: 1527252990
+  ts: 1531408721+1527252990
+  inclusive_ts: 1531408721
   #stage: 2
 -
   name: PDF_MSTW2008nlo68cl
@@ -170,8 +170,8 @@ variations:
   active: yes
   systematic: yes
   title: "#mu_{F} = 2.0, #mu_{R} = 1.0"
-  ts: 1529998246
-  inclusive_ts: 1529998246
+  ts: 1531653259+1529998246
+  inclusive_ts: 1531653259
   #stage: 0
 -
   name: facscfact1_renscfact2
