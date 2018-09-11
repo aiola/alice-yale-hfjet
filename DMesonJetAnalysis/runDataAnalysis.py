@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # python script to run the D meson jet analysis on 2010 pp data
 
+import os
 import argparse
 import subprocess
 import yaml
@@ -41,20 +42,35 @@ def main(config, maxEvents, fmt, gen, proc, ts, stage, ask, bg):
         collision += config["collision_system"]
 
         name = "{0}_{1}".format(config["name"], suffix)
-
-        input_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
-
-        if stage >= 0:
-            input_path += "stage_{0}/output".format(stage)
-            if config["train"] == "FastSimOld":
-                file_name = "AnalysisResults_FastSim_{0}.root".format(suffix)
-            else:
-                file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
-        else:
-            input_path += "output"
-            file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
-        train = ""
         output_path = "{0}/FastSim_{1}/".format(config["input_path"], suffix)
+
+        many_ts = ts.split("+")
+        if isinstance(stage, str) and "+" in stage:
+            many_stage = [int(obj) for obj in stage.split("+")]
+        elif (isinstance(stage, str) and stage.isdigit()) or isinstance(stage, (int, long)):
+            many_stage = [stage] * len(many_ts)
+        else:
+            print("Could not parse 'stage' option '{}'".format(stage))
+            exit(1)
+        input_path = []
+        file_name = []
+        for iter_ts, iter_stage in zip(many_ts, many_stage):
+            iter_suffix = "{0}_{1}_{2}".format(gen, proc, iter_ts)
+            iter_input_path = "{0}/FastSim_{1}/".format(config["input_path"], iter_suffix)
+
+            if iter_stage >= 0:
+                iter_input_path += "stage_{0}/output".format(iter_stage)
+                if config["train"] == "FastSimOld":
+                    iter_file_name = "AnalysisResults_FastSim_{0}.root".format(iter_suffix)
+                else:
+                    iter_file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
+            else:
+                iter_input_path += "output"
+                iter_file_name = "AnalysisResults_FastSim_{0}_{1}.root".format(gen, proc)
+            input_path.append(iter_input_path)
+            file_name.append(iter_file_name)
+
+        train = ""
         reflection_templates = None
     else:
         collision = config["collision_system"]
@@ -75,6 +91,10 @@ def main(config, maxEvents, fmt, gen, proc, ts, stage, ask, bg):
     else:
         tree_type = "simple"
 
+    print("The output will be stored in '{}'.".format(output_path))
+    if not os.path.isdir(output_path):
+        os.makedirs(output_path)
+
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
     projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], tree_type, config["merging_type"], norm_factor, maxEvents)
     projector.fDoNotAsk = not ask
@@ -86,7 +106,6 @@ def main(config, maxEvents, fmt, gen, proc, ts, stage, ask, bg):
     ana.SaveRootFile("{0}/{1}".format(output_path, train))
     ana.SavePlots("{0}/{1}".format(output_path, train), fmt)
     ana.SavePlots("{0}/{1}".format(output_path, train), "C")
-
 
 if __name__ == '__main__':
 
@@ -104,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument('--ts', metavar='TS',
                         default=None)
     parser.add_argument('--stage', metavar='N',
-                        default=-1, type=int)
+                        default=-1)
     parser.add_argument('-a', metavar='a', help='Ask before starting each analysis cycle',
                         action='store_const', default=False, const=True)
     parser.add_argument('-b', action='store_const',

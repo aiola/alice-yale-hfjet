@@ -14,9 +14,15 @@ import DetectorResponseLoader
 class DMesonJetProjector:
 
     def __init__(self, inputPath, train, fileName, taskName, tree_type, merging_type, norm_factor, maxEvents):
-        self.fInputPath = inputPath
+        if not isinstance(inputPath, list):
+            self.fInputPath = [inputPath]
+        else:
+            self.fInputPath = inputPath
+        if not isinstance(fileName, list):
+            self.fFileName = [fileName]
+        else:
+            self.fFileName = fileName
         self.fTrain = train
-        self.fFileName = fileName
         self.fTaskName = taskName
         self.fMaxEvents = maxEvents
         self.fChain = None
@@ -39,12 +45,15 @@ class DMesonJetProjector:
 
     def GenerateChain(self, treeName):
         self.fChain = ROOT.TChain(treeName)
-        path = "{0}/{1}".format(self.fInputPath, self.fTrain)
+        self.fFilePaths = []
 
-        print("Looking for file {0} in path {1}".format(self.fFileName, path))
-        self.fFilePaths = list(DMesonJetUtils.find_file(path, self.fFileName))
+        for input_path, file_name in zip(self.fInputPath, self.fFileName):
+            path = "{0}/{1}".format(input_path, self.fTrain)
+
+            print("Looking for file {0} in path {1}".format(file_name, path))
+            self.fFilePaths.extend(DMesonJetUtils.find_file(path, file_name))
+            
         self.fNFiles = len(self.fFilePaths)
-
         for myfile in self.fFilePaths:
             print("Adding file {0}...".format(myfile))
             self.fChain.Add(myfile)
