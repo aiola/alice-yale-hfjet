@@ -4,6 +4,9 @@ train: FastSim
 file_name: ""
 task_name: AliAnalysisTaskEmcalJetTree
 merging_type: explicit_weight
+reject_outliers: yes
+outlier_pt_hard_jet_factor: 0.5
+outlier_jet_def: Jet_AKTFullR040_mcparticles_pT0000_pt_scheme
 jets: 
 -
   branch: Jet_AKTChargedR040_mcparticles_pT0000_pt_scheme

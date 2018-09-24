@@ -76,6 +76,17 @@ class ProjectInclusiveJetSpectra:
         self.fName = self.fConfig["name"]
         self.fWeight = 1.0
         self.fMaxEvents = events
+        if "max_pt_hard" in self.fConfig:
+            self.fMaxPtHard = self.fConfig["max_pt_hard"]
+        else:
+            self.fMaxPtHard = -1
+
+        if "reject_outliers" in config and config["reject_outliers"]:
+            self.fRejectOutliers = True
+            self.fOutlierPtHardJetFactor = config["outlier_pt_hard_jet_factor"]
+            self.fOutlierJetDef = config["outlier_jet_def"]
+        else:
+            self.fRejectOutliers = False
 
         self.fCuts = self.fConfig["cuts"]
         self.fJetBranches = self.fConfig["jets"]
@@ -150,6 +161,16 @@ class ProjectInclusiveJetSpectra:
 
             self.fHistograms[jet_branch["name"]] = histograms
 
+    def VerifyPtHardOutlier(self, event):
+        pt_hard = event.Event.fPtHard
+        jets = getattr(event, self.fOutlierJetDef)
+        max_jet_pt = pt_hard / self.fOutlierPtHardJetFactor
+        for jet in jets:
+            jet_pt = jet.fPt
+            if jet_pt > max_jet_pt:
+                return False
+        return True 
+
     def ProjectTree(self):
         print("Total number of events: {}".format(self.fTree.GetEntries()))
         if self.fMaxEvents > 0 and self.fMaxEvents < self.fTree.GetEntries():
@@ -164,7 +185,12 @@ class ProjectInclusiveJetSpectra:
             self.OnFileChange()
             if self.fMergingType == "explicit_weight": 
                 self.GetExplicitWeight(entry)
-
+            if self.fMaxPtHard > 0 and entry.Event.fPtHard > self.fMaxPtHard:
+                print("Skipping event {} with pT,hard = {} and weight = {}".format(i, entry.Event.fPtHard, self.fWeight))
+                continue
+            if self.fRejectOutliers and not self.VerifyPtHardOutlier(entry):
+                print("Skipping event {} with pT,hard = {} and weight = {}".format(i, entry.Event.fPtHard, self.fWeight))
+                continue
             for jet_branch in self.fJetBranches:
                 histograms = self.fHistograms[jet_branch["name"]]
                 for h in histograms.itervalues():
@@ -179,9 +205,11 @@ class ProjectInclusiveJetSpectra:
                         if v > c["min"] or v >= c["max"]:
                             bad = True
                             break
-                    if bad: break
+                    if bad:
+                        break
                     for h in histograms.itervalues():
-                        if h.fType != VariableType.Jet: continue
+                        if h.fType != VariableType.Jet:
+                            continue
                         h.Fill(jet, self.fWeight)
 
     def GetExplicitWeight(self, entry):

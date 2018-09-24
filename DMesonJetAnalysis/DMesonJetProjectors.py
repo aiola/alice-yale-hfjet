@@ -13,7 +13,7 @@ import DetectorResponseLoader
 
 class DMesonJetProjector:
 
-    def __init__(self, inputPath, train, fileName, taskName, tree_type, merging_type, norm_factor, maxEvents):
+    def __init__(self, inputPath, train, fileName, taskName, tree_type, merging_type, norm_factor, maxEvents, maxPtHard = -1, reject_outliers = False):
         if not isinstance(inputPath, list):
             self.fInputPath = [inputPath]
         else:
@@ -23,6 +23,7 @@ class DMesonJetProjector:
         else:
             self.fFileName = fileName
         self.fTrain = train
+        self.fMaxPtHard = maxPtHard
         self.fTaskName = taskName
         self.fMaxEvents = maxEvents
         self.fChain = None
@@ -40,6 +41,12 @@ class DMesonJetProjector:
         self.fNormFactor = norm_factor
         self.fDoNotAsk = True
         self.fFilePaths = None
+        if reject_outliers:
+            self.fRejectOutliers = True
+            self.fOutlierPtHardJetFactor = reject_outliers["outlier_pt_hard_jet_factor"]
+            self.fOutlierJetDef = reject_outliers["outlier_jet_def"]
+        else:
+            self.fRejectOutliers = False
         if self.fNormFactor > 1 or self.fNormFactor < 1:
             print("An artificial normalization factor of {} is applied.".format(self.fNormFactor))
 
@@ -280,6 +287,16 @@ class DMesonJetProjector:
             print("Tree type '{}' not recognized.".format(self.fTreeType))
             exit(1)
 
+    def VerifyPtHardOutlier(self, event):
+        pt_hard = event.Event.fPtHard
+        jets = getattr(event, self.fOutlierJetDef)
+        max_jet_pt = pt_hard / self.fOutlierPtHardJetFactor
+        for jet in jets:
+            jet_pt = jet.fPt
+            if jet_pt > max_jet_pt:
+                return False
+        return True 
+
     def DoProjectionExtended(self, trigger, DMesonDef, DMesonDefSuffix, output, norm):
         class DMesonEvent:
             pass
@@ -295,6 +312,12 @@ class DMesonJetProjector:
             self.OnFileChange()
             if self.fMergingType == "explicit_weight": 
                 self.GetExplicitWeight(event)
+            if self.fMaxPtHard > -1 and event.Event.fPtHard > self.fMaxPtHard:
+                print("Skipping event {} with pT,hard = {} and weight = {}".format(i, event.Event.fPtHard, self.fWeight))
+                continue
+            if self.fRejectOutliers and not self.VerifyPtHardOutlier(event):
+                print("Skipping event {} with pT,hard = {} and weight = {}".format(i, event.Event.fPtHard, self.fWeight))
+                continue
             jet_branches = [getattr(event, jet_branch_name) for jet_branch_name in jet_branch_names]
             for dmeson_and_jets in zip(event.Dmesons, *jet_branches):
                 if idmeson % 10000 == 0:

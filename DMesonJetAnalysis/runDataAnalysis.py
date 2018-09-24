@@ -91,12 +91,24 @@ def main(config, maxEvents, fmt, gen, proc, ts, stage, ask, bg):
     else:
         tree_type = "simple"
 
+    if "max_pt_hard" in config:
+        max_pt_hard = config["max_pt_hard"]
+    else:
+        max_pt_hard = -1
+
+    if "reject_outliers" in config and config["reject_outliers"]:
+        reject_outliers = dict()
+        reject_outliers["outlier_pt_hard_jet_factor"] = config["outlier_pt_hard_jet_factor"]
+        reject_outliers["outlier_jet_def"] = config["outlier_jet_def"]
+    else:
+        reject_outliers = False
+
     print("The output will be stored in '{}'.".format(output_path))
     if not os.path.isdir(output_path):
         os.makedirs(output_path)
 
     ana = DMesonJetAnalysis.DMesonJetAnalysis(name)
-    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], tree_type, config["merging_type"], norm_factor, maxEvents)
+    projector = DMesonJetProjectors.DMesonJetProjector(input_path, train, file_name, config["task_name"], tree_type, config["merging_type"], norm_factor, maxEvents, max_pt_hard, reject_outliers)
     projector.fDoNotAsk = not ask
     ana.SetProjector(projector)
 

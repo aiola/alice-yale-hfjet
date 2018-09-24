@@ -7,6 +7,9 @@ task_name: AliAnalysisTaskDmesonJets
 tree_type: extended
 merging_type: explicit_weight
 collision_system: "pp #sqrt{#it{s}} = 7 TeV"
+reject_outliers: yes
+outlier_pt_hard_jet_factor: 0.5
+outlier_jet_def: Jet_AKTFullR040_pt_scheme
 analysis:
 - 
   trigger: [""]
