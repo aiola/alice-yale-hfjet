@@ -25,9 +25,9 @@ minr: 0.0
 maxr: 2.49
 title:
   text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
-  font_size: 18
-  x: 0.21
-  y: 0.88
+  font_size: 17
+  x: 0.20
+  y: 0.89
 axis:
   x_title: "#it{z}_{||}^{ch}"
   y_title:  "Probability Density"
@@ -35,15 +35,15 @@ axis:
   y_offset: 2.1
   font_size: 20
 theory_legend:
-  font_size: 16
+  font_size: 20
   n_columns: 1
   x: 0.22
-  y: 0.45
+  y: 0.53
 data_legend:
-  font_size: 16
+  font_size: 20
   combine_syst: no
   x: 0.22
-  y: 0.53
+  y: 0.40
 
 # MC definitions
 theory:
@@ -54,7 +54,7 @@ theory:
   file_name: PromptDJets_Powheg_ccbar_1483386026.root
   color: 602 # kBlue+2
   marker: kOpenCircle
-  fill: 3016
+  fill: 0 #3016
   systematics_style: "02"
 -
   title: POWHEG dijet + PYTHIA 6

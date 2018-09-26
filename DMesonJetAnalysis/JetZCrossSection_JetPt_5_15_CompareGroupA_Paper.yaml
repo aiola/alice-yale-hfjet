@@ -13,7 +13,7 @@ canvas_h: 600
 left_margin: 0.19
 bottom_margin: 0.27
 
-data_systematics_style: "0[]"
+data_systematics_style: "02"
 
 name_prefix: JetZCrossSection_JetPt_5_15
 normalization: CrossSection
@@ -38,12 +38,12 @@ axis:
   y_offset: 2.1
   font_size: 20
 theory_legend:
-  font_size: 16
+  font_size: 17
   n_columns: 1
   x: 0.22
 #  y: 0.42
 data_legend:
-  font_size: 16
+  font_size: 17
   combine_syst: no
   x: 0.21
 #  y: 0.55
@@ -57,9 +57,9 @@ theory:
   file_name: PromptDJets_Powheg_ccbar_1483386026.root
   color: 602 # kBlue+2
   marker: kOpenCircle
-  fill: 3016
+  fill: 0 #3016
 -
-  title: Herwig++ 7 MEPP2QQ
+  title: Herwig 7 MEPP2QQ
   active: yes
   gen: herwig
   proc: charm_lo

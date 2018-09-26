@@ -33,12 +33,12 @@ axis:
   y_offset: 2.1
   font_size: 20
 theory_legend:
-  font_size: 16
+  font_size: 17
   n_columns: 1
   x: 0.215
   y: 0.16
 data_legend:
-  font_size: 16
+  font_size: 17
   combine_syst: no
   x: 0.215
   y: 0.22
@@ -52,7 +52,7 @@ theory:
   file_name: PromptDJets_Powheg_ccbar_1483386026.root
   color: 602 # kBlue+2
   marker: kOpenCircle
-  fill: 3016
+  fill: 0 #3016
   systematics_style: "02"
 -
   title: POWHEG dijet + PYTHIA 6

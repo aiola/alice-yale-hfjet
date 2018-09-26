@@ -46,7 +46,7 @@ data_legend:
 # MC definitions
 theory:
 -
-  title: "PYTHIA 6 Perugia-2011, #it{p}_{T,D} > 3 GeV/#it{c}"
+  title: "PYTHIA 6 Perugia 2011, #it{p}_{T,D} > 3 GeV/#it{c}"
   active: yes
   gen: pythia6
   proc: charm
@@ -54,7 +54,7 @@ theory:
   color: 418 # kGreen+2
   line: 2
 -
-  title: "PYTHIA 6 Perugia-2011, #it{p}_{T,D} > 0"
+  title: "PYTHIA 6 Perugia 2011, #it{p}_{T,D} > 0"
   spectrum_name: JetPtSpectrum_DPt_0
   active: yes
   gen: pythia6

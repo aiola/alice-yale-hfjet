@@ -16,7 +16,7 @@ canvas_h: 600
 left_margin: 0.19
 bottom_margin: 0.27
 
-data_systematics_style: "0[]"
+data_systematics_style: "02"
 
 name_prefix: D0JetRateVsZ_JetPt_15_30
 data_minx: 0.4
@@ -24,7 +24,7 @@ data_maxx: 1.0
 miny: -0.009
 maxy: 0.36
 minr: 0
-maxr: 3.99
+maxr: 5.49
 title:
   text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4, 15 < #it{p}_{T,jet}^{ch} < 30 GeV/#it{c}", "|#it{#eta}_{jet}| < 0.5, with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}"]
   font_size: 17
@@ -37,12 +37,12 @@ axis:
   y_offset: 2.1
   font_size: 20
 theory_legend:
-  font_size: 16
+  font_size: 17
   n_columns: 1
   x: 0.215
   y: 0.68
 data_legend:
-  font_size: 16
+  font_size: 17
   combine_syst: no
   x: 0.215
   y: 0.36
@@ -50,7 +50,7 @@ data_legend:
 # MC definitions
 theory:
 -
-  title: PYTHIA 6 Perugia-2011
+  title: PYTHIA 6 Perugia 2011
   active: yes
   gen: pythia6
   proc: charm
@@ -58,13 +58,13 @@ theory:
   color: 857 # kAzure-3
   line: 2
   inclusive:
-    title: PYTHIA 6 Perugia-2011
+    title: PYTHIA 6 Perugia 2011
     gen: pythia6
     proc: mb
     ts: 1520882421
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
-  title: PYTHIA 8 Monash-2013
+  title: PYTHIA 8 Monash 2013
   active: yes
   gen: pythia8
   proc: charm
@@ -72,13 +72,13 @@ theory:
   color: 839 # kTeal-1
   line: 6
   inclusive:
-    title: PYTHIA 8 Monash-2013
+    title: PYTHIA 8 Monash 2013
     gen: pythia8
     proc: mb
     ts: 1521277750
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
-  title: Herwig++ 7 MEPP2QQ
+  title: Herwig 7 MEPP2QQ
   active: yes
   gen: herwig
   proc: charm_lo
@@ -86,13 +86,13 @@ theory:
   color: 903 # kPink+3
   line: 4
   inclusive:
-    title: Herwig++ 7 MEMinBias
+    title: Herwig 7 MEMinBias
     gen: herwig
     proc: mb
     ts: 1531819153
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
-  title: Herwig++ 7 MEMinBias
+  title: Herwig 7 MEMinBias
   active: yes
   gen: herwig
   proc: mb
@@ -100,13 +100,13 @@ theory:
   color: 797 # kOrange-3
   line: 5
   inclusive:
-    title: Herwig++ 7 MEMinBias
+    title: Herwig 7 MEMinBias
     gen: herwig
     proc: mb
     ts: 1531819153
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
 -
-  title: Herwig++ 7 MEQCD2to2
+  title: Herwig 7 MEQCD2to2
   active: no
   gen: herwig
   proc: dijet_lo
@@ -114,7 +114,7 @@ theory:
   color: 882 # kViolet+2
   line: 8
   inclusive:
-    title: Herwig++ 7 MEQCD2to2
+    title: Herwig 7 MEQCD2to2
     gen: herwig
     proc: dijet_lo
     ts: 1531074150

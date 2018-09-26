@@ -13,7 +13,7 @@ canvas_h: 600
 left_margin: 0.19
 bottom_margin: 0.27
 
-data_systematics_style: "0[]"
+data_systematics_style: "02"
 
 name_prefix: JetZCrossSection_JetPt_15_30
 normalization: CrossSection
@@ -38,14 +38,14 @@ axis:
   y_offset: 2.1
   font_size: 20
 theory_legend:
-  font_size: 16
+  font_size: 17
   n_columns: 1
-  x: 0.55
+  x: 0.535
   y: 0.83
 data_legend:
-  font_size: 16
+  font_size: 17
   combine_syst: no
-  x: 0.21
+  x: 0.215
   y: 0.32
 
 # MC definitions
@@ -57,7 +57,7 @@ theory:
   file_name: PromptDJets_Powheg_ccbar_1483386026.root
   color: 602 # kBlue+2
   marker: kOpenCircle
-  fill: 3016
+  fill: 0 #3016
 -
   title: POWHEG dijet + PYTHIA 6
   type: stat+syst

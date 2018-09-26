@@ -46,7 +46,7 @@ data_legend:
 # MC definitions
 theory:
 -
-  title: PYTHIA 6 Perugia-2011
+  title: PYTHIA 6 Perugia 2011
   active: no
   gen: pythia6
   proc: charm

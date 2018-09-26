@@ -25,9 +25,9 @@ minr: 0.0
 maxr: 5.49
 title:
   text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "15 < #it{p}_{T,jet}^{ch} < 30 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 6 GeV/#it{c}"]
-  font_size: 18
-  x: 0.21
-  y: 0.88
+  font_size: 17
+  x: 0.20
+  y: 0.89
 axis:
   x_title: "#it{z}_{||}^{ch}"
   y_title:  "Probability Density"
@@ -35,20 +35,20 @@ axis:
   y_offset: 2.1
   font_size: 20
 theory_legend:
-  font_size: 16
+  font_size: 20
   n_columns: 1
-  x: 0.205
+  x: 0.21
   y: 0.56
 data_legend:
-  font_size: 16
+  font_size: 20
   combine_syst: no
-  x: 0.23
+  x: 0.21
   y: 0.29
 
 # MC definitions
 theory:
 -
-  title: PYTHIA 6 Perugia-2011
+  title: PYTHIA 6 Perugia 2011
   active: yes
   gen: pythia6
   proc: charm
@@ -56,7 +56,7 @@ theory:
   color: 857 # kAzure-3
   line: 2
 -
-  title: PYTHIA 8 Monash-2013
+  title: PYTHIA 8 Monash 2013
   active: yes
   gen: pythia8
   proc: charm
@@ -64,7 +64,7 @@ theory:
   color: 819 # kSpring-1
   line: 6
 -
-  title: Herwig++ 7 MEPP2QQ
+  title: Herwig 7 MEPP2QQ
   active: yes
   gen: herwig
   proc: charm_lo
@@ -72,7 +72,7 @@ theory:
   color: 903 # kPink+3
   line: 4
 -
-  title: Herwig++ 7 MEMinBias
+  title: Herwig 7 MEMinBias
   active: yes
   gen: herwig
   proc: mb
