@@ -476,6 +476,7 @@ def main(config, nodata):
     GetTheoryCrossSectionAll(config, dataStat.GetXaxis())
     canvas = PlotCrossSections(dataStat, dataSyst, config, nodata)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
+    canvas.SaveAs("{}/{}.eps".format(config["input_path"], canvas.GetName()))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
 
 if __name__ == '__main__':

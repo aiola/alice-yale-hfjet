@@ -24,7 +24,7 @@ maxy: 4.0
 minr: 0.0
 maxr: 2.49
 title:
-  text: ["ALICE, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
+  text: ["ALICE Preliminary, pp, #sqrt{#it{s}} = 7 TeV", "Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.4", "5 < #it{p}_{T,jet}^{ch} < 15 GeV/#it{c}, |#it{#eta}_{jet}| < 0.5", "with D^{0}, #it{p}_{T,D} > 2 GeV/#it{c}"]
   font_size: 17
   x: 0.20
   y: 0.89
