@@ -93,7 +93,7 @@ def EfficiencyComparison(config_c, config_b):
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelSize(22)
 
-    paveALICE = ROOT.TPaveText(0.14, 0.60, 0.53, 0.95, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.14, 0.55, 0.53, 0.95, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
