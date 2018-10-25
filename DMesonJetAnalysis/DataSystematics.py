@@ -432,7 +432,7 @@ def PlotSystematicUncertaintySummary(name, results, legend_position):
     sourcesLow.append(tot_rel_syst_unc_low)
     colorsLow.append(ROOT.kRed + 2)
 
-    colorsPart = [ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2]
+    colorsPart = [ROOT.kGreen + 2, ROOT.kOrange + 2, ROOT.kAzure + 2, ROOT.kMagenta + 2, ROOT.kCyan + 2, ROOT.kPink + 1, ROOT.kTeal + 2, ROOT.kYellow + 2, ROOT.kSpring + 2]
     cont = 0
     for hUp, hLow in zip(results["Uncertainties"]["PartialSystematicUncertaintiesUp"], results["Uncertainties"]["PartialSystematicUncertaintiesLow"]):
         if hLow:

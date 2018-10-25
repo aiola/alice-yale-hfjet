@@ -25,6 +25,11 @@ fixed_uncertainties:
   uncertainty: 0.04
   plot: yes
 -
+  name: secondary_tracks_contamination
+  title: "Secondary Track Contamination"
+  uncertainty: 0.02
+  plot: yes
+-
   name: branching_ratio
   title: "Branching Ratio"
   uncertainty: 0.01
@@ -64,7 +69,7 @@ sources:
 -
   name: reflections
   active: yes
-  title: "Reflections"
+  title: "\\Dzero\\ Reflections"
   symmetrize: yes
   combine_strategy: envelope
   variations:

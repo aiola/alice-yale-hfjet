@@ -23,6 +23,11 @@ fixed_uncertainties:
   title: "Tracking Eff. (D-Meson)"
   uncertainty: 0.04
   plot: yes
+-
+  name: secondary_tracks_contamination
+  title: "Secondary Track Contamination"
+  uncertainty: 0.02
+  plot: yes
 sources:
 -
   name: tracking_efficiency
@@ -53,7 +58,7 @@ sources:
 -
   name: reflections
   active: yes
-  title: "Reflections"
+  title: "\\Dzero\\ Reflections"
   symmetrize: yes
   combine_strategy: envelope
   variations:
