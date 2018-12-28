@@ -42,6 +42,8 @@ def ResolutionComparison(config):
     comp.fMarkers = [ROOT.kFullCircle, ROOT.kFullSquare, ROOT.kFullDiamond,
                      ROOT.kOpenSquare, ROOT.kOpenDiamond]
     r = comp.CompareSpectra(histos[0], histos[1:])
+    histos[2].SetMarkerSize(2.2)
+    histos[4].SetMarkerSize(2.2)
     for obj in r:
         globalList.append(obj)
 
@@ -63,7 +65,8 @@ def ResolutionComparison(config):
     h.GetXaxis().SetLabelSize(22)
     h.GetXaxis().SetLabelOffset(0.02)
     h.GetXaxis().SetRangeUser(-0.6, 0.6)
-    h.GetXaxis().SetTitle("(#it{z}_{||, det}^{ch} #font[122]{-} #it{z}_{||, gen}^{ch}) / #it{z}_{||, gen}^{ch}")
+    #h.GetXaxis().SetTitle("(#it{z}_{||, det}^{ch} #font[122]{-} #it{z}_{||, gen}^{ch}) / #it{z}_{||, gen}^{ch}")
+    h.GetXaxis().SetTitle("#Delta_{#it{z}}")
     h.GetYaxis().SetTitleFont(43)
     h.GetYaxis().SetTitleSize(26)
     h.GetYaxis().SetLabelFont(43)

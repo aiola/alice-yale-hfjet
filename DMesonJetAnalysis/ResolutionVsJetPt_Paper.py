@@ -42,6 +42,7 @@ def ResolutionComparison(config):
     comp.fColors = [ROOT.kRed + 2, ROOT.kBlue + 2, ROOT.kGreen + 2]
     comp.fMarkers = [ROOT.kOpenCircle, ROOT.kOpenSquare, ROOT.kOpenDiamond]
     r = comp.CompareSpectra(histos[0], histos[1:])
+    histos[2].SetMarkerSize(2.2)
     for obj in r:
         globalList.append(obj)
 
@@ -56,7 +57,8 @@ def ResolutionComparison(config):
     h = comp.fMainHistogram
 
     h.GetYaxis().SetTitle("Probability Density")
-    h.GetXaxis().SetTitle("(#it{p}_{T,det jet}^{ch} #font[122]{-} #it{p}_{T,gen jet}^{ch}) / #it{p}_{T,gen jet}^{ch}")
+    #h.GetXaxis().SetTitle("(#it{p}_{T,det jet}^{ch} #font[122]{-} #it{p}_{T,gen jet}^{ch}) / #it{p}_{T,gen jet}^{ch}")
+    h.GetXaxis().SetTitle("#Delta_{#it{p}_{T}}")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleSize(26)
     h.GetXaxis().SetTitleOffset(1.2)
