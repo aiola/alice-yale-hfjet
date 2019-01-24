@@ -96,7 +96,7 @@ class RawYieldSpectrumLoader:
                 dataJetListName = "_".join(obj for obj in [self.fJetType, self.fJetRadius, self.fJetRecoScheme] if obj)
                 self.fDataJetList = self.fDataMesonList.FindObject(dataJetListName)
                 if not self.fDataJetList:
-                    print("Could not find list {0}/{1} in file {2}". format(self.fDMeson, dataJetListName, self.fDataFile.GetName()))
+                    print("Could not find list {0}/{1} in file {2}". format(dataMesonListName, dataJetListName, self.fDataFile.GetName()))
                     self.fDataMesonList.Print()
                     exit(1)
                 if var:

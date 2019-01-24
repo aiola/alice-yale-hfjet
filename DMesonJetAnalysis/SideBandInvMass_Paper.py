@@ -19,9 +19,15 @@ def SideBandPlot():
     loader_pt.fVariableName = "JetPt"
     loader_pt.fKinematicCuts = "DPt_30"
     loader_pt.fRawYieldMethod = "SideBand"
+    loader_pt.fJetRecoScheme = "pt_scheme"
     loader_pt.fUseReflections = True
     loader_pt.LoadDataListFromDMesonJetAnalysis()
-    dptbinList_pt = loader_pt.fDataJetList.FindObject("{}_Charged_R040_DPtBins_JetPt_5_30".format(loader_pt.fDMeson))
+    dptbinlist_pt_name = "{}_Charged_R040_pt_scheme_DPtBins_JetPt_5_30".format(loader_pt.fDMeson)
+    dptbinList_pt = loader_pt.fDataJetList.FindObject(dptbinlist_pt_name)
+    if not dptbinList_pt:
+        print("Could not find '{}' in '{}'".format(dptbinlist_pt_name, loader_pt.fDataJetList.GetName()))
+        loader_pt.fDataJetList.Print()
+        exit(1)
     spectrumList_pt = loader_pt.fDataSpectrumList
     sbList_pt = spectrumList_pt.FindObject("SideBandAnalysis")
 
@@ -31,10 +37,16 @@ def SideBandPlot():
     loader_high.fJetRadius = "R040"
     loader_high.fVariableName = "JetZ"
     loader_high.fRawYieldMethod = "SideBand"
+    loader_high.fJetRecoScheme = "pt_scheme"
     loader_high.fUseReflections = True
     loader_high.fKinematicCuts = "DPt_60_JetPt_15_30"
     loader_high.LoadDataListFromDMesonJetAnalysis()
-    dptbinList_high = loader_high.fDataJetList.FindObject("{}_Charged_R040_DPtBins_JetPt_15_30".format(loader_high.fDMeson))
+    dptbinList_high_name = "{}_Charged_R040_pt_scheme_DPtBins_JetPt_15_30".format(loader_high.fDMeson)
+    dptbinList_high = loader_high.fDataJetList.FindObject(dptbinList_high_name)
+    if not dptbinList_high:
+        print("Could not find '{}' in '{}'".format(dptbinList_high_name, loader_high.fDataJetList.GetName()))
+        loader_high.fDataJetList.Print()
+        exit(1)
     spectrumList_high = loader_high.fDataSpectrumList
     sbList_high = spectrumList_high.FindObject("SideBandAnalysis")
 

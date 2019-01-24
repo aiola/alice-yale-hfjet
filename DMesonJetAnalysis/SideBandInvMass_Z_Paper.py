@@ -123,7 +123,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
 
     binTitle = "{0:.0f} < #it{{p}}_{{T,D}} < {1:.0f} GeV/#it{{c}}".format(ptmin, ptmax)
     binTitle2 = "{0:.0f} < #it{{p}}_{{T,jet}}^{{ch}} < {1:.0f} GeV/#it{{c}}".format(jetptmin, jetptmax)
-    htitle = ROOT.TPaveText(0.22, 0.78, 0.98, 0.93, "NB NDC")
+    htitle = ROOT.TPaveText(0.22, 0.775, 0.98, 0.94, "NB NDC")
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
@@ -134,7 +134,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     htitle.Draw()
     globalList.append(htitle)
 
-    fitInfo = ROOT.TPaveText(0.25, 0.68, 0.58, 0.77, "NB NDC")
+    fitInfo = ROOT.TPaveText(0.25, 0.685, 0.58, 0.775, "NB NDC")
     fitInfo.SetBorderSize(0)
     fitInfo.SetFillStyle(0)
     fitInfo.SetTextFont(43)
@@ -237,7 +237,7 @@ def PlotSBSpectra(pad, dmeson, kincuts, ptmin, ptmax, sbList, refl, plotleg=Fals
     h.SetMinimum(miny)
 
     if plotleg:
-        leg = ROOT.TLegend(0.49, 0.74, 0.87, 0.92, "", "NB NDC")
+        leg = ROOT.TLegend(0.475, 0.74, 0.855, 0.92, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)

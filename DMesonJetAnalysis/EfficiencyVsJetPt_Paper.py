@@ -49,7 +49,8 @@ def EfficiencyComparison(config):
     comp.fX2LegSpectrum = 0.93
     comp.fY1LegSpectrum = 0.38
     comp.fLinUpperSpace = 0.50
-    comp.fLegLineHeight = 0.065
+    comp.fLegLineHeight = 0.085
+    comp.fLegTextSize = 25
     comp.fColors = [ROOT.kOrange + 2, ROOT.kGreen + 2]
     comp.fMarkers = [ROOT.kFullCircle, ROOT.kOpenCircle]
     r = comp.CompareSpectra(histos[0], histos[1:])

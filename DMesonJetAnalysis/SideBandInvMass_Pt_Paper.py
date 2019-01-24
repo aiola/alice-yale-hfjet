@@ -125,9 +125,9 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     h.GetYaxis().SetLabelSize(23)
 
     if jetptmax and jetptmin:
-        htitle = ROOT.TPaveText(0.22, 0.78, 0.98, 0.93, "NB NDC")
+        htitle = ROOT.TPaveText(0.22, 0.78, 0.98, 0.945, "NB NDC")
     else:
-        htitle = ROOT.TPaveText(0.22, 0.86, 0.98, 0.92, "NB NDC")
+        htitle = ROOT.TPaveText(0.22, 0.88, 0.98, 0.945, "NB NDC")
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
@@ -142,7 +142,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     globalList.append(htitle)
 
     if jetptmax and jetptmin:
-        fitInfo = ROOT.TPaveText(0.25, 0.68, 0.58, 0.77, "NB NDC")
+        fitInfo = ROOT.TPaveText(0.25, 0.685, 0.58, 0.775, "NB NDC")
     else:
         fitInfo = ROOT.TPaveText(0.25, 0.76, 0.58, 0.85, "NB NDC")
     fitInfo.SetBorderSize(0)
