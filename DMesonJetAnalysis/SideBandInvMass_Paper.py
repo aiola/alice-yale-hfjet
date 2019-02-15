@@ -62,7 +62,7 @@ def SideBandPlot():
     SideBandInvMass_Z_Paper.PlotSBSpectra(canvas.cd(6), loader_high.fDMeson, "DPt_60_JetPt_15_30", 6, 12, sbList_high, "_DoubleGaus", True)
 
     canvas.cd(5)
-    htitle = ROOT.TPaveText(0.44, 0.51, 0.92, 0.90, "NB NDC")
+    htitle = ROOT.TPaveText(0.44, 0.56, 0.92, 0.95, "NB NDC")
     globalList.append(htitle)
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
@@ -77,13 +77,13 @@ def SideBandPlot():
     htitle.Draw()
 
     canvas.cd(4)
-    paveALICE = ROOT.TPaveText(0.30, 0.80, 0.66, 0.92, "NB NDC")
+    paveALICE = ROOT.TPaveText(0.30, 0.84, 0.66, 0.95, "NB NDC")
     globalList.append(paveALICE)
     paveALICE.SetBorderSize(0)
     paveALICE.SetFillStyle(0)
     paveALICE.SetTextFont(43)
     paveALICE.SetTextSize(20)
-    paveALICE.SetTextAlign(13)
+    paveALICE.SetTextAlign(11)
     paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
 

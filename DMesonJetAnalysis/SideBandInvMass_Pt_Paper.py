@@ -15,8 +15,8 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     pad.SetTicks(1, 1)
     pad.SetLeftMargin(0.22)
     pad.SetRightMargin(0.02)
-    pad.SetTopMargin(0.04)
-    pad.SetBottomMargin(0.13)
+    pad.SetTopMargin(0.03)
+    pad.SetBottomMargin(0.14)
     objname = "InvMassSBWindow_AnyINT_{}_DPt_{:.0f}_{:.0f}".format(dmeson, ptmin * 100, ptmax * 100)
     sbHist = sbList.FindObject(objname)
     if not sbHist:
@@ -112,22 +112,22 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     h.GetYaxis().SetTitle("Counts / 6 MeV/#it{c}^{2}")
     h.GetXaxis().SetTitle("#it{M}(K#pi) (GeV/#it{c}^{2})")
     h.GetXaxis().SetTitleFont(43)
-    h.GetXaxis().SetTitleOffset(2.2)
-    h.GetXaxis().SetTitleSize(19)
+    h.GetXaxis().SetTitleOffset(1.8)
+    h.GetXaxis().SetTitleSize(23)
     h.GetXaxis().SetLabelFont(43)
     h.GetXaxis().SetLabelOffset(0.009)
     h.GetXaxis().SetLabelSize(18)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleOffset(3.3)
-    h.GetYaxis().SetTitleSize(19)
+    h.GetYaxis().SetTitleOffset(3.4)
+    h.GetYaxis().SetTitleSize(23)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelOffset(0.009)
     h.GetYaxis().SetLabelSize(23)
 
     if jetptmax and jetptmin:
-        htitle = ROOT.TPaveText(0.22, 0.78, 0.98, 0.945, "NB NDC")
+        htitle = ROOT.TPaveText(0.22, 0.795, 0.98, 0.945, "NB NDC")
     else:
-        htitle = ROOT.TPaveText(0.22, 0.88, 0.98, 0.945, "NB NDC")
+        htitle = ROOT.TPaveText(0.22, 0.89, 0.98, 0.955, "NB NDC")
     htitle.SetBorderSize(0)
     htitle.SetFillStyle(0)
     htitle.SetTextFont(43)
@@ -142,9 +142,9 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     globalList.append(htitle)
 
     if jetptmax and jetptmin:
-        fitInfo = ROOT.TPaveText(0.25, 0.685, 0.58, 0.775, "NB NDC")
+        fitInfo = ROOT.TPaveText(0.25, 0.705, 0.58, 0.795, "NB NDC")
     else:
-        fitInfo = ROOT.TPaveText(0.25, 0.76, 0.58, 0.85, "NB NDC")
+        fitInfo = ROOT.TPaveText(0.25, 0.77, 0.58, 0.86, "NB NDC")
     fitInfo.SetBorderSize(0)
     fitInfo.SetFillStyle(0)
     fitInfo.SetTextFont(43)
@@ -157,9 +157,9 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
 
     if plotleg1:
         if jetptmax and jetptmin:
-            leg = ROOT.TLegend(0.25, 0.475, 0.58, 0.665, "", "NB NDC")
+            leg = ROOT.TLegend(0.25, 0.485, 0.58, 0.685, "", "NB NDC")
         else:
-            leg = ROOT.TLegend(0.25, 0.54, 0.58, 0.73, "", "NB NDC")
+            leg = ROOT.TLegend(0.25, 0.57, 0.58, 0.75, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
@@ -174,9 +174,9 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
 
     if plotleg2:
         if jetptmax and jetptmin:
-            leg = ROOT.TLegend(0.25, 0.55, 0.58, 0.67, "", "NB NDC")
+            leg = ROOT.TLegend(0.25, 0.56, 0.58, 0.68, "", "NB NDC")
         else:
-            leg = ROOT.TLegend(0.25, 0.61, 0.58, 0.73, "", "NB NDC")
+            leg = ROOT.TLegend(0.25, 0.62, 0.58, 0.74, "", "NB NDC")
         globalList.append(leg)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
@@ -194,8 +194,8 @@ def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
     # pad.SetLogy()
     pad.SetLeftMargin(0.22)
     pad.SetRightMargin(0.02)
-    pad.SetTopMargin(0.04)
-    pad.SetBottomMargin(0.13)
+    pad.SetTopMargin(0.01)
+    pad.SetBottomMargin(0.16)
 
     sbHist = sbList.FindObject("{}_{}_JetPtSpectrum_DPt_30_SideBand{}_SideBandWindow_DPt_{:.0f}_{:.0f}".format(dmeson, jet_def, refl, ptmin * 100, ptmax * 100))
     h = ROOT.TH1I("myaxis", "myaxis", 50, 0, 50)
@@ -229,16 +229,16 @@ def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
     subHist_copy.SetMarkerStyle(ROOT.kOpenDiamond)
     subHist_copy.SetMarkerSize(1.7)
 
-    h.GetYaxis().SetTitle("raw yield")
+    h.GetYaxis().SetTitle("Raw Yield")
     h.GetXaxis().SetTitleFont(43)
-    h.GetXaxis().SetTitleOffset(2.2)
-    h.GetXaxis().SetTitleSize(19)
+    h.GetXaxis().SetTitleOffset(1.9)
+    h.GetXaxis().SetTitleSize(23)
     h.GetXaxis().SetLabelFont(43)
     h.GetXaxis().SetLabelOffset(0.009)
     h.GetXaxis().SetLabelSize(18)
     h.GetYaxis().SetTitleFont(43)
-    h.GetYaxis().SetTitleOffset(4.3)
-    h.GetYaxis().SetTitleSize(19)
+    h.GetYaxis().SetTitleOffset(3.8)
+    h.GetYaxis().SetTitleSize(23)
     h.GetYaxis().SetLabelFont(43)
     h.GetYaxis().SetLabelOffset(0.009)
     h.GetYaxis().SetLabelSize(23)
