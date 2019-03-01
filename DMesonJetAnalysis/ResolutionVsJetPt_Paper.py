@@ -60,7 +60,7 @@ def ResolutionComparison(config):
     #h.GetXaxis().SetTitle("(#it{p}_{T,det jet}^{ch} #font[122]{-} #it{p}_{T,gen jet}^{ch}) / #it{p}_{T,gen jet}^{ch}")
     h.GetXaxis().SetTitle("#Delta_{#it{p}_{T}}")
     h.GetXaxis().SetTitleFont(43)
-    h.GetXaxis().SetTitleSize(26)
+    h.GetXaxis().SetTitleSize(30)
     h.GetXaxis().SetTitleOffset(1.2)
     h.GetXaxis().SetLabelFont(43)
     h.GetXaxis().SetLabelSize(22)

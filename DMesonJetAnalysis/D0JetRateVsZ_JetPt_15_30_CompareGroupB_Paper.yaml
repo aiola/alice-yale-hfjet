@@ -67,7 +67,7 @@ theory:
   gen: pythia8
   proc: charm
   ts: 1520426239
-  color: 839 # kTeal-1
+  color: 843 # kTeal+3
   line: 6
   inclusive:
     title: PYTHIA 8 Monash 2013

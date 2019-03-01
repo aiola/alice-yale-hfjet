@@ -44,6 +44,9 @@ def ResolutionComparison(config):
     r = comp.CompareSpectra(histos[0], histos[1:])
     histos[2].SetMarkerSize(2.2)
     histos[4].SetMarkerSize(2.2)
+    legend = comp.fLegendSpectra
+    legend.GetListOfPrimitives()[2].SetMarkerSize(2.2)
+    legend.GetListOfPrimitives()[4].SetMarkerSize(2.2)
     for obj in r:
         globalList.append(obj)
 
@@ -59,7 +62,7 @@ def ResolutionComparison(config):
 
     h.GetYaxis().SetTitle("Probability Density")
     h.GetXaxis().SetTitleFont(43)
-    h.GetXaxis().SetTitleSize(26)
+    h.GetXaxis().SetTitleSize(30)
     h.GetXaxis().SetTitleOffset(1.2)
     h.GetXaxis().SetLabelFont(43)
     h.GetXaxis().SetLabelSize(22)

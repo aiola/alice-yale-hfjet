@@ -66,7 +66,7 @@ theory:
   gen: pythia8
   proc: charm
   ts: 1520426239
-  color: 839 # kTeal-1
+  color: 843 # kTeal+3
   line: 6
   inclusive:
     title: PYTHIA 8 Monash 2013
@@ -75,14 +75,14 @@ theory:
     ts: 1521277750
     file_name: FastSimAnalysis_inclusive_jets_unweighted.root
     line: 3
-    color: 839 # kTeal-1
+    color: 843 # kTeal+3
 -
   title: Herwig++ 7 MEPP2QQ
   active: yes
   gen: herwig
   proc: charm_lo
   ts: 1531075164
-  color: 903 # kPink+3
+  color: 617 # kMagenta+1
   line: 4
   inclusive:
     title: Herwig++ 7 MEMinBias

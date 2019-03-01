@@ -131,7 +131,7 @@ class DMesonJetCompare:
             self.fBaselineHistogram.SetMarkerStyle(self.fMarkers[0])
             self.fBaselineHistogram.SetMarkerSize(self.fMarkerSize)
             if self.fDoSpectrumLegend:
-                self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "pe")
+                self.fLegendSpectra.AddEntry(self.fBaselineHistogram, self.fBaselineHistogram.GetTitle(), "p")
                 if self.fDoSpectrumLegend == "stat": self.AddStat(self.fBaselineHistogram)
 
         print("Plotting histogram '{0}' with option '{1}'".format(self.fBaselineHistogram.GetName(), self.fOptSpectrumBaseline))
@@ -252,7 +252,7 @@ class DMesonJetCompare:
             h.SetMarkerStyle(marker)
             h.SetMarkerSize(self.fMarkerSize)
             if self.fDoSpectrumLegend:
-                self.fLegendSpectra.AddEntry(h, h.GetTitle(), "pe")
+                self.fLegendSpectra.AddEntry(h, h.GetTitle(), "p")
                 if self.fDoSpectrumLegend == "stat": self.AddStat(h)
 
     def FitAndMakeConsistent(self, h, templateH):
@@ -333,7 +333,7 @@ class DMesonJetCompare:
             hRatio.SetLineColor(color)
             hRatio.SetMarkerStyle(marker)
             hRatio.SetMarkerSize(self.fMarkerSize)
-            if self.fDoRatioLegend: self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "pe")
+            if self.fDoRatioLegend: self.fLegendRatio.AddEntry(hRatio, h.GetTitle(), "p")
         self.fRatios.append(hRatio)
         hRatio.SetTitle("{0} Ratio".format(h.GetTitle()))
         hRatio.Divide(self.fBaselineForRatio)

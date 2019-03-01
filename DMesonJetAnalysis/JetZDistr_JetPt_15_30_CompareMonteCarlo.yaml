@@ -69,7 +69,7 @@ theory:
   gen: herwig
   proc: charm_lo
   ts: 1531075164
-  color: 903 # kPink+3
+  color: 617 # kMagenta+1
   line: 4
 -
   title: Herwig 7 MEMinBias

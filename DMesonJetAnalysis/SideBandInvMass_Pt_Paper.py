@@ -109,7 +109,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
     h.SetMaximum(maxy)
     h.SetMinimum(miny)
 
-    h.GetYaxis().SetTitle("Counts / 6 MeV/#it{c}^{2}")
+    h.GetYaxis().SetTitle("Counts / (6 MeV/#it{c}^{2})")
     h.GetXaxis().SetTitle("#it{M}(K#pi) (GeV/#it{c}^{2})")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleOffset(1.8)
