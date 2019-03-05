@@ -82,7 +82,7 @@ def EfficiencyComparison(config_c, config_b):
 
     h = comp.fMainHistogram
 
-    h.GetYaxis().SetTitle("D^{0} Efficiency #times Acceptance")
+    h.GetYaxis().SetTitle("Efficiency #times Acceptance")
     h.GetXaxis().SetTitle("#it{p}_{T,D} (GeV/#it{c})")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleSize(26)

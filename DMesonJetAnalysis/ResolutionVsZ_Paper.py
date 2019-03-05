@@ -44,9 +44,6 @@ def ResolutionComparison(config):
     r = comp.CompareSpectra(histos[0], histos[1:])
     histos[2].SetMarkerSize(2.2)
     histos[4].SetMarkerSize(2.2)
-    legend = comp.fLegendSpectra
-    legend.GetListOfPrimitives()[2].SetMarkerSize(2.2)
-    legend.GetListOfPrimitives()[4].SetMarkerSize(2.2)
     for obj in r:
         globalList.append(obj)
 
@@ -63,7 +60,7 @@ def ResolutionComparison(config):
     h.GetYaxis().SetTitle("Probability Density")
     h.GetXaxis().SetTitleFont(43)
     h.GetXaxis().SetTitleSize(30)
-    h.GetXaxis().SetTitleOffset(1.2)
+    h.GetXaxis().SetTitleOffset(1.0)
     h.GetXaxis().SetLabelFont(43)
     h.GetXaxis().SetLabelSize(22)
     h.GetXaxis().SetLabelOffset(0.02)
@@ -122,6 +119,7 @@ def ResolutionComparison(config):
     entry.SetLineColor(ROOT.kGreen + 2)
     entry.SetMarkerColor(ROOT.kGreen + 2)
     entry.SetMarkerStyle(ROOT.kFullDiamond)
+    entry.SetMarkerSize(1.8)
     leg.Draw()
     globalList.append(leg)
 
@@ -141,6 +139,7 @@ def ResolutionComparison(config):
     entry.SetLineColor(ROOT.kGreen + 2)
     entry.SetMarkerColor(ROOT.kGreen + 2)
     entry.SetMarkerStyle(ROOT.kOpenDiamond)
+    entry.SetMarkerSize(1.8)
     leg.Draw()
     globalList.append(leg)
 
