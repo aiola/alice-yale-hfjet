@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # python base classes and utilities for D Meson jet analysis
 
-import ROOT
-import os
-import math
-import copy
-import DMesonJetUtils
-import DMesonJetProjectors
-import numpy
-from enum import Enum
 import collections
+import copy
+import math
+import os
 import sys
+from enum import Enum
 
+import numpy
+
+import DMesonJetProjectors
+import DMesonJetUtils
+import ROOT
 
 class Axis:
 
