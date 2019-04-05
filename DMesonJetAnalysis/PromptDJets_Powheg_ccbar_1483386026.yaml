@@ -1,5 +1,5 @@
 name: PromptDJets_Powheg_ccbar_1483386026
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 analysis_name: FastSimAnalysis_ccbar
 generator: powheg_charm
 inclusive:

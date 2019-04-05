@@ -1,6 +1,6 @@
 # Selects only b or bbar
 name: FastSimAnalysis_bbbar
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: FastSimOld
 file_name: ""
 task_name: AliAnalysisTaskDmesonJets

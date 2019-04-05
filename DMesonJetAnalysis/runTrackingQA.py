@@ -575,7 +575,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Tracking QA.')
     parser.add_argument('train', metavar='train')
     parser.add_argument('--input-path', metavar='input-path',
-                        default="/Volumes/DATA/ALICE/JetResults")
+                        default="../../workdir")
     args = parser.parse_args()
 
     main(args.input_path, args.train)

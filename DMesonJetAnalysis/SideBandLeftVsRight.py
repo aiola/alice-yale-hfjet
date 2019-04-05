@@ -7,7 +7,7 @@ import RawYieldSpectrumLoader
 
 globalList = []
 
-input_path = "/Volumes/DATA/ALICE/JetResults"
+input_path = "../../workdir"
 
 def PlotSBSpectra(pad, ptmin, ptmax, sbList, plotleg=False):
     pad.SetTicks(1, 1)

@@ -9,7 +9,7 @@ import SideBandInvMass_Z_Paper
 
 globalList = []
 
-input_path = "/Volumes/DATA/ALICE/JetResults"
+input_path = "../../workdir"
 
 def SideBandPlot():
     loader_pt = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")

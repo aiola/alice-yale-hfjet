@@ -1,6 +1,6 @@
 # Analysis c,b->D0
 name: LHC14j4_Train1368
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: Jets_EMC_pp_MC_1368_1369_1370_1371
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets

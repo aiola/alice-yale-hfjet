@@ -137,7 +137,7 @@ def main(train, test, pthard, train_name, fname, resp, dmeson_name):
     else:
         TrainNumbersLabel = ParseTrainNumbers(train)
 
-        path = "/Volumes/DATA/ALICE/JetResults/{}_{}".format(train_name, TrainNumbersLabel)
+        path = "../../workdir/{}_{}".format(train_name, TrainNumbersLabel)
         if pthard:
             pthard_analysis(path, fname, resp, dmeson_name)
         else:

@@ -10,7 +10,7 @@ import DMesonJetCompare
 
 globalList = []
 
-input_path = "/Volumes/DATA/ALICE/JetResults"
+input_path = "../../workdir"
 
 pass4DmesonAna = "HFPtSpectrum_Pass4_combinedFDForLow_mergeThr1.root"
 

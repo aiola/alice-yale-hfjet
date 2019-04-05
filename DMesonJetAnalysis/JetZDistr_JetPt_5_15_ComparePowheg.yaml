@@ -3,7 +3,7 @@
 name: ComparePowheg
 
 # General
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 data: JetZDistr_JetPt_5_15_Systematics
 theory_spectrum: JetZSpectrum_DPt_2_JetPt_5_15
 jet_type: Charged_R040

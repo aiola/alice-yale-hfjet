@@ -7,7 +7,7 @@ import RawYieldSpectrumLoader
 
 globalList = []
 
-input_path = "/Volumes/DATA/ALICE/JetResults"
+input_path = "../../workdir"
 
 jet_def = "Charged_R040_pt_scheme"
 

@@ -3,7 +3,7 @@
 name: CompareGroupA_Paper
 
 # General
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 data: JetZCrossSection_JetPt_15_30_Systematics
 theory_spectrum: JetZSpectrum_DPt_6_JetPt_15_30
 jet_type: Charged_R040
@@ -46,7 +46,7 @@ data_legend:
   font_size: 17
   combine_syst: no
   x: 0.215
-  y: 0.32
+  y: 0.3
 
 # MC definitions
 theory:

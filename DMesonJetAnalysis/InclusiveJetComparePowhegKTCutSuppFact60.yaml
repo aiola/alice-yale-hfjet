@@ -1,4 +1,4 @@
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 name: InclusiveJetComparePowhegKTCutSuppFact60
 prefix: FastSim_powheg+pythia6_dijet
 file_name: FastSimAnalysis_inclusive_jets.root

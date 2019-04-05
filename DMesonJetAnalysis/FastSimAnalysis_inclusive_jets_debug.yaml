@@ -1,5 +1,5 @@
 name: FastSimAnalysis_inclusive_jets
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: debug
 file_name: ""
 task_name: AliAnalysisTaskEmcalJetTree

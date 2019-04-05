@@ -1,5 +1,5 @@
 name: LHC10_Train1100_topo
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: Jets_EMC_pp_1100_1101_1102_1103
 file_name: AnalysisResults.root
 merging_type: simple_sum

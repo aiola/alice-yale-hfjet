@@ -221,12 +221,12 @@ def main(train, test, pthard, train_name, train_d2h, train_name_d2h):
 
         if pthard:
             trainno = int(train)
-            path = "/Volumes/DATA/ALICE/JetResults/{}_{}".format(train_name, TrainNumbersLabel)
+            path = "../../workdir/{}_{}".format(train_name, TrainNumbersLabel)
             periods = ["LHC15i2b", "LHC15i2c", "LHC15i2d", "LHC15i2e"]
             pt_hard_bins = range(1, 9)
             pthard_analysis(path, periods, pt_hard_bins, DPTBins)
         else:
-            fileName = "/Volumes/DATA/ALICE/JetResults/{}_{}/AnalysisResults.root".format(train_name, TrainNumbersLabel)
+            fileName = "../../workdir/{}_{}/AnalysisResults.root".format(train_name, TrainNumbersLabel)
             fileName_d2h = None
             if train_d2h or train_name_d2h:
                 if train_d2h:
@@ -235,7 +235,7 @@ def main(train, test, pthard, train_name, train_d2h, train_name_d2h):
                     TrainNumbersLabel_d2h = TrainNumbersLabel
                 if not train_name_d2h:
                     train_name_d2h = train_name
-                fileName_d2h = "/Volumes/DATA/ALICE/JetResults/{}_{}/AnalysisResults.root".format(train_name_d2h, TrainNumbersLabel_d2h)
+                fileName_d2h = "../../workdir/{}_{}/AnalysisResults.root".format(train_name_d2h, TrainNumbersLabel_d2h)
             if fileName_d2h == fileName: fileName_d2h = None
 
             single_file_analysis(fileName, DPTBins, fileName_d2h)

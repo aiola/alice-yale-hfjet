@@ -6,7 +6,7 @@ import RawYieldSpectrumLoader
 
 globalList = []
 
-input_path = "/Volumes/DATA/ALICE/JetResults"
+input_path = "../../workdir"
 
 def GetBFeedDownSpectra(kincuts):
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116_efficiency")

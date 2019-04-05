@@ -3,7 +3,7 @@
 name: Fit_Thesis
 
 # General
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 data: JetPtCrossSection_DPt_30_Systematics
 jet_type: Charged_R040
 logy: yes

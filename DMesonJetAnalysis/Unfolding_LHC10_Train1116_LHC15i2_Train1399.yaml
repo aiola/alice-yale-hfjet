@@ -1,5 +1,5 @@
 name: Unfolding_LHC10_Train1116_LHC15i2_Train1399
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 data_train: Jets_EMC_pp_1116_1117_1118_1119
 data: LHC10_Train1116
 response_train: Jets_EMC_pp_MC_1399_1400_1401_1402

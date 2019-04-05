@@ -344,7 +344,7 @@ def PlotCrossSections(dataStat, dataSyst, config, nodata):
         x1 = config["title"]["x"]
     else:
         x1 = 0.19
-    y2 = y1 - 0.07 * len(config["title"]["text"])
+    y2 = y1 - 0.08 * len(config["title"]["text"])
     x2 = x1 + 0.36
     if x2 > 0.99:
         x2 = 0.99

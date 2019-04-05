@@ -36,7 +36,7 @@ def Calculate(dataStat):
     print("The mean in the range 15,30 is {} +/- {}".format(h.GetMean(), h.GetMeanError()))
 
 def main():
-    dataStat = GetMeasuredCrossSection("/Volumes/DATA/ALICE/JetResults", "JetPtCrossSection_DPt_30_Systematics")
+    dataStat = GetMeasuredCrossSection("../../workdir", "JetPtCrossSection_DPt_30_Systematics")
     Calculate(dataStat)
 
 if __name__ == '__main__':

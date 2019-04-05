@@ -1,5 +1,5 @@
 name: LHC14j4_Train1503
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: Jets_EMC_pp_MC_1503_1504_1505_1506
 file_name: AnalysisResults.root
 merging_type: simple_sum

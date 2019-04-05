@@ -1,6 +1,6 @@
 name: LHC14j4pid_Train1474
 title: "PID analysis LHC14j4bcde"
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: Jets_EMC_pp_MC_1474_1475_1476_1477
 file_name: AnalysisResults.root
 task_name: AliAnalysisTaskDmesonJets

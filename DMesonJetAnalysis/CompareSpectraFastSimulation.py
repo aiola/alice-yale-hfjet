@@ -14,7 +14,7 @@ def main(tslist):
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
 
-    fileNameTemp = "/Volumes/DATA/ALICE/JetResults/FastSim_{ts}/FastSimAnalysis_Reduced_{ts}.root"
+    fileNameTemp = "../../workdir/FastSim_{ts}/FastSimAnalysis_Reduced_{ts}.root"
     # spectraNames = ["D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3/D0_MCTruth_Charged_R040_JetPtSpectrum_DPt_3_Normalized",
     #                "D0_MCTruth/Charged_R040/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80/D0_MCTruth_Charged_R040_DPtSpectrum_JetPt_5_80_Normalized",
     #                "D0_MCTruth/D0_MCTruth_DPtSpectrum/D0_MCTruth_DPtSpectrum_Normalized"]
@@ -52,8 +52,8 @@ def main(tslist):
         globalList.extend(hlist)
         r = comp.CompareSpectra(hlist[0], hlist[1:])
         globalList.extend(r)
-        comp.fCanvasSpectra.SaveAs("/Volumes/DATA/ALICE/JetResults/{}_{}.pdf".format(hname, tslistStr))
-        comp.fCanvasRatio.SaveAs("/Volumes/DATA/ALICE/JetResults/{}_{}_Ratio.pdf".format(hname, tslistStr))
+        comp.fCanvasSpectra.SaveAs("../../workdir/{}_{}.pdf".format(hname, tslistStr))
+        comp.fCanvasRatio.SaveAs("../../workdir/{}_{}_Ratio.pdf".format(hname, tslistStr))
 
 if __name__ == '__main__':
 

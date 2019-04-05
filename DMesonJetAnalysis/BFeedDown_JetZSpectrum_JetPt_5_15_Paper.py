@@ -6,7 +6,7 @@ import RawYieldSpectrumLoader
 
 globalList = []
 
-input_path = "/Volumes/DATA/ALICE/JetResults"
+input_path = "../../workdir"
 
 
 def GetBFeedDownSpectra():

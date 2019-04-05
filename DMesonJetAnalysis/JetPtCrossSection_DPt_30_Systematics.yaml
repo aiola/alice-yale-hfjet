@@ -1,5 +1,5 @@
 name: JetPtCrossSection_DPt_30_Systematics
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 normalization: cross_section
 xmin: 5
 xmax: 30

@@ -1,5 +1,5 @@
 name: LHC10_Train1116_efficiency
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 train: Jets_EMC_pp_1116_1117_1118_1119
 file_name: AnalysisResults.root
 merging_type: simple_sum

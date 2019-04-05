@@ -1,6 +1,6 @@
 name: BFeedDown_1505317519_1416
 analysis_name: FastSimAnalysis_FDonly
-input_path: /Volumes/DATA/ALICE/JetResults
+input_path: ../../workdir
 generator: powheg+pythia6_beauty
 normalization: cross_section
 c_response:
