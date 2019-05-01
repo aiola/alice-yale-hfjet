@@ -1,13 +1,13 @@
-CC=clang++
-LD=clang++
-CFLAGS=-c -g -Wall `root-config --cflags`
-LDFLAGS=`root-config --glibs` -leg -shared
+CC=`root-config --cxx`
+LD=`root-config --ld`
+CFLAGS=-c -g -Wall `root-config --cflags` -fPIC
+LDFLAGS=-shared `root-config --libs` -lEG 
 SOURCES=MassFitter.cxx
 OBJECTS=$(SOURCES:.cxx=.o)
 LIBRARY=MassFitter.so
 
 $(LIBRARY): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(OBJECTS:.o=_Dict.o) -o $@
+	$(LD) $(OBJECTS) $(OBJECTS:.o=_Dict.o) -o $@ $(LDFLAGS)
 
 %.o: %.cxx
 	rootcint -f $(@:.o=_Dict.cxx) -c -I`root-config --incdir` $(@:.o=.h)
@@ -15,4 +15,3 @@ $(LIBRARY): $(OBJECTS)
 	
 clean:
 	rm ./*~ ./*.o ./MassFitter.so
-   
