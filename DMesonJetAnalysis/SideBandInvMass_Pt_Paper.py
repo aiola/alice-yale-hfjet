@@ -188,6 +188,7 @@ def PlotSBInvMass(pad, dmeson, ptmin, ptmax, jetptmin, jetptmax, sbList, dptbinL
         leg.Draw()
 
     pad.RedrawAxis()
+    return [invMassHist_copy]
 
 def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
     pad.SetTicks(1, 1)
@@ -223,6 +224,7 @@ def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
 
     subHist_copy = sigHist.DrawCopy("p0 same")
     subHist_copy.Add(sbHist_copy, -1)
+    subHist_copy.SetName(subHist_copy.GetName().replace("SignalWindow","Signal"))
     globalList.append(subHist_copy)
     subHist_copy.SetMarkerColor(ROOT.kBlue + 2)
     subHist_copy.SetLineColor(ROOT.kBlue + 2)
@@ -266,6 +268,7 @@ def PlotSBSpectra(pad, dmeson, ptmin, ptmax, sbList, refl, plotleg=False):
         leg.AddEntry(subHist_copy, "Signal - SB", "p")
         leg.Draw()
 
+    return [sbHist_copy, sigHist_copy, subHist_copy]
 
 def SideBandPlot():
     loader = RawYieldSpectrumLoader.RawYieldSpectrumLoader(input_path, "Jets_EMC_pp_1116_1117_1118_1119", "LHC10_Train1116")

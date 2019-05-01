@@ -54,12 +54,13 @@ def SideBandPlot():
     canvas = ROOT.TCanvas(cname, cname, 1200, 800)
     globalList.append(canvas)
     canvas.Divide(3, 2)
-    SideBandInvMass_Pt_Paper.PlotSBInvMass(canvas.cd(1), loader_pt.fDMeson, 4, 5, 5, 30, sbList_pt, dptbinList_pt, "_DoubleGaus", True, False)
-    SideBandInvMass_Pt_Paper.PlotSBInvMass(canvas.cd(2), loader_pt.fDMeson, 6, 7, 5, 30, sbList_pt, dptbinList_pt, "_DoubleGaus", False, True)
-    SideBandInvMass_Z_Paper.PlotSBInvMass(canvas.cd(3), loader_high.fDMeson, 6, 12, 15, 30, sbList_high, dptbinList_high, "_DoubleGaus", False, False)
-    SideBandInvMass_Pt_Paper.PlotSBSpectra(canvas.cd(4), loader_pt.fDMeson, 4, 5, sbList_pt, "_DoubleGaus")
-    SideBandInvMass_Pt_Paper.PlotSBSpectra(canvas.cd(5), loader_pt.fDMeson, 6, 7, sbList_pt, "_DoubleGaus")
-    SideBandInvMass_Z_Paper.PlotSBSpectra(canvas.cd(6), loader_high.fDMeson, "DPt_60_JetPt_15_30", 6, 12, sbList_high, "_DoubleGaus", True)
+    histograms_to_output = []
+    histograms_to_output += SideBandInvMass_Pt_Paper.PlotSBInvMass(canvas.cd(1), loader_pt.fDMeson, 4, 5, 5, 30, sbList_pt, dptbinList_pt, "_DoubleGaus", True, False)
+    histograms_to_output += SideBandInvMass_Pt_Paper.PlotSBInvMass(canvas.cd(2), loader_pt.fDMeson, 6, 7, 5, 30, sbList_pt, dptbinList_pt, "_DoubleGaus", False, True)
+    histograms_to_output += SideBandInvMass_Z_Paper.PlotSBInvMass(canvas.cd(3), loader_high.fDMeson, 6, 12, 15, 30, sbList_high, dptbinList_high, "_DoubleGaus", False, False)
+    histograms_to_output += SideBandInvMass_Pt_Paper.PlotSBSpectra(canvas.cd(4), loader_pt.fDMeson, 4, 5, sbList_pt, "_DoubleGaus")
+    histograms_to_output += SideBandInvMass_Pt_Paper.PlotSBSpectra(canvas.cd(5), loader_pt.fDMeson, 6, 7, sbList_pt, "_DoubleGaus")
+    histograms_to_output += SideBandInvMass_Z_Paper.PlotSBSpectra(canvas.cd(6), loader_high.fDMeson, "DPt_60_JetPt_15_30", 6, 12, sbList_high, "_DoubleGaus", True)
 
     canvas.cd(5)
     htitle = ROOT.TPaveText(0.44, 0.56, 0.92, 0.95, "NB NDC")
@@ -87,6 +88,7 @@ def SideBandPlot():
     paveALICE.AddText("ALICE, pp, #sqrt{#it{s}} = 7 TeV")
     paveALICE.Draw()
 
+    return histograms_to_output
 
 def main():
     ROOT.TH1.AddDirectory(False)
@@ -95,14 +97,20 @@ def main():
 
     subprocess.call("make")
     ROOT.gSystem.Load("MassFitter.so")
+    print("MassFitter loaded")
 
-    SideBandPlot()
+    histograms_to_output = SideBandPlot()
 
     for obj in globalList:
         if isinstance(obj, ROOT.TCanvas):
             obj.SaveAs("{0}/{1}.pdf".format(input_path, obj.GetName()))
             obj.SaveAs("{0}/{1}.C".format(input_path, obj.GetName()))
 
+    output_file = ROOT.TFile("{}/SideBandInvMass_Paper.root".format(input_path), "recreate")
+    output_file.cd()
+    for h in histograms_to_output:
+        h.Write()
+    output_file.Close()
 
 if __name__ == '__main__':
     main()

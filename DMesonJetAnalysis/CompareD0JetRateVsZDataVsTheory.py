@@ -50,6 +50,7 @@ def GetInclusiveJetTheoryCrossSectionAll(config):
     return LoadTheoryCrossSections.GetInclusiveJetTheoryCrossSectionAll(config)
 
 def PlotCrossSections(dataStat, dataSyst, config):
+    obj_to_output = []
     no_box_sys = ["[]", "||", "0[]", "0||"]
     if not "data_systematics_style" in config:
         config["data_systematics_style"] = "2"
@@ -97,6 +98,9 @@ def PlotCrossSections(dataStat, dataSyst, config):
 
     dataStat_copy = dataStat.Clone("{0}_copy".format(dataStat.GetName()))
     globalList.append(dataStat_copy)
+
+    obj_to_output.append(dataStat_copy)
+    obj_to_output.append(dataSyst_copy)
 
     if "data_minx" in config and "data_maxx" in config:
         points_to_be_removed = set()
@@ -432,7 +436,7 @@ def PlotCrossSections(dataStat, dataSyst, config):
     padRatio.RedrawAxis()
     padMain.RedrawAxis()
 
-    return canvas
+    return canvas, obj_to_output
 
 def NormalizeData(config, d0jet_stat, d0jet_syst, incl_stat, incl_syst):
     normalizator = HistogramNormalizator.Normalizator(d0jet_stat, "rate")
@@ -465,9 +469,15 @@ def main(config):
     print("Loading theory D0 jet cross section")
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
 
-    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, config)
+    canvas, obj_to_output = PlotCrossSections(d0jet_stat, d0jet_syst, config)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
+
+    output_file = ROOT.TFile("{}/{}.root".format(config["input_path"], canvas.GetName()), "recreate")
+    output_file.cd()
+    for obj in obj_to_output:
+        obj.Write()
+    output_file.Close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')

@@ -45,6 +45,7 @@ def GetInclusiveJetTheoryCrossSectionAll(config):
     return LoadTheoryCrossSections.GetInclusiveJetTheoryCrossSectionAll(config)
 
 def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_jet_cross_sections, config):
+    obj_to_output = []
     no_box_sys = ["[]", "||", "0[]", "0||"]
     if not "data_systematics_style" in config:
         config["data_systematics_style"] = "2"
@@ -170,6 +171,9 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
             globalList.append(hStat)
             t["ratio_histogram_plot"] = hStat
 
+    obj_to_output.append(ratioStat)
+    obj_to_output.append(ratioSyst)
+
     # Done with all the preparations, now plotting
 
     if "plot_ratio_only" in config and config["plot_ratio_only"]:
@@ -177,7 +181,7 @@ def PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_je
     else:
         canvas = DrawTwoPanelCanvas(config, d0jet_stat_copy, d0jet_syst_copy, incl_stat_copy, incl_syst_copy, ratioSyst, ratioStat, inclusive_jet_cross_sections)
 
-    return canvas
+    return canvas, obj_to_output
 
 def GenerateHistogramAxis(config, xmin, xmax):
     hAxis = ROOT.TH1I("axis", "axis", 1000, xmin, xmax)
@@ -616,9 +620,15 @@ def main(config):
     incl_stat, incl_syst = GetInclJetCrossSection()
     GetD0JetTheoryCrossSectionAll(config, d0jet_stat.GetXaxis())
     inclusive_jet_cross_sections = GetInclusiveJetTheoryCrossSectionAll(config)
-    canvas = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_jet_cross_sections, config)
+    canvas, obj_to_output = PlotCrossSections(d0jet_stat, d0jet_syst, incl_stat, incl_syst, inclusive_jet_cross_sections, config)
     canvas.SaveAs("{}/{}.pdf".format(config["input_path"], canvas.GetName()))
     canvas.SaveAs("{}/{}.C".format(config["input_path"], canvas.GetName()))
+
+    output_file = ROOT.TFile("{}/{}.root".format(config["input_path"], canvas.GetName()), "recreate")
+    output_file.cd()
+    for obj in obj_to_output:
+        obj.Write()
+    output_file.Close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jet pt spectrum theory comparison.')
